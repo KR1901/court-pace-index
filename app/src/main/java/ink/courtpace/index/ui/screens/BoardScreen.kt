@@ -1,0 +1,296 @@
+package ink.courtpace.index.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import ink.courtpace.index.core.analytics.PaceAnalytics
+import ink.courtpace.index.core.analytics.Ranked
+import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.core.model.Surface
+import ink.courtpace.index.core.model.Tournament
+import ink.courtpace.index.ui.components.AnimatedBar
+import ink.courtpace.index.ui.components.DeltaBadge
+import ink.courtpace.index.ui.components.MetricToggle
+import ink.courtpace.index.ui.components.SeasonStepper
+import ink.courtpace.index.ui.components.SourceLine
+import ink.courtpace.index.ui.components.StatTile
+import ink.courtpace.index.ui.components.ValueBadge
+import ink.courtpace.index.ui.glass.GlassChip
+import ink.courtpace.index.ui.glass.GlassNote
+import ink.courtpace.index.ui.glass.GlassSurface
+import ink.courtpace.index.ui.glass.HairLine
+import ink.courtpace.index.ui.glass.SectionLabel
+import ink.courtpace.index.ui.theme.PaceTheme
+import ink.courtpace.index.ui.theme.accentFor
+import ink.courtpace.index.ui.theme.accentForBand
+import ink.courtpace.index.ui.theme.accentForSurface
+
+fun accentForValue(value: Double, metric: Metric): Color = when (metric) {
+    Metric.CPI -> accentFor(PaceAnalytics.category(value))
+    Metric.SPEED -> accentForBand(PaceAnalytics.speedBand(value))
+}
+
+@Composable
+fun BoardScreen(
+    data: PaceData,
+    season: Int,
+    metric: Metric,
+    surfaces: Set<Surface>,
+    seasons: List<Int>,
+    onSeason: (Int) -> Unit,
+    onMetric: (Metric) -> Unit,
+    onSurface: (Surface?) -> Unit,
+    onOpen: (Tournament) -> Unit,
+) {
+    val colors = PaceTheme.colors
+    val ranking = PaceAnalytics.ranking(data, season, metric, surfaces)
+    val top = ranking.firstOrNull()
+    val bottom = ranking.lastOrNull()
+    val average = PaceAnalytics.average(data, season, metric)
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp),
+    ) {
+        Spacer(Modifier.height(14.dp))
+        Text(
+            text = "ATP TOUR · COURT SPEED",
+            style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp),
+            color = colors.textFaint,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = when (metric) {
+                Metric.CPI -> "Court Pace Index"
+                Metric.SPEED -> "Surface speed"
+            },
+            style = TextStyle(
+                fontSize = 30.sp,
+                lineHeight = 34.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-1.1).sp,
+            ),
+            color = colors.text,
+        )
+        Spacer(Modifier.height(5.dp))
+        Text(
+            text = when (metric) {
+                Metric.CPI ->
+                    "Physical bounce readings from Hawk-Eye, ${ranking.size} events in $season."
+                Metric.SPEED ->
+                    "Ace rate against a tour-average surface, ${ranking.size} events in $season."
+            },
+            style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+            color = colors.textDim,
+        )
+
+        Spacer(Modifier.height(18.dp))
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            SeasonStepper(seasons = seasons, selected = season, onChange = onSeason)
+            MetricToggle(metric = metric, onChange = onMetric)
+        }
+
+        Spacer(Modifier.height(14.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            GlassChip(text = "All", selected = surfaces.isEmpty(), onClick = { onSurface(null) })
+            Surface.entries.forEach { surface ->
+                GlassChip(
+                    text = surface.label,
+                    selected = surface in surfaces,
+                    onClick = { onSurface(surface) },
+                )
+            }
+        }
+
+        if (top != null && bottom != null && average != null) {
+            Spacer(Modifier.height(18.dp))
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(30.dp),
+                contentPadding = PaddingValues(20.dp),
+            ) {
+                Row(Modifier.fillMaxWidth()) {
+                    StatTile(
+                        label = "Fastest",
+                        value = PaceAnalytics.format(top.value, metric),
+                        caption = top.tournament.name,
+                        color = accentForValue(top.value, metric),
+                        modifier = Modifier.weight(1f),
+                    )
+                    StatTile(
+                        label = "Slowest",
+                        value = PaceAnalytics.format(bottom.value, metric),
+                        caption = bottom.tournament.name,
+                        color = accentForValue(bottom.value, metric),
+                        modifier = Modifier.weight(1f),
+                    )
+                    StatTile(
+                        label = "Field average",
+                        value = PaceAnalytics.format(average, metric),
+                        caption = "${ranking.size} events",
+                        color = colors.text,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(22.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SectionLabel(
+                text = if (surfaces.isEmpty()) "Ranked" else surfaces.joinToString(" + ") { it.label } + " only",
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "tap for history",
+                style = TextStyle(fontSize = 10.sp),
+                color = colors.textFaint,
+            )
+        }
+        Spacer(Modifier.height(10.dp))
+
+        if (ranking.isEmpty()) {
+            GlassNote("No $season readings for this filter. Try another season or surface.")
+        } else {
+            val min = ranking.minOf { it.value }
+            val max = ranking.maxOf { it.value }
+            ranking.forEach { row ->
+                RankRow(
+                    row = row,
+                    metric = metric,
+                    min = min,
+                    max = max,
+                    onClick = { onOpen(row.tournament) },
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        SourceLine(
+            text = when (metric) {
+                Metric.CPI -> "Court Pace Index from the courtspeed.com database, compiled from ATP and " +
+                    "Tennis TV broadcast data. Centre-court readings."
+                Metric.SPEED -> "Surface speed from Tennis Abstract: ace rate adjusted for the servers and " +
+                    "returners in each match, 1.00 = tour average."
+            },
+        )
+        Spacer(Modifier.height(130.dp))
+    }
+}
+
+@Composable
+private fun RankRow(
+    row: Ranked,
+    metric: Metric,
+    min: Double,
+    max: Double,
+    onClick: () -> Unit,
+) {
+    val colors = PaceTheme.colors
+    val accent = accentForValue(row.value, metric)
+    val fraction = if (max > min) ((row.value - min) / (max - min)).toFloat() else 0.5f
+    GlassSurface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(22.dp),
+        contentPadding = PaddingValues(14.dp),
+        elevation = 14.dp,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = if (colors.isDark) 0.08f else 0.55f), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = row.rank.toString(),
+                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold),
+                    color = colors.textDim,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = row.tournament.name,
+                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                        color = colors.text,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Box(
+                        Modifier
+                            .size(6.dp)
+                            .background(accentForSurface(row.tournament.surface), CircleShape),
+                    )
+                }
+                Spacer(Modifier.height(3.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "${row.tournament.city} · ${row.tournament.surfaceLabel}",
+                        style = TextStyle(fontSize = 11.sp),
+                        color = colors.textFaint,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                    )
+                    DeltaBadge(delta = row.delta, metric = metric)
+                }
+                Spacer(Modifier.height(8.dp))
+                AnimatedBar(fraction = fraction, color = accent)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = PaceAnalytics.format(row.value, metric),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.8).sp,
+                    ),
+                    color = colors.text,
+                )
+                Spacer(Modifier.height(4.dp))
+                ValueBadge(text = PaceAnalytics.label(row.value, metric), color = accent)
+            }
+        }
+    }
+}

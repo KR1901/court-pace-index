@@ -14,7 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.model.PaceCategory
-import ink.courtpace.index.data.ThemeMode
+import ink.courtpace.index.core.model.SpeedBand
 
 /**
  * Liquid Glass palette: deep ink glass in dark mode, milky glass in light mode, with the
@@ -44,6 +44,21 @@ fun accentFor(category: PaceCategory): Color = when (category) {
     PaceCategory.MEDIUM -> Color(0xFF4FB07C)
     PaceCategory.MEDIUM_FAST -> Color(0xFF3E92D8)
     PaceCategory.FAST -> Color(0xFF8B7BFF)
+}
+
+fun accentForBand(band: SpeedBand): Color = when (band) {
+    SpeedBand.VERY_SLOW -> Color(0xFFE07A48)
+    SpeedBand.SLOW -> Color(0xFFD8A03C)
+    SpeedBand.MEDIUM -> Color(0xFF4FB07C)
+    SpeedBand.FAST -> Color(0xFF3E92D8)
+    SpeedBand.VERY_FAST -> Color(0xFF8B7BFF)
+}
+
+/** One accent per surface, used wherever surfaces are compared. */
+fun accentForSurface(surface: ink.courtpace.index.core.model.Surface): Color = when (surface) {
+    ink.courtpace.index.core.model.Surface.HARD -> Color(0xFF3E92D8)
+    ink.courtpace.index.core.model.Surface.CLAY -> Color(0xFFE07A48)
+    ink.courtpace.index.core.model.Surface.GRASS -> Color(0xFF4FB07C)
 }
 
 val DefaultAccent = Color(0xFF7FE0C0)
@@ -148,15 +163,10 @@ private val AppTypography = Typography(
 
 @Composable
 fun CourtPaceTheme(
-    themeMode: ThemeMode = ThemeMode.DARK,
+    dark: Boolean = !isSystemInDarkTheme(),
     accent: Color = DefaultAccent,
     content: @Composable () -> Unit,
 ) {
-    val dark = when (themeMode) {
-        ThemeMode.DARK -> true
-        ThemeMode.LIGHT -> false
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-    }
     val colors = paceColors(dark, accent)
     val scheme = if (dark) {
         darkColorScheme(

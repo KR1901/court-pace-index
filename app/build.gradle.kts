@@ -25,8 +25,8 @@ android {
         applicationId = "ink.courtpace.index"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "2.0.0"
     }
 
     signingConfigs {
@@ -73,6 +73,12 @@ android {
         resources {
             excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/*.kotlin_module")
         }
+    }
+
+    sourceSets {
+        // The bundled dataset is read from the classpath by the JVM tests, so the tests
+        // guard the same file the app ships.
+        getByName("test").resources.srcDir("src/main/assets")
     }
 
     testOptions {
