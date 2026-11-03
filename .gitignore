@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+local.properties
+.kotlin/
+
+# Signing material - never commit keys
+*.jks
+*.keystore
+keystore.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Build and crash output
+captures/
+.fix-logs/
+hs_err_pid*.log
+*.hprof
+
+# Delivered artifacts
+*.apk
+*.aab
