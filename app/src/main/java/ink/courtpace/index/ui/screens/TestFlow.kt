@@ -625,9 +625,7 @@ fun SlideScreen(
                         else -> "Ready"
                     },
                     style = TextStyle(fontSize = 12.5.sp, fontWeight = FontWeight.Medium),
-                    color = if (slide != null) accentFor(ink.courtpace.index.core.model.PaceCategory.of(
-                        PaceEngine.courtPaceRating(slide.cof, PaceEngine.temperatureAdjustedCor(0.81, draft.temperatureC)),
-                    )) else colors.textDim,
+                    color = if (slide != null) colors.accent else colors.textDim,
                 )
             }
 

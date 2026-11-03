@@ -11,6 +11,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.sqrt
 
@@ -53,20 +54,21 @@ class SlideMeter(context: Context) {
         awaitClose { manager.unregisterListener(listener) }
     }.flowOn(Dispatchers.Default)
 
-    /** Records for [durationMs] and returns everything captured. */
+    /**
+     * Records for [durationMs] and returns everything captured. The window ends by
+     * completing the flow rather than by throwing, so a normal end of window is never
+     * mistaken for a failed measurement.
+     */
     suspend fun capture(durationMs: Long, onLive: (Double) -> Unit): List<AccelSample> {
         val collected = ArrayList<AccelSample>(512)
-        withTimeoutOrNull(durationMs + 1_500L) {
-            samples().collect { sample ->
-                collected.add(sample)
-                onLive(sqrt(sample.ax * sample.ax + sample.ay * sample.ay))
-                if (sample.timeSeconds * 1000.0 >= durationMs) {
-                    throw StopCollecting()
+        withTimeoutOrNull(durationMs + 2_000L) {
+            samples()
+                .takeWhile { it.timeSeconds * 1000.0 < durationMs }
+                .collect { sample ->
+                    collected.add(sample)
+                    onLive(sqrt(sample.ax * sample.ax + sample.ay * sample.ay))
                 }
-            }
         }
         return collected
     }
-
-    private class StopCollecting : RuntimeException()
 }
