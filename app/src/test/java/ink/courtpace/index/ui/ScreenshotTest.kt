@@ -105,6 +105,22 @@ class ScreenshotTest {
         }
     }
 
+    /** Speed metric: the live block with the red dot, and Paris awaiting stats. */
+    @Test
+    fun boardSpeedLive() = shoot("board__speed_live") {
+        Frame {
+            BoardScreen(
+                data = data,
+                season = data.latestSeason,
+                metric = Metric.SPEED,
+                surfaces = emptySet(),
+                seasons = data.seasons.filter { data.entries(it, Metric.SPEED).isNotEmpty() },
+                onSeason = {}, onMetric = {}, onSurface = {}, onOpen = {},
+                refreshing = false, onRefresh = {}, statusNote = null,
+            )
+        }
+    }
+
     @Test
     fun boardLight() = shoot("board__light") { Frame(dark = false) { board()() } }
 

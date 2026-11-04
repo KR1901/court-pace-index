@@ -4836,5 +4836,17 @@
    "ace": 9.8,
    "src": "computed"
   }
+ ],
+ "live": [
+  {
+   "t": "paris",
+   "s": 2026,
+   "status": "in_progress",
+   "start": "2026-11-02",
+   "end": "2026-11-08",
+   "round": "R32",
+   "matches": null,
+   "asOf": "2026-11-04T14:40:00Z"
+  }
  ]
 }

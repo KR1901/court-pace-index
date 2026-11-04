@@ -1,0 +1,16 @@
+{
+  "generated": "2026-11-04T14:40:00Z",
+  "note": "Live feed. Refreshed by .github/workflows/refresh-live.yml from the configured match-stat source. An event appears here as soon as it is in progress; its rating appears once per-match ace data exists for it.",
+  "events": [
+    {
+      "t": "paris",
+      "s": 2026,
+      "status": "in_progress",
+      "start": "2026-11-02",
+      "end": "2026-11-08",
+      "round": "R32",
+      "matches": null,
+      "asOf": "2026-11-04T14:40:00Z"
+    }
+  ]
+}

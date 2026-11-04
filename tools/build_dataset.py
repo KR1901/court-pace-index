@@ -156,6 +156,9 @@ SPEED = [
 # published table is a rolling 52-week window that straddles two calendar years.
 COMPUTED = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
 
+# Events in progress. Carried in the bundled asset so the app shows them without a refresh.
+LIVE_FEED = os.path.join(os.path.dirname(__file__), "..", "data", "live.json")
+
 # dedupe tournaments by id, keeping the first definition
 seen, tournaments = set(), []
 for t in TOURNAMENTS:
@@ -199,6 +202,22 @@ if os.path.exists(COMPUTED):
 else:
     print("no computed history found; run tools/compute_speed.py --write first")
 
+# live events: status always, rating only when the feed has one
+live_events = []
+if os.path.exists(LIVE_FEED):
+    feed = json.load(open(LIVE_FEED))
+    for event in feed.get("events", []):
+        if event.get("t") not in known:
+            continue
+        live_events.append(event)
+        if event.get("speed") is not None:
+            readings.append({
+                "t": event["t"], "s": event["s"], "speed": event["speed"],
+                "ace": event.get("ace"), "src": "live",
+                "live": True, "asOf": event.get("asOf"), "matches": event.get("matches"),
+            })
+
+
 doc = {
     "meta": {
         "generated": "2026-11-03",
@@ -236,6 +255,7 @@ doc = {
     },
     "tournaments": tournaments,
     "readings": readings,
+    "live": live_events,
 }
 
 out = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "assets", "pace_dataset.json")

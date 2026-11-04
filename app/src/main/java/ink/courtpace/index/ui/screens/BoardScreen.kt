@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.Role
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.analytics.Ranked
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Surface
 import ink.courtpace.index.core.model.Tournament
@@ -197,6 +198,23 @@ fun BoardScreen(
             }
         }
 
+        if (metric == Metric.SPEED) {
+            val pending = data.liveWithoutRating(season, metric)
+            if (pending.isNotEmpty()) {
+                Spacer(Modifier.height(22.dp))
+                SectionLabel(text = "Live now")
+                Spacer(Modifier.height(10.dp))
+                pending.forEach { (tournament, event) ->
+                    LivePendingRow(
+                        tournament = tournament,
+                        event = event,
+                        onClick = { onOpen(tournament) },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+        }
+
         Spacer(Modifier.height(22.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             SectionLabel(
@@ -222,6 +240,7 @@ fun BoardScreen(
                     metric = metric,
                     min = min,
                     max = max,
+                    live = data.isLive(row.tournament.id),
                     onClick = { onOpen(row.tournament) },
                 )
                 Spacer(Modifier.height(8.dp))
@@ -247,6 +266,91 @@ fun BoardScreen(
 }
 
 /** Small circular action that checks the project's published copy for a newer dataset. */
+/** 2026-11-02 -> 2 Nov, so the row reads like prose rather than a timestamp. */
+internal fun prettyDate(iso: String): String = runCatching {
+    val date = java.time.LocalDate.parse(iso)
+    "${date.dayOfMonth} ${date.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.UK)}"
+}.getOrDefault(iso)
+
+/** Red dot plus LIVE. Deliberately the only red in the interface. */
+@Composable
+internal fun LivePill(modifier: Modifier = Modifier) {
+    val colors = PaceTheme.colors
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(50))
+            .background(colors.danger.copy(alpha = 0.16f))
+            .padding(horizontal = 7.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(5.dp).clip(CircleShape).background(colors.danger))
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = "LIVE",
+            style = TextStyle(fontSize = 8.5.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.6.sp),
+            color = colors.danger,
+        )
+    }
+}
+
+/**
+ * An event being played right now that has no rating yet. It is listed rather than hidden,
+ * and it says why there is no number instead of showing a placeholder that looks like data.
+ */
+@Composable
+private fun LivePendingRow(
+    tournament: Tournament,
+    event: LiveEvent,
+    onClick: () -> Unit,
+) {
+    val colors = PaceTheme.colors
+    GlassSurface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .clickable(onClickLabel = "Open ${tournament.name}") { onClick() },
+        shape = RoundedCornerShape(22.dp),
+        contentPadding = PaddingValues(14.dp),
+        elevation = 14.dp,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(26.dp).clip(CircleShape).background(colors.danger.copy(alpha = 0.16f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(Modifier.size(7.dp).clip(CircleShape).background(colors.danger))
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = tournament.name,
+                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                        color = colors.text,
+                        maxLines = 1,
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    LivePill()
+                }
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    text = buildString {
+                        append(event.round ?: "In progress")
+                        event.start?.let { start ->
+                            append(" · since ")
+                            append(prettyDate(start))
+                        }
+                        append(" · rating appears once match stats land")
+                    },
+                    style = TextStyle(fontSize = 11.sp),
+                    color = colors.textDim,
+                    maxLines = 2,
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
     val colors = PaceTheme.colors
@@ -302,6 +406,7 @@ private fun RankRow(
     metric: Metric,
     min: Double,
     max: Double,
+    live: Boolean,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -341,6 +446,10 @@ private fun RankRow(
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     Spacer(Modifier.width(6.dp))
+                    if (live) {
+                        LivePill()
+                        Spacer(Modifier.width(6.dp))
+                    }
                     Box(
                         Modifier
                             .size(6.dp)

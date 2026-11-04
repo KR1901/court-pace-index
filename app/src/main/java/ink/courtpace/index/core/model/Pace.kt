@@ -109,6 +109,12 @@ data class PaceReading(
     val ace: Double? = null,
     val date: String? = null,
     val src: String,
+    /** True when the figure was computed from a tournament still in progress. */
+    val live: Boolean = false,
+    /** When the live figure was computed, for the "as of" line. */
+    val asOf: String? = null,
+    /** Matches behind a live figure. Null when unknown. */
+    val matches: Int? = null,
 ) {
     fun value(metric: Metric): Double? = when (metric) {
         Metric.CPI -> cpi
@@ -137,4 +143,22 @@ data class PaceDataset(
     val meta: DatasetMeta,
     val tournaments: List<Tournament> = emptyList(),
     val readings: List<PaceReading> = emptyList(),
+    /** Events in progress right now. An event can be here before it has a rating. */
+    val live: List<LiveEvent> = emptyList(),
+)
+
+/**
+ * A tournament that is being played now. It carries status before it carries numbers: the
+ * rating only exists once the pipeline has processed matches from it.
+ */
+@Serializable
+data class LiveEvent(
+    val t: String,
+    val s: Int,
+    val status: String = "in_progress",
+    val start: String? = null,
+    val end: String? = null,
+    val round: String? = null,
+    val matches: Int? = null,
+    val asOf: String? = null,
 )

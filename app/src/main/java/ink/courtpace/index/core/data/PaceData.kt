@@ -12,6 +12,26 @@ import kotlinx.serialization.json.Json
  */
 class PaceData(val dataset: PaceDataset) {
 
+    /** Events in progress, by tournament id. */
+    val liveById: Map<String, ink.courtpace.index.core.model.LiveEvent> =
+        dataset.live.associateBy { it.t }
+
+    fun liveEvent(id: String): ink.courtpace.index.core.model.LiveEvent? = liveById[id]
+
+    fun isLive(id: String): Boolean = liveById.containsKey(id)
+
+    /** Live events for a season that do not have a rating yet, so the board can still list them. */
+    fun liveWithoutRating(season: Int, metric: ink.courtpace.index.core.model.Metric):
+        List<Pair<Tournament, ink.courtpace.index.core.model.LiveEvent>> {
+        // Live ratings are ace-based, so they belong to the speed metric only. A live event
+        // has nothing to say about the physical CPI.
+        if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
+        return dataset.live
+            .filter { it.s == season && value(it.t, it.s, metric) == null }
+            .mapNotNull { event -> byId[event.t]?.let { it to event } }
+            .sortedBy { it.first.name }
+    }
+
     val tournaments: List<Tournament> = dataset.tournaments
     val byId: Map<String, Tournament> = tournaments.associateBy { it.id }
     val seasons: List<Int> = dataset.readings.map { it.s }.distinct().sorted()
