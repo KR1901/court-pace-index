@@ -26,3 +26,6 @@ hs_err_pid*.log
 # Delivered artifacts
 *.apk
 *.aab
+
+# Dataset build cache (downloaded match CSVs)
+.cache/

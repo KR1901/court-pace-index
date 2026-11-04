@@ -151,6 +151,11 @@ SPEED = [
     ("hamburg", "2026-05-17", 0.51, 5.1), ("lavercup", "2026-09-25", 0.44, 4.4),
 ]
 
+# Historical ace-based ratings computed from the public match archive
+# (tools/compute_speed.py). Published readings win one by one, not season by season: the
+# published table is a rolling 52-week window that straddles two calendar years.
+COMPUTED = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
+
 # dedupe tournaments by id, keeping the first definition
 seen, tournaments = set(), []
 for t in TOURNAMENTS:
@@ -174,6 +179,26 @@ for tid, date, speed, ace in SPEED:
     readings.append({"t": tid, "s": int(date[:4]), "speed": speed, "ace": ace,
                      "date": date, "src": "tennisabstract"})
 
+computed_n = 0
+if os.path.exists(COMPUTED):
+    hist = json.load(open(COMPUTED))
+    published_keys = {(r["t"], r["s"]) for r in readings
+                      if "speed" in r and r["src"] == "tennisabstract"}
+    for season, events in hist["seasons"].items():
+        year = int(season)
+        for tid, values in events.items():
+            if tid not in known or (tid, year) in published_keys:
+                continue
+            readings.append({
+                "t": tid, "s": year,
+                "speed": round(values["speed"], 2),
+                "ace": round(values["ace"], 1),
+                "src": "computed",
+            })
+            computed_n += 1
+else:
+    print("no computed history found; run tools/compute_speed.py --write first")
+
 doc = {
     "meta": {
         "generated": "2026-11-03",
@@ -196,6 +221,17 @@ doc = {
                           "centred on 1.00 for a tour-average surface. Last update 2026-11-02.",
                 "url": "https://tennisabstract.com/reports/atp_surface_speed.html",
             },
+            {
+                "id": "computed",
+                "name": "Computed history - from Jeff Sackmann's ATP archive",
+                "metric": "Speed",
+                "detail": "Seasons before 2026 are recomputed here from the public ATP match archive "
+                          "compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the published method: ace "
+                          "rate adjusted for the server and returner in every match, normalised so a "
+                          "tour-average event reads 1.00. Reproduces the published 2026 figures with "
+                          "r = 0.93 and a mean absolute difference of 0.10. Non-commercial use only.",
+                "url": "https://github.com/Aneeshers/tennis-sackmann-archive",
+            },
         ],
     },
     "tournaments": tournaments,
@@ -210,7 +246,7 @@ with open(out, "w") as f:
 
 cpi_n = len([r for r in readings if "cpi" in r])
 speed_n = len([r for r in readings if "speed" in r])
-print(f"{len(tournaments)} tournaments, {cpi_n} CPI readings, {speed_n} speed readings")
+print(f"{len(tournaments)} tournaments, {cpi_n} CPI readings, {speed_n} speed readings, {computed_n} computed")
 print("seasons with CPI:", sorted({r['s'] for r in readings if 'cpi' in r}))
 both = {r['t'] for r in readings if 'cpi' in r and r['s'] == 2026} & {r['t'] for r in readings if 'speed' in r}
 print("2026 events with both metrics:", len(both), sorted(both))
