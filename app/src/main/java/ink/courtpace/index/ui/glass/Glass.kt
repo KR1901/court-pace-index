@@ -63,12 +63,28 @@ import androidx.compose.ui.unit.sp
 import ink.courtpace.index.ui.theme.PaceTheme
 
 /** Slow-drifting mesh gradient that the glass surfaces sit on top of. */
+/** True when the system animation scale is off, so decoration must hold still. */
+@Composable
+fun rememberReduceMotion(): Boolean {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    return remember(context) {
+        runCatching {
+            android.provider.Settings.Global.getFloat(
+                context.contentResolver,
+                android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+                1f,
+            ) == 0f
+        }.getOrDefault(false)
+    }
+}
+
 @Composable
 fun MeshBackground(
     modifier: Modifier = Modifier,
     accent: Color,
 ) {
     val colors = PaceTheme.colors
+    val reduceMotion = rememberReduceMotion()
     val transition = rememberInfiniteTransition(label = "mesh")
     val drift by transition.animateFloat(
         initialValue = 0f,
@@ -89,28 +105,30 @@ fun MeshBackground(
         label = "driftB",
     )
 
+    val d1 = if (reduceMotion) 0.5f else drift
+    val d2 = if (reduceMotion) 0.5f else driftB
     Canvas(modifier.fillMaxSize()) {
         drawRect(Brush.verticalGradient(listOf(colors.ink, colors.inkDeep)))
         blob(
-            center = Offset(size.width * (0.05f + 0.20f * drift), size.height * 0.06f),
+            center = Offset(size.width * (0.05f + 0.20f * d1), size.height * 0.06f),
             radius = size.width * 1.05f,
             color = colors.blobA,
             strength = 0.75f,
         )
         blob(
-            center = Offset(size.width * (0.95f - 0.18f * driftB), size.height * 0.42f),
+            center = Offset(size.width * (0.95f - 0.18f * d2), size.height * 0.42f),
             radius = size.width * 0.95f,
             color = colors.blobB,
             strength = 0.65f,
         )
         blob(
-            center = Offset(size.width * (0.30f + 0.25f * driftB), size.height * 0.98f),
+            center = Offset(size.width * (0.30f + 0.25f * d2), size.height * 0.98f),
             radius = size.width * 1.1f,
             color = colors.blobC,
             strength = 0.7f,
         )
         blob(
-            center = Offset(size.width * 0.82f, size.height * (0.10f + 0.05f * drift)),
+            center = Offset(size.width * 0.82f, size.height * (0.10f + 0.05f * d1)),
             radius = size.width * 0.55f,
             color = accent,
             strength = if (colors.isDark) 0.30f else 0.22f,
@@ -609,16 +627,17 @@ private fun TabItem(
     }
 }
 
-/** Empty-state / inline note block. */
+/**
+ * Inline note. Deliberately not a glass pane: glass cannot sample other glass, and these sit
+ * inside glass cards, so this is a plain inset with an accent rule.
+ */
 @Composable
 fun GlassNote(text: String, modifier: Modifier = Modifier) {
     val colors = PaceTheme.colors
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(Color.White.copy(alpha = if (colors.isDark) 0.05f else 0.5f))
-            .padding(14.dp),
+            .padding(vertical = 2.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Box(

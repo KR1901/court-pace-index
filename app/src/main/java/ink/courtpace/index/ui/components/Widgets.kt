@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.analytics.PaceAnalytics
@@ -115,22 +116,33 @@ private fun nearest(seasons: List<Int>, value: Int): Int =
 @Composable
 private fun StepperArrow(symbol: String, enabled: Boolean, onClick: () -> Unit) {
     val colors = PaceTheme.colors
+    // The visual circle is 34dp but the touch area must be at least 48dp.
     Box(
         Modifier
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(
-                Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f),
-                CircleShape,
-            )
-            .clickable(enabled = enabled) { onClick() },
+            .size(48.dp)
+            .clickable(
+                enabled = enabled,
+                onClickLabel = if (symbol == "\u2039") "Previous season" else "Next season",
+                role = Role.Button,
+            ) { onClick() },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = symbol,
-            style = TextStyle(fontSize = 19.sp, fontWeight = FontWeight.Medium),
-            color = if (enabled) colors.text else colors.textFaint.copy(alpha = 0.4f),
-        )
+        Box(
+            Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(
+                    Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f),
+                    CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = symbol,
+                style = TextStyle(fontSize = 19.sp, fontWeight = FontWeight.Medium),
+                color = if (enabled) colors.text else colors.textFaint.copy(alpha = 0.4f),
+            )
+        }
     }
 }
 

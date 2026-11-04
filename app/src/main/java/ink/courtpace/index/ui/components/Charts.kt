@@ -27,6 +27,26 @@ import ink.courtpace.index.ui.theme.PaceTheme
 
 data class ChartPoint(val x: Float, val y: Float)
 
+/** Evenly spaced ticks on round numbers, so an axis reads 20/30/40 rather than 16/34/52. */
+internal fun niceTicks(range: ClosedFloatingPointRange<Float>, count: Int): List<Float> {
+    val span = range.endInclusive - range.start
+    if (span <= 0f || count < 2) return listOf(range.start)
+    val rawStep = span / (count - 1)
+    val magnitude = Math.pow(10.0, kotlin.math.floor(kotlin.math.log10(rawStep.toDouble()))).toFloat()
+    val step = listOf(1f, 2f, 2.5f, 5f, 10f)
+        .map { it * magnitude }
+        .firstOrNull { it >= rawStep }
+        ?: (10f * magnitude)
+    val first = kotlin.math.ceil(range.start / step) * step
+    val out = mutableListOf<Float>()
+    var value = first
+    while (value <= range.endInclusive + 1e-4f) {
+        out.add(kotlin.math.round(value * 100f) / 100f)
+        value += step
+    }
+    return if (out.isEmpty()) listOf(range.start) else out
+}
+
 data class ChartSeries(
     val label: String,
     val color: Color,
@@ -53,6 +73,7 @@ fun LineChart(
 ) {
     val colors = PaceTheme.colors
     val axisWidth = 38.dp
+    val ticks = niceTicks(yRange, yTicks)
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
             Column(
@@ -62,9 +83,7 @@ fun LineChart(
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.End,
             ) {
-                (0 until yTicks).forEach { index ->
-                    val fraction = index / (yTicks - 1).toFloat()
-                    val value = yRange.endInclusive - (yRange.endInclusive - yRange.start) * fraction
+                ticks.asReversed().forEach { value ->
                     Text(
                         text = yLabel(value),
                         style = TextStyle(fontSize = 9.5.sp),
@@ -88,9 +107,8 @@ fun LineChart(
                 fun py(y: Float): Float = h - ((y - yRange.start) / spanY) * h
 
                 // grid
-                (0 until yTicks).forEach { index ->
-                    val fraction = index / (yTicks - 1).toFloat()
-                    val y = h * fraction
+                ticks.forEach { tick ->
+                    val y = py(tick)
                     drawLine(
                         color = Color.White.copy(alpha = if (colors.isDark) 0.07f else 0.5f),
                         start = Offset(0f, y),

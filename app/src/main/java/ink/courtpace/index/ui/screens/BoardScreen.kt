@@ -146,7 +146,9 @@ fun BoardScreen(
         Spacer(Modifier.height(14.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             GlassChip(text = "All", selected = surfaces.isEmpty(), onClick = { onSurface(null) })
-            Surface.entries.forEach { surface ->
+            // Only surfaces with readings this season: a filter that can only return an
+            // empty list is a dead end.
+            data.surfacesPresent(season, metric).forEach { surface ->
                 GlassChip(
                     text = surface.label,
                     selected = surface in surfaces,
@@ -241,9 +243,10 @@ fun BoardScreen(
 @Composable
 private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
     val colors = PaceTheme.colors
+    val reduceMotion = ink.courtpace.index.ui.glass.rememberReduceMotion()
     val rotation by animateFloatAsState(
-        targetValue = if (refreshing) 360f else 0f,
-        animationSpec = if (refreshing) {
+        targetValue = if (refreshing && !reduceMotion) 360f else 0f,
+        animationSpec = if (refreshing && !reduceMotion) {
             infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart)
         } else {
             tween(220)
@@ -253,9 +256,7 @@ private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
     val tint = if (refreshing) colors.accent else colors.textDim
     Box(
         Modifier
-            .size(38.dp)
-            .clip(CircleShape)
-            .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape)
+            .size(48.dp)
             .clickable(
                 enabled = !refreshing,
                 onClickLabel = if (refreshing) "Checking for updates" else "Check for updates",
@@ -263,6 +264,12 @@ private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
             ) { onClick() },
         contentAlignment = Alignment.Center,
     ) {
+        Box(
+            Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape),
+        )
         Canvas(Modifier.size(18.dp).graphicsLayer { rotationZ = rotation }) {
             val w = size.width
             val stroke = Stroke(width = w * 0.11f, cap = StrokeCap.Round)

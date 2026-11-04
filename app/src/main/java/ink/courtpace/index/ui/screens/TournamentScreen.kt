@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,19 +76,26 @@ fun TournamentScreen(
                 .padding(horizontal = 20.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // 48dp touch area; the visible circle stays 40dp.
             Box(
                 Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape)
-                    .clickable { onBack() },
+                    .size(48.dp)
+                    .clickable(onClickLabel = "Back", role = Role.Button) { onBack() },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = "\u2039",
-                    style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Medium),
-                    color = colors.text,
-                )
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "\u2039",
+                        style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Medium),
+                        color = colors.text,
+                    )
+                }
             }
             Spacer(Modifier.width(14.dp))
             Column {
@@ -223,18 +231,27 @@ fun TournamentScreen(
                                 color = colors.textDim,
                                 modifier = Modifier.width(52.dp),
                             )
-                            Text(
-                                text = reading.cpi?.let { PaceAnalytics.format(it, Metric.CPI) }
-                                    ?: reading.speed?.let { PaceAnalytics.format(it, Metric.SPEED) }
-                                    ?: "–",
-                                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
-                                color = if (reading.cpi == null && reading.speedSource == "computed") {
-                                    colors.textDim
-                                } else {
-                                    colors.text
-                                },
-                                modifier = Modifier.width(62.dp),
-                            )
+                            Row(Modifier.width(96.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = reading.cpi?.let { PaceAnalytics.format(it, Metric.CPI) }
+                                        ?: reading.speed?.let { PaceAnalytics.format(it, Metric.SPEED) }
+                                        ?: "–",
+                                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                    color = if (reading.cpi == null && reading.speedSource == "computed") {
+                                        colors.textDim
+                                    } else {
+                                        colors.text
+                                    },
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                // CPI and speed are different scales; never let the reader
+                                // assume a bare number is the same thing.
+                                Text(
+                                    text = if (reading.cpi != null) "CPI" else "SPD",
+                                    style = TextStyle(fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold),
+                                    color = colors.textFaint,
+                                )
+                            }
                             Text(
                                 text = buildString {
                                     reading.cpi?.let { append(PaceAnalytics.category(it).label) }
