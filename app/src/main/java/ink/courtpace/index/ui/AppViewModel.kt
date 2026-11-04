@@ -48,7 +48,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var compareIds by mutableStateOf(listOf("miami", "cincinnati", "montecarlo"))
         private set
     var refreshState by mutableStateOf<RefreshState>(RefreshState.Idle)
-        private set
+
+    /** Results-derived pace for the event in progress, read from the ATP public results page. */
+    var livePace by mutableStateOf<ink.courtpace.index.core.live.AtpResultsParser.LivePace?>(null)
+
+    var livePaceNote by mutableStateOf<String?>(null)
+
+    private val atpClient = ink.courtpace.index.data.AtpLiveClient()
 
     init {
         viewModelScope.launch {
@@ -99,7 +105,23 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 RefreshResult.Unchanged -> refreshState = RefreshState.Done("Already up to date.")
                 is RefreshResult.Failure -> refreshState = RefreshState.Failed(result.message)
             }
+            refreshLivePace()
         }
+    }
+
+    /**
+     * Pulls the live event's results straight from the ATP page, so the reload button updates
+     * it instantly rather than waiting for the scheduled job.
+     */
+    private suspend fun refreshLivePace() {
+        val data = _data.value ?: return
+        val event = data.dataset.live.firstOrNull { it.atpId != null } ?: return
+        atpClient.fetch(event.atpId!!, event.slug ?: "paris")
+            .onSuccess {
+                livePace = it
+                livePaceNote = null
+            }
+            .onFailure { livePaceNote = it.message ?: "could not read the ATP results page" }
     }
 
     fun clearRefreshState() {

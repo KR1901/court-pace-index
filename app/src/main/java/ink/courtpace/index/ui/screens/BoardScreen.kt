@@ -88,6 +88,7 @@ fun BoardScreen(
     refreshing: Boolean,
     onRefresh: () -> Unit,
     statusNote: String?,
+    livePace: ink.courtpace.index.core.live.AtpResultsParser.LivePace? = null,
     scrollState: ScrollState = rememberScrollState(),
 ) {
     val colors = PaceTheme.colors
@@ -208,6 +209,7 @@ fun BoardScreen(
                     LivePendingRow(
                         tournament = tournament,
                         event = event,
+                        pace = livePace,
                         onClick = { onOpen(tournament) },
                     )
                     Spacer(Modifier.height(8.dp))
@@ -301,6 +303,7 @@ internal fun LivePill(modifier: Modifier = Modifier) {
 private fun LivePendingRow(
     tournament: Tournament,
     event: LiveEvent,
+    pace: ink.courtpace.index.core.live.AtpResultsParser.LivePace?,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -340,7 +343,17 @@ private fun LivePendingRow(
                             append(" · since ")
                             append(prettyDate(start))
                         }
-                        append(" · rating appears once match stats land")
+                        if (pace != null) {
+                            append(" · ")
+                            append(pace.matches)
+                            append(" matches · ")
+                            append(String.format(java.util.Locale.UK, "%.0f", pace.tiebreakShare * 100))
+                            append("% tie-break sets · ")
+                            append(String.format(java.util.Locale.UK, "%.1f", pace.gamesPerSet))
+                            append(" games/set")
+                        } else {
+                            append(" · tap reload to read the ATP results page")
+                        }
                     },
                     style = TextStyle(fontSize = 11.sp),
                     color = colors.textDim,

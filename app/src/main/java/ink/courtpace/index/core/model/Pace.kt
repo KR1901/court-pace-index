@@ -161,4 +161,7 @@ data class LiveEvent(
     val round: String? = null,
     val matches: Int? = null,
     val asOf: String? = null,
+    /** ATP's numeric id for the event, used to build its public results URL. */
+    val atpId: Int? = null,
+    val slug: String? = null,
 )
