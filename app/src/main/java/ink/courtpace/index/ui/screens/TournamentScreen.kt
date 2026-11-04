@@ -228,7 +228,11 @@ fun TournamentScreen(
                                     ?: reading.speed?.let { PaceAnalytics.format(it, Metric.SPEED) }
                                     ?: "–",
                                 style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
-                                color = colors.text,
+                                color = if (reading.cpi == null && reading.speedSource == "computed") {
+                                    colors.textDim
+                                } else {
+                                    colors.text
+                                },
                                 modifier = Modifier.width(62.dp),
                             )
                             Text(
@@ -252,6 +256,13 @@ fun TournamentScreen(
                             }
                         }
                         if (index < readings.lastIndex) HairLine()
+                    }
+                    if (readings.any { it.speedSource == "computed" }) {
+                        Spacer(Modifier.height(12.dp))
+                        SourceLine(
+                            "Dimmed seasons are ace-based figures recomputed by this project from the " +
+                                "public match archive; 2025-26 are the published Tennis Abstract readings.",
+                        )
                     }
                 }
             }

@@ -46,6 +46,28 @@ Limits worth knowing: it needs matches to have been played, small draws are nois
 year-to-year correlation for a single event is weak (r ≈ 0.35), which is why multi-year
 averages are more trustworthy than one edition.
 
+### 3. Recomputed speed history (2012–2025)
+
+| | |
+|---|---|
+| Source | ATP match archive compiled by Jeff Sackmann, CC BY-NC-SA 4.0 |
+| Mirror used | https://github.com/Aneeshers/tennis-sackmann-archive |
+| Metric | Same ace-based scale as above |
+| Coverage in this app | 435 readings, 2012–2025 |
+| Script | `tools/compute_speed.py` |
+
+Every tour-level main-draw match with serve stats is read. For each player and season the ace
+rate is computed on clay and on hard/grass, blended one third to two thirds, and each player's
+rate of conceding aces while returning is recorded. For every match, the aces the server would
+be expected to hit against that returner on a neutral surface come from the odds-ratio
+combination of those two rates; the ratio of actual to expected aces is averaged across the
+event, and the season is normalised so a tour-average event reads 1.00.
+
+Validation against the published 2026 season: correlation 0.93 across the 20 overlapping
+events, mean absolute difference 0.10. The published reading wins wherever both exist, one
+reading at a time rather than season by season, because the published table is a rolling
+52-week window that straddles two calendar years.
+
 ## Fields in the dataset
 
 ```json

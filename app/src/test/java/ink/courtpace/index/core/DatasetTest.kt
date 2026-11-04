@@ -17,7 +17,7 @@ class DatasetTest {
     @Test
     fun `dataset parses with meta and both sources`() {
         assertEquals(2026, data.dataset.meta.season)
-        assertEquals(2, data.dataset.meta.sources.size)
+        assertEquals(3, data.dataset.meta.sources.size)
         assertTrue(data.dataset.meta.sources.all { it.url.startsWith("https://") })
     }
 
@@ -68,9 +68,31 @@ class DatasetTest {
         val cpi = data.dataset.readings.count { it.cpi != null }
         val speed = data.dataset.readings.count { it.speed != null }
         assertEquals(106, cpi)
-        assertEquals(62, speed)
+        assertEquals(497, speed)
         assertEquals(2012, data.seasons.first())
         assertEquals(2026, data.seasons.last())
+    }
+
+    @Test
+    fun `speed history is split cleanly between published and computed`() {
+        val published = data.dataset.readings.filter { it.speed != null && it.src == "tennisabstract" }
+        val computed = data.dataset.readings.filter { it.speed != null && it.src == "computed" }
+        assertEquals(62, published.size)
+        assertEquals(435, computed.size)
+        // The published table is a rolling 52-week window, so it straddles two seasons.
+        assertEquals(setOf(2025, 2026), published.map { it.s }.toSet())
+        assertTrue(computed.all { it.s in 2012..2025 })
+        // No season is claimed twice for the same event.
+        val publishedKeys = published.map { it.t to it.s }.toSet()
+        assertTrue(computed.none { (it.t to it.s) in publishedKeys })
+    }
+
+    @Test
+    fun `computed history covers most of the tour in a middle season`() {
+        val events2019 = data.tournaments.count { data.value(it.id, 2019, Metric.SPEED) != null }
+        assertTrue("only $events2019 events rated in 2019", events2019 >= 30)
+        val events2013 = data.tournaments.count { data.value(it.id, 2013, Metric.SPEED) != null }
+        assertTrue("only $events2013 events rated in 2013", events2013 >= 20)
     }
 
     @Test

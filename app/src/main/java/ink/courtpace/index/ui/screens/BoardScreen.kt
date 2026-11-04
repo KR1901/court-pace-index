@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +29,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.analytics.Ranked
 import ink.courtpace.index.core.data.PaceData
@@ -67,6 +79,9 @@ fun BoardScreen(
     onMetric: (Metric) -> Unit,
     onSurface: (Surface?) -> Unit,
     onOpen: (Tournament) -> Unit,
+    refreshing: Boolean,
+    onRefresh: () -> Unit,
+    statusNote: String?,
 ) {
     val colors = PaceTheme.colors
     val ranking = PaceAnalytics.ranking(data, season, metric, surfaces)
@@ -88,19 +103,23 @@ fun BoardScreen(
             color = colors.textFaint,
         )
         Spacer(Modifier.height(6.dp))
-        Text(
-            text = when (metric) {
-                Metric.CPI -> "Court Pace Index"
-                Metric.SPEED -> "Surface speed"
-            },
-            style = TextStyle(
-                fontSize = 30.sp,
-                lineHeight = 34.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-1.1).sp,
-            ),
-            color = colors.text,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = when (metric) {
+                    Metric.CPI -> "Court Pace Index"
+                    Metric.SPEED -> "Surface speed"
+                },
+                style = TextStyle(
+                    fontSize = 30.sp,
+                    lineHeight = 34.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-1.1).sp,
+                ),
+                color = colors.text,
+                modifier = Modifier.weight(1f),
+            )
+            RefreshButton(refreshing = refreshing, onClick = onRefresh)
+        }
         Spacer(Modifier.height(5.dp))
         Text(
             text = when (metric) {
@@ -199,6 +218,11 @@ fun BoardScreen(
             }
         }
 
+        if (statusNote != null) {
+            Spacer(Modifier.height(12.dp))
+            GlassNote(statusNote)
+        }
+
         Spacer(Modifier.height(16.dp))
         SourceLine(
             text = when (metric) {
@@ -209,6 +233,47 @@ fun BoardScreen(
             },
         )
         Spacer(Modifier.height(130.dp))
+    }
+}
+
+/** Small circular action that checks the project's published copy for a newer dataset. */
+@Composable
+private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
+    val colors = PaceTheme.colors
+    val rotation by animateFloatAsState(
+        targetValue = if (refreshing) 360f else 0f,
+        animationSpec = if (refreshing) {
+            infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart)
+        } else {
+            tween(220)
+        },
+        label = "refresh",
+    )
+    val tint = if (refreshing) colors.accent else colors.textDim
+    Box(
+        Modifier
+            .size(38.dp)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape)
+            .clickable(enabled = !refreshing) { onClick() },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.size(18.dp).graphicsLayer { rotationZ = rotation }) {
+            val w = size.width
+            val stroke = Stroke(width = w * 0.11f, cap = StrokeCap.Round)
+            drawArc(
+                color = tint,
+                startAngle = 60f,
+                sweepAngle = 280f,
+                useCenter = false,
+                topLeft = Offset(w * 0.12f, w * 0.12f),
+                size = Size(w * 0.76f, w * 0.76f),
+                style = stroke,
+            )
+            val tip = Offset(w * 0.88f, w * 0.34f)
+            drawLine(tint, tip, Offset(tip.x - w * 0.16f, tip.y - w * 0.04f), w * 0.11f, StrokeCap.Round)
+            drawLine(tint, tip, Offset(tip.x + w * 0.02f, tip.y + w * 0.16f), w * 0.11f, StrokeCap.Round)
+        }
     }
 }
 

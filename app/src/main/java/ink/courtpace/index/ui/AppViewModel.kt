@@ -7,10 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import ink.courtpace.index.core.analytics.PaceAnalytics
+import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Surface
+import ink.courtpace.index.data.BundledDataset
+import ink.courtpace.index.data.DatasetUpdater
+import ink.courtpace.index.data.RefreshResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +21,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+sealed interface RefreshState {
+    data object Idle : RefreshState
+    data object Running : RefreshState
+    data class Done(val message: String) : RefreshState
+    data class Failed(val message: String) : RefreshState
+}
+
 class AppViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val updater = DatasetUpdater(application)
 
     private val _data = MutableStateFlow<PaceData?>(null)
     val data: StateFlow<PaceData?> = _data.asStateFlow()
@@ -34,30 +46,56 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var compareIds by mutableStateOf(listOf("miami", "cincinnati", "montecarlo"))
         private set
+    var refreshState by mutableStateOf<RefreshState>(RefreshState.Idle)
+        private set
 
     init {
         viewModelScope.launch {
-            runCatching {
-                withContext(Dispatchers.IO) {
-                    application.assets.open(ASSET).bufferedReader().use { it.readText() }
+            runCatching { withContext(Dispatchers.IO) { BundledDataset.load(application) } }
+                .onSuccess { bundled ->
+                    val cached = runCatching { updater.cached() }.getOrNull()
+                    publish(PaceData(DatasetPolicy.choose(bundled.dataset, cached?.dataset)))
                 }
-            }.onSuccess { text ->
-                runCatching { PaceData.parse(text) }
-                    .onSuccess { parsed ->
-                        _data.value = parsed
-                        season = parsed.latestSeason
-                        if (parsed.seasons.isNotEmpty()) {
-                            // Start on the newest season that actually holds CPI readings.
-                            season = parsed.seasons.lastOrNull { s ->
-                                parsed.entries(s, Metric.CPI).isNotEmpty()
-                            } ?: parsed.latestSeason
-                        }
+                .onFailure {
+                    _error.value = "The bundled dataset could not be read: ${it.message}"
+                }
+        }
+    }
+
+    private fun publish(parsed: PaceData) {
+        _data.value = parsed
+        season = parsed.seasons.lastOrNull { s -> parsed.entries(s, Metric.CPI).isNotEmpty() }
+            ?: parsed.latestSeason
+    }
+
+    /** Checks the project's published copy for a newer dataset. */
+    fun refresh() {
+        if (refreshState is RefreshState.Running) return
+        refreshState = RefreshState.Running
+        viewModelScope.launch {
+            when (val result = updater.refresh()) {
+                is RefreshResult.Success -> {
+                    val current = _data.value
+                    val merged = if (current == null) {
+                        PaceData(result.dataset)
+                    } else {
+                        PaceData(DatasetPolicy.choose(current.dataset, result.dataset))
                     }
-                    .onFailure { _error.value = "The bundled dataset could not be read: ${it.message}" }
-            }.onFailure {
-                _error.value = "The bundled dataset is missing from the APK."
+                    publish(merged)
+                    refreshState = RefreshState.Done(
+                        "Updated to the ${result.dataset.meta.generated} dataset · " +
+                            "${result.dataset.readings.size} readings",
+                    )
+                }
+
+                RefreshResult.Unchanged -> refreshState = RefreshState.Done("Already up to date.")
+                is RefreshResult.Failure -> refreshState = RefreshState.Failed(result.message)
             }
         }
+    }
+
+    fun clearRefreshState() {
+        refreshState = RefreshState.Idle
     }
 
     fun selectSeason(value: Int) {
@@ -94,10 +132,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _error.value = null
     }
 
-    fun ranking(data: PaceData) = PaceAnalytics.ranking(data, season, metric, surfaces)
-
     companion object {
-        private const val ASSET = "pace_dataset.json"
         const val MAX_COMPARE = 3
     }
 }

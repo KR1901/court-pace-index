@@ -39,6 +39,8 @@ class PaceData(val dataset: PaceDataset) {
         val cpi: Double?,
         val speed: Double?,
         val ace: Double?,
+        /** "computed" when the speed figure was recomputed from the match archive. */
+        val speedSource: String? = null,
     )
 
     fun seasonRows(id: String): List<SeasonRow> =
@@ -50,6 +52,7 @@ class PaceData(val dataset: PaceDataset) {
                     cpi = rows.firstNotNullOfOrNull { it.cpi },
                     speed = rows.firstNotNullOfOrNull { it.speed },
                     ace = rows.firstNotNullOfOrNull { it.ace },
+                    speedSource = rows.firstOrNull { it.speed != null }?.src,
                 )
             }
             .sortedByDescending { it.season }

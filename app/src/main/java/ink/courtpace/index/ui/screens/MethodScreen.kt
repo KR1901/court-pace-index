@@ -250,6 +250,15 @@ fun MethodScreen(data: PaceData) {
 
         Spacer(Modifier.height(16.dp))
         GlassNote(
+            "Speed figures for 2012-2025 are recomputed by this project from the public ATP match " +
+                "archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the published method and " +
+                "normalised per season; 2025-26 readings published by Tennis Abstract take precedence " +
+                "where they exist. The two agree closely - correlation 0.93, mean absolute difference " +
+                "0.10 - but they are not the same series, and the app dims the computed seasons " +
+                "wherever it shows them.",
+        )
+        Spacer(Modifier.height(12.dp))
+        GlassNote(
             "Court Pace is an independent reader of public data. It is not affiliated with, endorsed by " +
                 "or connected to the ATP or the ITF, and the values are reproductions of published " +
                 "measurements, not new measurements of our own.",

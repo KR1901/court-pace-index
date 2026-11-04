@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,6 +77,15 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
 
         BackHandler(enabled = stack.isNotEmpty()) { pop() }
 
+        // The refresh result is a transient note, not a permanent banner.
+        val refreshState = vm.refreshState
+        LaunchedEffect(refreshState) {
+            if (refreshState is RefreshState.Done || refreshState is RefreshState.Failed) {
+                kotlinx.coroutines.delay(6_000)
+                vm.clearRefreshState()
+            }
+        }
+
         Box(Modifier.fillMaxSize().background(colors.ink)) {
             MeshBackground(accent = accent)
 
@@ -104,6 +114,13 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                 onMetric = { vm.selectMetric(it) },
                                 onSurface = { vm.toggleSurface(it) },
                                 onOpen = { push(Route.Detail(it.id)) },
+                                refreshing = vm.refreshState is RefreshState.Running,
+                                onRefresh = { vm.refresh() },
+                                statusNote = when (val state = vm.refreshState) {
+                                    is RefreshState.Done -> state.message
+                                    is RefreshState.Failed -> state.message
+                                    else -> null
+                                },
                             )
 
                             1 -> CompareScreen(

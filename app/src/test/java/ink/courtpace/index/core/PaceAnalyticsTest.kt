@@ -2,7 +2,10 @@ package ink.courtpace.index.core
 
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.model.DatasetMeta
 import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.core.model.PaceDataset
+import ink.courtpace.index.core.model.PaceReading
 import ink.courtpace.index.core.model.PaceCategory
 import ink.courtpace.index.core.model.SpeedBand
 import ink.courtpace.index.core.model.Surface
@@ -142,8 +145,18 @@ class PaceAnalyticsTest {
 
     @Test
     fun `spread needs more than one reading`() {
-        assertEquals(null, PaceAnalytics.spread(data, 2012, Metric.SPEED))
         assertTrue((PaceAnalytics.spread(data, 2026, Metric.CPI) ?: 0.0) > 0.0)
+
+        val lonely = PaceData(
+            PaceDataset(
+                meta = DatasetMeta(generated = "2026-11-04", season = 2026, sources = emptyList()),
+                tournaments = listOf(data.tournaments.first()),
+                readings = listOf(
+                    PaceReading(t = data.tournaments.first().id, s = 2026, cpi = 30.0, src = "courtspeed"),
+                ),
+            ),
+        )
+        assertEquals(null, PaceAnalytics.spread(lonely, 2026, Metric.CPI))
     }
 
     @Test

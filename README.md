@@ -4,7 +4,9 @@ Court pace data, stats and analysis for the ATP tour. How fast every event plays
 has moved season by season, and where the two public ways of measuring a court disagree.
 
 This is a reading app, not a measuring one: it ships a curated dataset built from public
-sources and analyses it. No microphone, no sensors, no permissions, no network.
+sources and analyses it. No microphone, no sensors. The only permission is internet access,
+used solely by the optional "check for updates" action, which reads a JSON file this project
+publishes — nothing is sent anywhere.
 
 | | |
 |---|---|
@@ -12,8 +14,8 @@ sources and analyses it. No microphone, no sensors, no permissions, no network.
 | Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21, Compose BOM 2026.09.00 |
 | SDK | compileSdk 37, targetSdk 37, minSdk 26 |
 | UI | Liquid Glass — translucent layered surfaces, specular rims, spring motion, drifting mesh |
-| Data | 63 events, 106 CPI readings (2012–2026), 62 ace-based speed readings (2026), bundled offline |
-| Permissions | None |
+| Data | 63 events, 106 CPI readings (2012–2026), 497 ace-based speed readings (2012–2026), bundled offline |
+| Permissions | Internet, used only by the optional "check for updates" action |
 
 ## The two metrics
 
@@ -34,6 +36,11 @@ and returners who were actually on court, and compare with what those same playe
 produced on a tour-average surface. 1.00 is average; the usual range across ATP events is
 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
 
+The 2025–26 readings are the published Tennis Abstract figures. Earlier seasons are recomputed
+by this project from the public ATP match archive using the same method; the recomputation
+reproduces the published 2026 values with r = 0.93 and a mean absolute difference of 0.10. The
+app labels and dims the computed seasons wherever it shows them.
+
 ## What the app does with them
 
 - **Pace board** — every event ranked for a season, filterable by surface, with the change
@@ -52,8 +59,19 @@ produced on a tour-average surface. 1.00 is average; the usual range across ATP 
 
 1. **courtspeed.com** — Court Pace Index database 2012–2026 for the Grand Slams, Masters
    1000s and ATP Finals, compiled from ATP / Tennis TV broadcast data.
-2. **Tennis Abstract** — ATP Surface Speed Ratings, 2026 season, ace rate adjusted for the
-   field, last updated 2026-11-02.
+2. **Tennis Abstract** — ATP Surface Speed Ratings, ace rate adjusted for the field, last
+   updated 2026-11-02, used for the 2025–26 readings.
+3. **ATP match archive compiled by Jeff Sackmann** (CC BY-NC-SA 4.0) — every tour-level match
+   with serve stats, used by `tools/compute_speed.py` to recompute the speed series back to
+   2012. This is the only derived series in the app.
+
+### Refreshing
+
+`data/latest.json` is the file the app's refresh button reads. A scheduled workflow
+(`.github/workflows/refresh-data.yml`) re-runs the pipeline weekly and commits the new dataset
+plus a fresh `latest.json` when anything changed. The app fetches it over HTTPS, validates it
+with `DatasetPolicy` (shape, ranges, no orphan readings, never smaller than what is installed)
+and caches it locally; a bad or truncated download is discarded and the installed data stays.
 
 Every number on screen carries its source. The dataset is guarded by unit tests: unique ids,
 no orphan readings, values inside plausible ranges, no duplicate readings per event and
@@ -91,4 +109,15 @@ Court Pace is not affiliated with, endorsed by or connected to the ATP or the IT
 
 ## Licence
 
-MIT.
+Code: MIT.
+
+The bundled dataset mixes three sources and carries the licence each requires:
+
+| Part | Licence |
+|---|---|
+| Court Pace Index values | as published by courtspeed.com |
+| 2025–26 speed ratings | as published by Tennis Abstract |
+| Recomputed speed history | CC BY-NC-SA 4.0, derived from Jeff Sackmann's ATP archive |
+
+Because the derived series is CC BY-NC-SA 4.0, **the bundled data may not be used
+commercially**. Attribute Jeff Sackmann and Tennis Abstract if you reuse it.
