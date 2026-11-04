@@ -33,6 +33,7 @@ import ink.courtpace.index.core.model.PaceCategory
 import ink.courtpace.index.core.model.SpeedBand
 import ink.courtpace.index.ui.glass.GlassNote
 import ink.courtpace.index.ui.glass.GlassSurface
+import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.HairLine
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.glass.StatRow
@@ -263,7 +264,7 @@ fun MethodScreen(data: PaceData) {
                 "or connected to the ATP or the ITF, and the values are reproductions of published " +
                 "measurements, not new measurements of our own.",
         )
-        Spacer(Modifier.height(130.dp))
+        Spacer(Modifier.height(LocalTabBarInset.current))
     }
 }
 

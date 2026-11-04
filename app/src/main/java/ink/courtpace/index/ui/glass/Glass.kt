@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -165,6 +167,8 @@ fun GlassSurface(
     tint: Color = Color.White,
     intensity: Float = 1f,
     elevation: Dp = 26.dp,
+    /** Opaque base under the glass, for surfaces that float over busy content. */
+    scrim: Color? = null,
     contentPadding: PaddingValues = PaddingValues(20.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -199,6 +203,7 @@ fun GlassSurface(
                 spotColor = Color.Black.copy(alpha = if (colors.isDark) 0.65f else 0.18f),
             )
             .clip(shape)
+            .then(if (scrim != null) Modifier.background(scrim, shape) else Modifier)
             .background(fill, shape)
             .border(1.dp, rim, shape)
             .drawBehind {
@@ -543,7 +548,17 @@ fun NavGlyph(glyph: Glyph, color: Color, modifier: Modifier = Modifier) {
     }
 }
 
-/** Floating glass tab bar. */
+/**
+ * How much room scrollable content must leave at the bottom so the floating bar never
+ * permanently covers the last row. Supplied by the navigation host, which measures the bar.
+ */
+val LocalTabBarInset = staticCompositionLocalOf { 130.dp }
+
+/**
+ * Floating tab bar. It is the navigation layer, so it may sit over content - but it must stay
+ * legible over busy content, which is why it carries a dimming scrim under the glass, and its
+ * selected pill is bounded by the capsule instead of being free to grow.
+ */
 @Composable
 fun GlassTabBar(
     items: List<Pair<Glyph, String>>,
@@ -554,14 +569,17 @@ fun GlassTabBar(
     val colors = PaceTheme.colors
     GlassSurface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(32.dp),
-        intensity = 1.15f,
+        shape = RoundedCornerShape(30.dp),
+        intensity = 1.45f,
         elevation = 30.dp,
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+        // The bar floats over scrolling rows; without a base it loses contrast over them.
+        scrim = if (PaceTheme.colors.isDark) Color(0xE60B0D13) else Color(0xF2FFFFFF),
+        contentPadding = PaddingValues(6.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEachIndexed { index, (glyph, label) ->
                 TabItem(
@@ -569,7 +587,7 @@ fun GlassTabBar(
                     label = label,
                     selected = index == selected,
                     onClick = { onSelect(index) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
                 )
             }
         }
@@ -586,35 +604,34 @@ private fun TabItem(
 ) {
     val colors = PaceTheme.colors
     val interaction = remember { MutableInteractionSource() }
+    // Concentric with the capsule: 30dp outer radius less the 6dp bar padding.
+    val pill = RoundedCornerShape(24.dp)
     val tint by animateColorAsState(
-        targetValue = if (selected) colors.accent.copy(alpha = if (colors.isDark) 0.22f else 0.26f)
+        targetValue = if (selected) colors.accent.copy(alpha = if (colors.isDark) 0.24f else 0.30f)
         else Color.Transparent,
         animationSpec = tween(280),
         label = "tabTint",
     )
     val iconColor by animateColorAsState(
-        targetValue = if (selected) colors.accent else colors.textFaint,
+        targetValue = if (selected) colors.accent else colors.textDim,
         animationSpec = tween(280),
         label = "tabIcon",
     )
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1f else 0.94f,
-        animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMedium),
-        label = "tabScale",
-    )
     Column(
         modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(RoundedCornerShape(24.dp))
-            .background(tint, RoundedCornerShape(24.dp))
-            .clickable(interactionSource = interaction, indication = null, role = Role.Tab) {
-                onClick()
-            }
-            .padding(vertical = 9.dp),
+            .clip(pill)
+            .background(tint, pill)
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Tab,
+                onClickLabel = label,
+            ) { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.Center,
     ) {
         NavGlyph(glyph = glyph, color = iconColor)
+        Spacer(Modifier.height(4.dp))
         Text(
             text = label,
             style = TextStyle(
@@ -622,11 +639,13 @@ private fun TabItem(
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 letterSpacing = 0.2.sp,
             ),
-            color = if (selected) colors.text else colors.textFaint,
+            color = if (selected) colors.text else colors.textDim,
+            maxLines = 1,
         )
     }
 }
 
+/** Empty-state / inline note block. */
 /**
  * Inline note. Deliberately not a glass pane: glass cannot sample other glass, and these sit
  * inside glass cards, so this is a plain inset with an accent rule.

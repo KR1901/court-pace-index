@@ -57,6 +57,7 @@ import ink.courtpace.index.ui.components.ValueBadge
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.glass.GlassNote
 import ink.courtpace.index.ui.glass.GlassSurface
+import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.HairLine
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
@@ -235,7 +236,7 @@ fun BoardScreen(
                     "returners in each match, 1.00 = tour average."
             },
         )
-        Spacer(Modifier.height(130.dp))
+        Spacer(Modifier.height(LocalTabBarInset.current))
     }
 }
 

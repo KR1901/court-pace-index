@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -115,4 +117,27 @@ class ScreenshotTest {
 
     @Test
     fun method() = shoot("method__dark") { Frame { MethodScreen(data = data) } }
+
+    /** The bar over real rows, which is where it was reported as obstructive. */
+    @Test
+    fun boardWithTabBar() = shoot("board__tabbar") {
+        Frame {
+            androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
+                board()()
+                ink.courtpace.index.ui.glass.GlassTabBar(
+                    items = listOf(
+                        ink.courtpace.index.ui.glass.Glyph.GAUGE to "Pace",
+                        ink.courtpace.index.ui.glass.Glyph.LIBRARY to "Compare",
+                        ink.courtpace.index.ui.glass.Glyph.HOME to "Surfaces",
+                        ink.courtpace.index.ui.glass.Glyph.METHOD to "Method",
+                    ),
+                    selected = 0,
+                    onSelect = {},
+                    modifier = Modifier
+                        .align(androidx.compose.ui.Alignment.BottomCenter)
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                )
+            }
+        }
+    }
 }

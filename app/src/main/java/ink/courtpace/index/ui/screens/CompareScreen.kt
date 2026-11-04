@@ -42,6 +42,7 @@ import ink.courtpace.index.ui.components.SurfaceBar
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.glass.GlassNote
 import ink.courtpace.index.ui.glass.GlassSurface
+import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
 import ink.courtpace.index.ui.theme.accentFor
@@ -233,7 +234,7 @@ fun CompareScreen(
                 "the field actually did on serve across every court at the event. They answer different " +
                 "questions, so a gap is information, not an error.",
         )
-        Spacer(Modifier.height(130.dp))
+        Spacer(Modifier.height(LocalTabBarInset.current))
     }
 }
 
@@ -408,7 +409,7 @@ fun SurfacesScreen(
             "Surface labels hide a lot. Two hard courts can differ by more than a hard court and a " +
                 "grass court: Madrid sits at 667 m, Paris is indoors, and ball choice changes everything.",
         )
-        Spacer(Modifier.height(130.dp))
+        Spacer(Modifier.height(LocalTabBarInset.current))
     }
 }
 
