@@ -240,25 +240,6 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                         }
                     }
 
-                    // Edge-to-edge means content runs behind the status bar. This keeps the
-                    // clock readable over it without turning the bar into a solid band.
-                    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-                    Box(
-                        Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth()
-                            .height(statusTop + 20.dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(
-                                        colors.ink.copy(alpha = 0.96f),
-                                        colors.ink.copy(alpha = 0.72f),
-                                        Color.Transparent,
-                                    ),
-                                ),
-                            ),
-                    )
-
                     if (route is Route.Tab) {
                         GlassTabBar(
                             items = tabs,

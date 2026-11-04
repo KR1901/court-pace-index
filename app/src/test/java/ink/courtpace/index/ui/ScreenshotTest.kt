@@ -84,6 +84,27 @@ class ScreenshotTest {
     @Test
     fun boardDark() = shoot("board__dark") { Frame { board()() } }
 
+    /**
+     * Mid-scroll: content must be visible *under* the status bar, which is what edge-to-edge
+     * means and what the previous inset placement made impossible.
+     */
+    @Test
+    fun boardScrolled() = shoot("board__scrolled") {
+        Frame {
+            val scroll = androidx.compose.foundation.rememberScrollState(initial = 520)
+            BoardScreen(
+                data = data,
+                season = data.latestSeason,
+                metric = Metric.CPI,
+                surfaces = emptySet(),
+                seasons = data.seasons.filter { data.entries(it, Metric.CPI).isNotEmpty() },
+                onSeason = {}, onMetric = {}, onSurface = {}, onOpen = {},
+                refreshing = false, onRefresh = {}, statusNote = null,
+                scrollState = scroll,
+            )
+        }
+    }
+
     @Test
     fun boardLight() = shoot("board__light") { Frame(dark = false) { board()() } }
 

@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -78,14 +80,17 @@ fun CompareScreen(
     val values = points.flatMap { series -> series.points.map { it.y } }
     val divergences = PaceAnalytics.divergences(data, season)
 
+    val scrollState = rememberScrollState()
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Column(
         Modifier
             .fillMaxWidth()
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
+            // The inset lives inside the scroll content, not on the viewport: otherwise the
+            // viewport stops at the status bar and nothing can ever scroll under it.
+            .verticalScroll(scrollState)
             .padding(horizontal = 20.dp),
     ) {
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(statusTop + 14.dp))
         Text(
             text = "COMPARE",
             style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp),
@@ -250,15 +255,15 @@ fun SurfacesScreen(
     }
     val max = averages.maxOfOrNull { it.second } ?: 1.0
     val trend = PaceAnalytics.seasonTrend(data, metric)
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     Column(
         Modifier
             .fillMaxWidth()
-            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
     ) {
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(statusTop + 14.dp))
         Text(
             text = "SURFACES",
             style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp),
