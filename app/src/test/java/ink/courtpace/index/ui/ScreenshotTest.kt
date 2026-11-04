@@ -53,7 +53,7 @@ class ScreenshotTest {
         compose.setContent { content() }
         compose.waitForIdle()
         val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
-        val dir = File(System.getProperty("shots.dir") ?: "/scratch/work/shots").apply { mkdirs() }
+        val dir = File(System.getProperty("shots.dir") ?: "build/screenshots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         println("captured $name ${bitmap.width}x${bitmap.height}")
     }
