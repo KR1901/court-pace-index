@@ -35,14 +35,29 @@ object AtpResultsParser {
     )
     private val SET = Regex("""(\d+)-(\d+)(?:\((\d+)\))?""")
 
-    /** Tags out, whitespace collapsed, script and style bodies dropped. */
+    /** Round markers and results, in document order, so line structure cannot break the walk. */
+    private val TOKEN = Regex(
+        """(?i)Round of (\d+)|wins the match\s+((?:[0-9]+-[0-9]+(?:\(\d+\))?\s*)+)""",
+    )
+
+    /**
+     * Tags out, script and style bodies dropped.
+     *
+     * Only block-level closers become line breaks. Replacing *every* tag with a newline - the
+     * first version of this - split sentences like "X wins the match 7-6(2) 6-3" across several
+     * lines wherever the page used an inline span, and nothing matched. Inline tags now vanish
+     * without inserting a break.
+     */
     fun toText(html: String): String =
         html
             .replace(Regex("""(?is)<script.*?</script>"""), " ")
             .replace(Regex("""(?is)<style.*?</style>"""), " ")
-            .replace(Regex("""(?s)<[^>]+>"""), "\n")
+            .replace(Regex("""(?i)<br\s*/?>"""), "\n")
+            .replace(Regex("""(?i)</(div|p|li|tr|h[1-6]|section|article|td)>"""), "\n")
+            .replace(Regex("""(?s)<[^>]+>"""), "")
             .replace(Regex("""&nbsp;?"""), " ")
             .replace(Regex("""&amp;"""), "&")
+            .replace(Regex("""&#39;"""), "'")
             .replace(Regex("""[ \t\u00a0]+"""), " ")
             .lines()
             .map { it.trim() }
@@ -56,19 +71,22 @@ object AtpResultsParser {
     fun parse(text: String): List<AtpMatch> {
         val matches = mutableListOf<AtpMatch>()
         var round = "Unknown"
-        for (line in text.lines()) {
-            ROUND.find(line)?.let { round = "R" + it.groupValues[1] }
-            val result = RESULT.find(line) ?: continue
-            val score = result.groupValues[1].trim()
+        for (token in TOKEN.findAll(text)) {
+            val roundValue = token.groups[1]
+            if (roundValue != null) {
+                round = "R" + roundValue.value
+                continue
+            }
+            val score = token.groups[2]?.value?.trim() ?: continue
             val sets = SET.findAll(score).toList()
             if (sets.isEmpty()) continue
-            // The line reads "Game Set and Match X. X wins the match ..."; the winner is the
-            // last sentence fragment before the result clause.
-            val winner = line.substringBefore("wins the match")
-                .split('.')
-                .map { it.trim() }
-                .lastOrNull { it.isNotEmpty() }
-                .orEmpty()
+            // The clause reads "Game Set and Match X. X wins the match ..."; the winner is the
+            // last sentence fragment before it.
+            val start = maxOf(0, token.range.first - 200)
+            val winner = text.substring(start, token.range.first)
+                .substringAfterLast('.')
+                .trim()
+                .trim('>', ' ')
             val games = sets.sumOf { it.groupValues[1].toInt() + it.groupValues[2].toInt() }
             val tiebreaks = sets.count { it.groupValues[3].isNotEmpty() }
             matches += AtpMatch(

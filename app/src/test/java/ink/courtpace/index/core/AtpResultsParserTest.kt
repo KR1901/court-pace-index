@@ -117,6 +117,25 @@ class AtpResultsParserTest {
     }
 
     @Test
+    fun `inline tags do not split the result sentence`() {
+        // Real pages wrap fragments of the sentence in spans; the first version of toText put a
+        // newline after every tag, which broke the sentence and matched nothing.
+        val html = """
+            <div class="match"><div class="round">Round of 32 - Court 2 01:59:19</div>
+            <span class="w">Tomas Martin Etcheverry</span><span class="s">7 6</span>
+            <span class="l">Alex De Minaur (8)</span><span class="s">6 2 3</span>
+            <div class="status">Game Set and Match <span>Tomas Martin Etcheverry</span>.
+            <span>Tomas Martin Etcheverry</span> wins the match <span>7-6(2)</span> <span>6-3</span> .</div></div>
+        """.trimIndent()
+        val matches = AtpResultsParser.parse(AtpResultsParser.toText(html))
+        assertEquals(1, matches.size)
+        assertEquals("R32", matches[0].round)
+        assertEquals(2, matches[0].sets)
+        assertEquals(1, matches[0].tiebreakSets)
+        assertEquals("7-6(2) 6-3", matches[0].score)
+    }
+
+    @Test
     fun `markup is stripped before parsing`() {
         val html = "<div><span>Game Set and Match A. B. A. B wins the match 6-4 6-4 .</span></div>"
         val text = AtpResultsParser.toText(html)
