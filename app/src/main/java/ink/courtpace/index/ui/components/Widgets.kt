@@ -86,7 +86,8 @@ fun SeasonStepper(
     modifier: Modifier = Modifier,
 ) {
     val colors = PaceTheme.colors
-    val index = seasons.indexOf(selected).let { if (it < 0) seasons.lastIndex else it }
+    val index = seasons.indexOf(selected)
+        .let { if (it >= 0) it else seasons.indexOf(nearest(seasons, selected)) }
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         StepperArrow("‹", enabled = index > 0) {
             if (index > 0) onChange(seasons[index - 1])
@@ -107,6 +108,9 @@ fun SeasonStepper(
         }
     }
 }
+
+private fun nearest(seasons: List<Int>, value: Int): Int =
+    seasons.minByOrNull { kotlin.math.abs(it - value) } ?: seasons.first()
 
 @Composable
 private fun StepperArrow(symbol: String, enabled: Boolean, onClick: () -> Unit) {

@@ -40,6 +40,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.Role
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.analytics.Ranked
 import ink.courtpace.index.core.data.PaceData
@@ -255,7 +256,11 @@ private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
             .size(38.dp)
             .clip(CircleShape)
             .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape)
-            .clickable(enabled = !refreshing) { onClick() },
+            .clickable(
+                enabled = !refreshing,
+                onClickLabel = if (refreshing) "Checking for updates" else "Check for updates",
+                role = Role.Button,
+            ) { onClick() },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.size(18.dp).graphicsLayer { rotationZ = rotation }) {
@@ -292,7 +297,7 @@ private fun RankRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
-            .clickable { onClick() },
+            .clickable(onClickLabel = "Open ${row.tournament.name}") { onClick() },
         shape = RoundedCornerShape(22.dp),
         contentPadding = PaddingValues(14.dp),
         elevation = 14.dp,

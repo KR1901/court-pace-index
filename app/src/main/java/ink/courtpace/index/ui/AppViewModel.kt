@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.Metric
@@ -62,11 +63,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun publish(parsed: PaceData) {
+    private fun publish(parsed: PaceData, keepSeason: Boolean = false) {
         _data.value = parsed
-        season = parsed.seasons.lastOrNull { s -> parsed.entries(s, Metric.CPI).isNotEmpty() }
-            ?: parsed.latestSeason
+        val available = seasonsWithData(parsed, metric)
+        season = if (keepSeason) {
+            PaceAnalytics.nearestSeason(available, season)
+        } else {
+            available.lastOrNull() ?: parsed.latestSeason
+        }
     }
+
+    private fun seasonsWithData(data: PaceData, metric: Metric): List<Int> =
+        data.seasons.filter { data.entries(it, metric).isNotEmpty() }
 
     /** Checks the project's published copy for a newer dataset. */
     fun refresh() {
@@ -81,7 +89,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         PaceData(DatasetPolicy.choose(current.dataset, result.dataset))
                     }
-                    publish(merged)
+                    publish(merged, keepSeason = true)
                     refreshState = RefreshState.Done(
                         "Updated to the ${result.dataset.meta.generated} dataset · " +
                             "${result.dataset.readings.size} readings",
@@ -104,6 +112,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectMetric(value: Metric) {
         metric = value
+        // The two metrics do not cover the same seasons, so the selected season may not
+        // exist for the new one.
+        _data.value?.let { data -> season = PaceAnalytics.nearestSeason(seasonsWithData(data, value), season) }
     }
 
     fun toggleSurface(surface: Surface?) {

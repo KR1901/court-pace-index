@@ -12,7 +12,10 @@ class DatasetPolicyTest {
 
     private val bundled: PaceDataset = PaceData.parse(Datasets.raw()).dataset
 
-    private fun copyWith(readings: Int, tournaments: Int = bundled.tournaments.size): PaceDataset {
+    private fun copyWith(
+        readings: Int = bundled.readings.size,
+        tournaments: Int = bundled.tournaments.size,
+    ): PaceDataset {
         val kept = bundled.tournaments.take(tournaments).map { it.id }.toSet()
         return bundled.copy(
             tournaments = bundled.tournaments.take(tournaments),

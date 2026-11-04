@@ -80,11 +80,12 @@ fun LineChart(
             ) {
                 val w = size.width
                 val h = size.height
-                fun px(x: Float): Float =
-                    ((x - xRange.start) / (xRange.endInclusive - xRange.start)) * w
-
-                fun py(y: Float): Float =
-                    h - ((y - yRange.start) / (yRange.endInclusive - yRange.start)) * h
+                // A single point, or a flat series, gives a zero-width axis: dividing by it
+                // would put every coordinate at NaN. Give the axis a unit of room instead.
+                val spanX = (xRange.endInclusive - xRange.start).let { if (it > 0f) it else 1f }
+                val spanY = (yRange.endInclusive - yRange.start).let { if (it > 0f) it else 1f }
+                fun px(x: Float): Float = ((x - xRange.start) / spanX) * w
+                fun py(y: Float): Float = h - ((y - yRange.start) / spanY) * h
 
                 // grid
                 (0 until yTicks).forEach { index ->
@@ -253,7 +254,8 @@ fun SurfaceBar(
                 .width(46.dp)
                 .height(120.dp),
         ) {
-            val fraction = (value / max).coerceIn(0f, 1f)
+            val scale = if (max > 0f) max else 1f
+            val fraction = (value / scale).coerceIn(0f, 1f)
             val barHeight = size.height * fraction
             drawRoundRect(
                 color = Color.White.copy(alpha = if (colors.isDark) 0.08f else 0.5f),

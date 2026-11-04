@@ -160,6 +160,32 @@ class PaceAnalyticsTest {
     }
 
     @Test
+    fun `nearest season clamps to the seasons that hold data`() {
+        val seasons = listOf(2016, 2017, 2019, 2026)
+        assertEquals(2017, PaceAnalytics.nearestSeason(seasons, 2017))
+        // 2018 does not exist: 2017 and 2019 are both one year away, the earlier wins.
+        assertEquals(2017, PaceAnalytics.nearestSeason(seasons, 2018))
+        assertEquals(2016, PaceAnalytics.nearestSeason(seasons, 1990))
+        assertEquals(2026, PaceAnalytics.nearestSeason(seasons, 2040))
+        assertEquals(2016, PaceAnalytics.nearestSeason(listOf(2016), 2020))
+        // An empty list cannot clamp, so the request passes through untouched.
+        assertEquals(2020, PaceAnalytics.nearestSeason(emptyList(), 2020))
+    }
+
+    @Test
+    fun `every season in the dataset can be reached by the stepper`() {
+        // The stepper walks a filtered list, so a season offered by the board must exist in
+        // that list for both metrics.
+        listOf(Metric.CPI, Metric.SPEED).forEach { metric ->
+            val available = data.seasons.filter { data.entries(it, metric).isNotEmpty() }
+            assertTrue(available.isNotEmpty())
+            available.forEach { season ->
+                assertEquals(season, PaceAnalytics.nearestSeason(available, season))
+            }
+        }
+    }
+
+    @Test
     fun `formatting matches the metric scale`() {
         assertEquals("39.2", PaceAnalytics.format(39.24, Metric.CPI))
         assertEquals("1.19", PaceAnalytics.format(1.194, Metric.SPEED))

@@ -154,6 +154,17 @@ object PaceAnalytics {
         Metric.SPEED -> abs(delta) >= 0.05
     }
 
+    /**
+     * Clamps a requested season to the nearest one that actually holds readings. Switching
+     * metric changes which seasons exist, and a stepper pointed at a season with no data
+     * would step from an undefined position.
+     */
+    fun nearestSeason(available: List<Int>, requested: Int): Int {
+        if (available.isEmpty()) return requested
+        if (requested in available) return requested
+        return available.minByOrNull { abs(it - requested) } ?: available.first()
+    }
+
     fun coverage(data: PaceData, metric: Metric): String {
         val count = data.dataset.readings.count { it.value(metric) != null }
         val events = data.tournaments.count { t -> data.readingsFor(t.id).any { it.value(metric) != null } }
