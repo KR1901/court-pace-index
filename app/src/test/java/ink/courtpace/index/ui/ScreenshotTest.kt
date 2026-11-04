@@ -115,6 +115,15 @@ class ScreenshotTest {
         Frame { SurfacesScreen(data = data, season = data.latestSeason, metric = Metric.CPI) }
     }
 
+    /** Landscape: the configuration where an unhandled side inset is obvious. */
+    @Test
+    @Config(sdk = [35], qualifiers = "w891dp-h411dp-land-xxhdpi")
+    fun boardLandscape() = shoot("board__landscape") { Frame { board()() } }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w411dp-h891dp-xxhdpi", fontScale = 1.0f)
+    fun boardLargeText() = shoot("board__font2") { Frame { board()() } }
+
     @Test
     fun method() = shoot("method__dark") { Frame { MethodScreen(data = data) } }
 

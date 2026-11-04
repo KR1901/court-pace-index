@@ -17,8 +17,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -129,7 +132,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
         LaunchedEffect(route) { barHidden = false }
 
         var barHeight by remember { mutableStateOf(76.dp) }
-        val navInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val navInset = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
         val hideOffset by animateDpAsState(
             targetValue = if (barHidden) barHeight + 28.dp else 0.dp,
             animationSpec = if (reduceMotion) snap() else tween(220),
@@ -152,7 +155,14 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                             (fadeIn(tween(220)) + slideInVertically { it / 30 }) togetherWith
                                 (fadeOut(tween(140)) + slideOutVertically { -it / 60 })
                         },
-                        modifier = Modifier.fillMaxSize().nestedScroll(connection),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(connection)
+                            // shortEdges lets content run into a display cutout; in landscape
+                            // that is the camera, so inset horizontally and nowhere else.
+                            .windowInsetsPadding(
+                                WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal),
+                            ),
                         label = "route",
                     ) { current ->
                         when (current) {
@@ -219,7 +229,11 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                             },
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
-                                .navigationBarsPadding()
+                                .windowInsetsPadding(
+                                    WindowInsets.safeDrawing.only(
+                                        WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
+                                    ),
+                                )
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                                 .onGloballyPositioned { coordinates ->
                                     barHeight = with(density) { coordinates.size.height.toDp() }
