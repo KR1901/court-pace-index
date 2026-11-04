@@ -1,5 +1,6 @@
 package ink.courtpace.index.ui
 
+import android.app.Activity
 import android.content.Context
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.BackHandler
@@ -19,6 +20,9 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -26,6 +30,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,16 +40,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ink.courtpace.index.ui.glass.GlassTabBar
@@ -80,8 +90,19 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
     val error by vm.error.collectAsStateWithLifecycle()
     val accent = DefaultAccent
 
-    CourtPaceTheme(accent = accent) {
+    val dark = isSystemInDarkTheme()
+    CourtPaceTheme(dark = dark, accent = accent) {
         val colors = PaceTheme.colors
+        val view = LocalView.current
+        if (!view.isInEditMode) {
+            SideEffect {
+                val window = (view.context as? Activity)?.window ?: return@SideEffect
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !dark
+                    isAppearanceLightNavigationBars = !dark
+                }
+            }
+        }
         var route by remember { mutableStateOf<Route>(Route.Tab(0)) }
         var stack by remember { mutableStateOf(listOf<Route>()) }
 
@@ -218,6 +239,25 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                             }
                         }
                     }
+
+                    // Edge-to-edge means content runs behind the status bar. This keeps the
+                    // clock readable over it without turning the bar into a solid band.
+                    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                    Box(
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .height(statusTop + 20.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        colors.ink.copy(alpha = 0.96f),
+                                        colors.ink.copy(alpha = 0.72f),
+                                        Color.Transparent,
+                                    ),
+                                ),
+                            ),
+                    )
 
                     if (route is Route.Tab) {
                         GlassTabBar(

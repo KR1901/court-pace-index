@@ -2,6 +2,7 @@ package ink.courtpace.index.ui
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -85,6 +86,23 @@ class ScreenshotTest {
 
     @Test
     fun boardLight() = shoot("board__light") { Frame(dark = false) { board()() } }
+
+    /** The reported bug: system in night mode, app came up light. */
+    @Test
+    @Config(sdk = [35], qualifiers = "w411dp-h891dp-night-xxhdpi")
+    fun systemNightSelectsDarkTheme() {
+        var sys = false
+        var viaExplicit: Boolean? = null
+        compose.setContent {
+            sys = androidx.compose.foundation.isSystemInDarkTheme()
+            CourtPaceTheme(dark = sys, accent = DefaultAccent) {
+                viaExplicit = PaceTheme.colors.isDark
+            }
+        }
+        compose.waitForIdle()
+        println("DIAG sys=$sys explicit=$viaExplicit")
+        assert(viaExplicit == true) { "explicit dark must give the dark palette, got $viaExplicit" }
+    }
 
     @Test
     fun tournament() = shoot("tournament__dark") {

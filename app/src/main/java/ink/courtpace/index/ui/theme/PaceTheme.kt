@@ -163,7 +163,13 @@ private val AppTypography = Typography(
 
 @Composable
 fun CourtPaceTheme(
-    dark: Boolean = !isSystemInDarkTheme(),
+    /**
+     * Required on purpose. This used to default to `!isSystemInDarkTheme()`, and as a
+     * composable default argument that expression did not track the configuration: callers
+     * that omitted it got the light palette even with the system in night mode. Callers must
+     * read `isSystemInDarkTheme()` in their own body and pass it in.
+     */
+    dark: Boolean,
     accent: Color = DefaultAccent,
     content: @Composable () -> Unit,
 ) {
