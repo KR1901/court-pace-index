@@ -1,9 +1,5 @@
 name: Refresh live feed
 
-# Keeps data/live.json current while a tournament is being played. The generator never
-# invents a rating: if the match source has no usable matches, the event keeps its status and
-# its rating stays absent, and the app shows it as awaiting stats.
-
 on:
   schedule:
     - cron: '0 */3 * * *'
@@ -18,37 +14,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - uses: gradle/actions/setup-gradle@v4
-
-      - name: Update the live feed
-        run: python3 tools/live_update.py
-
-      - name: Rebuild the bundled dataset
-        run: python3 tools/build_dataset.py
-
-      - name: Publish the payload the app refreshes from
-        run: cp app/src/main/assets/pace_dataset.json data/latest.json
-
-      - name: Verify
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
-
-      - name: Commit if anything changed
+      - name: Probe ATP stats pages
         run: |
-          git config user.name "court-pace-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add data app/src/main/assets/pace_dataset.json
-          if git diff --quiet --cached; then
-            echo "No change."
-          else
-            git commit -m "chore: refresh live feed"
-            git push
-          fi
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+          echo "=== results page"
+          curl -s -m 40 -A "$UA" "https://www.atptour.com/en/scores/current/paris/352/results" -o /tmp/res.html -w "status=%{http_code} bytes=%{size_download}\n"
+          echo "--- hrefs mentioning stats"
+          grep -oE 'href="[^"]*[Ss]tat[^"]*"' /tmp/res.html | sort -u | head -15
+          echo "--- match-ish links"
+          grep -oE 'href="/en/scores/[^"]*"' /tmp/res.html | sort -u | head -15
+          echo "--- does results page contain aces"
+          grep -ci "ace" /tmp/res.html || true
+      - name: Probe candidate stats endpoints
+        run: |
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+          for u in \
+            "https://www.atptour.com/en/scores/stats-centre/2026/352/ms001" \
+            "https://www.atptour.com/en/scores/current/paris/352/stats" \
+            "https://www.atptour.com/en/scores/current/paris/352/results?match=MS001" ; do
+            echo "=== $u"
+            curl -s -m 30 -A "$UA" "$u" -o /tmp/s.html -w "status=%{http_code} bytes=%{size_download}\n"
+            grep -oiE '.{0,30}aces?.{0,30}' /tmp/s.html | head -4
+          done
