@@ -21,6 +21,16 @@ class PaceData(val dataset: PaceDataset) {
     fun isLive(id: String): Boolean = liveById.containsKey(id)
 
     /** Live events for a season that do not have a rating yet, so the board can still list them. */
+    /** Every live event for a season, whether or not it has a rating yet. */
+    fun liveEvents(season: Int, metric: ink.courtpace.index.core.model.Metric):
+        List<Pair<Tournament, ink.courtpace.index.core.model.LiveEvent>> {
+        if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
+        return dataset.live
+            .filter { it.s == season }
+            .mapNotNull { event -> byId[event.t]?.let { it to event } }
+            .sortedBy { it.first.name }
+    }
+
     fun liveWithoutRating(season: Int, metric: ink.courtpace.index.core.model.Metric):
         List<Pair<Tournament, ink.courtpace.index.core.model.LiveEvent>> {
         // Live ratings are ace-based, so they belong to the speed metric only. A live event

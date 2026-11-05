@@ -22,7 +22,12 @@ import kotlin.coroutines.resume
 class AtpWebReader(private val context: Context) {
 
     @SuppressLint("SetJavaScriptEnabled")
-    suspend fun read(url: String, timeoutMs: Long = 20_000): String? =
+    suspend fun read(
+        url: String,
+        timeoutMs: Long = 25_000,
+        /** Called with each render; return true once the page holds what was asked for. */
+        isReady: (String) -> Boolean = { it.isNotBlank() },
+    ): String? =
         withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { continuation ->
                 val web = WebView(context.applicationContext)
@@ -40,17 +45,31 @@ class AtpWebReader(private val context: Context) {
                     domStorageEnabled = true
                     userAgentString = USER_AGENT
                 }
+                // onPageFinished fires before a script-driven page has filled itself in, so the
+                // text is polled until it holds what the caller is waiting for.
+                fun poll() {
+                    if (finished) return
+                    web.evaluateJavascript(
+                        "(function(){return document.body ? document.body.innerText : ''})()",
+                    ) { raw ->
+                        val text = decode(raw)
+                        if (text != null && isReady(text)) {
+                            finish(text)
+                        } else if (!finished) {
+                            web.postDelayed({ poll() }, POLL_MS)
+                        }
+                    }
+                }
+
                 web.webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView, loaded: String) {
-                        view.evaluateJavascript(
-                            "(function(){return document.body ? document.body.innerText : ''})()",
-                        ) { raw -> finish(decode(raw)) }
+                        view.postDelayed({ poll() }, POLL_MS)
                     }
                 }
                 continuation.invokeOnCancellation { finish(null) }
                 runCatching { web.loadUrl(url) }.onFailure { finish(null) }
 
-                // A page that never finishes must not hold the refresh open forever.
+                // A page that never settles must not hold the refresh open forever.
                 web.postDelayed({ finish(null) }, timeoutMs)
             }
         }
@@ -62,6 +81,8 @@ class AtpWebReader(private val context: Context) {
     }
 
     private companion object {
+        const val POLL_MS = 700L
+
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/124.0 Mobile Safari/537.36"

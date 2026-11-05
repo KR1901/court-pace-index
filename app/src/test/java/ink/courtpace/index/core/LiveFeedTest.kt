@@ -62,6 +62,32 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a published dataset without a live list cannot erase the event in progress`() {
+        // The workflow publishes datasets built from the asset; one produced before the live
+        // feed existed has no live array, and taking it whole made the live row disappear.
+        val remote = data.dataset.copy(live = emptyList())
+        val chosen = DatasetPolicy.choose(data.dataset, remote)
+        assertTrue("live events must survive the swap", chosen.live.isNotEmpty())
+        assertTrue(PaceData(chosen).isLive("paris"))
+    }
+
+    @Test
+    fun `a live event stays listed once it has a rating`() {
+        val withRating = data.dataset.copy(
+            readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
+                t = "paris", s = 2026, speed = 1.12, src = "live", live = true, matches = 30,
+            ),
+        )
+        val merged = PaceData(withRating)
+        // It leaves the "awaiting rating" list...
+        assertTrue(merged.liveWithoutRating(2026, Metric.SPEED).none { it.first.id == "paris" })
+        // ...but must still be shown as live, with its number.
+        val live = merged.liveEvents(2026, Metric.SPEED)
+        assertTrue(live.any { it.first.id == "paris" })
+        assertEquals(1.12, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+    }
+
+    @Test
     fun `live events survive the dataset policy`() {
         assertTrue(DatasetPolicy.isAcceptable(data.dataset))
         val extra = data.dataset.copy(

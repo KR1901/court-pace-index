@@ -116,6 +116,34 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * Writes a computed live figure into the dataset in memory, so it reaches every screen
+     * through the paths that already exist rather than through new plumbing.
+     */
+    private fun applyLiveRating(
+        tournamentId: String,
+        season: Int,
+        speed: Double,
+        matches: Int,
+        aceRate: Double?,
+    ) {
+        val current = _data.value ?: return
+        val withoutOld = current.dataset.readings.filterNot {
+            it.t == tournamentId && it.s == season && it.src == "live"
+        }
+        val reading = ink.courtpace.index.core.model.PaceReading(
+            t = tournamentId,
+            s = season,
+            speed = speed,
+            ace = aceRate,
+            src = "live",
+            live = true,
+            asOf = java.time.Instant.now().toString(),
+            matches = matches.takeIf { it > 0 },
+        )
+        publish(PaceData(current.dataset.copy(readings = withoutOld + reading)))
+    }
+
+    /**
      * Pulls the live event's results straight from the ATP page, so the reload button updates
      * it instantly rather than waiting for the scheduled job.
      */
@@ -126,6 +154,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             .onSuccess {
                 livePace = it
                 livePaceNote = null
+                // The ace figure wins when both exist; the duration reading fills the gap.
+                if (liveAce == null && it.rating != null) {
+                    applyLiveRating(event.t, event.s, it.rating, it.matches ?: 0, null)
+                }
             }
             .onFailure { livePaceNote = it.message ?: "could not read the ATP results page" }
 
@@ -136,6 +168,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             .onSuccess {
                 liveAce = it
                 liveAceProgress = null
+                applyLiveRating(event.t, event.s, it.rating, it.matches, it.aceRate)
             }
             .onFailure {
                 liveAce = null

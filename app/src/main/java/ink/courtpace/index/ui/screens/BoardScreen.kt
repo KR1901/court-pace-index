@@ -203,7 +203,7 @@ fun BoardScreen(
         }
 
         if (metric == Metric.SPEED) {
-            val pending = data.liveWithoutRating(season, metric)
+            val pending = data.liveEvents(season, metric)
             if (pending.isNotEmpty()) {
                 Spacer(Modifier.height(22.dp))
                 SectionLabel(text = "Live now")
@@ -212,6 +212,7 @@ fun BoardScreen(
                     LivePendingRow(
                         tournament = tournament,
                         event = event,
+                        datasetRating = data.value(tournament.id, event.s, Metric.SPEED),
                         pace = livePace,
                         ace = liveAce,
                         progress = liveProgress,
@@ -309,6 +310,7 @@ internal fun LivePill(modifier: Modifier = Modifier) {
 private fun LivePendingRow(
     tournament: Tournament,
     event: LiveEvent,
+    datasetRating: Double?,
     pace: ink.courtpace.index.core.live.AtpResultsParser.LivePace?,
     ace: ink.courtpace.index.core.live.AceRating.Result?,
     progress: String?,
@@ -352,7 +354,10 @@ private fun LivePendingRow(
                             append(" · since ")
                             append(prettyDate(start))
                         }
-                        if (ace != null) {
+                        if (datasetRating != null) {
+                            append(" · live speed ")
+                            append(String.format(java.util.Locale.UK, "%.2f", datasetRating))
+                        } else if (ace != null) {
                             append(" · ")
                             append(ace.matches)
                             append(" matches · live speed ")

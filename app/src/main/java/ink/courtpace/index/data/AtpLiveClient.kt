@@ -47,7 +47,7 @@ class AtpLiveClient(context: android.content.Context) {
             val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
             // The numbers are injected by the page's own JavaScript, so it has to be rendered,
             // not merely fetched: a plain GET returns the empty shell.
-            val rendered = web.read(url)
+            val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
             val stats = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
             if (stats != null) {
                 found += stats

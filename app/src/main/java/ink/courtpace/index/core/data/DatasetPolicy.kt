@@ -34,6 +34,12 @@ object DatasetPolicy {
         if (remote == null) return bundled
         if (!isAcceptable(remote)) return bundled
         if (remote.readings.size < bundled.readings.size) return bundled
-        return remote
+        // A published dataset built before the live feed existed carries no live array; taking
+        // it wholesale would erase the event in progress from the screen.
+        return if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {
+            remote.copy(live = bundled.live)
+        } else {
+            remote
+        }
     }
 }
