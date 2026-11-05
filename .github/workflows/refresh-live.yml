@@ -23,8 +23,8 @@ jobs:
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
 
-      - name: Read the ATP stats pages and rate the live event
-        run: python tools/fetch_aces.py
+      - name: Probe a free, keyless source
+        run: python tools/probe_sofascore.py
 
       - name: Rebuild the bundled dataset
         run: python tools/build_dataset.py
