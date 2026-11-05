@@ -54,6 +54,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     var livePaceNote by mutableStateOf<String?>(null)
 
+    /** Ace-based speed for the event in progress, once enough matches have stats pages. */
+    var liveAce by mutableStateOf<ink.courtpace.index.core.live.AceRating.Result?>(null)
+
     private val atpClient = ink.courtpace.index.data.AtpLiveClient()
 
     init {
@@ -122,6 +125,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 livePaceNote = null
             }
             .onFailure { livePaceNote = it.message ?: "could not read the ATP results page" }
+
+        atpClient.fetchAceRating(event.atpId!!)
+            .onSuccess { liveAce = it }
+            .onFailure { liveAce = null }
     }
 
     fun clearRefreshState() {

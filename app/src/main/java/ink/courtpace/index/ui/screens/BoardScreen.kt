@@ -89,6 +89,7 @@ fun BoardScreen(
     onRefresh: () -> Unit,
     statusNote: String?,
     livePace: ink.courtpace.index.core.live.AtpResultsParser.LivePace? = null,
+    liveAce: ink.courtpace.index.core.live.AceRating.Result? = null,
     scrollState: ScrollState = rememberScrollState(),
 ) {
     val colors = PaceTheme.colors
@@ -210,6 +211,7 @@ fun BoardScreen(
                         tournament = tournament,
                         event = event,
                         pace = livePace,
+                        ace = liveAce,
                         onClick = { onOpen(tournament) },
                     )
                     Spacer(Modifier.height(8.dp))
@@ -304,6 +306,7 @@ private fun LivePendingRow(
     tournament: Tournament,
     event: LiveEvent,
     pace: ink.courtpace.index.core.live.AtpResultsParser.LivePace?,
+    ace: ink.courtpace.index.core.live.AceRating.Result?,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -343,7 +346,12 @@ private fun LivePendingRow(
                             append(" · since ")
                             append(prettyDate(start))
                         }
-                        if (pace?.rating != null) {
+                        if (ace != null) {
+                            append(" · ")
+                            append(ace.matches)
+                            append(" matches · live speed ")
+                            append(String.format(java.util.Locale.UK, "%.2f", ace.rating))
+                        } else if (pace?.rating != null) {
                             append(" · ")
                             append(pace.matches)
                             append(" matches · live pace ")
