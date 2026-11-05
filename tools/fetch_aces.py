@@ -68,6 +68,21 @@ def parse(text):
     return total_aces, points
 
 
+async def probe():
+    """Render a few known ids and report exactly what comes back. Diagnostic only."""
+    from playwright.async_api import async_playwright
+    async with async_playwright() as pw:
+        browser = await pw.chromium.launch(args=["--no-sandbox", "--disable-blink-features=AutomationControlled"])
+        context = await browser.new_context(user_agent=USER_AGENT, locale="en-GB")
+        await context.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined})")
+        for path in ("archive", "live"):
+            for match_id in ("ms019", "ms030", "ms031"):
+                url = f"https://www.atptour.com/en/scores/stats-centre/{path}/2026/352/{match_id}"
+                text = await render(context, url)
+                print(f"{path}/{match_id}: {describe(text)}")
+        await browser.close()
+
+
 async def main():
     from playwright.async_api import async_playwright
 
@@ -145,4 +160,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    if "--probe" in sys.argv:
+        asyncio.run(probe())
+    else:
+        asyncio.run(main())

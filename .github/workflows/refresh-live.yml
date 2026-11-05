@@ -24,7 +24,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Read the ATP stats pages and rate the live event
-        run: python tools/fetch_aces.py
+        run: python tools/fetch_aces.py --probe
 
       - name: Rebuild the bundled dataset
         run: python tools/build_dataset.py
