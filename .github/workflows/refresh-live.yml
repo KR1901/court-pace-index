@@ -24,7 +24,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Read the ATP stats pages and rate the live event
-        run: python tools/fetch_aces.py --probe
+        run: python tools/fetch_aces.py
 
       - name: Rebuild the bundled dataset
         run: python tools/build_dataset.py
@@ -39,6 +39,17 @@ jobs:
           live = json.load(open("data/live.json"))
           for e in live.get("events", []):
               print(e.get("t"), "speed=", e.get("speed"), "ace=", e.get("ace"), "matches=", e.get("matches"))
+          EOF
+
+      - name: Note whether the site served us
+        run: |
+          python - <<'EOF'
+          import json
+          live = json.load(open("data/live.json"))
+          for e in live.get("events", []):
+              if e.get("speed") is None:
+                  print("No rating: the ATP site refuses datacentre addresses, so this job "
+                        "cannot read the stats pages. The app reads them on the device instead.")
           EOF
 
       - name: Commit if anything changed

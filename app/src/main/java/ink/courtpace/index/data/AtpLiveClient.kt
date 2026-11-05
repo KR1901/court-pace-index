@@ -38,24 +38,20 @@ class AtpLiveClient(context: android.content.Context) {
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
     ): Result<AceRating.Result> = runCatching {
         val found = mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>()
-        var misses = 0
         var tried = 0
+        // Match ids are sparse: ms019, ms030 and ms031 exist while ms001..ms008 may not. An
+        // early stop on a run of misses gave up before reaching any of them, which is why the
+        // rating never appeared even once the fetch was running.
         for (n in 1..MAX_MATCHES) {
-            if (misses >= MISS_LIMIT) break
             tried = n
+            onProgress(found.size, tried)
             val id = "ms" + n.toString().padStart(3, '0')
             val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
             // The numbers are injected by the page's own JavaScript, so it has to be rendered,
             // not merely fetched: a plain GET returns the empty shell.
             val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
             val stats = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
-            if (stats != null) {
-                found += stats
-                misses = 0
-                onProgress(found.size, tried)
-            } else {
-                misses++
-            }
+            if (stats != null) found += stats
         }
         AceRating.rate(found) ?: error(
             if (found.isEmpty()) "no ATP stats pages readable yet"
@@ -85,10 +81,7 @@ class AtpLiveClient(context: android.content.Context) {
 
     private companion object {
         /** A Masters draw is at most 96 matches; walking past that is pointless. */
-        const val MAX_MATCHES = 96
-
-        /** Stop once this many ids in a row return nothing. */
-        const val MISS_LIMIT = 8
+        const val MAX_MATCHES = 80
     }
 
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> =

@@ -181,7 +181,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
         liveAceProgress = "reading ATP match stats"
         atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
-            liveAceProgress = "$found of $tried matches read"
+            liveAceProgress = if (found > 0) "$found of $tried pages read" else "page $tried"
         }
             .onSuccess {
                 liveAce = it
