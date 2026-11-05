@@ -22,10 +22,16 @@ ACES = re.compile(r"(\d+)\s*Aces\s*(\d+)\s*Aces")
 FIRST_SERVE = re.compile(r"(\d+)/(\d+)\s*\(\d+%\)\s*First serve")
 
 
-async def render(browser, url):
-    page = await browser.new_page()
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/124.0.0.0 Safari/537.36"
+)
+
+
+async def render(context, url):
+    page = await context.new_page()
     try:
-        await page.goto(url, wait_until="networkidle", timeout=30000)
+        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
         # The numbers are injected after load; wait for them rather than trusting the load.
         for _ in range(20):
             text = await page.inner_text("body")
@@ -38,6 +44,13 @@ async def render(browser, url):
         return None
     finally:
         await page.close()
+
+
+def describe(text):
+    """A short, honest account of what the page actually returned."""
+    if not text:
+        return "empty"
+    return f"{len(text)} chars, aces={bool(ACES.search(text))}, head={text[:80]!r}"
 
 
 def parse(text):
@@ -63,7 +76,20 @@ async def main():
     payload["generated"] = now
 
     async with async_playwright() as pw:
-        browser = await pw.chromium.launch(args=["--no-sandbox"])
+        # A plain headless client gets the empty shell: the site serves real content only to
+        # something that looks like a browser, so the automation flags and UA are normalised.
+        browser = await pw.chromium.launch(args=[
+            "--no-sandbox",
+            "--disable-blink-features=AutomationControlled",
+        ])
+        context = await browser.new_context(
+            user_agent=USER_AGENT,
+            viewport={"width": 1280, "height": 900},
+            locale="en-GB",
+        )
+        await context.add_init_script(
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        )
         for event in payload.get("events", []):
             event_id = event.get("atpId")
             year = event.get("s")
@@ -73,15 +99,19 @@ async def main():
 
             aces_total = points_total = 0
             found = 0
+            described = 0
             # Match ids are sparse: ms019 and ms031 exist while ms001..ms008 may not, so the
             # walk covers the whole range instead of stopping at the first run of misses.
             for n in range(1, MAX_MATCH + 1):
                 match_id = f"ms{n:03d}"
                 url = (f"https://www.atptour.com/en/scores/stats-centre/archive/"
                        f"{year}/{event_id}/{match_id}")
-                text = await render(browser, url)
+                text = await render(context, url)
                 parsed = parse(text)
                 if parsed is None:
+                    if described < 3:
+                        described += 1
+                        print(f"  {match_id}: {describe(text)}")
                     continue
                 found += 1
                 aces_total += parsed[0]

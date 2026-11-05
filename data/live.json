@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-05T05:20:25Z",
+  "generated": "2026-11-04T14:40:00Z",
   "note": "Live feed. Refreshed by .github/workflows/refresh-live.yml from the configured match-stat source. An event appears here as soon as it is in progress; its rating appears once per-match ace data exists for it.",
   "events": [
     {
@@ -10,7 +10,7 @@
       "end": "2026-11-08",
       "round": "R32",
       "matches": null,
-      "asOf": "2026-11-05T05:20:25Z",
+      "asOf": "2026-11-04T14:40:00Z",
       "atpId": 352,
       "slug": "paris"
     }
