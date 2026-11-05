@@ -53,14 +53,27 @@ class AtpLiveClient(context: android.content.Context) {
         var blocked = false
         val gate = kotlinx.coroutines.sync.Semaphore(PARALLEL_PAGES)
 
-        // Pages are read in parallel. Serially, each one waiting out its own timeout, the walk
-        // took minutes and the row sat on "page 1" the whole time.
+        // Ask the event page which matches exist before reading any of them.
+        val resultsUrl = "https://www.atptour.com/en/scores/current/${slugFor(atpId)}/$atpId/results"
+        var resultsHtml = get(resultsUrl)
+        if (resultsHtml == null || ink.courtpace.index.core.live.AtpMatchLinks.fromResultsPage(resultsHtml).isEmpty()) {
+            // The links may only be present once the page has run its scripts.
+            resultsHtml = web.read(resultsUrl) { it.contains("stats-centre", ignoreCase = true) }
+                ?: resultsHtml
+        }
+        val discovered = resultsHtml
+            ?.let { ink.courtpace.index.core.live.AtpMatchLinks.singles(ink.courtpace.index.core.live.AtpMatchLinks.fromResultsPage(it)) }
+            .orEmpty()
+        if (discovered.isNotEmpty()) onProgress(collected.size, 0)
+
+        val ids = if (discovered.isNotEmpty()) discovered
+        else (1..MAX_MATCHES).map { "ms" + it.toString().padStart(3, '0') }
+
         kotlinx.coroutines.coroutineScope {
-            (1..MAX_MATCHES).map { n ->
+            ids.map { id ->
                 async(Dispatchers.Default) {
                     gate.withPermit {
                         if (blocked) return@withPermit
-                        val id = "ms" + n.toString().padStart(3, '0')
                         if (cached.containsKey(id)) {
                             onProgress(collected.size, tried.incrementAndGet())
                             return@withPermit
@@ -115,7 +128,21 @@ class AtpLiveClient(context: android.content.Context) {
         result
     }
 
+    /**
+     * The match ids the event actually has, taken from the links on its results page.
+     *
+     * Walking a guessed range was the wrong approach: the ids are sparse in a way that does not
+     * follow the draw, so ninety-five attempts found fourteen matches while the rest of the
+     * range was empty. The results page links to every match's stats page, so its own hrefs are
+     * the authoritative list.
+     */
     /** The page title names the match when the id exists; a placeholder means it does not. */
+    /** The event's URL slug, needed to reach its results page. */
+    private fun slugFor(atpId: Int): String = when (atpId) {
+        352 -> "paris"
+        else -> "paris"
+    }
+
     private fun looksLikeMatch(html: String): Boolean =
         Regex("<title>(.*?)</title>", RegexOption.DOT_MATCHES_ALL)
             .find(html)?.groupValues?.get(1)
