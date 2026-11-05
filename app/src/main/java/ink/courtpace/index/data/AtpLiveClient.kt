@@ -54,8 +54,11 @@ class AtpLiveClient(context: android.content.Context) {
         val gate = kotlinx.coroutines.sync.Semaphore(PARALLEL_PAGES)
 
         // Ask the event page which matches exist before reading any of them.
-        val resultsUrl = "https://www.atptour.com/en/scores/current/${slugFor(atpId)}/$atpId/results"
-        val resultsHtml = get(resultsUrl)
+        val slug = EVENT_SLUGS[atpId] ?: error("no results page known for event $atpId")
+        val resultsUrl = "https://www.atptour.com/en/scores/current/$slug/$atpId/results"
+        val resultsHtml = kotlinx.coroutines.withTimeoutOrNull(DISCOVERY_TIMEOUT_MS) {
+            get(resultsUrl)
+        }
         var discovered = resultsHtml
             ?.let { ink.courtpace.index.core.live.AtpMatchLinks.singles(ink.courtpace.index.core.live.AtpMatchLinks.fromResultsPage(it)) }
             .orEmpty()
@@ -142,11 +145,10 @@ class AtpLiveClient(context: android.content.Context) {
      */
     /** The page title names the match when the id exists; a placeholder means it does not. */
     /** The event's URL slug, needed to reach its results page. */
-    private fun slugFor(atpId: Int): String = when (atpId) {
-        352 -> "paris"
-        else -> "paris"
-    }
-
+    /**
+     * The URL slug for an event. Paris is the only one currently live, but returning "paris" for
+     * every id - as this did - would silently request the wrong page for any other event.
+     */
     private fun looksLikeMatch(html: String): Boolean =
         Regex("<title>(.*?)</title>", RegexOption.DOT_MATCHES_ALL)
             .find(html)?.groupValues?.get(1)
@@ -155,8 +157,11 @@ class AtpLiveClient(context: android.content.Context) {
     private fun get(url: String): String? = try {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
-            connectTimeout = 12_000
-            readTimeout = 15_000
+            // Short on purpose: this runs for the results page and for every candidate match,
+            // so a slow host multiplies across the whole walk. Twelve plus fifteen seconds was
+            // minutes of budget spent waiting on pages that were never going to answer.
+            connectTimeout = 6_000
+            readTimeout = 8_000
             setRequestProperty("User-Agent", userAgent)
             setRequestProperty("Accept", "text/html")
             instanceFollowRedirects = true
@@ -176,6 +181,12 @@ class AtpLiveClient(context: android.content.Context) {
         /** A Masters draw is at most 96 matches; walking past that is pointless. */
         /** A Masters draw is at most 96 matches, so the whole draw is covered. */
         const val MAX_MATCHES = 96
+
+        /** Event id to URL slug, for events the live feed can carry. */
+        val EVENT_SLUGS = mapOf(352 to "paris")
+
+        /** Reading the event page must not eat the walk's budget. */
+        const val DISCOVERY_TIMEOUT_MS = 25_000L
 
         /** Pages rendered at once. Serial reads were the reason nothing appeared for minutes. */
         const val PARALLEL_PAGES = 8
