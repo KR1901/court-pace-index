@@ -73,24 +73,23 @@ async def main():
 
             aces_total = points_total = 0
             found = 0
-            misses = 0
+            # Match ids are sparse: ms019 and ms031 exist while ms001..ms008 may not, so the
+            # walk covers the whole range instead of stopping at the first run of misses.
             for n in range(1, MAX_MATCH + 1):
-                if misses >= 8:
-                    break
                 match_id = f"ms{n:03d}"
                 url = (f"https://www.atptour.com/en/scores/stats-centre/archive/"
                        f"{year}/{event_id}/{match_id}")
                 text = await render(browser, url)
                 parsed = parse(text)
                 if parsed is None:
-                    misses += 1
                     continue
-                misses = 0
                 found += 1
                 aces_total += parsed[0]
                 points_total += parsed[1]
-                if found % 5 == 0:
-                    print(f"  {found} matches read")
+                if found == 1:
+                    print(f"  first match read at {match_id}: {parsed[0]} aces in {parsed[1]} points")
+                elif found % 5 == 0:
+                    print(f"  {found} matches read (last {match_id})")
 
             event["asOf"] = now
             if found < MIN_MATCHES or points_total <= 0:
