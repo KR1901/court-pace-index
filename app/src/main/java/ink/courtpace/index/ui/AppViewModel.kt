@@ -180,9 +180,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // The ace figure is the one that matters, so it goes first and reports as it goes.
             status("reading ATP match stats")
             val aceResult = kotlinx.coroutines.withTimeoutOrNull(WALK_TIMEOUT_MS) {
-                atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
-                    status(if (found > 0) "$found matches from $tried pages" else "page $tried")
-                }
+                var discovery = "discovering"
+                atpClient.fetchAceRating(
+                    ref.atpId,
+                    ref.year,
+                    onProgress = { found, tried ->
+                        status(
+                            "$discovery · " +
+                                if (found > 0) "$found matches from $tried pages" else "page $tried",
+                        )
+                    },
+                    onDiscovery = { ids, bytes ->
+                        // Kept for the whole run and prefixed onto every status. The point of the
+                        // line is to tell us what the phone can see; the walk used to replace it
+                        // a moment after it appeared.
+                        discovery = if (ids > 0) "$ids match links" else "no links, ${bytes}B page"
+                        status(discovery)
+                    },
+                )
             } ?: Result.failure(IllegalStateException("timed out reading the stats pages"))
             aceResult
                 .onSuccess {

@@ -86,7 +86,9 @@ class AtpLiveClient(context: android.content.Context) {
                             onProgress(collected.size, tried.incrementAndGet())
                             return@withPermit
                         }
-                        onProgress(collected.size, tried.get() + 1)
+                        // Count the attempt as it starts, so the row shows page 1 rather than a
+                        // "page 0" that means nothing and sits there until the first page ends.
+                        onProgress(collected.size, tried.incrementAndGet())
                         val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
 
                         // A plain request costs a fraction of a second and answers two things:
@@ -97,7 +99,6 @@ class AtpLiveClient(context: android.content.Context) {
                         // count at thirteen.
                         val shell = get(url)
                         if (shell != null && !looksLikeMatch(shell)) {
-                            onProgress(collected.size, tried.incrementAndGet())
                             return@withPermit
                         }
                         if (shell != null && shell.contains(AtpWebReader.BLOCKED, true)) {
@@ -117,7 +118,7 @@ class AtpLiveClient(context: android.content.Context) {
                             parsed = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
                         }
                         parsed?.let { collected[id] = it }
-                        onProgress(collected.size, tried.incrementAndGet())
+                        onProgress(collected.size, tried.get())
                     }
                 }
             }.awaitAll()
