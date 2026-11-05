@@ -64,6 +64,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
 
+
     init {
         viewModelScope.launch {
             runCatching { withContext(Dispatchers.IO) { BundledDataset.load(application) } }
@@ -178,9 +179,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             // The ace figure is the one that matters, so it goes first and reports as it goes.
             status("reading ATP match stats")
-            atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
-                status(if (found > 0) "$found matches from $tried pages" else "page $tried")
-            }
+            val aceResult = kotlinx.coroutines.withTimeoutOrNull(WALK_TIMEOUT_MS) {
+                atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
+                    status(if (found > 0) "$found matches from $tried pages" else "page $tried")
+                }
+            } ?: Result.failure(IllegalStateException("timed out reading the stats pages"))
+            aceResult
                 .onSuccess {
                     liveAce = it
                     applyLiveRating(event.t, event.s, it.rating, it.matches, it.aceRate)
@@ -200,6 +204,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             // The results page supplies the duration reading when the ace figure is unavailable.
             if (liveAce == null) {
+                status("trying the results page")
                 atpClient.fetch(ref.atpId, ref.slug)
                     .onSuccess {
                         livePace = it
@@ -256,6 +261,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
+        /** The whole walk must answer within this, however the pages behave. */
+        const val WALK_TIMEOUT_MS = 120_000L
+
         const val MAX_COMPARE = 3
     }
 }

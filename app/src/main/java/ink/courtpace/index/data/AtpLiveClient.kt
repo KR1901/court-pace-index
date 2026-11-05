@@ -56,6 +56,7 @@ class AtpLiveClient(context: android.content.Context) {
                 async(Dispatchers.Default) {
                     gate.withPermit {
                         if (blocked) return@withPermit
+                        onProgress(found.size, tried.get() + 1)
                         val id = "ms" + n.toString().padStart(3, '0')
                         val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
                         // The numbers are injected by the page's own JavaScript, so it has to be
@@ -77,6 +78,9 @@ class AtpLiveClient(context: android.content.Context) {
             if (found.isEmpty()) "no ATP stats pages readable yet"
             else "only ${found.size} matches have stats so far",
         )
+    }.let { result ->
+        // Whatever happens inside, the caller gets an answer rather than an eternal wait.
+        result
     }
 
     private fun get(url: String): String? = try {
