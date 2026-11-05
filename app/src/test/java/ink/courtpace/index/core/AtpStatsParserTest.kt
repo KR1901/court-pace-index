@@ -113,6 +113,20 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `the rating covers every match it is given, not a sample`() {
+        // Thirty matches with identical numbers must report thirty, and the same rate.
+        val matches = (1..30).map {
+            AtpMatchStats("A. Server", "B. Returner", 4, 50, 4, 50, true)
+        }
+        val result = AceRating.rate(matches)!!
+        assertEquals(30, result.matches)
+        assertEquals(8 * 30, result.aces)
+        // One match must not dominate: dropping half leaves the same rate.
+        val half = AceRating.rate(matches.take(15))!!
+        assertEquals(result.rating, half.rating, 1e-9)
+    }
+
+    @Test
     fun `a slow event rates below one`() {
         val matches = (1..AceRating.MIN_MATCHES).map {
             AtpMatchStats("A. Server", "B. Returner", 1, 60, 1, 60, true)

@@ -57,9 +57,6 @@ class AtpLiveClient(context: android.content.Context) {
                 async(Dispatchers.Default) {
                     gate.withPermit {
                         if (blocked) return@withPermit
-                        // Enough for a rating; walking the whole draw after that only delays
-                        // the number appearing.
-                        if (found.size >= ENOUGH_MATCHES) return@withPermit
                         onProgress(found.size, tried.get() + 1)
                         val id = "ms" + n.toString().padStart(3, '0')
                         val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
@@ -113,13 +110,12 @@ class AtpLiveClient(context: android.content.Context) {
 
     private companion object {
         /** A Masters draw is at most 96 matches; walking past that is pointless. */
-        const val MAX_MATCHES = 44
+        /** A Masters draw is at most 96 matches, so the whole draw is covered. */
+        const val MAX_MATCHES = 96
 
         /** Pages rendered at once. Serial reads were the reason nothing appeared for minutes. */
-        const val PARALLEL_PAGES = 4
+        const val PARALLEL_PAGES = 6
 
-        /** Stop the walk once this many matches are in hand; more only delays the number. */
-        const val ENOUGH_MATCHES = 10
     }
 
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> =

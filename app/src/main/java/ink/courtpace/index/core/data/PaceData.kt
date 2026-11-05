@@ -60,6 +60,10 @@ class PaceData(val dataset: PaceDataset) {
     fun reading(id: String, season: Int, metric: Metric): PaceReading? =
         byTournament[id]?.firstOrNull { it.s == season && it.value(metric) != null }
 
+    /** The stored reading behind a figure, so callers can say how many matches it rests on. */
+    fun reading(id: String, season: Int): ink.courtpace.index.core.model.PaceReading? =
+        dataset.readings.firstOrNull { it.t == id && it.s == season }
+
     fun value(id: String, season: Int, metric: Metric): Double? =
         reading(id, season, metric)?.value(metric)
 

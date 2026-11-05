@@ -213,6 +213,7 @@ fun BoardScreen(
                         tournament = tournament,
                         event = event,
                         datasetRating = data.value(tournament.id, event.s, Metric.SPEED),
+                        datasetMatches = data.reading(tournament.id, event.s)?.matches,
                         pace = livePace,
                         ace = liveAce,
                         progress = liveProgress,
@@ -311,6 +312,7 @@ private fun LivePendingRow(
     tournament: Tournament,
     event: LiveEvent,
     datasetRating: Double?,
+    datasetMatches: Int?,
     pace: ink.courtpace.index.core.live.AtpResultsParser.LivePace?,
     ace: ink.courtpace.index.core.live.AceRating.Result?,
     progress: String?,
@@ -357,6 +359,11 @@ private fun LivePendingRow(
                         if (datasetRating != null) {
                             append(" · live speed ")
                             append(String.format(java.util.Locale.UK, "%.2f", datasetRating))
+                            if (datasetMatches != null && datasetMatches > 0) {
+                                append(" · ")
+                                append(datasetMatches)
+                                append(" matches")
+                            }
                         } else if (ace != null) {
                             append(" · ")
                             append(ace.matches)
