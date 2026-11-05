@@ -42,6 +42,7 @@ class AtpLiveClient(context: android.content.Context) {
         atpId: Int,
         year: Int = 2026,
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
+        onDiscovery: ((ids: Int, pageBytes: Int) -> Unit)? = null,
     ): Result<AceRating.Result> = runCatching {
         val eventKey = "$atpId-$year"
         val cached = store.readAll(eventKey)
@@ -71,7 +72,7 @@ class AtpLiveClient(context: android.content.Context) {
                 ),
             )
         }
-        if (discovered.isNotEmpty()) onProgress(collected.size, 0)
+        onDiscovery?.invoke(discovered.size, resultsHtml?.length ?: 0)
 
         val ids = if (discovered.isNotEmpty()) discovered
         else (1..MAX_MATCHES).map { "ms" + it.toString().padStart(3, '0') }
