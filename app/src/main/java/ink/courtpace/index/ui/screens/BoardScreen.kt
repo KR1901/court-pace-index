@@ -343,14 +343,17 @@ private fun LivePendingRow(
                             append(" · since ")
                             append(prettyDate(start))
                         }
-                        if (pace != null) {
+                        if (pace?.rating != null) {
+                            append(" · ")
+                            append(pace.matches)
+                            append(" matches · live pace ")
+                            append(String.format(java.util.Locale.UK, "%.2f", pace.rating))
+                        } else if (pace != null) {
                             append(" · ")
                             append(pace.matches)
                             append(" matches · ")
                             append(String.format(java.util.Locale.UK, "%.0f", pace.tiebreakShare * 100))
-                            append("% tie-break sets · ")
-                            append(String.format(java.util.Locale.UK, "%.1f", pace.gamesPerSet))
-                            append(" games/set")
+                            append("% tie-break sets")
                         } else {
                             append(" · tap reload to read the ATP results page")
                         }

@@ -112,6 +112,37 @@ class AtpResultsParserTest {
     }
 
     @Test
+    fun `duration is read from the round line and becomes a rating`() {
+        val matches = AtpResultsParser.parse(page)
+        // Durations as published: 01:59:19 over 22 games, 01:40:19 over 21, and so on.
+        assertEquals(7159, matches.first().seconds)
+        assertEquals(7159.0 / 22.0, matches.first().secondsPerGame!!, 1e-6)
+
+        val pace = AtpResultsParser.pace(matches)!!
+        // Medians of the seven seconds-per-game figures, then the baseline ratio.
+        // Median of the seven seconds-per-game figures, and the baseline ratio from it.
+        assertEquals(249.79, pace.secondsPerGame!!, 0.05)
+        assertEquals(
+            AtpResultsParser.BASELINE_SECONDS_PER_GAME / pace.secondsPerGame!!,
+            pace.rating!!,
+            1e-9,
+        )
+        assertTrue("a quicker event must rate above 1.0", pace.rating!! > 1.0)
+    }
+
+    @Test
+    fun `a match with no duration still counts toward the other figures`() {
+        // Strip the clock with a class-based pattern, so no backslash escaping can misfire.
+        val withoutClock = page.replace(Regex("[0-9]{1,2}:[0-9]{2}:[0-9]{2}"), "")
+        val pace = AtpResultsParser.pace(AtpResultsParser.parse(withoutClock))
+        // No durations at all, so no rating - but the score-derived figures survive.
+        assertNull(pace!!.rating)
+        assertNull(pace.secondsPerGame)
+        assertEquals(7, pace.matches)
+        assertEquals(5.0 / 16.0, pace.tiebreakShare, 1e-9)
+    }
+
+    @Test
     fun `an empty page yields no pace rather than a zero`() {
         assertNull(AtpResultsParser.pace(AtpResultsParser.parse("no matches here")))
     }
