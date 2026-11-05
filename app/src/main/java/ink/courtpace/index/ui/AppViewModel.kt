@@ -62,13 +62,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val atpClient = ink.courtpace.index.data.AtpLiveClient(application)
 
+    private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
+
     init {
         viewModelScope.launch {
             runCatching { withContext(Dispatchers.IO) { BundledDataset.load(application) } }
                 .onSuccess { bundled ->
                     val cached = runCatching { updater.cached() }.getOrNull()
                     publish(PaceData(DatasetPolicy.choose(bundled.dataset, cached?.dataset)))
-                    // Read the live event on open, so the row fills in without a tap.
+                    // The last figure is shown immediately, so the row is never blank while the
+                    // pages are being read again in the background.
+                    showCachedLiveRating()
                     refreshLivePace()
                 }
                 .onFailure {
@@ -146,6 +150,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         publish(PaceData(current.dataset.copy(readings = withoutOld + reading)))
     }
 
+    private fun showCachedLiveRating() {
+        val data = _data.value ?: return
+        val event = data.dataset.live.firstOrNull() ?: return
+        val cached = ratingStore.read(event.t) ?: return
+        applyLiveRating(event.t, cached.season, cached.speed, cached.matches, cached.aceRate)
+        livePaceNote = "cached ${cached.asOf.take(16).replace('T', ' ')} UTC"
+        liveAceProgress = null
+    }
+
     private suspend fun refreshLivePace() {
         // Every step writes a status, so the row can never be silent about what happened.
         fun status(text: String) {
@@ -171,6 +184,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 .onSuccess {
                     liveAce = it
                     applyLiveRating(event.t, event.s, it.rating, it.matches, it.aceRate)
+                    ratingStore.write(
+                        ink.courtpace.index.core.live.CachedLiveRating(
+                            tournamentId = event.t,
+                            season = event.s,
+                            speed = it.rating,
+                            matches = it.matches,
+                            aceRate = it.aceRate,
+                            asOf = java.time.Instant.now().toString(),
+                        ),
+                    )
                     status("live speed ${"%.2f".format(it.rating)} from ${it.matches} matches")
                 }
                 .onFailure { status("stats: ${it.message}") }

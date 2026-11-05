@@ -4,6 +4,11 @@ import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.AtpResultsParser
 import ink.courtpace.index.core.live.AtpStatsParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
@@ -37,26 +42,38 @@ class AtpLiveClient(context: android.content.Context) {
         year: Int = 2026,
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
     ): Result<AceRating.Result> = runCatching {
-        val found = mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>()
-        var tried = 0
-        // Match ids are sparse: ms019, ms030 and ms031 exist while ms001..ms008 may not. An
-        // early stop on a run of misses gave up before reaching any of them, which is why the
-        // rating never appeared even once the fetch was running.
-        for (n in 1..MAX_MATCHES) {
-            tried = n
-            onProgress(found.size, tried)
-            val id = "ms" + n.toString().padStart(3, '0')
-            val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
-            // The numbers are injected by the page's own JavaScript, so it has to be rendered,
-            // not merely fetched: a plain GET returns the empty shell.
-            val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
-            if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, ignoreCase = true)) {
-                error("ATP refused the request from this network")
-            }
-            val stats = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
-            if (stats != null) found += stats
+        val found = java.util.Collections.synchronizedList(
+            mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>(),
+        )
+        val tried = java.util.concurrent.atomic.AtomicInteger(0)
+        var blocked = false
+        val gate = kotlinx.coroutines.sync.Semaphore(PARALLEL_PAGES)
+
+        // Pages are read in parallel. Serially, each one waiting out its own timeout, the walk
+        // took minutes and the row sat on "page 1" the whole time.
+        kotlinx.coroutines.coroutineScope {
+            (1..MAX_MATCHES).map { n ->
+                async(Dispatchers.Default) {
+                    gate.withPermit {
+                        if (blocked) return@withPermit
+                        val id = "ms" + n.toString().padStart(3, '0')
+                        val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
+                        // The numbers are injected by the page's own JavaScript, so it has to be
+                        // rendered, not merely fetched: a plain GET returns the empty shell.
+                        val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
+                        if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
+                            blocked = true
+                            return@withPermit
+                        }
+                        rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
+                            ?.let { found.add(it) }
+                        onProgress(found.size, tried.incrementAndGet())
+                    }
+                }
+            }.awaitAll()
         }
-        AceRating.rate(found) ?: error(
+        if (blocked && found.isEmpty()) error("ATP refused the request from this network")
+        AceRating.rate(found.toList()) ?: error(
             if (found.isEmpty()) "no ATP stats pages readable yet"
             else "only ${found.size} matches have stats so far",
         )
@@ -84,7 +101,10 @@ class AtpLiveClient(context: android.content.Context) {
 
     private companion object {
         /** A Masters draw is at most 96 matches; walking past that is pointless. */
-        const val MAX_MATCHES = 56
+        const val MAX_MATCHES = 44
+
+        /** Pages rendered at once. Serial reads were the reason nothing appeared for minutes. */
+        const val PARALLEL_PAGES = 4
     }
 
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> =
