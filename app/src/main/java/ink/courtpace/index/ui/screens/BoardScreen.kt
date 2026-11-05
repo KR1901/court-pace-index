@@ -90,6 +90,8 @@ fun BoardScreen(
     statusNote: String?,
     livePace: ink.courtpace.index.core.live.AtpResultsParser.LivePace? = null,
     liveAce: ink.courtpace.index.core.live.AceRating.Result? = null,
+    liveProgress: String? = null,
+    liveNote: String? = null,
     scrollState: ScrollState = rememberScrollState(),
 ) {
     val colors = PaceTheme.colors
@@ -212,6 +214,8 @@ fun BoardScreen(
                         event = event,
                         pace = livePace,
                         ace = liveAce,
+                        progress = liveProgress,
+                        note = liveNote,
                         onClick = { onOpen(tournament) },
                     )
                     Spacer(Modifier.height(8.dp))
@@ -307,6 +311,8 @@ private fun LivePendingRow(
     event: LiveEvent,
     pace: ink.courtpace.index.core.live.AtpResultsParser.LivePace?,
     ace: ink.courtpace.index.core.live.AceRating.Result?,
+    progress: String?,
+    note: String?,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -362,6 +368,12 @@ private fun LivePendingRow(
                             append(" matches · ")
                             append(String.format(java.util.Locale.UK, "%.0f", pace.tiebreakShare * 100))
                             append("% tie-break sets")
+                        } else if (progress != null) {
+                            append(" · ")
+                            append(progress)
+                        } else if (note != null) {
+                            append(" · ")
+                            append(note)
                         } else {
                             append(" · tap reload to read the ATP results page")
                         }

@@ -16,7 +16,9 @@ import java.net.URL
  * inside its JavaScript stats view. So what comes back is a results-derived pace reading, and
  * it is labelled as such wherever it appears.
  */
-class AtpLiveClient {
+class AtpLiveClient(context: android.content.Context) {
+
+    private val web = AtpWebReader(context)
 
     private val userAgent =
         "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -30,29 +32,36 @@ class AtpLiveClient {
      * counts the results page omits. Match ids run ms001 upward, so they are walked until a run
      * of misses shows the draw has ended.
      */
-    suspend fun fetchAceRating(atpId: Int, year: Int = 2026): Result<AceRating.Result> =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                val found = mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>()
-                var misses = 0
-                for (n in 1..MAX_MATCHES) {
-                    if (misses >= MISS_LIMIT) break
-                    val id = "ms" + n.toString().padStart(3, '0')
-                    val text = get("https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id")
-                    val stats = text?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
-                    if (stats != null) {
-                        found += stats
-                        misses = 0
-                    } else {
-                        misses++
-                    }
-                }
-                AceRating.rate(found) ?: error(
-                    if (found.isEmpty()) "the ATP stats pages for this event are still empty"
-                    else "only ${found.size} matches have stats so far",
-                )
+    suspend fun fetchAceRating(
+        atpId: Int,
+        year: Int = 2026,
+        onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
+    ): Result<AceRating.Result> = runCatching {
+        val found = mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>()
+        var misses = 0
+        var tried = 0
+        for (n in 1..MAX_MATCHES) {
+            if (misses >= MISS_LIMIT) break
+            tried = n
+            val id = "ms" + n.toString().padStart(3, '0')
+            val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
+            // The numbers are injected by the page's own JavaScript, so it has to be rendered,
+            // not merely fetched: a plain GET returns the empty shell.
+            val rendered = web.read(url)
+            val stats = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
+            if (stats != null) {
+                found += stats
+                misses = 0
+                onProgress(found.size, tried)
+            } else {
+                misses++
             }
         }
+        AceRating.rate(found) ?: error(
+            if (found.isEmpty()) "no ATP stats pages readable yet"
+            else "only ${found.size} matches have stats so far",
+        )
+    }
 
     private fun get(url: String): String? = try {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
@@ -79,7 +88,7 @@ class AtpLiveClient {
         const val MAX_MATCHES = 96
 
         /** Stop once this many ids in a row return nothing. */
-        const val MISS_LIMIT = 6
+        const val MISS_LIMIT = 8
     }
 
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> =
@@ -94,16 +103,30 @@ class AtpLiveClient {
                     setRequestProperty("Accept", "text/html")
                     instanceFollowRedirects = true
                 }
+                var html: String? = null
+                var failure: String? = null
                 try {
-                    if (connection.responseCode !in 200..299) {
-                        error("ATP returned ${connection.responseCode}")
+                    if (connection.responseCode in 200..299) {
+                        html = connection.inputStream.bufferedReader().use { it.readText() }
+                    } else {
+                        failure = "ATP returned ${connection.responseCode}"
                     }
-                    val html = connection.inputStream.bufferedReader().use { it.readText() }
-                    val matches = AtpResultsParser.parse(AtpResultsParser.toText(html))
-                    AtpResultsParser.pace(matches) ?: error("no completed matches on the page")
+                } catch (error: Exception) {
+                    failure = error.message ?: "could not reach the ATP results page"
                 } finally {
                     connection.disconnect()
                 }
+
+                var matches = html?.let { AtpResultsParser.parse(AtpResultsParser.toText(it)) }.orEmpty()
+                if (matches.isEmpty()) {
+                    // Some pages only fill in after their scripts run; render as a fallback.
+                    val rendered = web.read(url.toString())
+                    if (rendered != null) {
+                        matches = AtpResultsParser.parse(AtpResultsParser.toText(rendered))
+                    }
+                }
+                AtpResultsParser.pace(matches)
+                    ?: error(failure ?: "no completed matches on the results page")
             }
         }
 }
