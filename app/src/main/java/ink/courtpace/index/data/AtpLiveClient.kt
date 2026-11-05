@@ -156,7 +156,16 @@ class AtpLiveClient(context: android.content.Context) {
             .find(html)?.groupValues?.get(1)
             ?.contains(" vs", ignoreCase = true) == true
 
-    private fun get(url: String): String? = try {
+    /**
+     * A plain GET, always off the main thread.
+     *
+     * This was a blocking call invoked from a coroutine running on Main, so Android threw
+     * NetworkOnMainThreadException, the catch below swallowed it, and the function returned null
+     * - silently, every time. That is why discovery always reported "0B page" and never found a
+     * single link, while the WebView path kept working because it loads asynchronously.
+     */
+    private suspend fun get(url: String): String? = kotlinx.coroutines.withContext(Dispatchers.IO) {
+        try {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             // Short on purpose: this runs for the results page and for every candidate match,
@@ -175,8 +184,9 @@ class AtpLiveClient(context: android.content.Context) {
         } finally {
             connection.disconnect()
         }
-    } catch (error: Exception) {
-        null
+        } catch (error: Exception) {
+            null
+        }
     }
 
     private companion object {
