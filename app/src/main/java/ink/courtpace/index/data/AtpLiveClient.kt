@@ -46,6 +46,7 @@ class AtpLiveClient(context: android.content.Context) {
             mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>(),
         )
         val tried = java.util.concurrent.atomic.AtomicInteger(0)
+        val withContent = java.util.concurrent.atomic.AtomicInteger(0)
         var blocked = false
         val gate = kotlinx.coroutines.sync.Semaphore(PARALLEL_PAGES)
 
@@ -56,6 +57,9 @@ class AtpLiveClient(context: android.content.Context) {
                 async(Dispatchers.Default) {
                     gate.withPermit {
                         if (blocked) return@withPermit
+                        // Enough for a rating; walking the whole draw after that only delays
+                        // the number appearing.
+                        if (found.size >= ENOUGH_MATCHES) return@withPermit
                         onProgress(found.size, tried.get() + 1)
                         val id = "ms" + n.toString().padStart(3, '0')
                         val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
@@ -66,6 +70,7 @@ class AtpLiveClient(context: android.content.Context) {
                             blocked = true
                             return@withPermit
                         }
+                        if (rendered != null && rendered.length > 400) withContent.incrementAndGet()
                         rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
                             ?.let { found.add(it) }
                         onProgress(found.size, tried.incrementAndGet())
@@ -75,8 +80,11 @@ class AtpLiveClient(context: android.content.Context) {
         }
         if (blocked && found.isEmpty()) error("ATP refused the request from this network")
         AceRating.rate(found.toList()) ?: error(
-            if (found.isEmpty()) "no ATP stats pages readable yet"
-            else "only ${found.size} matches have stats so far",
+            when {
+                found.isNotEmpty() -> "only ${found.size} matches have stats so far"
+                withContent.get() == 0 -> "the ATP pages came back empty"
+                else -> "no stats in ${withContent.get()} pages that did load"
+            },
         )
     }.let { result ->
         // Whatever happens inside, the caller gets an answer rather than an eternal wait.
@@ -109,6 +117,9 @@ class AtpLiveClient(context: android.content.Context) {
 
         /** Pages rendered at once. Serial reads were the reason nothing appeared for minutes. */
         const val PARALLEL_PAGES = 4
+
+        /** Stop the walk once this many matches are in hand; more only delays the number. */
+        const val ENOUGH_MATCHES = 10
     }
 
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> =

@@ -205,7 +205,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // The results page supplies the duration reading when the ace figure is unavailable.
             if (liveAce == null) {
                 status("trying the results page")
-                atpClient.fetch(ref.atpId, ref.slug)
+                val durationResult = kotlinx.coroutines.withTimeoutOrNull(RESULTS_TIMEOUT_MS) {
+                    atpClient.fetch(ref.atpId, ref.slug)
+                } ?: Result.failure<ink.courtpace.index.core.live.AtpResultsParser.LivePace>(
+                    IllegalStateException("the results page did not answer"),
+                )
+                durationResult
                     .onSuccess {
                         livePace = it
                         if (it.rating != null) {
@@ -262,7 +267,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         /** The whole walk must answer within this, however the pages behave. */
-        const val WALK_TIMEOUT_MS = 120_000L
+        const val WALK_TIMEOUT_MS = 90_000L
+
+        /** The results page is small and server-rendered; it has no excuse to take long. */
+        const val RESULTS_TIMEOUT_MS = 40_000L
 
         const val MAX_COMPARE = 3
     }

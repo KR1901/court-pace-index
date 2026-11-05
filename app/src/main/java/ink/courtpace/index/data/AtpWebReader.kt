@@ -34,7 +34,7 @@ class AtpWebReader(private val context: Context) {
     @SuppressLint("SetJavaScriptEnabled")
     suspend fun read(
         url: String,
-        timeoutMs: Long = 8_000,
+        timeoutMs: Long = 20_000,
         /** Called with each render; return true once the page holds what was asked for. */
         isReady: (String) -> Boolean = { it.isNotBlank() },
     ): String? = withTimeoutOrNull(timeoutMs) {
