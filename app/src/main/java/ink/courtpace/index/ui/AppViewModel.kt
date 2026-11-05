@@ -121,6 +121,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      * Writes a computed live figure into the dataset in memory, so it reaches every screen
      * through the paths that already exist rather than through new plumbing.
      */
+
     private fun applyLiveRating(
         tournamentId: String,
         season: Int,
@@ -145,54 +146,49 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         publish(PaceData(current.dataset.copy(readings = withoutOld + reading)))
     }
 
-    /**
-     * Pulls the live event's results straight from the ATP page, so the reload button updates
-     * it instantly rather than waiting for the scheduled job.
-     */
     private suspend fun refreshLivePace() {
-        val data = _data.value
-        if (data == null) {
-            livePaceNote = "dataset not loaded"
-            return
+        // Every step writes a status, so the row can never be silent about what happened.
+        fun status(text: String) {
+            liveAceProgress = text
+            livePaceNote = text
         }
-        val event = data.dataset.live.firstOrNull()
-        if (event == null) {
-            livePaceNote = "no live event in the dataset"
-            return
-        }
-        // Prefer the event's own id, fall back to the registry: a cached dataset from an older
-        // release has no atpId, and that silently disabled the whole feature.
-        val ref = event.atpId?.let { ink.courtpace.index.core.live.AtpEvents.Ref(it, event.slug ?: "paris", event.s) }
-            ?: ink.courtpace.index.core.live.AtpEvents.forTournament(event.t)
-        if (ref == null) {
-            livePaceNote = "no ATP page known for ${event.t}"
-            return
-        }
-        atpClient.fetch(ref.atpId, ref.slug)
-            .onSuccess {
-                livePace = it
-                livePaceNote = null
-                // The ace figure wins when both exist; the duration reading fills the gap.
-                if (liveAce == null && it.rating != null) {
-                    applyLiveRating(event.t, event.s, it.rating, it.matches ?: 0, null)
-                }
-            }
-            .onFailure { livePaceNote = it.message ?: "could not read the ATP results page" }
+        try {
+            status("starting")
+            val data = _data.value
+            if (data == null) return status("dataset not loaded")
 
-        liveAceProgress = "reading ATP match stats"
-        atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
-            liveAceProgress = if (found > 0) "$found of $tried pages read" else "page $tried"
+            val event = data.dataset.live.firstOrNull() ?: return status("no live event")
+            val ref = event.atpId?.let {
+                ink.courtpace.index.core.live.AtpEvents.Ref(it, event.slug ?: "paris", event.s)
+            } ?: ink.courtpace.index.core.live.AtpEvents.forTournament(event.t)
+            ?: return status("no ATP page known for ${event.t}")
+
+            // The ace figure is the one that matters, so it goes first and reports as it goes.
+            status("reading ATP match stats")
+            atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
+                status(if (found > 0) "$found matches from $tried pages" else "page $tried")
+            }
+                .onSuccess {
+                    liveAce = it
+                    applyLiveRating(event.t, event.s, it.rating, it.matches, it.aceRate)
+                    status("live speed ${"%.2f".format(it.rating)} from ${it.matches} matches")
+                }
+                .onFailure { status("stats: ${it.message}") }
+
+            // The results page supplies the duration reading when the ace figure is unavailable.
+            if (liveAce == null) {
+                atpClient.fetch(ref.atpId, ref.slug)
+                    .onSuccess {
+                        livePace = it
+                        if (it.rating != null) {
+                            applyLiveRating(event.t, event.s, it.rating, it.matches ?: 0, null)
+                        }
+                    }
+                    .onFailure { livePaceNote = it.message ?: livePaceNote }
+            }
+        } catch (error: Throwable) {
+            status("live failed: ${error.message}")
         }
-            .onSuccess {
-                liveAce = it
-                liveAceProgress = null
-                applyLiveRating(event.t, event.s, it.rating, it.matches, it.aceRate)
-            }
-            .onFailure {
-                liveAce = null
-                liveAceProgress = null
-                livePaceNote = it.message ?: livePaceNote
-            }
     }
 
     fun clearRefreshState() {

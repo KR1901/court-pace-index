@@ -24,7 +24,7 @@ class AtpWebReader(private val context: Context) {
     @SuppressLint("SetJavaScriptEnabled")
     suspend fun read(
         url: String,
-        timeoutMs: Long = 25_000,
+        timeoutMs: Long = 9_000,
         /** Called with each render; return true once the page holds what was asked for. */
         isReady: (String) -> Boolean = { it.isNotBlank() },
     ): String? =
@@ -53,7 +53,9 @@ class AtpWebReader(private val context: Context) {
                         "(function(){return document.body ? document.body.innerText : ''})()",
                     ) { raw ->
                         val text = decode(raw)
-                        if (text != null && isReady(text)) {
+                        if (text != null && (isReady(text) || text.contains(BLOCKED, true))) {
+                            // A refusal is an answer: waiting out the timeout on all eighty pages
+                            // meant the row sat silent for half an hour before saying anything.
                             finish(text)
                         } else if (!finished) {
                             web.postDelayed({ poll() }, POLL_MS)
@@ -80,8 +82,11 @@ class AtpWebReader(private val context: Context) {
         return runCatching { JSONTokener(raw).nextValue() as? String }.getOrNull()
     }
 
-    private companion object {
-        const val POLL_MS = 700L
+    companion object {
+        /** What the site returns when it refuses a request. */
+        const val BLOCKED = "have been blocked"
+
+        const val POLL_MS = 400L
 
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +

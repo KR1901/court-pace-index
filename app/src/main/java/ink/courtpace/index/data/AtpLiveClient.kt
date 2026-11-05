@@ -50,6 +50,9 @@ class AtpLiveClient(context: android.content.Context) {
             // The numbers are injected by the page's own JavaScript, so it has to be rendered,
             // not merely fetched: a plain GET returns the empty shell.
             val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
+            if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, ignoreCase = true)) {
+                error("ATP refused the request from this network")
+            }
             val stats = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
             if (stats != null) found += stats
         }
@@ -81,7 +84,7 @@ class AtpLiveClient(context: android.content.Context) {
 
     private companion object {
         /** A Masters draw is at most 96 matches; walking past that is pointless. */
-        const val MAX_MATCHES = 80
+        const val MAX_MATCHES = 56
     }
 
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> =
