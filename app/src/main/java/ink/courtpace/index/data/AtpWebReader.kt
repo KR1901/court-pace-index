@@ -94,6 +94,48 @@ class AtpWebReader(private val context: Context) {
         }
     }
 
+    /**
+     * The hrefs on a page.
+     *
+     * innerText - what [read] returns - contains no links at all, so discovery based on it could
+     * never work. Links have to be collected from the DOM before the text is flattened.
+     */
+    suspend fun readLinks(url: String, timeoutMs: Long = 20_000): List<String> =
+        withTimeoutOrNull(timeoutMs) {
+            withContext(Dispatchers.Main) {
+                suspendCancellableCoroutine { continuation ->
+                    val web = WebView(context.applicationContext)
+                    var finished = false
+                    fun release(links: List<String>) {
+                        if (finished) return
+                        finished = true
+                        runCatching { web.stopLoading(); web.destroy() }
+                        if (continuation.isActive) continuation.resume(links)
+                    }
+                    web.settings.apply {
+                        javaScriptEnabled = true
+                        userAgentString = USER_AGENT
+                    }
+                    web.webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, loaded: String) {
+                            view.postDelayed({
+                                view.evaluateJavascript(
+                                    "(function(){return Array.from(document.querySelectorAll('a'))" +
+                                        ".map(function(a){return a.getAttribute('href')||''})" +
+                                        ".filter(Boolean).join('\\n')})()",
+                                ) { raw ->
+                                    val text = decode(raw).orEmpty()
+                                    release(text.split('\n').filter { it.isNotBlank() })
+                                }
+                            }, 2_500)
+                        }
+                    }
+                    continuation.invokeOnCancellation { release(emptyList()) }
+                    runCatching { web.loadUrl(url) }.onFailure { release(emptyList()) }
+                }
+            }
+        } ?: emptyList()
+
     /** evaluateJavascript hands back a JSON string literal; unwrap it. */
     private fun decode(raw: String?): String? {
         if (raw == null || raw == "null") return null

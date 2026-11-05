@@ -55,15 +55,19 @@ class AtpLiveClient(context: android.content.Context) {
 
         // Ask the event page which matches exist before reading any of them.
         val resultsUrl = "https://www.atptour.com/en/scores/current/${slugFor(atpId)}/$atpId/results"
-        var resultsHtml = get(resultsUrl)
-        if (resultsHtml == null || ink.courtpace.index.core.live.AtpMatchLinks.fromResultsPage(resultsHtml).isEmpty()) {
-            // The links may only be present once the page has run its scripts.
-            resultsHtml = web.read(resultsUrl) { it.contains("stats-centre", ignoreCase = true) }
-                ?: resultsHtml
-        }
-        val discovered = resultsHtml
+        val resultsHtml = get(resultsUrl)
+        var discovered = resultsHtml
             ?.let { ink.courtpace.index.core.live.AtpMatchLinks.singles(ink.courtpace.index.core.live.AtpMatchLinks.fromResultsPage(it)) }
             .orEmpty()
+        if (discovered.isEmpty()) {
+            // The links live in the markup, which innerText does not contain, so they are read
+            // from the DOM directly rather than from the flattened page.
+            discovered = ink.courtpace.index.core.live.AtpMatchLinks.singles(
+                ink.courtpace.index.core.live.AtpMatchLinks.fromResultsPage(
+                    web.readLinks(resultsUrl).joinToString("\n"),
+                ),
+            )
+        }
         if (discovered.isNotEmpty()) onProgress(collected.size, 0)
 
         val ids = if (discovered.isNotEmpty()) discovered

@@ -202,8 +202,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 .onFailure { status("stats: ${it.message}") }
 
-            // The results page supplies the duration reading when the ace figure is unavailable.
-            if (liveAce == null) {
+            // The results page is a single request and lists every completed match, so it is
+            // always read: it supplies the figure when the ace walk falls short, and it tells us
+            // how many matches the event actually has.
+            run {
                 status("trying the results page")
                 val durationResult = kotlinx.coroutines.withTimeoutOrNull(RESULTS_TIMEOUT_MS) {
                     atpClient.fetch(ref.atpId, ref.slug)
@@ -213,8 +215,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 durationResult
                     .onSuccess {
                         livePace = it
-                        if (it.rating != null) {
-                            applyLiveRating(event.t, event.s, it.rating, it.matches ?: 0, null)
+                        // The ace figure wins when it covers most of the draw; otherwise the
+                        // duration reading is the honest one to show, because it covers all.
+                        val aceCoverage = liveAce?.matches ?: 0
+                        val total = it.matches ?: 0
+                        if (it.rating != null && aceCoverage < (total * 8) / 10) {
+                            applyLiveRating(event.t, event.s, it.rating, total, null)
                         }
                     }
                     .onFailure { livePaceNote = it.message ?: livePaceNote }
