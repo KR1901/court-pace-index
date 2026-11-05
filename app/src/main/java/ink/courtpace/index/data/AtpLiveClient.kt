@@ -24,6 +24,7 @@ import java.net.URL
 class AtpLiveClient(context: android.content.Context) {
 
     private val web = AtpWebReader(context)
+    private val store = MatchStatsStore(context)
 
     private val userAgent =
         "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -42,9 +43,11 @@ class AtpLiveClient(context: android.content.Context) {
         year: Int = 2026,
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
     ): Result<AceRating.Result> = runCatching {
-        val found = java.util.Collections.synchronizedList(
-            mutableListOf<ink.courtpace.index.core.live.AtpMatchStats>(),
-        )
+        val eventKey = "$atpId-$year"
+        val cached = store.readAll(eventKey)
+        // Keyed by match id: a re-read must replace rather than add, and the same map is what
+        // gets persisted for the next refresh.
+        val collected = java.util.concurrent.ConcurrentHashMap<String, ink.courtpace.index.core.live.AtpMatchStats>(cached)
         val tried = java.util.concurrent.atomic.AtomicInteger(0)
         val withContent = java.util.concurrent.atomic.AtomicInteger(0)
         var blocked = false
@@ -57,26 +60,50 @@ class AtpLiveClient(context: android.content.Context) {
                 async(Dispatchers.Default) {
                     gate.withPermit {
                         if (blocked) return@withPermit
-                        onProgress(found.size, tried.get() + 1)
                         val id = "ms" + n.toString().padStart(3, '0')
+                        if (cached.containsKey(id)) {
+                            onProgress(collected.size, tried.incrementAndGet())
+                            return@withPermit
+                        }
+                        onProgress(collected.size, tried.get() + 1)
                         val url = "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$id"
-                        // The numbers are injected by the page's own JavaScript, so it has to be
-                        // rendered, not merely fetched: a plain GET returns the empty shell.
-                        val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
-                        if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
+
+                        // A plain request costs a fraction of a second and answers two things:
+                        // whether this match id exists at all, and whether the page happens to
+                        // carry its numbers server-side. Only pages that pass both tests are
+                        // worth a browser, and the rest are skipped instead of waiting out a
+                        // render timeout - that wait, on every non-existent id, is what kept the
+                        // count at thirteen.
+                        val shell = get(url)
+                        if (shell != null && !looksLikeMatch(shell)) {
+                            onProgress(collected.size, tried.incrementAndGet())
+                            return@withPermit
+                        }
+                        if (shell != null && shell.contains(AtpWebReader.BLOCKED, true)) {
                             blocked = true
                             return@withPermit
                         }
-                        if (rendered != null && rendered.length > 400) withContent.incrementAndGet()
-                        rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
-                            ?.let { found.add(it) }
-                        onProgress(found.size, tried.incrementAndGet())
+                        var parsed = shell?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
+                        if (parsed == null) {
+                            // The numbers are injected by the page's own JavaScript, so the
+                            // remaining pages have to be rendered, not merely fetched.
+                            val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
+                            if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
+                                blocked = true
+                                return@withPermit
+                            }
+                            if (rendered != null && rendered.length > 400) withContent.incrementAndGet()
+                            parsed = rendered?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
+                        }
+                        parsed?.let { collected[id] = it }
+                        onProgress(collected.size, tried.incrementAndGet())
                     }
                 }
             }.awaitAll()
         }
-        if (blocked && found.isEmpty()) error("ATP refused the request from this network")
-        AceRating.rate(found.toList()) ?: error(
+        val found = collected.values.toList()
+        if (!blocked) store.writeAll(eventKey, collected)
+        AceRating.rate(found) ?: error(
             when {
                 found.isNotEmpty() -> "only ${found.size} matches have stats so far"
                 withContent.get() == 0 -> "the ATP pages came back empty"
@@ -87,6 +114,12 @@ class AtpLiveClient(context: android.content.Context) {
         // Whatever happens inside, the caller gets an answer rather than an eternal wait.
         result
     }
+
+    /** The page title names the match when the id exists; a placeholder means it does not. */
+    private fun looksLikeMatch(html: String): Boolean =
+        Regex("<title>(.*?)</title>", RegexOption.DOT_MATCHES_ALL)
+            .find(html)?.groupValues?.get(1)
+            ?.contains(" vs", ignoreCase = true) == true
 
     private fun get(url: String): String? = try {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
@@ -114,7 +147,7 @@ class AtpLiveClient(context: android.content.Context) {
         const val MAX_MATCHES = 96
 
         /** Pages rendered at once. Serial reads were the reason nothing appeared for minutes. */
-        const val PARALLEL_PAGES = 6
+        const val PARALLEL_PAGES = 8
 
     }
 
