@@ -62,6 +62,18 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `an ATP id missing from a cached dataset is recovered`() {
+        // A cache written by an earlier release has no atpId. The lookup returned null, the
+        // fetch was skipped before any network call, and the feature did nothing at all.
+        val staleLive = data.dataset.live.map { it.copy(atpId = null, slug = null) }
+        val stale = data.dataset.copy(live = staleLive)
+        val chosen = DatasetPolicy.choose(data.dataset, stale)
+        assertTrue("the bundled definition must win", chosen.live.all { it.atpId != null })
+        // And even with nothing to recover from, the registry knows where Paris lives.
+        assertEquals(352, ink.courtpace.index.core.live.AtpEvents.forTournament("paris")?.atpId)
+    }
+
+    @Test
     fun `a published dataset without a live list cannot erase the event in progress`() {
         // The workflow publishes datasets built from the asset; one produced before the live
         // feed existed has no live array, and taking it whole made the live row disappear.

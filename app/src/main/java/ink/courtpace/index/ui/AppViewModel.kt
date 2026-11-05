@@ -68,6 +68,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 .onSuccess { bundled ->
                     val cached = runCatching { updater.cached() }.getOrNull()
                     publish(PaceData(DatasetPolicy.choose(bundled.dataset, cached?.dataset)))
+                    // Read the live event on open, so the row fills in without a tap.
+                    refreshLivePace()
                 }
                 .onFailure {
                     _error.value = "The bundled dataset could not be read: ${it.message}"
@@ -148,9 +150,25 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      * it instantly rather than waiting for the scheduled job.
      */
     private suspend fun refreshLivePace() {
-        val data = _data.value ?: return
-        val event = data.dataset.live.firstOrNull { it.atpId != null } ?: return
-        atpClient.fetch(event.atpId!!, event.slug ?: "paris")
+        val data = _data.value
+        if (data == null) {
+            livePaceNote = "dataset not loaded"
+            return
+        }
+        val event = data.dataset.live.firstOrNull()
+        if (event == null) {
+            livePaceNote = "no live event in the dataset"
+            return
+        }
+        // Prefer the event's own id, fall back to the registry: a cached dataset from an older
+        // release has no atpId, and that silently disabled the whole feature.
+        val ref = event.atpId?.let { ink.courtpace.index.core.live.AtpEvents.Ref(it, event.slug ?: "paris", event.s) }
+            ?: ink.courtpace.index.core.live.AtpEvents.forTournament(event.t)
+        if (ref == null) {
+            livePaceNote = "no ATP page known for ${event.t}"
+            return
+        }
+        atpClient.fetch(ref.atpId, ref.slug)
             .onSuccess {
                 livePace = it
                 livePaceNote = null
@@ -162,7 +180,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             .onFailure { livePaceNote = it.message ?: "could not read the ATP results page" }
 
         liveAceProgress = "reading ATP match stats"
-        atpClient.fetchAceRating(event.atpId!!) { found, tried ->
+        atpClient.fetchAceRating(ref.atpId, ref.year) { found, tried ->
             liveAceProgress = "$found of $tried matches read"
         }
             .onSuccess {

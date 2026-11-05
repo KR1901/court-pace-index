@@ -36,10 +36,18 @@ object DatasetPolicy {
         if (remote.readings.size < bundled.readings.size) return bundled
         // A published dataset built before the live feed existed carries no live array; taking
         // it wholesale would erase the event in progress from the screen.
-        return if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {
+        val chosen = if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {
             remote.copy(live = bundled.live)
         } else {
             remote
         }
+        // Entries written by an older release carry no ATP id; keep the richer definition so
+        // the live fetch knows where to look.
+        val enriched = chosen.live.map { event ->
+            if (event.atpId != null) event
+            else bundled.live.firstOrNull { it.t == event.t && it.s == event.s && it.atpId != null }
+                ?: event
+        }
+        return chosen.copy(live = enriched)
     }
 }
