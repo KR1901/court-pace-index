@@ -128,6 +128,7 @@ object AceRating {
     /** Preserve the historical pipeline's minimum event sample: twenty server-side observations. */
     const val MIN_MATCHES = 8
     const val MIN_ADJUSTED_SERVER_SIDES = 20
+    const val MIN_EXPECTED_ACES = 0.0
 
     private fun normaliseName(value: String): String {
         val decomposed = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
@@ -272,7 +273,9 @@ object AceRating {
             val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
             if (denominator <= 0.0) return
             val expected = (joint / denominator) * servicePoints
-            if (expected <= 0.5) return
+            // Match the historical pipeline: retain every valid side with positive expected aces.
+            // A 0.5-ace floor silently discarded valid low-ace players and prevented full coverage.
+            if (!expected.isFinite() || expected <= MIN_EXPECTED_ACES) return
             ratios += aces.toDouble() / expected
         }
 
