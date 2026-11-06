@@ -132,7 +132,11 @@ class AtpLiveClient(context: Context) {
     /** The event's results page: every completed match with score and duration, in one page. */
     suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> = runCatching {
         val url = "https://www.atptour.com/en/scores/current/$slug/$atpId/results"
-        var matches = web.read(url) { it.contains("wins the match", ignoreCase = true) }
+        // A single page, so it gets a generous deadline: the results page is heavy and was
+        // being abandoned at the twelve-second default before it finished rendering.
+        var matches = web.read(url, timeoutMs = RESULTS_RENDER_MS) {
+            it.contains("wins the match", ignoreCase = true)
+        }
             ?.let { AtpResultsParser.parse(AtpResultsParser.toText(it)) }
             .orEmpty()
         if (matches.isEmpty()) {
@@ -187,9 +191,19 @@ class AtpLiveClient(context: Context) {
         const val MAX_MATCHES = 96
 
         /** Pages rendered at once. */
-        const val PARALLEL_PAGES = 12
+        /**
+         * Simultaneous renders. Twelve was chosen to bound the walk and did the opposite: a phone
+         * cannot keep that many WebViews alive, so they failed and were counted as "no stats".
+         * The count tracked this number rather than any code path - eight concurrent, twenty
+         * seconds each, found fourteen matches; twelve concurrent, twelve seconds, found six.
+         */
+        const val PARALLEL_PAGES = 4
 
         /** The walk's own budget; whatever it has by then is rated, not discarded. */
-        const val WALK_BUDGET_MS = 420_000L
+        /** Generous on purpose: a complete figure matters more than a fast one here. */
+        const val WALK_BUDGET_MS = 600_000L
+
+        /** The results page is one render, so it can afford a long deadline. */
+        const val RESULTS_RENDER_MS = 45_000L
     }
 }
