@@ -450,9 +450,9 @@ private fun LivePendingRow(
 }
 
 private fun adjustmentIssueLabel(reason: String): String = when {
+    reason.startsWith("no server serve profile or returner") -> "both profiles missing"
     reason.startsWith("no server serve profile") -> "no server profile"
     reason.startsWith("no returner concession profile") -> "no returner profile"
-    reason.startsWith("no server serve profile or returner") -> "both profiles missing"
     reason.startsWith("zero or invalid expected aces") -> "zero expected aces"
     reason.startsWith("invalid ace/service-point") -> "invalid match stats"
     reason.startsWith("invalid expected-aces") -> "invalid expectation"
