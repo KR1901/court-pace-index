@@ -201,7 +201,7 @@ class AtpStatsParserTest {
             ),
         )
         val matches = (1..10).map {
-            AtpMatchStats("A. DE MINAUR", "A. RUBLEV", 6, 40, 5, 38, true)
+            AtpMatchStats("A. DE MINAUR", "A. RUBLEV", 6, 80, 5, 82, true)
         }
 
         val coverage = AceRating.coverage(matches, realisticBaseline)
@@ -225,7 +225,26 @@ class AtpStatsParserTest {
             ),
         )
         val matches = (1..10).map {
-            AtpMatchStats("J. M. CERUNDOLO", "A. DE MINAUR", 4, 37, 6, 41, true)
+            AtpMatchStats("J. M. CERUNDOLO", "A. DE MINAUR", 4, 80, 6, 82, true)
+        }
+
+        val result = AceRating.rate(matches, realisticBaseline)!!
+
+        assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
+    fun `ATP can omit a middle initial from a compound given name`() {
+        val realisticBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Juan Manuel Cerundolo", serveRate = 0.11, concedeRate = 0.09),
+                LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("J. CERUNDOLO", "A. DE MINAUR", 4, 80, 6, 82, true)
         }
 
         val result = AceRating.rate(matches, realisticBaseline)!!
