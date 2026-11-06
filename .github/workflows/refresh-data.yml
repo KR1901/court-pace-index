@@ -51,7 +51,7 @@ jobs:
       - name: Validate the generated season baseline
         run: |
           python3 - <<'PY'
-          import json, math
+          import json, math, unicodedata
           from datetime import date
           from pathlib import Path
 
@@ -66,6 +66,13 @@ jobs:
           assert baseline.get("ratedEvents", 0) >= 5, "too few rated events to establish a stable normaliser"
           profiles = baseline.get("profiles")
           assert isinstance(profiles, list) and len(profiles) >= 20, "too few player profiles were generated"
+          normalized_names = [
+              "".join(ch for ch in unicodedata.normalize("NFKD", p.get("name", "")).casefold() if ch.isalnum())
+              for p in profiles
+          ]
+          assert all(normalized_names) and len(set(normalized_names)) == len(normalized_names), (
+              "duplicate or blank normalized player names remain in the live baseline"
+          )
           usable = [p for p in profiles if p.get("name") and
                     (p.get("serveRate") is not None or p.get("concedeRate") is not None)]
           assert len(usable) >= 20, "too few usable player profiles were generated"
