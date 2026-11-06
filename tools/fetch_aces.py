@@ -46,10 +46,11 @@ async def render(context, url):
     page = await context.new_page()
     try:
         await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-        # The numbers are injected after load; wait for them rather than trusting the load.
-        for _ in range(20):
+        # Ace labels can appear before the serving denominators. Wait for the full record,
+        # not just the first marker, and return the final body after the bounded wait.
+        for _ in range(40):
             text = await page.inner_text("body")
-            if ACES.search(text):
+            if parse(text) is not None:
                 return text
             await page.wait_for_timeout(500)
         return await page.inner_text("body")
