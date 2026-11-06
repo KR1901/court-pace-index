@@ -70,6 +70,26 @@ class AtpStatsParserTest {
         assertEquals(132, stats.secondServePoints)
     }
 
+
+    @Test
+    fun `parses the alternate ATP layout with labels before values and no player abbreviations`() {
+        val alternate = page
+            .replace("7\\nAces\\n2\\nAces", "Aces\\n7\\nAces\\n2")
+            .replace("82/126 (65%)\\nFirst serve", "First serve\\n82/126 (65%)")
+            .replace("64/132 (48%)\\nFirst serve", "First serve\\n64/132 (48%)")
+            .replace("        F. Comesana\\n", "")
+            .replace("        D. Rincon\\n", "")
+
+        val stats = AtpStatsParser.parse(alternate)!!
+
+        assertEquals(7, stats.firstAces)
+        assertEquals(2, stats.secondAces)
+        assertEquals(126, stats.firstServePoints)
+        assertEquals(132, stats.secondServePoints)
+        assertEquals("Player 1", stats.firstPlayer)
+        assertEquals("Player 2", stats.secondPlayer)
+    }
+
     @Test
     fun `identifies which side won`() {
         val stats = AtpStatsParser.parse(page)!!
