@@ -153,7 +153,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun showCachedLiveRatings() {
         val events = _data.value?.dataset?.live.orEmpty()
         events.forEach { event ->
-            val cached = ratingStore.read(event.t) ?: return@forEach
+            val cached = ratingStore.read(event.t)
+                ?.takeIf { it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION }
+                ?: return@forEach
             applyLiveRating(event.t, cached.season, cached.speed, cached.matches, cached.aceRate)
         }
     }
@@ -213,7 +215,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // fresh match pages render, and each row reads only its own cached value.
             refs.forEach { ref ->
                 val cached = ratingStore.read(ref.tournamentId)
-                if (cached != null && cached.season == ref.year) {
+                if (cached != null && cached.season == ref.year &&
+                    cached.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION
+                ) {
                     applyLiveRating(
                         ref.tournamentId,
                         cached.season,
@@ -227,10 +231,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             for (ref in refs) {
                 val name = _data.value?.tournament(ref.tournamentId)?.name ?: ref.slug
                 status("$name · reading completed singles links")
+                val baseline = _data.value?.dataset?.speedBaseline
+                    ?.takeIf { it.season == ref.year }
+                if (baseline == null) {
+                    status("$" + "name · season $" + "ref.year opponent-adjustment baseline unavailable; refresh the dataset")
+                    continue
+                }
                 val result = withTimeoutOrNull(WALK_TIMEOUT_MS) {
                     var discoveryLine = "discovering"
                     atpClient.fetchAceRating(
                         event = ref,
+                        baseline = baseline,
                         onProgress = { found, tried ->
                             status(
                                 "$name · $discoveryLine · " +
