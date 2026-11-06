@@ -74,6 +74,14 @@ class MatchIdDiscoveryTest {
             <div class="match">
               <div class="match-cta"><a href="/en/scores/stats-centre/archive/2026/352/ms062">Stats</a></div>
             </div>
+            <div class="match">
+              <div class="result-status">W.O.</div>
+              <div class="match-cta"><a href="/en/scores/stats-centre/archive/2026/352/ms063">Stats</a></div>
+            </div>
+            <div class="match">
+              <div class="result-status">Walk-over</div>
+              <div class="match-cta"><a href="/en/scores/stats-centre/archive/2026/352/ms064">Stats</a></div>
+            </div>
         """.trimIndent()
 
         val links = AtpMatchLinks.linksFromResultsPage(html).associateBy { it.id }
@@ -81,6 +89,8 @@ class MatchIdDiscoveryTest {
         assertEquals(AtpMatchLinks.ResultStatus.WALKOVER, links.getValue("ms060").resultStatus)
         assertEquals(AtpMatchLinks.ResultStatus.RETIREMENT, links.getValue("ms061").resultStatus)
         assertEquals(AtpMatchLinks.ResultStatus.UNKNOWN, links.getValue("ms062").resultStatus)
+        assertEquals(AtpMatchLinks.ResultStatus.WALKOVER, links.getValue("ms063").resultStatus)
+        assertEquals(AtpMatchLinks.ResultStatus.WALKOVER, links.getValue("ms064").resultStatus)
     }
 
     @Test
