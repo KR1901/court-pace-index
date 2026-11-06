@@ -165,7 +165,7 @@ class AtpStatsParserTest {
 
     @Test
     fun `rating uses server and returner tendencies rather than pooled ace rate`() {
-        val ordinary = AceRating.rate(sampleMatches())!!
+        val ordinary = AceRating.rate(sampleMatches(), baseline)!!
         val strongerReturner = AceRating.rate(
             sampleMatches(),
             baseline.copy(
