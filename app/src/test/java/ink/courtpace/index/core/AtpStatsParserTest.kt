@@ -185,7 +185,7 @@ class AtpStatsParserTest {
 
     @Test
     fun `historical normalisation centres a tour average event at one`() {
-        val raw = AceRating.rate(sampleMatches())!!
+        val raw = AceRating.rate(sampleMatches(), baseline)!!
         val centred = AceRating.rate(sampleMatches(), baseline.copy(normalisation = raw.rating))!!
         assertEquals(1.0, centred.rating, 1e-9)
     }
