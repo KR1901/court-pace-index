@@ -158,9 +158,10 @@ def player_rates(usable):
 
 # A low-sample profile uses a prior equal to roughly three tour matches. This is only
 # used when no qualified player-specific rate is available in the baseline season or
-# any of the preceding three seasons.
+# any of the preceding ten seasons.
 LIVE_PROFILE_FALLBACK_SEASONS = 10
 LIVE_PROFILE_PRIOR_SERVICE_POINTS = 300.0
+MIN_EXPECTED_ACES = 0.0
 
 
 def _surface_priors(profiles):
@@ -398,7 +399,10 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None):
             if denom <= 0:
                 continue
             expected = ((ps * qr) / denom) * sv
-            if expected <= 0.5:
+            # Keep every mathematically valid player-server side. The former 0.5-ace
+            # floor dropped low-ace players from live events; both historical and live
+            # calculations now share the positive-expectation-only rule.
+            if expected <= MIN_EXPECTED_ACES:
                 continue
             per_event[tid].append(ac / expected)
 
