@@ -370,6 +370,20 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.totalServerSides)
                                 append(" server sides adjusted")
+                                if (ace.adjustmentIssues.isNotEmpty()) {
+                                    append("\nNot adjusted: ")
+                                    append(
+                                        ace.adjustmentIssues.take(4).joinToString("; ") { issue ->
+                                            val id = issue.matchId?.let { "$it " }.orEmpty()
+                                            "$id${issue.server} → ${issue.returner} (${adjustmentIssueLabel(issue.reason)})"
+                                        },
+                                    )
+                                    if (ace.adjustmentIssues.size > 4) {
+                                        append(" +")
+                                        append(ace.adjustmentIssues.size - 4)
+                                        append(" more")
+                                    }
+                                }
                                 if (ace.inProgressMatches > 0) {
                                     append(" · ")
                                     append(ace.inProgressMatches)
@@ -428,11 +442,21 @@ private fun LivePendingRow(
                     },
                     style = TextStyle(fontSize = 11.sp),
                     color = colors.textDim,
-                    maxLines = 3,
+                    maxLines = if (ace?.adjustmentIssues?.isNotEmpty() == true) 6 else 3,
                 )
             }
         }
     }
+}
+
+private fun adjustmentIssueLabel(reason: String): String = when {
+    reason.startsWith("no server serve profile") -> "no server profile"
+    reason.startsWith("no returner concession profile") -> "no returner profile"
+    reason.startsWith("no server serve profile or returner") -> "both profiles missing"
+    reason.startsWith("zero or invalid expected aces") -> "zero expected aces"
+    reason.startsWith("invalid ace/service-point") -> "invalid match stats"
+    reason.startsWith("invalid expected-aces") -> "invalid expectation"
+    else -> reason.take(32)
 }
 
 private fun missingReasonLabel(reason: String): String = when {
