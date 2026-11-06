@@ -127,6 +127,12 @@ class AtpLiveClient(context: Context) {
                     "${inProgressRouteIds.size} still live); no match lookups attempted",
             )
         }
+        if (links.isEmpty()) {
+            error(
+                "all ${archiveLinks.size} archived singles links are confirmed walkovers/no-play; " +
+                    "there are no played matches to rate yet",
+            )
+        }
 
         val inProgressPayloadIds = ConcurrentHashMap.newKeySet<String>()
         val doublesPayloadIds = ConcurrentHashMap.newKeySet<String>()
