@@ -36,6 +36,17 @@ class MatchIdDiscoveryTest {
     }
 
 
+
+    @Test
+    fun `tries the discovered stats route and its live archive counterpart`() {
+        val archive = AtpMatchLinks.MatchLink("ms019", "archive", 2026, 352)
+        val live = AtpMatchLinks.routeVariants(archive)
+        assertEquals(listOf("archive", "live"), live.map { it.section })
+
+        val liveFirst = AtpMatchLinks.routeVariants(archive.copy(section = "live"))
+        assertEquals(listOf("live", "archive"), liveFirst.map { it.section })
+    }
+
     @Test
     fun `discovers the complete 55-match main draw from sparse ATP IDs`() {
         // Real ATP match IDs are sparse; the reader must follow links, not assume ms001..ms055.
