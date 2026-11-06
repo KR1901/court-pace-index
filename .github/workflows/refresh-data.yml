@@ -69,8 +69,10 @@ jobs:
           for profile in usable:
               for key in ("serveRate", "concedeRate"):
                   value = profile.get(key)
-                  assert value is None or (isinstance(value, (int, float)) and math.isfinite(value) and 0 <= value <= 1), \\
-                      f"invalid {key} for {profile.get('name')}"
+                  valid = value is None or (
+                      isinstance(value, (int, float)) and math.isfinite(value) and 0 <= value <= 1
+                  )
+                  assert valid, f"invalid {key} for {profile.get('name')}"
           print(f"Baseline OK: season={season}, profileSeason={baseline['profileSeason']}, "
                 f"profiles={len(usable)}, events={baseline['ratedEvents']}, normalisation={normalisation:.6f}")
           PY
