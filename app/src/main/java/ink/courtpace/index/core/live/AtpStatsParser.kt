@@ -131,30 +131,120 @@ object AceRating {
     }
 
     /**
-     * Same opponent-adjusted calculation as tools/compute_speed.py:
-     * expected aces = ((serveRate * concedeRate) /
-     * (serveRate * concedeRate + (1-serveRate) * (1-concedeRate))) * servicePoints.
-     * Average actual/expected ratios over both server sides, then divide by the season-wide
-     * mean of event raw scores. Missing player profiles are omitted, never replaced by the
-     * pooled-rate approximation.
+     * ATP Stats Plus commonly identifies a player as "A. DE MINAUR", while the historical
+     * archive stores "Alex de Minaur". Match on the first initial plus the complete surname,
+     * not on the literal display string. Names with multiple initials (for example
+     * "J. M. CERUNDOLO") are supported too.
      */
-    fun rate(matches: List<AtpMatchStats>, baseline: ink.courtpace.index.core.model.LiveSpeedBaseline): Result? {
-        if (matches.size < MIN_MATCHES || baseline.normalisation <= 0.0 ||
-            !baseline.normalisation.isFinite()
-        ) return null
+    private fun abbreviatedNameAlias(value: String): String? {
+        val parts = value.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+        val initials = StringBuilder()
+        var index = 0
+        while (index < parts.size) {
+            val token = parts[index].trimEnd('.')
+            if (token.length == 1) {
+                initials.append(token)
+                index++
+            } else {
+                break
+            }
+        }
+        if (initials.isEmpty() || index >= parts.size) return null
+        return normaliseName(initials.toString() + parts.drop(index).joinToString(""))
+            .takeIf { it.isNotBlank() }
+    }
 
-        val profiles = baseline.profiles.associateBy { normaliseName(it.name) }
+    private data class ProfileIndex(
+        val exact: Map<String, ink.courtpace.index.core.model.LiveSpeedPlayerProfile>,
+        val aliases: Map<String, List<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>>,
+    ) {
+        fun resolve(displayName: String): ink.courtpace.index.core.model.LiveSpeedPlayerProfile? {
+            val key = normaliseName(displayName)
+            exact[key]?.let { return it }
+
+            val alias = abbreviatedNameAlias(displayName) ?: return null
+            // A short-name collision must not silently assign one player's rates to another.
+            return aliases[alias]?.singleOrNull()
+        }
+    }
+
+    private fun profileIndex(
+        profiles: List<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>,
+    ): ProfileIndex {
+        val exact = profiles.associateBy { normaliseName(it.name) }
+        val aliases = linkedMapOf<String, MutableList<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>>()
+
+        fun addAlias(alias: String, profile: ink.courtpace.index.core.model.LiveSpeedPlayerProfile) {
+            if (alias.isBlank()) return
+            val matches = aliases.getOrPut(alias) { mutableListOf() }
+            if (matches.none { normaliseName(it.name) == normaliseName(profile.name) }) {
+                matches += profile
+            }
+        }
+
+        profiles.forEach { profile ->
+            val parts = profile.name.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+            if (parts.size < 2) return@forEach
+
+            // "Alex de Minaur" -> "ademinaur", matching "A. DE MINAUR".
+            addAlias(normaliseName(parts.first().take(1) + parts.drop(1).joinToString("")), profile)
+
+            // "Juan Manuel Cerundolo" -> "jmcerundolo", matching "J. M. CERUNDOLO".
+            if (parts.size >= 3) {
+                val initials = parts.dropLast(1).joinToString("") { it.take(1) }
+                addAlias(normaliseName(initials + parts.last()), profile)
+            }
+        }
+
+        return ProfileIndex(
+            exact = exact,
+            aliases = aliases.mapValues { (_, values) -> values.toList() },
+        )
+    }
+
+    data class Coverage(
+        val totalServerSides: Int,
+        val serverProfilesMatched: Int,
+        val returnerProfilesMatched: Int,
+        val adjustedServerSides: Int,
+    )
+
+    private data class Evaluation(
+        val totalAces: Int,
+        val totalPoints: Int,
+        val ratios: List<Double>,
+        val coverage: Coverage,
+    )
+
+    private fun evaluate(
+        matches: List<AtpMatchStats>,
+        baseline: ink.courtpace.index.core.model.LiveSpeedBaseline,
+    ): Evaluation {
+        val totalSides = matches.size * 2
+        if (baseline.normalisation <= 0.0 || !baseline.normalisation.isFinite()) {
+            return Evaluation(0, 0, emptyList(), Coverage(totalSides, 0, 0, 0))
+        }
+
+        val profiles = profileIndex(baseline.profiles)
         var totalAces = 0
         var totalPoints = 0
+        var serverProfilesMatched = 0
+        var returnerProfilesMatched = 0
         val ratios = mutableListOf<Double>()
 
         fun addSide(serverName: String, returnerName: String, aces: Int, servicePoints: Int) {
             totalAces += aces
             totalPoints += servicePoints
-            val server = profiles[normaliseName(serverName)] ?: return
-            val returner = profiles[normaliseName(returnerName)] ?: return
-            val serveRate = server.serveRate ?: return
-            val concedeRate = returner.concedeRate ?: return
+
+            val server = profiles.resolve(serverName)
+            val returner = profiles.resolve(returnerName)
+            val serveRate = server?.serveRate
+            val concedeRate = returner?.concedeRate
+
+            if (serveRate != null) serverProfilesMatched++
+            if (concedeRate != null) returnerProfilesMatched++
+            if (serveRate == null || concedeRate == null) return
+
             if (servicePoints <= 0 || aces < 0 || aces > servicePoints) return
             val joint = serveRate * concedeRate
             val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
@@ -169,15 +259,52 @@ object AceRating {
             addSide(match.secondPlayer, match.firstPlayer, match.secondAces, match.secondServePoints)
         }
 
-        if (totalPoints <= 0 || ratios.size < MIN_ADJUSTED_SERVER_SIDES) return null
-        val rawEventScore = ratios.average()
-        val pooledAceRate = totalAces.toDouble() / totalPoints
+        return Evaluation(
+            totalAces = totalAces,
+            totalPoints = totalPoints,
+            ratios = ratios,
+            coverage = Coverage(
+                totalServerSides = totalSides,
+                serverProfilesMatched = serverProfilesMatched,
+                returnerProfilesMatched = returnerProfilesMatched,
+                adjustedServerSides = ratios.size,
+            ),
+        )
+    }
+
+    /** Explain how much of the supplied match sample can be opponent-adjusted. */
+    fun coverage(
+        matches: List<AtpMatchStats>,
+        baseline: ink.courtpace.index.core.model.LiveSpeedBaseline,
+    ): Coverage = evaluate(matches, baseline).coverage
+
+    /**
+     * Same opponent-adjusted calculation as tools/compute_speed.py:
+     * expected aces = ((serveRate * concedeRate) /
+     * (serveRate * concedeRate + (1-serveRate) * (1-concedeRate))) * servicePoints.
+     * Average actual/expected ratios over both server sides, then divide by the season-wide
+     * mean of historical event raw scores. Missing player profiles are omitted, never replaced
+     * by the pooled-rate approximation.
+     */
+    fun rate(
+        matches: List<AtpMatchStats>,
+        baseline: ink.courtpace.index.core.model.LiveSpeedBaseline,
+    ): Result? {
+        if (matches.size < MIN_MATCHES) return null
+        val evaluation = evaluate(matches, baseline)
+        if (evaluation.totalPoints <= 0 ||
+            evaluation.ratios.size < MIN_ADJUSTED_SERVER_SIDES
+        ) return null
+
+        val rawEventScore = evaluation.ratios.average()
+        val pooledAceRate = evaluation.totalAces.toDouble() / evaluation.totalPoints
         return Result(
             rating = rawEventScore / baseline.normalisation,
             matches = matches.size,
-            aces = totalAces,
+            aces = evaluation.totalAces,
             aceRate = pooledAceRate,
-            adjustedServerSides = ratios.size,
+            adjustedServerSides = evaluation.coverage.adjustedServerSides,
         )
     }
+
 }
