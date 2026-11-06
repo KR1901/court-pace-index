@@ -34,11 +34,19 @@ data class CachedLiveRating(
         val total = totalServerSides ?: return null
         val rate = aceRate ?: return null
         if (
+            // A cache from an older method must be recomputed, not carried into the new
+            // opponent-adjusted calculation.
+            methodVersion != CURRENT_METHOD_VERSION ||
             matches <= 0 ||
             discovered < matches ||
             total != discovered * 2 ||
             adjusted < AceRating.MIN_ADJUSTED_SERVER_SIDES ||
             adjusted > total ||
+            // Every parsed match contributes two candidate sides. If any are excluded,
+            // their per-side diagnostics must survive the cache round-trip. This prevents
+            // an older partial result (for example 50/98 from the former 0.5 cutoff) from
+            // being restored as an unexplained current rating.
+            adjusted + adjustmentIssues.size != matches * 2 ||
             !speed.isFinite() ||
             !rate.isFinite() ||
             rate !in 0.0..1.0
