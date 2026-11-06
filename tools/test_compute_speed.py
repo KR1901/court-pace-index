@@ -190,5 +190,38 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual(list(range(2025, 2015, -1)), visited)
 
 
+class EventRawScoresCoverageTests(unittest.TestCase):
+    def test_includes_valid_positive_expected_aces_below_the_old_half_ace_floor(self):
+        # Ten matches produce twenty server sides. Each side expects far fewer than
+        # half an ace, but the expected value is positive and the observation is valid.
+        rows = [
+            {
+                "tourney_name": "Paris Masters",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "w_svpt": 80,
+                "l_svpt": 82,
+                "w_ace": 1,
+                "l_ace": 1,
+                "surface": "Hard",
+            }
+            for _ in range(10)
+        ]
+        profiles = {
+            "p1": {"serve_rate": 0.01, "concede_rate": 0.01},
+            "p2": {"serve_rate": 0.01, "concede_rate": 0.01},
+        }
+
+        raw, _, _, matches = compute_speed.event_raw_scores(rows, profiles)
+
+        joint = 0.01 * 0.01
+        expected = joint / (joint + (1 - 0.01) * (1 - 0.01)) * 80
+        self.assertGreater(expected, 0.0)
+        self.assertLess(expected, 0.5)
+        self.assertIn("paris", raw)
+        self.assertEqual(10, matches["paris"])
+        self.assertAlmostEqual(1.0 / expected, raw["paris"], places=9)
+
+
 if __name__ == "__main__":
     unittest.main()
