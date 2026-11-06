@@ -275,6 +275,47 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `all 2026 Paris main-draw labels resolve to both player profile rates`() {
+        val liveBaseline = ink.courtpace.index.core.data.PaceData.parse(Datasets.raw())
+            .dataset.speedBaseline!!
+        val parisDrawLabels = listOf(
+            "A. ZVEREV", "L. MUSETTI", "H. HURKACZ", "L. VAN ASSCHE",
+            "M. NAVONE", "D. VALLEJO", "L. TIEN", "N. DJOKOVIC",
+            "V. VACHEROT", "L. DARDERI", "R. HIJIKATA", "A. RUBLEV",
+            "T. ETCHEVERRY", "A. DE MINAUR", "B. SHELTON", "C. NORRIE",
+            "M. ARNALDI", "M. BELLUCCI", "L. SONEGO", "A. RINDERKNECH",
+            "F. CERUNDOLO", "T. PAUL", "H. RUNE", "D. MERIDA",
+            "S. BAEZ", "Q. HALYS", "A. FERY", "F. TIAFOE",
+            "T. TIRANTE", "J. STRUFF", "A. GEA", "C. RUUD",
+            "J. CERUNDOLO", "A. TABILO", "R. JODAR", "N. BORGES",
+            "M. KOUAME", "D. SHAPOVALOV", "K. KHACHANOV", "I. BUSE",
+            "Z. BERGS", "D. MEDVEDEV", "A. FILS", "K. JACQUET",
+            "T. MACHAC", "A. MOLCAN", "T. DROGUET", "B. BONZI",
+            "T. FRITZ", "B. NAKASHIMA", "M. BERRETTINI", "U. HUMBERT",
+            "B. VAN DE ZANDSCHULP", "A. MICHELSEN", "J. LEHECKA",
+            "C. ALCARAZ",
+        )
+        assertEquals(56, parisDrawLabels.size)
+
+        val matches = parisDrawLabels.chunked(2).map { pair ->
+            AtpMatchStats(
+                firstPlayer = pair[0],
+                secondPlayer = pair[1],
+                firstAces = 5,
+                firstServePoints = 80,
+                secondAces = 4,
+                secondServePoints = 82,
+                firstWon = true,
+            )
+        }
+        val coverage = AceRating.coverage(matches, liveBaseline)
+
+        assertEquals(56, coverage.totalServerSides)
+        assertEquals(56, coverage.serverProfilesMatched)
+        assertEquals(56, coverage.returnerProfilesMatched)
+    }
+
+    @Test
     fun `ambiguous abbreviated names are not assigned to an arbitrary profile`() {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
