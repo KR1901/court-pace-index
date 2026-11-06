@@ -32,7 +32,7 @@ SERVICE_POINTS = re.compile(
     re.I,
 )
 STATS_LINK = re.compile(
-    r"stats[-/]?centre/(archive|live)/(\d{4})/(\d+)/((?:ms|md)\d+)", re.I
+    r"(?:match[-/]?stats|stats[-/]?centre)/(archive|live)/(\d{4})/(\d+)/((?:ms|md)\d+)", re.I
 )
 
 
@@ -145,7 +145,7 @@ async def probe():
         await context.add_init_script("Object.defineProperty(navigator,'webdriver',{get:()=>undefined})")
         for path in ("archive", "live"):
             for match_id in ("ms019", "ms030", "ms031"):
-                url = f"https://www.atptour.com/en/scores/stats-centre/{path}/2026/352/{match_id}"
+                url = f"https://www.atptour.com/en/scores/match-stats/{path}/2026/352/{match_id}"
                 text = await render(context, url)
                 print(f"{path}/{match_id}: {describe(text)}")
         await browser.close()
@@ -188,7 +188,7 @@ async def main():
                 other = "live" if section == "archive" else "archive"
                 parsed = None
                 for route in (section, other):
-                    url = (f"https://www.atptour.com/en/scores/stats-centre/{route}/"
+                    url = (f"https://www.atptour.com/en/scores/match-stats/{route}/"
                            f"{year}/{event_id}/{match_id}")
                     text = await render(context, url)
                     parsed = parse(text)
