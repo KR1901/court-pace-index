@@ -3,9 +3,8 @@ package ink.courtpace.index.core.live
 /**
  * A match-statistics link found on an ATP results page.
  *
- * Keep the section/year/event id from the href: completed matches are normally linked under
- * archive, while a currently playing match can have a live link. Reconstructing every URL as an
- * archive URL or reading a live match would mix incomplete data into a completed-match rating.
+ * Keep the section/year/event id from the href as metadata. The match id is then used with the
+ * tournament event id to request the corresponding Infosys Stats Plus JSON record.
  */
 object AtpMatchLinks {
 
@@ -43,16 +42,6 @@ object AtpMatchLinks {
     /** Compatibility projection used by parser tests and diagnostics. */
     fun fromResultsPage(source: String): List<String> =
         linksFromResultsPage(source).map { it.id }
-
-    /**
-     * ATP's current-scores feed has used both routes for finished matches during an active event.
-     * The route segment is a page variant, not a reliable match-completion flag, so try the
-     * discovered route first and the other official route second.
-     */
-    fun routeVariants(link: MatchLink): List<MatchLink> {
-        val other = if (link.section == "archive") "live" else "archive"
-        return listOf(link, link.copy(section = other))
-    }
 
     /** Singles only: the surface-speed rating is built from singles serving stats. */
     fun singles(ids: List<String>): List<String> = ids.filter { it.startsWith("ms") }
