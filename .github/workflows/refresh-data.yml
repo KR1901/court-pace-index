@@ -8,6 +8,7 @@ on:
     branches: [main, fix/live-tournament-discovery-and-refresh]
     paths:
       - 'tools/compute_speed.py'
+      - 'tools/test_compute_speed.py'
       - 'tools/build_dataset.py'
       - '.github/workflows/refresh-data.yml'
   schedule:
