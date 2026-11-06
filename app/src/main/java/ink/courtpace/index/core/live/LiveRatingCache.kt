@@ -83,7 +83,7 @@ data class CachedLiveRating(
     }
 
     companion object {
-        const val CURRENT_METHOD_VERSION = 3
+        const val CURRENT_METHOD_VERSION = 4
         const val LEGACY_METHOD_VERSION = 1
         /** Tolerant on purpose: a corrupt or older cache must never break the app. */
         fun fromJson(raw: String?): CachedLiveRating? {
