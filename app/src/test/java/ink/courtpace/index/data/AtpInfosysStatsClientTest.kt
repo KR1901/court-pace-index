@@ -278,6 +278,26 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
+    fun `rejects an impossible service points won ratio`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "31/30", "20/40"),
+        )
+        assertNull(client.parseStatsRows(rows))
+    }
+
+    @Test
+    fun `rejects negative aces within a played retirement set`() {
+        val sets = listOf(
+            listOf(
+                AtpInfosysStatsClient.StatRow("Aces", "-1", "2"),
+                AtpInfosysStatsClient.StatRow("Service Points Won", "20/30", "25/40"),
+            ),
+        )
+        assertNull(client.aggregateSetStatsRows(sets))
+    }
+
+    @Test
     fun `rejects aces greater than a players total service points`() {
         val rows = listOf(
             AtpInfosysStatsClient.StatRow("Aces", "8", "2"),
