@@ -48,7 +48,7 @@ averages are more trustworthy than one edition.
 
 ### Live event estimate
 
-While the app is open, the ATP current-scores hub is re-read every five minutes. The app resolves live event routes to its tournament catalogue (ATP 1000, 500 and 250 only), then follows the results page's completed singles stats links. It tries the discovered archive or live stats-centre route and then its counterpart, because ATP has used both route families for match-stat pages during an active event. Doubles links and guessed match-ID ranges are excluded. The WebView retains its final text snapshot when the expected stats marker does not appear, so layout changes can be diagnosed rather than reported as an empty page. The provisional live figure is:
+While the app is open, the ATP current-scores hub is re-read every five minutes. The app resolves live event routes to its tournament catalogue (ATP 1000, 500 and 250 only), then follows the results page's completed singles stats links. It follows ATP's per-match `/match-stats/archive|live/...` route (and accepts legacy `stats-centre` links during discovery), trying the counterpart route if needed. The stats-centre URL is a hub, not the per-match statistics endpoint. Doubles links and guessed match-ID ranges are excluded. The WebView retains its final text snapshot when the expected stats marker does not appear and includes the resolved URL, document title and ready state in diagnostics, so navigation failures can be distinguished from parser changes. The provisional live figure is:
 
 `(completed-match aces ÷ completed-match service points) ÷ 0.078313`
 
