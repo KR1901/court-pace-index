@@ -46,4 +46,11 @@ object AtpMatchLinks {
 
     fun singlesLinks(links: List<MatchLink>): List<MatchLink> =
         links.filter { it.id.startsWith("ms") }
+
+    /**
+     * Only archive links represent completed matches. Live links may have partial setStats and
+     * must never be mixed into a completed-match event rating.
+     */
+    fun completedSinglesLinks(links: List<MatchLink>): List<MatchLink> =
+        singlesLinks(links).filter { it.section == "archive" }
 }
