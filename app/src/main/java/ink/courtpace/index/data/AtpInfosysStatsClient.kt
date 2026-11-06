@@ -109,9 +109,16 @@ internal class AtpInfosysStatsClient {
         }
     }
 
-    internal fun decryptEnvelope(envelope: JSONObject): JSONObject {
-        val lastModified = envelope.getLong("lastModified")
-        val encoded = envelope.getString("response")
+    private fun decryptEnvelope(envelope: JSONObject): JSONObject {
+        return JSONObject(
+            decryptResponse(
+                lastModified = envelope.getLong("lastModified"),
+                encoded = envelope.getString("response"),
+            ),
+        )
+    }
+
+    internal fun decryptResponse(lastModified: Long, encoded: String): String {
         val keyText = cipherKey(lastModified)
         val key = keyText.toByteArray(StandardCharsets.UTF_8)
         val iv = keyText.uppercase().toByteArray(StandardCharsets.UTF_8)
@@ -131,8 +138,7 @@ internal class AtpInfosysStatsClient {
         for (i in padded.size - padding until padded.size) {
             require((padded[i].toInt() and 0xff) == padding) { "Invalid ATP response padding bytes" }
         }
-        val json = String(padded, 0, padded.size - padding, StandardCharsets.UTF_8).trim()
-        return JSONObject(json)
+        return String(padded, 0, padded.size - padding, StandardCharsets.UTF_8).trim()
     }
 
     /**
