@@ -27,4 +27,12 @@ class LiveRatingCacheTest {
         assertNull(CachedLiveRating.fromJson("not json at all"))
         assertNull(CachedLiveRating.fromJson("{\"t\":\"paris\"}"))
     }
+    @Test
+    fun `a legacy pooled-rate cache is recognised as an old method`() {
+        val legacy = """{"t":"paris","s":2026,"speed":1.47,"matches":47,"ace":11.5,"asOf":"2026-11-06T00:00:00Z"}"""
+        val restored = CachedLiveRating.fromJson(legacy)!!
+        assertEquals(CachedLiveRating.LEGACY_METHOD_VERSION, restored.methodVersion)
+        assertEquals(false, restored.methodVersion == CachedLiveRating.CURRENT_METHOD_VERSION)
+    }
+
 }
