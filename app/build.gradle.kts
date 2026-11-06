@@ -88,11 +88,9 @@ android {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
             it.systemProperty("robolectric.graphicsMode", "NATIVE")
-            // The runtime jar is pre-fetched; Robolectric's own downloader cannot use the proxy.
-            it.systemProperty("robolectric.offline", "true")
-            it.systemProperty("robolectric.dependency.dir", "/scratch/work/rbdeps")
-            // Robolectric unpacks its native runtime here.
-            it.systemProperty("java.io.tmpdir", "/scratch/work/tmp")
+            // Use the runner's normal temp directory and let Robolectric resolve the matching
+            // android-all runtime from Maven. Machine-specific /scratch paths do not exist on
+            // GitHub-hosted runners and make every native screenshot test fail before rendering.
             it.maxHeapSize = "1g"
         }
     }
