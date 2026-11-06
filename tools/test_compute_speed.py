@@ -220,7 +220,7 @@ class EventRawScoresCoverageTests(unittest.TestCase):
         self.assertLess(expected, 0.5)
         self.assertIn("paris", raw)
         self.assertEqual(10, matches["paris"])
-        self.assertAlmostEqual(1.0 / expected, raw["paris"], places=9)
+        self.assertAlmostEqual(1.0 / compute_speed.EXPECTED_ACES_FLOOR, raw["paris"], places=9)
 
 
 if __name__ == "__main__":
