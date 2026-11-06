@@ -234,7 +234,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 val baseline = _data.value?.dataset?.speedBaseline
                     ?.takeIf { it.season == ref.year }
                 if (baseline == null) {
-                    status("$" + "name · season $" + "ref.year opponent-adjustment baseline unavailable; refresh the dataset")
+                    status("$name · season ${ref.year} opponent-adjustment baseline unavailable; refresh the dataset")
                     continue
                 }
                 val result = withTimeoutOrNull(WALK_TIMEOUT_MS) {
