@@ -35,6 +35,18 @@ class MatchStatsStore(context: Context) {
             .toMap()
     }
 
+    /**
+     * Confirmed no-play outcomes (normally walkovers) can be cached separately from stats.
+     * This prevents re-requesting a Stats Plus record that correctly has no service data on
+     * every five-minute refresh. The set is always intersected with the current draw by caller.
+     */
+    fun readNoPlayIds(eventKey: String): Set<String> =
+        prefs.getStringSet("${eventKey}:no-play", emptySet())?.toSet().orEmpty()
+
+    fun writeNoPlayIds(eventKey: String, matchIds: Set<String>) {
+        prefs.edit().putStringSet("${eventKey}:no-play", matchIds.toSet()).apply()
+    }
+
     fun writeAll(eventKey: String, stats: Map<String, AtpMatchStats>) {
         val text = stats.entries.joinToString("\n") { (id, s) ->
             listOf(
