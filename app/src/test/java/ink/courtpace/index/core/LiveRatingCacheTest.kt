@@ -55,6 +55,36 @@ class LiveRatingCacheTest {
     }
 
     @Test
+    fun `excluded player-side diagnostics survive live rating cache round trip`() {
+        val issue = ink.courtpace.index.core.live.AceRating.AdjustmentIssue(
+            matchId = "ms043",
+            server = "A. RINDERKNECH",
+            returner = "F. CERUNDOLO",
+            reason = "no returner concession profile",
+        )
+        val original = CachedLiveRating(
+            tournamentId = "paris",
+            season = 2026,
+            speed = 1.61,
+            matches = 49,
+            aceRate = 0.10,
+            asOf = "2026-11-07T00:00:00Z",
+            methodVersion = CachedLiveRating.CURRENT_METHOD_VERSION,
+            baselineGenerated = "2026-11-06T19:25:21Z",
+            discoveredMatches = 49,
+            adjustedServerSides = 97,
+            totalServerSides = 98,
+            adjustmentIssues = listOf(issue),
+        )
+
+        val restored = CachedLiveRating.fromJson(original.toJson())!!
+
+        assertEquals(original, restored)
+        val result = restored.toAceRatingResultOrNull()!!
+        assertEquals(listOf(issue), result.adjustmentIssues)
+    }
+
+    @Test
     fun `server-side denominator includes completed matches whose stats are still missing`() {
         val partial = CachedLiveRating(
             tournamentId = "paris",
