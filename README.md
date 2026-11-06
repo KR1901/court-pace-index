@@ -89,7 +89,8 @@ measurements, not new measurements. See [docs/DATA.md](docs/DATA.md).
 ./gradlew :app:testDebugUnitTest      # 22 tests: analytics and dataset integrity
 ./gradlew :app:assembleDebug
 ./gradlew :app:assembleRelease        # signed when the env vars below are present
-python3 tools/build_dataset.py        # regenerate the dataset from its source tables
+python3 tools/compute_speed.py --write # regenerate history + live player baseline
+python3 tools/build_dataset.py        # bundle the source tables and live baseline
 ```
 
 Release signing reads four environment variables and falls back to debug signing without them:
