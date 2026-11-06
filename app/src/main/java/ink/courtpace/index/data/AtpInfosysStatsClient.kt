@@ -7,8 +7,10 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.math.BigInteger
-import java.net.HttpURLConnection
-import java.net.URL
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
+import java.util.concurrent.TimeUnit
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.ZoneOffset
@@ -46,11 +48,12 @@ internal class AtpInfosysStatsClient {
     /** The static JSON feed is the established public ATP Stats Plus endpoint. */
     internal fun endpointsForMatch(year: Int, eventId: Int, matchId: String): List<String> {
         val id = matchId.uppercase()
+        // The ATP Stats Centre uses the API route; static S3 is the fallback.
         return listOf(
-            "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/" +
-                "$year/$eventId/$id/keystats.json",
             "https://itp-atp-sls.infosys-platforms.com/prod/api/stats-plus/v1/keystats/" +
                 "year/$year/eventId/$eventId/matchId/$id",
+            "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/" +
+                "$year/$eventId/$id/keystats.json",
         )
     }
 
@@ -137,6 +140,10 @@ internal class AtpInfosysStatsClient {
 
     private fun shouldRetry(diagnostic: String): Boolean {
         val status = Regex("""HTTP ([0-9]{3})""").find(diagnostic)?.groupValues?.get(1)?.toIntOrNull()
+        // S3 AccessDenied/NoSuchKey are policy/object outcomes, not transient edge failures.
+        if (diagnostic.contains("s3-code=AccessDenied", ignoreCase = true) ||
+            diagnostic.contains("s3-code=NoSuchKey", ignoreCase = true)
+        ) return false
         return when {
             status == null -> diagnostic.contains("Exception", ignoreCase = true) ||
                 diagnostic.contains("timeout", ignoreCase = true) ||
@@ -149,41 +156,63 @@ internal class AtpInfosysStatsClient {
         status == 403 || status == 408 || status == 425 || status == 429 ||
             status in 500..599
 
+    internal fun requestHeaders(): Map<String, String> = linkedMapOf(
+        "User-Agent" to USER_AGENT,
+        "Accept" to "application/json, text/plain, */*",
+        "Accept-Language" to "en-US,en;q=0.9",
+        "Origin" to "https://www.atptour.com",
+        "Referer" to "https://www.atptour.com/",
+        "sec-ch-ua" to "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"",
+        "sec-ch-ua-mobile" to "?0",
+        "sec-ch-ua-platform" to "\"macOS\"",
+        "Sec-Fetch-Dest" to "empty",
+        "Sec-Fetch-Mode" to "cors",
+        "Sec-Fetch-Site" to "cross-site",
+    )
+
+    private val httpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .protocols(listOf(Protocol.HTTP_2, Protocol.HTTP_1_1))
+            .connectTimeout(CONNECT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS)
+            .readTimeout(READ_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS)
+            .followRedirects(true)
+            .build()
+    }
+
     private fun requestOnce(url: String): Pair<String?, String> {
-        val connection = URL(url).openConnection() as HttpURLConnection
+        val requestBuilder = Request.Builder().url(url).get()
+        requestHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
         return try {
-            connection.requestMethod = "GET"
-            connection.connectTimeout = CONNECT_TIMEOUT_MS
-            connection.readTimeout = READ_TIMEOUT_MS
-            connection.instanceFollowRedirects = true
-            // Match the minimal headers used by the established ATP Infosys scraper.
-            // Synthetic browser Origin/Referer headers can trigger a different edge policy.
-            connection.setRequestProperty("User-Agent", USER_AGENT)
-            val status = connection.responseCode
-            val stream = if (status in 200..299) connection.inputStream else connection.errorStream
-            val body = stream?.bufferedReader(StandardCharsets.UTF_8)?.use { it.readText() }.orEmpty()
-            if (status in 200..299 && body.isNotBlank()) {
-                body to "HTTP $status"
-            } else {
-                val server = connection.getHeaderField("Server")?.take(48)
-                val retryAfter = connection.getHeaderField("Retry-After")?.take(16)
-                val sample = body.trim().take(MAX_ERROR_BODY_CHARS)
-                val details = buildList {
-                    add("HTTP $status (${body.length} chars)")
-                    if (!server.isNullOrBlank()) add("server=$server")
-                    if (!retryAfter.isNullOrBlank()) add("retry-after=$retryAfter")
-                    if (sample.isNotBlank()) add("body=$sample")
-                }.joinToString("; ")
-                null to details
+            httpClient.newCall(requestBuilder.build()).execute().use { response ->
+                val body = response.body?.string().orEmpty()
+                if (response.isSuccessful && body.isNotBlank()) {
+                    body to "HTTP ZZ{response.code}"
+                } else {
+                    val server = response.header("Server")?.take(48)
+                    val retryAfter = response.header("Retry-After")?.take(16)
+                    val s3Code = Regex("""<Code>([^<]+)</Code>""", RegexOption.IGNORE_CASE)
+                        .find(body)?.groupValues?.get(1)
+                    val s3Message = Regex("""<Message>([^<]+)</Message>""", RegexOption.IGNORE_CASE)
+                        .find(body)?.groupValues?.get(1)
+                    val details = buildList {
+                        add("HTTP ZZ{response.code} (ZZ{body.length} chars)")
+                        if (!server.isNullOrBlank()) add("server=$server")
+                        if (!s3Code.isNullOrBlank()) add("s3-code=$s3Code")
+                        if (!s3Message.isNullOrBlank()) add("s3-message=$s3Message")
+                        if (!retryAfter.isNullOrBlank()) add("retry-after=$retryAfter")
+                        if (s3Code.isNullOrBlank() && body.isNotBlank()) {
+                            add("body=ZZ{body.trim().take(MAX_ERROR_BODY_CHARS)}")
+                        }
+                    }.joinToString("; ")
+                    null to details
+                }
             }
         } catch (error: Exception) {
-            null to "${error.javaClass.simpleName}: ${error.message.orEmpty().take(100)}"
-        } finally {
-            connection.disconnect()
+            null to "ZZ{error.javaClass.simpleName}: ZZ{error.message.orEmpty().take(100)}"
         }
     }
 
-    private fun decryptEnvelope(envelope: JSONObject): JSONObject {
+        private fun decryptEnvelope(envelope: JSONObject): JSONObject {
         return JSONObject(
             decryptResponse(
                 lastModified = envelope.getLong("lastModified"),
@@ -471,7 +500,7 @@ internal class AtpInfosysStatsClient {
         const val MAX_RETRY_DELAY_MS = 10_000L
         const val MAX_ERROR_BODY_CHARS = 120
         const val USER_AGENT =
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/47.0.2526.106 Safari/537.36"
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+                "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
     }
 }
