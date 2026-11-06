@@ -46,6 +46,14 @@ Limits worth knowing: it needs matches to have been played, small draws are nois
 year-to-year correlation for a single event is weak (r ≈ 0.35), which is why multi-year
 averages are more trustworthy than one edition.
 
+### Live event estimate
+
+While the app is open, the ATP current-scores hub is re-read every five minutes. The app resolves live event routes to its tournament catalogue (ATP 1000, 500 and 250 only), then follows the results page's **archive singles stats links**. Live/in-progress links, doubles links and guessed match-ID ranges are excluded. The provisional live figure is:
+
+`(completed-match aces ÷ completed-match service points) ÷ 0.078313`
+
+It is an event-level ace-rate estimate, not the full per-player server/returner adjustment used for the published historical series. The row includes the number of completed matches supporting it. If the results page yields no archived singles links, the app reports the actual rendered-page byte count and stops rather than attempting 96 fabricated IDs.
+
 ### 3. Recomputed speed history (2012–2025)
 
 | | |

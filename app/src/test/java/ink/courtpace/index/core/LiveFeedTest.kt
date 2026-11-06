@@ -55,6 +55,30 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a fresh live value and match count take precedence over a published season value`() {
+        val withoutParisSeason = data.dataset.readings.filterNot {
+            it.t == "paris" && it.s == 2026 && it.speed != null
+        }
+        val merged = PaceData(
+            data.dataset.copy(
+                readings = withoutParisSeason + listOf(
+                    ink.courtpace.index.core.model.PaceReading(
+                        t = "paris", s = 2026, speed = 0.91, src = "tennisabstract",
+                    ),
+                    ink.courtpace.index.core.model.PaceReading(
+                        t = "paris", s = 2026, speed = 1.12, src = "live",
+                        live = true, matches = 55,
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals(1.12, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals(55, merged.reading("paris", 2026)!!.matches)
+        assertEquals("live", merged.reading("paris", 2026, Metric.SPEED)!!.src)
+    }
+
+    @Test
     fun `a dataset without a live feed still parses`() {
         val withoutLive = data.dataset.copy(live = emptyList())
         assertTrue(PaceData(withoutLive).liveWithoutRating(2026, Metric.SPEED).isEmpty())

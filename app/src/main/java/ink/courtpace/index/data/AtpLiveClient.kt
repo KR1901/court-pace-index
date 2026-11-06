@@ -2,115 +2,120 @@ package ink.courtpace.index.data
 
 import android.content.Context
 import ink.courtpace.index.core.live.AceRating
+import ink.courtpace.index.core.live.AtpEvents
 import ink.courtpace.index.core.live.AtpMatchLinks
-import ink.courtpace.index.core.live.AtpResultsParser
 import ink.courtpace.index.core.live.AtpStatsParser
+import ink.courtpace.index.core.model.LiveEvent
+import ink.courtpace.index.core.model.Tournament
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import java.net.HttpURLConnection
-import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Reads the ATP's own pages for the event in progress and rates it.
+ * Reads completed singles matches from ATP pages on the device and computes the live ace rating.
  *
- * Two facts about this site shape everything here:
- *
- * - The per-match stats pages carry the ace counts, but they are rendered client-side, so they
- *   have to be rendered rather than fetched.
- * - A plain request to this host does not succeed from a phone. The diagnostic reported a
- *   0-byte page on every attempt. The renderer works, so the renderer is the primary path and
- *   the plain request is the fallback, not the other way round.
+ * ATP blocks plain HTTP clients for these pages. The on-device WebView is used for the current
+ * scores hub, tournament results links and JavaScript-rendered match stats; no guessed match-ID
+ * range or third-party API key is required.
  */
 class AtpLiveClient(context: Context) {
 
     private val web = AtpWebReader(context)
     private val store = MatchStatsStore(context)
-    private val userAgent =
-        "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "Chrome/124.0 Mobile Safari/537.36"
+
+    /** Discover every currently listed ATP 1000/500/250 event from the ATP current-scores hub. */
+    suspend fun discoverEvents(
+        tournaments: List<Tournament>,
+        fallback: List<LiveEvent>,
+        year: Int,
+    ): AtpEvents.Discovery {
+        val source = web.readPageSource(CURRENT_SCORES_URL)
+        val html = source.orEmpty()
+        val discovered = AtpEvents.fromCurrentScoresPage(html, tournaments, year)
+        val events = discovered.ifEmpty { AtpEvents.fallback(fallback, year) }
+        return AtpEvents.Discovery(
+            events = events,
+            pageBytes = html.toByteArray(Charsets.UTF_8).size,
+        )
+    }
 
     /**
-     * Rates the event from the ace counts on its match pages.
+     * Rates the event from completed singles match stats linked by its own results page.
      *
-     * Whatever has been read when the budget expires is rated rather than discarded: a partial
-     * figure with an honest count beats no figure at all.
+     * The previous implementation substituted ms001..ms096 when discovery failed. Those IDs
+     * are not a draw-order index: most are nonexistent, and each miss cost another WebView.
+     * An unreadable results page now produces an explicit diagnostic and zero match-page scans.
      */
     suspend fun fetchAceRating(
-        atpId: Int,
-        year: Int = 2026,
+        event: AtpEvents.Ref,
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
         onDiscovery: ((ids: Int, pageBytes: Int) -> Unit)? = null,
     ): Result<AceRating.Result> = runCatching {
-        val eventKey = "$atpId-$year"
+        val eventKey = "${event.atpId}-${event.year}"
         val cached = store.readAll(eventKey)
-        val collected = java.util.concurrent.ConcurrentHashMap(cached)
-        val tried = java.util.concurrent.atomic.AtomicInteger(0)
-        val withContent = java.util.concurrent.atomic.AtomicInteger(0)
-        var blocked = false
+        val collected = ConcurrentHashMap(cached)
+        val tried = AtomicInteger(0)
+        val withContent = AtomicInteger(0)
+        val blocked = AtomicBoolean(false)
         val gate = Semaphore(PARALLEL_PAGES)
 
-        val slug = EVENT_SLUGS[atpId] ?: error("no results page known for event $atpId")
-        val resultsUrl = "https://www.atptour.com/en/scores/current/$slug/$atpId/results"
-
-        // The event page lists every match; its links are the authoritative ids.
-        var discovered = AtpMatchLinks.singles(
-            AtpMatchLinks.fromResultsPage(get(resultsUrl).orEmpty()),
-        )
-        if (discovered.isEmpty()) {
-            discovered = AtpMatchLinks.singles(
-                AtpMatchLinks.fromResultsPage(web.readLinks(resultsUrl).joinToString("\n")),
-            )
+        val resultsUrl =
+            "https://www.atptour.com/en/scores/current/${event.slug}/${event.atpId}/results"
+        val source = web.readPageSource(resultsUrl, RESULTS_RENDER_MS).orEmpty()
+        val links = AtpMatchLinks.singlesLinks(
+            AtpMatchLinks.linksFromResultsPage(source),
+        ).filter { link ->
+            link.atpId == event.atpId &&
+                link.year == event.year &&
+                link.section == "archive"
         }
-        onDiscovery?.invoke(discovered.size, 0)
+        val pageBytes = source.toByteArray(Charsets.UTF_8).size
+        onDiscovery?.invoke(links.size, pageBytes)
 
-        val ids = discovered.ifEmpty {
-            (1..MAX_MATCHES).map { "ms" + it.toString().padStart(3, '0') }
+        if (links.isEmpty()) {
+            val totalStatsLinks = AtpMatchLinks.linksFromResultsPage(source)
+                .count { it.atpId == event.atpId && it.year == event.year }
+            error(
+                "no completed singles stats links on the results page " +
+                    "($pageBytes bytes, $totalStatsLinks stats links found); no match pages scanned",
+            )
         }
 
         withTimeoutOrNull(WALK_BUDGET_MS) {
             coroutineScope {
-                ids.map { id ->
+                links.map { link ->
                     async(Dispatchers.Default) {
                         gate.withPermit {
-                            if (blocked) return@withPermit
-                            if (cached.containsKey(id)) {
+                            if (blocked.get()) return@withPermit
+                            if (collected.containsKey(link.id)) {
                                 onProgress(collected.size, tried.incrementAndGet())
                                 return@withPermit
                             }
-                            onProgress(collected.size, tried.incrementAndGet())
-                            val url = statsUrl(year, atpId, id)
 
-                            // Only a page that does not exist is worth skipping. Skipping on
-                            // anything else threw away real matches: the raw title is generic
-                            // until the page's own scripts set it.
-                            val (status, shell) = probe(url)
-                            if (status == 404) return@withPermit
-                            if (shell != null && shell.contains(AtpWebReader.BLOCKED, true)) {
-                                blocked = true
+                            val attempt = tried.incrementAndGet()
+                            onProgress(collected.size, attempt)
+                            val url = statsUrl(link)
+                            val rendered = web.read(
+                                url,
+                                timeoutMs = MATCH_RENDER_MS,
+                                isReady = { AtpStatsParser.hasStats(it) },
+                            )
+                            if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
+                                blocked.set(true)
                                 return@withPermit
                             }
-
-                            var parsed = shell?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
-                            if (parsed == null) {
-                                val rendered = web.read(url, isReady = { AtpStatsParser.hasStats(it) })
-                                if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
-                                    blocked = true
-                                    return@withPermit
-                                }
-                                if (rendered != null && rendered.length > 400) {
-                                    withContent.incrementAndGet()
-                                }
-                                parsed = rendered?.let {
-                                    AtpStatsParser.parse(AtpResultsParser.toText(it))
-                                }
+                            if (rendered != null && rendered.length > 400) {
+                                withContent.incrementAndGet()
                             }
-                            parsed?.let { collected[id] = it }
+                            val parsed = rendered?.let { AtpStatsParser.parse(it) }
+                            if (parsed != null) collected[link.id] = parsed
                             onProgress(collected.size, tried.get())
                         }
                     }
@@ -118,97 +123,40 @@ class AtpLiveClient(context: Context) {
             }
         }
 
+        // Keep every successful read, even when the walk's internal budget stopped it early.
+        if (!blocked.get()) store.writeAll(eventKey, collected)
         val found = collected.values.toList()
-        if (!blocked) store.writeAll(eventKey, collected)
         AceRating.rate(found) ?: error(
             when {
-                found.isNotEmpty() -> "only ${found.size} matches have stats so far"
-                withContent.get() == 0 -> "the ATP pages came back empty"
-                else -> "no stats in ${withContent.get()} pages that did load"
+                found.isNotEmpty() ->
+                    "only ${found.size} completed matches have stats so far " +
+                        "(${links.size} completed singles links on the results page)"
+                blocked.get() -> "ATP blocked the match-stats page on this device"
+                withContent.get() == 0 ->
+                    "ATP returned no rendered match stats from ${links.size} completed matches"
+                else ->
+                    "no parseable ace stats in ${withContent.get()} pages that did load"
             },
         )
     }
 
-    /** The event's results page: every completed match with score and duration, in one page. */
-    suspend fun fetch(atpId: Int, slug: String): Result<AtpResultsParser.LivePace> = runCatching {
-        val url = "https://www.atptour.com/en/scores/current/$slug/$atpId/results"
-        // A single page, so it gets a generous deadline: the results page is heavy and was
-        // being abandoned at the twelve-second default before it finished rendering.
-        // Settle, not first-match: the page fills in progressively, and returning early is
-        // what produced a "complete" reading of six matches.
-        var matches = web.read(
-            url,
-            timeoutMs = RESULTS_RENDER_MS,
-            isReady = { it.contains("wins the match", ignoreCase = true) },
-            settle = true,
-        )
-            ?.let { AtpResultsParser.parse(AtpResultsParser.toText(it)) }
-            .orEmpty()
-        if (matches.isEmpty()) {
-            get(url)?.let { html ->
-                matches = AtpResultsParser.parse(AtpResultsParser.toText(html))
-            }
-        }
-        AtpResultsParser.pace(matches) ?: error("no completed matches on the results page")
-    }
-
-    private fun statsUrl(year: Int, atpId: Int, matchId: String) =
-        "https://www.atptour.com/en/scores/stats-centre/archive/$year/$atpId/$matchId"
-
-    private suspend fun get(url: String): String? = probe(url).second
-
-    /**
-     * Status code and body, always off the main thread.
-     *
-     * The status distinguishes "this match does not exist" from "this page needs rendering", and
-     * only the first is safe to skip. Running this on the caller's dispatcher - which was Main -
-     * threw NetworkOnMainThreadException, and the catch below turned it into a silent null.
-     */
-    private suspend fun probe(url: String): Pair<Int, String?> = withContext(Dispatchers.IO) {
-        try {
-            val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-                requestMethod = "GET"
-                connectTimeout = 6_000
-                readTimeout = 8_000
-                setRequestProperty("User-Agent", userAgent)
-                setRequestProperty("Accept", "text/html")
-                instanceFollowRedirects = true
-            }
-            try {
-                val status = connection.responseCode
-                val body = if (status in 200..299) {
-                    connection.inputStream.bufferedReader().use { it.readText() }
-                } else null
-                status to body
-            } finally {
-                connection.disconnect()
-            }
-        } catch (error: Exception) {
-            0 to null
-        }
-    }
+    private fun statsUrl(link: AtpMatchLinks.MatchLink): String =
+        "https://www.atptour.com/en/scores/stats-centre/${link.section}/" +
+            "${link.year}/${link.atpId}/${link.id}"
 
     companion object {
-        /** Event id to URL slug, for events the live feed can carry. */
-        val EVENT_SLUGS = mapOf(352 to "paris")
+        const val CURRENT_SCORES_URL = "https://www.atptour.com/en/scores/current"
 
-        /** A Masters draw is at most 96 matches, so the whole draw is covered. */
-        const val MAX_MATCHES = 96
+        /** The event/results page is allowed to render fully before links are collected. */
+        const val RESULTS_RENDER_MS = 45_000L
 
-        /** Pages rendered at once. */
-        /**
-         * Simultaneous renders. Twelve was chosen to bound the walk and did the opposite: a phone
-         * cannot keep that many WebViews alive, so they failed and were counted as "no stats".
-         * The count tracked this number rather than any code path - eight concurrent, twenty
-         * seconds each, found fourteen matches; twelve concurrent, twelve seconds, found six.
-         */
+        /** A single match page only needs to wait for its stats to appear. */
+        const val MATCH_RENDER_MS = 25_000L
+
+        /** Small bounded WebView pool; large parallel batches are killed by Android. */
         const val PARALLEL_PAGES = 4
 
-        /** The walk's own budget; whatever it has by then is rated, not discarded. */
-        /** Generous on purpose: a complete figure matters more than a fast one here. */
+        /** Keep whatever has been collected when this internal budget expires. */
         const val WALK_BUDGET_MS = 600_000L
-
-        /** The results page is one render, so it can afford a long deadline. */
-        const val RESULTS_RENDER_MS = 45_000L
     }
 }

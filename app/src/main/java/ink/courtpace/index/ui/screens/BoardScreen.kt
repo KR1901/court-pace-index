@@ -88,8 +88,7 @@ fun BoardScreen(
     refreshing: Boolean,
     onRefresh: () -> Unit,
     statusNote: String?,
-    livePace: ink.courtpace.index.core.live.AtpResultsParser.LivePace? = null,
-    liveAce: ink.courtpace.index.core.live.AceRating.Result? = null,
+    liveAceByEvent: Map<String, ink.courtpace.index.core.live.AceRating.Result> = emptyMap(),
     liveProgress: String? = null,
     liveNote: String? = null,
     scrollState: ScrollState = rememberScrollState(),
@@ -209,13 +208,14 @@ fun BoardScreen(
                 SectionLabel(text = "Live now")
                 Spacer(Modifier.height(10.dp))
                 pending.forEach { (tournament, event) ->
+                    val liveReading = data.liveReading(tournament.id, event.s)
                     LivePendingRow(
                         tournament = tournament,
                         event = event,
-                        datasetRating = data.value(tournament.id, event.s, Metric.SPEED),
-                        datasetMatches = data.reading(tournament.id, event.s)?.matches,
-                        pace = livePace,
-                        ace = liveAce,
+                        datasetRating = liveReading?.speed,
+                        datasetMatches = liveReading?.matches,
+                        pace = null,
+                        ace = liveAceByEvent[tournament.id],
                         progress = liveProgress,
                         note = liveNote,
                         onClick = { onOpen(tournament) },
@@ -267,8 +267,8 @@ fun BoardScreen(
             text = when (metric) {
                 Metric.CPI -> "Court Pace Index from the courtspeed.com database, compiled from ATP and " +
                     "Tennis TV broadcast data. Centre-court readings."
-                Metric.SPEED -> "Surface speed from Tennis Abstract: ace rate adjusted for the servers and " +
-                    "returners in each match, 1.00 = tour average."
+                Metric.SPEED -> "Published ratings adjust for the servers and returners. Live ratings use " +
+                    "completed-match ace rate against the 7.83% tour baseline; 1.00 = average."
             },
         )
         Spacer(Modifier.height(LocalTabBarInset.current))

@@ -10,17 +10,23 @@ import androidx.lifecycle.viewModelScope
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Surface
 import ink.courtpace.index.data.BundledDataset
 import ink.courtpace.index.data.DatasetUpdater
 import ink.courtpace.index.data.RefreshResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface RefreshState {
     data object Idle : RefreshState
@@ -49,21 +55,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var refreshState by mutableStateOf<RefreshState>(RefreshState.Idle)
 
-    /** Results-derived pace for the event in progress, read from the ATP public results page. */
-    var livePace by mutableStateOf<ink.courtpace.index.core.live.AtpResultsParser.LivePace?>(null)
+    /** Per-event ace ratings; the board must never show one tournament's rating on another. */
+    var liveAceByEvent by mutableStateOf<Map<String, ink.courtpace.index.core.live.AceRating.Result>>(emptyMap())
+        private set
 
+    /** Retained for the live-row progress/diagnostic text. */
     var livePaceNote by mutableStateOf<String?>(null)
-
-    /** Ace-based speed for the event in progress, once enough matches have stats pages. */
-    var liveAce by mutableStateOf<ink.courtpace.index.core.live.AceRating.Result?>(null)
-
-    /** Progress while the stats pages are being rendered, e.g. "9 of 31 matches read". */
     var liveAceProgress by mutableStateOf<String?>(null)
 
     private val atpClient = ink.courtpace.index.data.AtpLiveClient(application)
-
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
-
+    private val liveRefreshMutex = Mutex()
+    private var livePollingStarted = false
 
     init {
         viewModelScope.launch {
@@ -71,10 +74,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 .onSuccess { bundled ->
                     val cached = runCatching { updater.cached() }.getOrNull()
                     publish(PaceData(DatasetPolicy.choose(bundled.dataset, cached?.dataset)))
-                    // The last figure is shown immediately, so the row is never blank while the
-                    // pages are being read again in the background.
-                    showCachedLiveRating()
+                    showCachedLiveRatings()
                     refreshLivePace()
+                    startLivePolling()
                 }
                 .onFailure {
                     _error.value = "The bundled dataset could not be read: ${it.message}"
@@ -95,7 +97,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun seasonsWithData(data: PaceData, metric: Metric): List<Int> =
         data.seasons.filter { data.entries(it, metric).isNotEmpty() }
 
-    /** Checks the project's published copy for a newer dataset. */
+    /** Checks the project's published copy for a newer historical dataset. */
     fun refresh() {
         if (refreshState is RefreshState.Running) return
         refreshState = RefreshState.Running
@@ -122,11 +124,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Writes a computed live figure into the dataset in memory, so it reaches every screen
-     * through the paths that already exist rather than through new plumbing.
-     */
-
+    /** Writes one live figure into the shared dataset so every screen sees the same value. */
     private fun applyLiveRating(
         tournamentId: String,
         season: Int,
@@ -148,103 +146,156 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             asOf = java.time.Instant.now().toString(),
             matches = matches.takeIf { it > 0 },
         )
-        publish(PaceData(current.dataset.copy(readings = withoutOld + reading)))
+        publish(PaceData(current.dataset.copy(readings = withoutOld + reading)), keepSeason = true)
     }
 
-    private fun showCachedLiveRating() {
-        val data = _data.value ?: return
-        val event = data.dataset.live.firstOrNull() ?: return
-        val cached = ratingStore.read(event.t) ?: return
-        applyLiveRating(event.t, cached.season, cached.speed, cached.matches, cached.aceRate)
-        livePaceNote = "cached ${cached.asOf.take(16).replace('T', ' ')} UTC"
-        liveAceProgress = null
+    /** Restore all available per-event ratings before the current scores page is checked. */
+    private fun showCachedLiveRatings() {
+        val events = _data.value?.dataset?.live.orEmpty()
+        events.forEach { event ->
+            val cached = ratingStore.read(event.t) ?: return@forEach
+            applyLiveRating(event.t, cached.season, cached.speed, cached.matches, cached.aceRate)
+        }
     }
 
+    /**
+     * Re-discovers the live ATP 1000/500/250 slate and refreshes each event's completed matches.
+     * A mutex prevents the five-minute poll and a manual refresh from opening overlapping
+     * batches of WebViews.
+     */
     private suspend fun refreshLivePace() {
-        // Every step writes a status, so the row can never be silent about what happened.
+        if (!liveRefreshMutex.tryLock()) return
+
         fun status(text: String) {
             liveAceProgress = text
             livePaceNote = text
         }
+
         try {
-            status("starting")
-            val data = _data.value
-            if (data == null) return status("dataset not loaded")
-
-            val event = data.dataset.live.firstOrNull() ?: return status("no live event")
-            val ref = event.atpId?.let {
-                ink.courtpace.index.core.live.AtpEvents.Ref(it, event.slug ?: "paris", event.s)
-            } ?: ink.courtpace.index.core.live.AtpEvents.forTournament(event.t)
-            ?: return status("no ATP page known for ${event.t}")
-
-            // The ace figure is the one that matters, so it goes first and reports as it goes.
-            status("reading ATP match stats")
-            val aceResult = kotlinx.coroutines.withTimeoutOrNull(WALK_TIMEOUT_MS) {
-                var discovery = "discovering"
-                atpClient.fetchAceRating(
-                    ref.atpId,
-                    ref.year,
-                    onProgress = { found, tried ->
-                        status(
-                            "$discovery · " +
-                                if (found > 0) "$found matches from $tried pages" else "page $tried",
-                        )
-                    },
-                    onDiscovery = { ids, bytes ->
-                        // Kept for the whole run and prefixed onto every status. The point of the
-                        // line is to tell us what the phone can see; the walk used to replace it
-                        // a moment after it appeared.
-                        discovery = if (ids > 0) "$ids match links" else "no links, ${bytes}B page"
-                        status(discovery)
-                    },
+            status("checking ATP live events")
+            val initial = _data.value ?: return status("dataset not loaded")
+            val year = java.time.LocalDate.now().year
+            val discovery = atpClient.discoverEvents(
+                tournaments = initial.dataset.tournaments,
+                fallback = initial.dataset.live,
+                year = year,
+            )
+            val refs = discovery.events
+            if (refs.isEmpty()) {
+                return status(
+                    "no active ATP 1000/500/250 links · ${discovery.pageBytes}B current page",
                 )
-            } ?: Result.failure(IllegalStateException("timed out reading the stats pages"))
-            aceResult
-                .onSuccess {
-                    liveAce = it
-                    applyLiveRating(event.t, event.s, it.rating, it.matches, it.aceRate)
+            }
+
+            val existing = _data.value?.dataset?.live.orEmpty()
+            val refreshedEvents = refs.map { ref ->
+                val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
+                previous?.copy(
+                    status = "in_progress",
+                    atpId = ref.atpId,
+                    slug = ref.slug,
+                ) ?: LiveEvent(
+                    t = ref.tournamentId,
+                    s = ref.year,
+                    status = "in_progress",
+                    atpId = ref.atpId,
+                    slug = ref.slug,
+                )
+            }
+            val latest = _data.value ?: initial
+            publish(
+                PaceData(latest.dataset.copy(live = refreshedEvents)),
+                keepSeason = true,
+            )
+            liveAceByEvent = emptyMap()
+
+            // Restore cached figures for the events still active; they remain visible while the
+            // fresh match pages render, and each row reads only its own cached value.
+            refs.forEach { ref ->
+                val cached = ratingStore.read(ref.tournamentId)
+                if (cached != null && cached.season == ref.year) {
+                    applyLiveRating(
+                        ref.tournamentId,
+                        cached.season,
+                        cached.speed,
+                        cached.matches,
+                        cached.aceRate,
+                    )
+                }
+            }
+
+            for (ref in refs) {
+                val name = _data.value?.tournament(ref.tournamentId)?.name ?: ref.slug
+                status("$name · reading completed singles links")
+                val result = withTimeoutOrNull(WALK_TIMEOUT_MS) {
+                    var discoveryLine = "discovering"
+                    atpClient.fetchAceRating(
+                        event = ref,
+                        onProgress = { found, tried ->
+                            status(
+                                "$name · $discoveryLine · " +
+                                    if (found > 0) "$found matches from $tried pages"
+                                    else "page $tried",
+                            )
+                        },
+                        onDiscovery = { ids, bytes ->
+                            discoveryLine = if (ids > 0) {
+                                "$ids completed singles links"
+                            } else {
+                                "no links, $bytes B page"
+                            }
+                            status("$name · $discoveryLine")
+                        },
+                    )
+                } ?: Result.failure(
+                    IllegalStateException("timed out reading completed match stats"),
+                )
+
+                result.onSuccess { rating ->
+                    liveAceByEvent = liveAceByEvent + (ref.tournamentId to rating)
+                    applyLiveRating(
+                        ref.tournamentId,
+                        ref.year,
+                        rating.rating,
+                        rating.matches,
+                        rating.aceRate,
+                    )
                     ratingStore.write(
                         ink.courtpace.index.core.live.CachedLiveRating(
-                            tournamentId = event.t,
-                            season = event.s,
-                            speed = it.rating,
-                            matches = it.matches,
-                            aceRate = it.aceRate,
+                            tournamentId = ref.tournamentId,
+                            season = ref.year,
+                            speed = rating.rating,
+                            matches = rating.matches,
+                            aceRate = rating.aceRate,
                             asOf = java.time.Instant.now().toString(),
                         ),
                     )
-                    status("live speed ${"%.2f".format(it.rating)} from ${it.matches} matches")
+                    status(
+                        "$name · live speed ${"%.2f".format(rating.rating)} " +
+                            "from ${rating.matches} completed matches",
+                    )
+                }.onFailure { error ->
+                    status("$name · ${error.message ?: "match stats unavailable"}")
                 }
-                .onFailure { status("stats: ${it.message}") }
-
-            // The results page is a single request and lists every completed match, so it is
-            // always read: it supplies the figure when the ace walk falls short, and it tells us
-            // how many matches the event actually has.
-            run {
-                status("trying the results page")
-                val durationResult = kotlinx.coroutines.withTimeoutOrNull(RESULTS_TIMEOUT_MS) {
-                    atpClient.fetch(ref.atpId, ref.slug)
-                } ?: Result.failure<ink.courtpace.index.core.live.AtpResultsParser.LivePace>(
-                    IllegalStateException("the results page did not answer"),
-                )
-                durationResult
-                    .onSuccess {
-                        livePace = it
-                        // The ace figure wins when it covers most of the draw; otherwise the
-                        // duration reading is the honest one to show, because it covers all.
-                        // Show whichever figure rests on more matches. The percentage rule let
-                        // a six-match ace reading beat a fifty-five-match duration reading,
-                        // because the duration total had been truncated by an early return.
-                        val aceCoverage = liveAce?.matches ?: 0
-                        val total = it.matches ?: 0
-                        if (it.rating != null && total > aceCoverage) {
-                            applyLiveRating(event.t, event.s, it.rating, total, null)
-                        }
-                    }
-                    .onFailure { livePaceNote = it.message ?: livePaceNote }
             }
-        } catch (error: Throwable) {
-            status("live failed: ${error.message}")
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            status("live update failed: ${error.message}")
+        } finally {
+            liveRefreshMutex.unlock()
+        }
+    }
+
+    /** Recheck the live slate every five minutes while the app's ViewModel is alive. */
+    private fun startLivePolling() {
+        if (livePollingStarted) return
+        livePollingStarted = true
+        viewModelScope.launch {
+            while (isActive) {
+                delay(LIVE_REFRESH_INTERVAL_MS)
+                refreshLivePace()
+            }
         }
     }
 
@@ -258,9 +309,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectMetric(value: Metric) {
         metric = value
-        // The two metrics do not cover the same seasons, so the selected season may not
-        // exist for the new one.
-        _data.value?.let { data -> season = PaceAnalytics.nearestSeason(seasonsWithData(data, value), season) }
+        _data.value?.let { data ->
+            season = PaceAnalytics.nearestSeason(seasonsWithData(data, value), season)
+        }
     }
 
     fun toggleSurface(surface: Surface?) {
@@ -290,11 +341,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        /** The whole walk must answer within this, however the pages behave. */
+        /** Bound each event walk while retaining partial results. */
         const val WALK_TIMEOUT_MS = 900_000L
 
-        /** The results page is small and server-rendered; it has no excuse to take long. */
-        const val RESULTS_TIMEOUT_MS = 90_000L
+        /** Keep the event slate and ace-based reading current while the app is open. */
+        const val LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1_000L
 
         const val MAX_COMPARE = 3
     }

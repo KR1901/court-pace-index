@@ -36,6 +36,8 @@ and returners who were actually on court, and compare with what those same playe
 produced on a tour-average surface. 1.00 is average; the usual range across ATP events is
 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
 
+The live card is a provisional event-level estimate: completed singles-match aces divided by service points, compared with the 7.8313% tour baseline. The published historical series uses the fuller server/returner adjustment described above, so a live reading is not presented as a retrospective Tennis Abstract figure.
+
 The 2025–26 readings are the published Tennis Abstract figures. Earlier seasons are recomputed
 by this project from the public ATP match archive using the same method; the recomputation
 reproduces the published 2026 values with r = 0.93 and a mean absolute difference of 0.10. The
@@ -52,6 +54,7 @@ app labels and dims the computed seasons wherever it shows them.
 - **Surfaces** — field averages per surface, the season-by-season trend, and the fastest and
   slowest event on each surface.
 - **Method** — the formulas, the banding, the provenance of every series and the known gaps.
+- **Live now** — discovers active ATP 1000, 500 and 250 events from the ATP current-scores page on the device, then rates their completed singles matches. It rechecks the live slate every five minutes while the app is open.
 
 ## Data
 

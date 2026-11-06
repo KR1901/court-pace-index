@@ -7,8 +7,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * The results page links to every match's stats page, so those hrefs are the authoritative list
- * of matches. Walking a guessed id range found fourteen of them out of ninety-five attempts.
+ * The ATP results page is the source of truth for match IDs. The parser keeps archive/live
+ * sections distinct so a completed match uses its archived stats page, never a guessed ID range.
  */
 class MatchIdDiscoveryTest {
 
