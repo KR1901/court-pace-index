@@ -372,6 +372,7 @@ class AtpStatsParserTest {
         assertEquals(20, coverage.returnerProfilesMatched)
         assertEquals(20, coverage.adjustedServerSides)
         assertEquals(20, result.adjustedServerSides)
+        assertEquals(2.0, result.rating, 1e-9)
     }
 
     @Test
