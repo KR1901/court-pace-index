@@ -3,6 +3,7 @@ package ink.courtpace.index.core
 import ink.courtpace.index.core.live.CachedLiveRating
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LiveRatingCacheTest {
@@ -134,6 +135,28 @@ class LiveRatingCacheTest {
         )
 
         assertNull(invalid.toAceRatingResultOrNull())
+    }
+
+    @Test
+    fun `the previous live-rating method version is invalidated after the stats-cache schema change`() {
+        val previous = CachedLiveRating(
+            tournamentId = "paris",
+            season = 2026,
+            speed = 1.61,
+            matches = 49,
+            aceRate = 0.10,
+            asOf = "2026-11-07T00:00:00Z",
+            methodVersion = 2,
+            baselineGenerated = "2026-11-06T19:25:21Z",
+            discoveredMatches = 49,
+            adjustedServerSides = 94,
+            totalServerSides = 98,
+        )
+
+        val restored = CachedLiveRating.fromJson(previous.toJson())!!
+
+        assertEquals(2, restored.methodVersion)
+        assertTrue(restored.methodVersion != CachedLiveRating.CURRENT_METHOD_VERSION)
     }
 
     @Test
