@@ -18,6 +18,7 @@ class MatchStatsStoreTest {
                 secondAces = 5,
                 secondServePoints = 68,
                 firstWon = true,
+                matchId = "ms043",
             ),
         )
 
