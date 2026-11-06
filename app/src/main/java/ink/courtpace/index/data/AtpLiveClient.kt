@@ -7,6 +7,7 @@ import ink.courtpace.index.core.live.AtpMatchLinks
 import ink.courtpace.index.core.live.AtpStatsParser
 import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Tournament
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -57,7 +58,21 @@ class AtpLiveClient(context: Context) {
         event: AtpEvents.Ref,
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
         onDiscovery: ((ids: Int, pageBytes: Int) -> Unit)? = null,
-    ): Result<AceRating.Result> = runCatching {
+    ): Result<AceRating.Result> {
+        return try {
+            Result.success(fetchAceRatingInternal(event, onProgress, onDiscovery))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Result.failure(error)
+        }
+    }
+
+    private suspend fun fetchAceRatingInternal(
+        event: AtpEvents.Ref,
+        onProgress: (found: Int, tried: Int) -> Unit,
+        onDiscovery: ((ids: Int, pageBytes: Int) -> Unit)?,
+    ): AceRating.Result {
         val eventKey = "${event.atpId}-${event.year}"
         val cached = store.readAll(eventKey)
         val collected = ConcurrentHashMap(cached)
@@ -123,8 +138,10 @@ class AtpLiveClient(context: Context) {
             }
         }
 
-        // Keep every successful read, even when the walk's internal budget stopped it early.
-        if (!blocked.get()) store.writeAll(eventKey, collected)
+        // Persist every successful read, even when a sibling page is blocked or the walk budget
+        // expires. The next refresh can then request only the still-missing match IDs instead of
+        // downloading already-read pages again.
+        store.writeAll(eventKey, collected)
         val found = collected.values.toList()
         AceRating.rate(found) ?: error(
             when {
