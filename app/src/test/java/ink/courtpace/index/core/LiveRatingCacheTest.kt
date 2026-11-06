@@ -1,5 +1,6 @@
 package ink.courtpace.index.core
 
+import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.CachedLiveRating
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -7,6 +8,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LiveRatingCacheTest {
+
+    private fun skippedSides(count: Int) = (1..count).map { index ->
+        AceRating.AdjustmentIssue(
+            matchId = "ms${index.toString().padStart(3, '0')}",
+            server = "A. Server",
+            returner = "B. Returner",
+            reason = "no returner concession profile",
+        )
+    }
 
     @Test
     fun `a rating survives the round trip`() {
@@ -42,6 +52,7 @@ class LiveRatingCacheTest {
             adjustedServerSides = 91,
             totalServerSides = 96,
             aces = 512,
+            adjustmentIssues = skippedSides(5),
         )
 
         val restored = CachedLiveRating.fromJson(original.toJson())!!
@@ -99,6 +110,7 @@ class LiveRatingCacheTest {
             adjustedServerSides = 70,
             totalServerSides = 96,
             aces = 420,
+            adjustmentIssues = skippedSides(10),
         )
 
         val restored = CachedLiveRating.fromJson(partial.toJson())!!
@@ -118,6 +130,25 @@ class LiveRatingCacheTest {
         assertNull(restored.adjustedServerSides)
         assertNull(restored.totalServerSides)
         assertNull(restored.toAceRatingResultOrNull())
+    }
+
+    @Test
+    fun `a partial 50 of 98 cache without per-side reasons is rejected for recomputation`() {
+        val stale = CachedLiveRating(
+            tournamentId = "paris",
+            season = 2026,
+            speed = 1.48,
+            matches = 49,
+            aceRate = 0.10,
+            asOf = "2026-11-07T00:00:00Z",
+            methodVersion = CachedLiveRating.CURRENT_METHOD_VERSION,
+            baselineGenerated = "2026-11-06T19:59:51Z",
+            discoveredMatches = 49,
+            adjustedServerSides = 50,
+            totalServerSides = 98,
+        )
+
+        assertNull(stale.toAceRatingResultOrNull())
     }
 
     @Test
@@ -157,6 +188,7 @@ class LiveRatingCacheTest {
 
         assertEquals(2, restored.methodVersion)
         assertTrue(restored.methodVersion != CachedLiveRating.CURRENT_METHOD_VERSION)
+        assertNull(restored.toAceRatingResultOrNull())
     }
 
     @Test
