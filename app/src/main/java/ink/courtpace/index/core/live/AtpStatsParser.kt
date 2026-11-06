@@ -112,7 +112,11 @@ object AceRating {
         val aceRate: Double,
         /** Server-side observations actually used in the opponent-adjusted mean. */
         val adjustedServerSides: Int,
-        /** Possible server sides among matches with usable Infosys statistics. */
+        /**
+         * Possible server sides across all eligible completed singles matches discovered
+         * from ATP. AtpLiveClient replaces the default with discoveredMatches * 2, so
+         * missing Stats Plus payloads remain visible in the denominator.
+         */
         val totalServerSides: Int = matches * 2,
         val discoveredMatches: Int = matches,
         val missingMatchIds: List<String> = emptyList(),
