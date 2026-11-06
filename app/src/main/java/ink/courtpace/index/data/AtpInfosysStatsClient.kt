@@ -169,7 +169,7 @@ internal class AtpInfosysStatsClient {
         return output.reverse().toString()
     }
 
-    private fun parseStats(payload: JSONObject): AtpMatchStats? {
+    internal fun parseStats(payload: JSONObject): AtpMatchStats? {
         val statsRoot = payload.optJSONObject("setStats") ?: return null
         val matchRows = statsRoot.optJSONArray("set0") ?: return null
         var aces: JSONArray? = null
