@@ -286,8 +286,11 @@ internal class AtpInfosysStatsClient {
         statsAvailable: Boolean,
     ): MatchDataState = when {
         isDoubles == true -> MatchDataState.DOUBLES
-        matchCompleted == false -> MatchDataState.IN_PROGRESS
+        // A validated full-match or played-set stats record proves that service occurred.
+        // In the live pipeline this client is only called for archive-route matches, so this
+        // takes precedence over a stale matchCompleted flag for an archived retirement.
         statsAvailable -> MatchDataState.PLAYED
+        matchCompleted == false -> MatchDataState.IN_PROGRESS
         hasPlayedSetData -> MatchDataState.INCOMPLETE_STATS
         matchCompleted == true && setsCompleted == 0 ->
             MatchDataState.NO_PLAYED_DATA
