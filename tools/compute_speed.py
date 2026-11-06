@@ -453,6 +453,7 @@ def main():
                 p["serveRateSource"] == "prior-season-shrunk" for p in live_profile_rows
             ),
             "withoutServeRate": sum(p["serveRate"] is None for p in live_profile_rows),
+            "withoutConcedeRate": sum(p["concedeRate"] is None for p in live_profile_rows),
         }
         baseline = {
             "season": current_year,
