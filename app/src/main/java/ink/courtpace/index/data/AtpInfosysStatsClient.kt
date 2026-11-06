@@ -187,22 +187,35 @@ internal class AtpInfosysStatsClient {
 
     internal fun parseStats(payload: JSONObject): AtpMatchStats? {
         val statsRoot = payload.optJSONObject("setStats") ?: return null
-        val matchRows = statsRoot.optJSONArray("set0") ?: return null
-        val rows = (0 until matchRows.length()).mapNotNull { index ->
-            val row = matchRows.optJSONObject(index) ?: return@mapNotNull null
+        val players = payload.optJSONArray("players")
+        val firstName = players?.optJSONObject(0)?.optString("player1Name")
+            ?.takeIf { it.isNotBlank() } ?: "Player 1"
+        val secondName = players?.optJSONObject(1)?.optString("player1Name")
+            ?.takeIf { it.isNotBlank() } ?: "Player 2"
+
+        // Prefer ATP's set0 whole-match aggregate whenever it contains the required rows.
+        statsRoot.optJSONArray("set0")?.let { wholeMatch ->
+            parseStatsRows(rowsFromJson(wholeMatch), firstName, secondName)?.let { return it }
+        }
+
+        // Retirements can have valid played-set stats but no set0 aggregate. Sum the per-set
+        // aces and service-point denominators instead of dropping a match that was actually played.
+        val playedSets = (1..5).mapNotNull { setNumber ->
+            val array = statsRoot.optJSONArray("set$setNumber") ?: return@mapNotNull null
+            if (array.length() == 0) null else rowsFromJson(array)
+        }
+        return aggregateSetStatsRows(playedSets, firstName, secondName)
+    }
+
+    private fun rowsFromJson(array: JSONArray): List<StatRow> =
+        (0 until array.length()).mapNotNull { index ->
+            val row = array.optJSONObject(index) ?: return@mapNotNull null
             StatRow(
                 name = row.optString("name"),
                 player1 = row.optString("player1"),
                 player2 = row.optString("player2"),
             )
         }
-        val players = payload.optJSONArray("players")
-        val firstName = players?.optJSONObject(0)?.optString("player1Name")
-            ?.takeIf { it.isNotBlank() } ?: "Player 1"
-        val secondName = players?.optJSONObject(1)?.optString("player1Name")
-            ?.takeIf { it.isNotBlank() } ?: "Player 2"
-        return parseStatsRows(rows, firstName, secondName)
-    }
 
     /** Pure row parser: independently testable without Android's mocked org.json classes. */
     internal fun parseStatsRows(
@@ -223,6 +236,55 @@ internal class AtpInfosysStatsClient {
         val secondPoints = denominator(servicePoints.player2) ?: return null
         if (firstPoints <= 0 || secondPoints <= 0) return null
 
+        return AtpMatchStats(
+            firstPlayer = firstName,
+            secondPlayer = secondName,
+            firstAces = firstAces,
+            firstServePoints = firstPoints,
+            secondAces = secondAces,
+            secondServePoints = secondPoints,
+            firstWon = false,
+        )
+    }
+
+    /**
+     * Aggregate per-set statistics when the ATP feed omits set0 (seen for some retirements).
+     * Every included set must contain both Aces and Service Points Won for both players.
+     */
+    internal fun aggregateSetStatsRows(
+        sets: List<List<StatRow>>,
+        firstName: String = "Player 1",
+        secondName: String = "Player 2",
+    ): AtpMatchStats? {
+        if (sets.isEmpty()) return null
+        var firstAces = 0
+        var secondAces = 0
+        var firstPoints = 0
+        var secondPoints = 0
+        var includedSets = 0
+
+        for (rows in sets) {
+            val aces = rows.firstOrNull { it.name.trim().equals("aces", ignoreCase = true) }
+                ?: continue
+            val servicePoints = rows.firstOrNull {
+                it.name.trim().equals("service points won", ignoreCase = true) ||
+                    it.name.trim().equals("service points", ignoreCase = true)
+            } ?: continue
+
+            val a1 = aces.player1.trim().toIntOrNull() ?: continue
+            val a2 = aces.player2.trim().toIntOrNull() ?: continue
+            val p1 = denominator(servicePoints.player1) ?: continue
+            val p2 = denominator(servicePoints.player2) ?: continue
+            if (p1 <= 0 || p2 <= 0) continue
+
+            firstAces += a1
+            secondAces += a2
+            firstPoints += p1
+            secondPoints += p2
+            includedSets++
+        }
+
+        if (includedSets == 0) return null
         return AtpMatchStats(
             firstPlayer = firstName,
             secondPlayer = secondName,
