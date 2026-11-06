@@ -185,7 +185,7 @@ class AtpLiveClient(context: Context) {
     }
 
     private fun statsUrl(link: AtpMatchLinks.MatchLink): String =
-        "https://www.atptour.com/en/scores/stats-centre/${link.section}/" +
+        "https://www.atptour.com/en/scores/match-stats/${link.section}/" +
             "${link.year}/${link.atpId}/${link.id}"
 
     companion object {
