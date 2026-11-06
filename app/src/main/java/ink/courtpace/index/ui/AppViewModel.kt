@@ -298,6 +298,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             adjustedServerSides = rating.adjustedServerSides,
                             totalServerSides = rating.totalServerSides,
                             aces = rating.aces,
+                            adjustmentIssues = rating.adjustmentIssues,
                         ),
                     )
                     status(
