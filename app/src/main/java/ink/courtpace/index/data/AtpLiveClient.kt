@@ -4,7 +4,6 @@ import android.content.Context
 import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.AtpEvents
 import ink.courtpace.index.core.live.AtpMatchLinks
-import ink.courtpace.index.core.live.AtpResultsParser
 import ink.courtpace.index.core.live.AtpStatsParser
 import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Tournament
@@ -30,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class AtpLiveClient(context: Context) {
 
     private val web = AtpWebReader(context)
+    private val infosys = AtpInfosysStatsClient()
     private val store = MatchStatsStore(context)
 
     /** Discover every currently listed ATP 1000/500/250 event from the ATP current-scores hub. */
@@ -78,18 +78,15 @@ class AtpLiveClient(context: Context) {
         val cached = store.readAll(eventKey)
         val collected = ConcurrentHashMap(cached)
         val tried = AtomicInteger(0)
-        val withContent = AtomicInteger(0)
-        val routeAttempts = AtomicInteger(0)
-        val blocked = AtomicBoolean(false)
+        val payloads = AtomicInteger(0)
         val samples = java.util.concurrent.ConcurrentLinkedQueue<String>()
         val gate = Semaphore(PARALLEL_PAGES)
 
         val resultsUrl =
             "https://www.atptour.com/en/scores/current/${event.slug}/${event.atpId}/results"
         val source = web.readPageSource(resultsUrl, RESULTS_RENDER_MS).orEmpty()
-        // The results page is authoritative for completion. ATP has emitted both the
-        // /archive and /live stats-centre routes for finished matches during an active event.
-        // Keep the discovered route and try its sibling route only if it yields no usable stats.
+        // The results page supplies the completed singles match IDs. Match statistics themselves
+        // come from ATP/Infosys JSON, not by scraping the visible HTML or a guessed page URL.
         val links = AtpMatchLinks.singlesLinks(
             AtpMatchLinks.linksFromResultsPage(source),
         ).filter { link ->
@@ -103,16 +100,15 @@ class AtpLiveClient(context: Context) {
                 .count { it.atpId == event.atpId && it.year == event.year }
             error(
                 "no completed singles stats links on the results page " +
-                    "($pageBytes bytes, $totalStatsLinks stats links found); no match pages scanned",
+                    "($pageBytes bytes, $totalStatsLinks stats links found); no match lookups attempted",
             )
         }
 
         withTimeoutOrNull(WALK_BUDGET_MS) {
             coroutineScope {
                 links.map { link ->
-                    async(Dispatchers.Default) {
+                    async(Dispatchers.IO) {
                         gate.withPermit {
-                            if (blocked.get()) return@withPermit
                             if (collected.containsKey(link.id)) {
                                 onProgress(collected.size, tried.incrementAndGet())
                                 return@withPermit
@@ -120,39 +116,12 @@ class AtpLiveClient(context: Context) {
 
                             val attempt = tried.incrementAndGet()
                             onProgress(collected.size, attempt)
-
-                            var parsed: ink.courtpace.index.core.live.AtpMatchStats? = null
-                            for ((variantIndex, variant) in AtpMatchLinks.routeVariants(link).withIndex()) {
-                                routeAttempts.incrementAndGet()
-                                val rendered = web.read(
-                                    statsUrl(variant),
-                                    timeoutMs = if (variantIndex == 0) MATCH_RENDER_MS else FALLBACK_RENDER_MS,
-                                    // Do not return as soon as the ace labels appear: ATP
-                                    // renders the serving denominators progressively too.
-                                    isReady = { AtpStatsParser.parse(it) != null },
-                                    returnLastOnTimeout = true,
-                                )
-                                if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
-                                    blocked.set(true)
-                                    break
-                                }
-                                val bodyText = rendered?.substringBefore("\n[ATP_WEBVIEW]").orEmpty()
-                                if (bodyText.isNotBlank()) withContent.incrementAndGet()
-                                parsed = rendered?.let { snapshot ->
-                                    AtpStatsParser.parse(snapshot)
-                                        ?: AtpStatsParser.parse(AtpResultsParser.toText(snapshot))
-                                }
-                                if (parsed != null) break
-
-                                if (rendered != null && samples.size < MAX_DIAGNOSTIC_SAMPLES) {
-                                    val preview = rendered.replace(Regex("\\s+"), " ")
-                                        .take(DIAGNOSTIC_PREVIEW_CHARS)
-                                    samples.add(
-                                        "${variant.section}/${variant.id}: ${rendered.length} chars · $preview",
-                                    )
-                                }
+                            val result = infosys.read(event.year, event.atpId, link.id)
+                            if (result.payloadBytes > 0) payloads.incrementAndGet()
+                            result.stats?.let { collected[link.id] = it }
+                            if (result.stats == null && samples.size < MAX_DIAGNOSTIC_SAMPLES) {
+                                samples.add("${link.id}: ${result.diagnostic ?: "no stats data"}")
                             }
-                            if (parsed != null) collected[link.id] = parsed
                             onProgress(collected.size, tried.get())
                         }
                     }
@@ -168,26 +137,20 @@ class AtpLiveClient(context: Context) {
         return AceRating.rate(found) ?: error(
             when {
                 found.isNotEmpty() ->
-                    "only ${found.size} completed matches have stats so far " +
-                        "(${links.size} completed singles links on the results page)"
-                blocked.get() -> "ATP blocked a match-stats page on this device"
-                withContent.get() == 0 -> {
-                    val sample = samples.peek()?.let { " · page sample: $it" }.orEmpty()
-                    "no readable stats-page body from ${links.size} matches after " +
-                        "${routeAttempts.get()} archive/live route attempts$sample"
+                    "only ${found.size} of ${links.size} completed matches have Infosys stats"
+                payloads.get() == 0 -> {
+                    val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
+                    "Infosys returned no usable JSON for ${links.size} completed matches$sample"
                 }
                 else -> {
-                    val sample = samples.peek()?.let { " · sample: $it" }.orEmpty()
-                    "read ${withContent.get()} stats-page bodies but could not recognise " +
-                        "the ace/serve fields$sample"
+                    val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
+                    "received ${payloads.get()} Infosys JSON payloads but found no usable " +
+                        "set0 ace/service-point rows$sample"
                 }
             },
+
         )
     }
-
-    private fun statsUrl(link: AtpMatchLinks.MatchLink): String =
-        "https://www.atptour.com/en/scores/match-stats/${link.section}/" +
-            "${link.year}/${link.atpId}/${link.id}"
 
     companion object {
         const val CURRENT_SCORES_URL = "https://www.atptour.com/en/scores/current"
@@ -195,12 +158,8 @@ class AtpLiveClient(context: Context) {
         /** The event/results page is allowed to render fully before links are collected. */
         const val RESULTS_RENDER_MS = 45_000L
 
-        /** A single match page only needs to wait for its stats to appear. */
-        const val MATCH_RENDER_MS = 15_000L
-        const val FALLBACK_RENDER_MS = 8_000L
-        const val MIN_READABLE_PAGE_CHARS = 400
+        /** Keep per-match failure examples compact so the live card remains readable. */
         const val MAX_DIAGNOSTIC_SAMPLES = 2
-        const val DIAGNOSTIC_PREVIEW_CHARS = 100
 
         /** Small bounded WebView pool; large parallel batches are killed by Android. */
         const val PARALLEL_PAGES = 4
