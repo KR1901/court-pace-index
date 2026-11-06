@@ -79,7 +79,7 @@ internal class AtpInfosysStatsClient {
                     }
                     val stats = parseStats(payload)
                     lastState = classifyPayload(payload, stats != null)
-                    if (stats != null) {
+                    if (stats != null && lastState == MatchDataState.PLAYED) {
                         return@withContext ReadResult(
                             stats = stats,
                             payloadBytes = lastPayloadBytes,
@@ -367,6 +367,10 @@ internal class AtpInfosysStatsClient {
         val firstPoints = denominator(servicePoints.player1) ?: return null
         val secondPoints = denominator(servicePoints.player2) ?: return null
         if (firstPoints <= 0 || secondPoints <= 0) return null
+        // Aces are a subset of service points. Reject malformed/incompatible feed rows.
+        if (firstAces < 0 || secondAces < 0 ||
+            firstAces > firstPoints || secondAces > secondPoints
+        ) return null
 
         return AtpMatchStats(
             firstPlayer = firstName,
@@ -417,6 +421,8 @@ internal class AtpInfosysStatsClient {
         }
 
         if (includedSets == 0) return null
+        // The aggregate must remain physically possible after summing all played sets.
+        if (firstAces > firstPoints || secondAces > secondPoints) return null
         return AtpMatchStats(
             firstPlayer = firstName,
             secondPlayer = secondName,
