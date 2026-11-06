@@ -169,7 +169,7 @@ class LiveRatingCacheTest {
     }
 
     @Test
-    fun `the previous live-rating method version is invalidated after the stats-cache schema change`() {
+    fun `the previous live-rating cache is invalidated after player-name resolution changes`() {
         val previous = CachedLiveRating(
             tournamentId = "paris",
             season = 2026,
@@ -177,7 +177,7 @@ class LiveRatingCacheTest {
             matches = 49,
             aceRate = 0.10,
             asOf = "2026-11-07T00:00:00Z",
-            methodVersion = 2,
+            methodVersion = 3,
             baselineGenerated = "2026-11-06T19:25:21Z",
             discoveredMatches = 49,
             adjustedServerSides = 94,
@@ -186,7 +186,7 @@ class LiveRatingCacheTest {
 
         val restored = CachedLiveRating.fromJson(previous.toJson())!!
 
-        assertEquals(2, restored.methodVersion)
+        assertEquals(3, restored.methodVersion)
         assertTrue(restored.methodVersion != CachedLiveRating.CURRENT_METHOD_VERSION)
         assertNull(restored.toAceRatingResultOrNull())
     }
