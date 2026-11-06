@@ -189,16 +189,28 @@ object AceRating {
             val parts = profile.name.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
             if (parts.size < 2) return@forEach
 
-            // "Alex de Minaur" -> "ademinaur", matching "A. DE MINAUR".
-            addAlias(normaliseName(parts.first().take(1) + parts.drop(1).joinToString("")), profile)
-
-            if (parts.size >= 3) {
-                // Allow ATP to omit a middle initial: "J. CERUNDOLO" -> "Juan Manuel Cerundolo".
-                addAlias(normaliseName(parts.first().take(1) + parts.last()), profile)
-
-                // "J. M. CERUNDOLO" -> "Juan Manuel Cerundolo".
-                val initials = parts.dropLast(1).joinToString("") { it.take(1) }
-                addAlias(normaliseName(initials + parts.last()), profile)
+            /*
+             * ATP score/result labels can shorten compound names in more than one way:
+             *   Alex de Minaur          -> A. DE MINAUR
+             *   Adolfo Daniel Vallejo   -> D. VALLEJO
+             *   Daniel Merida Aguilar   -> D. MERIDA
+             *   Juan Manuel Cerundolo   -> J. M. CERUNDOLO
+             *
+             * Generate aliases from any contiguous initials followed by any contiguous
+             * name-token sequence. Resolution below accepts only a unique alias, so the
+             * broader coverage cannot silently bind an ambiguous short name to a player.
+             */
+            for (initialStart in 0 until parts.lastIndex) {
+                for (initialEnd in initialStart until parts.lastIndex) {
+                    val initials = parts.subList(initialStart, initialEnd + 1)
+                        .joinToString("") { it.take(1) }
+                    for (suffixStart in initialEnd + 1 until parts.size) {
+                        for (suffixEnd in suffixStart until parts.size) {
+                            val suffix = parts.subList(suffixStart, suffixEnd + 1).joinToString("")
+                            addAlias(normaliseName(initials + suffix), profile)
+                        }
+                    }
+                }
             }
         }
 
