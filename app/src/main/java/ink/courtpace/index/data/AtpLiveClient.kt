@@ -78,6 +78,7 @@ class AtpLiveClient(context: Context) {
         val tried = AtomicInteger(0)
         val payloads = AtomicInteger(0)
         val samples = java.util.concurrent.ConcurrentLinkedQueue<String>()
+        val failuresByMatch = ConcurrentHashMap<String, String>()
         val gate = Semaphore(PARALLEL_PAGES)
 
         val resultsUrl =
@@ -92,6 +93,10 @@ class AtpLiveClient(context: Context) {
         }.distinctBy { it.id }
         val pageBytes = source.toByteArray(Charsets.UTF_8).size
         onDiscovery?.invoke(links.size, pageBytes)
+        val discoveredIds = links.map { it.id }.toSet()
+        // Cache entries are scoped by event/year, but only matches still present on the
+        // current results page belong in this event's current rating denominator.
+        collected.keys.toList().filterNot { it in discoveredIds }.forEach(collected::remove)
 
         if (links.isEmpty()) {
             val totalStatsLinks = AtpMatchLinks.linksFromResultsPage(source)
@@ -116,9 +121,15 @@ class AtpLiveClient(context: Context) {
                             onProgress(collected.size, attempt)
                             val result = infosys.read(event.year, event.atpId, link.id)
                             if (result.payloadBytes > 0) payloads.incrementAndGet()
-                            result.stats?.let { collected[link.id] = it }
-                            if (result.stats == null && samples.size < MAX_DIAGNOSTIC_SAMPLES) {
-                                samples.add("${link.id}: ${result.diagnostic ?: "no stats data"}")
+                            if (result.stats != null) {
+                                collected[link.id] = result.stats
+                                failuresByMatch.remove(link.id)
+                            } else {
+                                val reason = result.diagnostic ?: "Stats Plus returned no usable stats"
+                                failuresByMatch[link.id] = reason
+                                if (samples.size < MAX_DIAGNOSTIC_SAMPLES) {
+                                    samples.add("${link.id}: $reason")
+                                }
                             }
                             onProgress(collected.size, tried.get())
                         }
@@ -131,8 +142,12 @@ class AtpLiveClient(context: Context) {
         // expires. The next refresh can then request only the still-missing match IDs instead of
         // downloading already-read pages again.
         store.writeAll(eventKey, collected)
-        val found = collected.values.toList()
-        return AceRating.rate(found) ?: error(
+        val found = collected.filterKeys { it in discoveredIds }.values.toList()
+        val missingIds = links.map { it.id }.filterNot { it in collected }
+        val missingReasons = missingIds.associateWith { id ->
+            failuresByMatch[id] ?: "Stats Plus did not return a usable record on this refresh"
+        }
+        val rating = AceRating.rate(found) ?: error(
             when {
                 found.isNotEmpty() ->
                     "only ${found.size} of ${links.size} completed matches have Infosys stats"
@@ -146,7 +161,11 @@ class AtpLiveClient(context: Context) {
                         "set0 ace/service-point rows$sample"
                 }
             },
-
+        )
+        return rating.copy(
+            discoveredMatches = links.size,
+            missingMatchIds = missingIds,
+            missingReasons = missingReasons,
         )
     }
 
