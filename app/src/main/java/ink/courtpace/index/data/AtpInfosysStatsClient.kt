@@ -1,6 +1,6 @@
 package ink.courtpace.index.data
 
-import android.util.Base64
+import java.util.Base64
 import ink.courtpace.index.core.live.AtpMatchStats
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -109,7 +109,7 @@ internal class AtpInfosysStatsClient {
         }
     }
 
-    private fun decryptEnvelope(envelope: JSONObject): JSONObject {
+    internal fun decryptEnvelope(envelope: JSONObject): JSONObject {
         val lastModified = envelope.getLong("lastModified")
         val encoded = envelope.getString("response")
         val keyText = cipherKey(lastModified)
@@ -117,7 +117,7 @@ internal class AtpInfosysStatsClient {
         val iv = keyText.uppercase().toByteArray(StandardCharsets.UTF_8)
         require(key.size == 16 && iv.size == 16) { "Invalid ATP cipher key length" }
 
-        val encrypted = Base64.decode(encoded, Base64.DEFAULT)
+        val encrypted = Base64.getMimeDecoder().decode(encoded)
         val cipher = Cipher.getInstance("AES/CBC/NoPadding")
         cipher.init(
             Cipher.DECRYPT_MODE,
@@ -140,7 +140,7 @@ internal class AtpInfosysStatsClient {
      * '#' + base36(hex(timestamp)) + base24((year+reverse(year))*(day+reverse(day))) + '$'
      * The middle string is padded/truncated to fourteen characters.
      */
-    private fun cipherKey(lastModified: Long): String {
+    internal fun cipherKey(lastModified: Long): String {
         val date = Instant.ofEpochMilli(lastModified).atZone(ZoneOffset.UTC)
         val day = date.dayOfMonth
         val reverseDay = day.toString().padStart(2, '0').reversed().toInt()
