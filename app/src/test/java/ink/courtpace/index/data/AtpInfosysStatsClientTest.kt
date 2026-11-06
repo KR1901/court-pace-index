@@ -187,6 +187,22 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
+    fun `prefers full Infosys player names and falls back to abbreviated labels`() {
+        assertEquals(
+            "Alex de Minaur",
+            client.playerName("Alex", "de Minaur", "A. DE MINAUR", "Player 1"),
+        )
+        assertEquals(
+            "A. DE MINAUR",
+            client.playerName(null, null, "A. DE MINAUR", "Player 1"),
+        )
+        assertEquals(
+            "Player 1",
+            client.playerName(null, null, null, "Player 1"),
+        )
+    }
+
+    @Test
     fun `extracts both players aces and total service points from set zero rows`() {
         val rows = listOf(
             AtpInfosysStatsClient.StatRow("Serve Rating", "229", "270"),
