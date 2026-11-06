@@ -254,14 +254,8 @@ class AtpStatsParserTest {
 
     @Test
     fun `ATP full first name with shortened surname resolves to the unique multi-part profile`() {
-        val realisticBaseline = LiveSpeedBaseline(
-            season = 2026,
-            normalisation = 1.0,
-            profiles = listOf(
-                LiveSpeedPlayerProfile("Tommy Paul", serveRate = 0.10, concedeRate = 0.08),
-                LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
-            ),
-        )
+        val realisticBaseline = ink.courtpace.index.core.data.PaceData.parse(Datasets.raw())
+            .dataset.speedBaseline!!
         val matches = (1..10).map {
             AtpMatchStats("Tommy PAUL", "Daniel MERIDA", 5, 80, 4, 82, true)
         }
@@ -294,7 +288,7 @@ class AtpStatsParserTest {
         val coverage = AceRating.coverage(matches, ambiguousBaseline)
 
         assertEquals(0, coverage.adjustedServerSides)
-        assertEquals(10, coverage.issues.size)
+        assertEquals(20, coverage.issues.size)
     }
 
     @Test
