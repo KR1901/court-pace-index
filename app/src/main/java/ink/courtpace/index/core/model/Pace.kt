@@ -152,6 +152,8 @@ data class LiveSpeedBaseline(
     val normalisation: Double,
     val profiles: List<LiveSpeedPlayerProfile> = emptyList(),
     val generated: String = "",
+    /** Season used to estimate player tendencies; can be the prior year during a cold start. */
+    val profileSeason: Int = season,
 )
 
 @Serializable
