@@ -68,6 +68,40 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
+    fun `parses the user-confirmed ms043 Rinderknech Cerundolo match stats`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "7", "5"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "47/69", "45/68"),
+        )
+
+        val stats = client.parseStatsRows(rows, "Arthur Rinderknech", "Francisco Cerundolo")!!
+
+        assertEquals("Arthur Rinderknech", stats.firstPlayer)
+        assertEquals("Francisco Cerundolo", stats.secondPlayer)
+        assertEquals(7, stats.firstAces)
+        assertEquals(5, stats.secondAces)
+        assertEquals(69, stats.firstServePoints)
+        assertEquals(68, stats.secondServePoints)
+    }
+
+    @Test
+    fun `parses the user-confirmed ms053 Shapovalov Khachanov match stats`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "8", "2"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "61/97", "53/84"),
+        )
+
+        val stats = client.parseStatsRows(rows, "Denis Shapovalov", "Karen Khachanov")!!
+
+        assertEquals("Denis Shapovalov", stats.firstPlayer)
+        assertEquals("Karen Khachanov", stats.secondPlayer)
+        assertEquals(8, stats.firstAces)
+        assertEquals(2, stats.secondAces)
+        assertEquals(97, stats.firstServePoints)
+        assertEquals(84, stats.secondServePoints)
+    }
+
+    @Test
     fun `aggregates played sets when a retired match has no set zero total`() {
         val set1 = listOf(
             AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
