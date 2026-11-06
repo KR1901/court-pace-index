@@ -288,7 +288,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         /** The whole walk must answer within this, however the pages behave. */
-        const val WALK_TIMEOUT_MS = 300_000L
+        const val WALK_TIMEOUT_MS = 600_000L
 
         /** The results page is small and server-rendered; it has no excuse to take long. */
         const val RESULTS_TIMEOUT_MS = 40_000L

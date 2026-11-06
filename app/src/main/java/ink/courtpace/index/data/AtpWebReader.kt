@@ -34,7 +34,7 @@ class AtpWebReader(private val context: Context) {
     @SuppressLint("SetJavaScriptEnabled")
     suspend fun read(
         url: String,
-        timeoutMs: Long = 20_000,
+        timeoutMs: Long = 12_000,
         /** Called with each render; return true once the page holds what was asked for. */
         isReady: (String) -> Boolean = { it.isNotBlank() },
     ): String? = withTimeoutOrNull(timeoutMs) {
@@ -100,7 +100,7 @@ class AtpWebReader(private val context: Context) {
      * innerText - what [read] returns - contains no links at all, so discovery based on it could
      * never work. Links have to be collected from the DOM before the text is flattened.
      */
-    suspend fun readLinks(url: String, timeoutMs: Long = 20_000): List<String> =
+    suspend fun readLinks(url: String, timeoutMs: Long = 12_000): List<String> =
         withTimeoutOrNull(timeoutMs) {
             withContext(Dispatchers.Main) {
                 suspendCancellableCoroutine { continuation ->

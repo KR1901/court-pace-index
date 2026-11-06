@@ -77,7 +77,11 @@ class AtpLiveClient(context: android.content.Context) {
         val ids = if (discovered.isNotEmpty()) discovered
         else (1..MAX_MATCHES).map { "ms" + it.toString().padStart(3, '0') }
 
-        kotlinx.coroutines.coroutineScope {
+        // A budget inside the walk, not around it: if it runs out we still rate the matches that
+        // were read. Cancelling from outside used to discard them, which is why the count fell
+        // from fourteen to six to two as each release added per-id work.
+        kotlinx.coroutines.withTimeoutOrNull(WALK_BUDGET_MS) {
+            kotlinx.coroutines.coroutineScope {
             ids.map { id ->
                 async(Dispatchers.Default) {
                     gate.withPermit {
@@ -126,6 +130,7 @@ class AtpLiveClient(context: android.content.Context) {
                     }
                 }
             }.awaitAll()
+            }
         }
         val found = collected.values.toList()
         if (!blocked) store.writeAll(eventKey, collected)
@@ -195,7 +200,10 @@ class AtpLiveClient(context: android.content.Context) {
         const val DISCOVERY_TIMEOUT_MS = 25_000L
 
         /** Pages rendered at once. Serial reads were the reason nothing appeared for minutes. */
-        const val PARALLEL_PAGES = 8
+        const val PARALLEL_PAGES = 12
+
+        /** The walk's own budget. Whatever it has by then is rated rather than discarded. */
+        const val WALK_BUDGET_MS = 420_000L
 
     }
 
