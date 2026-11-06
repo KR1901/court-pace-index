@@ -422,9 +422,12 @@ private fun LivePendingRow(
 
 private fun missingReasonLabel(reason: String): String = when {
     reason.contains("HTTP 404", ignoreCase = true) -> "no feed record"
-    reason.contains("HTTP 403", ignoreCase = true) -> "HTTP 403 after retry"
-    reason.contains("HTTP 429", ignoreCase = true) -> "HTTP 429 rate limited"
-    reason.contains("HTTP 5", ignoreCase = true) -> "server error after retry"
+    reason.contains("HTTP 403", ignoreCase = true) ->
+        "HTTP 403 " + reason.substringAfter("HTTP 403").take(62)
+    reason.contains("HTTP 429", ignoreCase = true) ->
+        "HTTP 429 " + reason.substringAfter("HTTP 429").take(62)
+    reason.contains("HTTP 5", ignoreCase = true) ->
+        "server error " + reason.substringAfter("HTTP 5").take(62)
     reason.contains("timeout", ignoreCase = true) -> "timeout"
     reason.contains("setStats.set0", ignoreCase = true) -> "no full-match stats"
     reason.contains("padding", ignoreCase = true) ||
