@@ -95,17 +95,11 @@ object AtpStatsParser {
 }
 
 /**
- * Ace-based surface speed for an event in progress.
- *
- * This is the app's documented construction - ace rate against a tour-average surface - applied
- * to the matches completed so far. The tour average is 7.83% of service points, measured over
- * 10,834 tour-level matches (2022-2025, 137,134 aces from 1,751,112 service points) in the
- * public archive, so 1.00 is the tour and anything above it is faster.
- *
- * An earlier version of this used the odds-ratio expectation from the historical pipeline. It
- * is not used here because it is not monotonic in ace rate: as both sides' rates rise the
- * expected count rises faster than the observed one, so a big-serving event scored *lower*.
- * A plain rate ratio moves the way the number claims to move.
+ * Live Surface Speed uses the same opponent-adjusted, season-normalised method as historical
+ * Speed in tools/compute_speed.py. The bundled season baseline supplies player serve and return
+ * tendencies plus the season mean of raw event scores; ATP/Infosys supplies current event stats.
+ * Missing player profiles are excluded from adjusted server-side observations, never replaced
+ * with the old pooled ace-rate approximation.
  */
 object AceRating {
 
