@@ -91,33 +91,51 @@ class AtpLiveClient(context: Context) {
         ).filter { link ->
             link.atpId == event.atpId && link.year == event.year
         }.distinctBy { it.id }
-        val inProgressMatches = eventSingles.count { it.section == "live" }
-        // A live-route link can already contain partial set stats. It is not a completed
-        // match and must not inflate either the rating numerator or its discovered denominator.
-        val links = AtpMatchLinks.completedSinglesLinks(eventSingles)
+        val archiveLinks = AtpMatchLinks.completedSinglesLinks(eventSingles)
+        val archiveIds = archiveLinks.map { it.id }.toSet()
+        val inProgressRouteIds = eventSingles
+            .filter { it.section == "live" }
+            .map { it.id }
+            .toSet()
+
+        // No-play decisions are generic outcome data, not hand-maintained match IDs. A W/O
+        // marker on the ATP card is authoritative; cached Infosys metadata can also identify
+        // a completed result with zero sets and no played-set data.
+        val noPlayIds = ConcurrentHashMap.newKeySet<String>()
+        noPlayIds.addAll(store.readNoPlayIds(eventKey).intersect(archiveIds))
+        archiveLinks.filter { it.resultStatus == AtpMatchLinks.ResultStatus.WALKOVER }
+            .forEach { noPlayIds.add(it.id) }
+        // If ATP labels a match RET, never retain an old no-play classification for it.
+        archiveLinks.filter { it.resultStatus == AtpMatchLinks.ResultStatus.RETIREMENT }
+            .forEach { noPlayIds.remove(it.id) }
+
+        val links = archiveLinks.filterNot { it.id in noPlayIds }
         val pageBytes = source.toByteArray(Charsets.UTF_8).size
         onDiscovery?.invoke(links.size, pageBytes)
-        val discoveredIds = links.map { it.id }.toSet()
-        // Cache entries are scoped by event/year, but only matches still present on the
-        // current results page belong in this event's current rating denominator.
-        collected.keys.toList().filterNot { it in discoveredIds }.forEach(collected::remove)
+        val archiveIdsForRating = links.map { it.id }.toSet()
 
-        if (links.isEmpty()) {
+        // Cache entries not linked from the current results page, or now confirmed as walkovers,
+        // must not contribute to this event's current rating.
+        collected.keys.toList().filterNot { it in archiveIdsForRating }.forEach(collected::remove)
+
+        if (archiveLinks.isEmpty()) {
             val totalStatsLinks = AtpMatchLinks.linksFromResultsPage(source)
                 .count { it.atpId == event.atpId && it.year == event.year }
             error(
                 "no completed singles stats links on the results page " +
                     "($pageBytes bytes, $totalStatsLinks stats links found, " +
-                    "$inProgressMatches still live); no match lookups attempted",
+                    "${inProgressRouteIds.size} still live); no match lookups attempted",
             )
         }
 
+        val inProgressPayloadIds = ConcurrentHashMap.newKeySet<String>()
+        val doublesPayloadIds = ConcurrentHashMap.newKeySet<String>()
         withTimeoutOrNull(WALK_BUDGET_MS) {
             coroutineScope {
                 links.map { link ->
                     async(Dispatchers.IO) {
                         gate.withPermit {
-                            if (collected.containsKey(link.id)) {
+                            if (collected.containsKey(link.id) || noPlayIds.contains(link.id)) {
                                 onProgress(collected.size, tried.incrementAndGet())
                                 return@withPermit
                             }
@@ -126,14 +144,37 @@ class AtpLiveClient(context: Context) {
                             onProgress(collected.size, attempt)
                             val result = infosys.read(event.year, event.atpId, link.id)
                             if (result.payloadBytes > 0) payloads.incrementAndGet()
-                            if (result.stats != null) {
-                                collected[link.id] = result.stats
-                                failuresByMatch.remove(link.id)
-                            } else {
-                                val reason = result.diagnostic ?: "Stats Plus returned no usable stats"
-                                failuresByMatch[link.id] = reason
-                                if (samples.size < MAX_DIAGNOSTIC_SAMPLES) {
-                                    samples.add("${link.id}: $reason")
+                            when {
+                                result.stats != null &&
+                                    result.state == AtpInfosysStatsClient.MatchDataState.PLAYED -> {
+                                    collected[link.id] = result.stats
+                                    failuresByMatch.remove(link.id)
+                                }
+                                result.state == AtpInfosysStatsClient.MatchDataState.NO_PLAYED_DATA &&
+                                    link.resultStatus != AtpMatchLinks.ResultStatus.RETIREMENT -> {
+                                    noPlayIds.add(link.id)
+                                    collected.remove(link.id)
+                                    failuresByMatch.remove(link.id)
+                                }
+                                result.state == AtpInfosysStatsClient.MatchDataState.IN_PROGRESS -> {
+                                    inProgressPayloadIds.add(link.id)
+                                    collected.remove(link.id)
+                                }
+                                result.state == AtpInfosysStatsClient.MatchDataState.DOUBLES -> {
+                                    doublesPayloadIds.add(link.id)
+                                    collected.remove(link.id)
+                                }
+                                else -> {
+                                    val reason = when {
+                                        link.resultStatus == AtpMatchLinks.ResultStatus.RETIREMENT &&
+                                            result.state == AtpInfosysStatsClient.MatchDataState.NO_PLAYED_DATA ->
+                                            "ATP result card marks retirement, but Stats Plus returned no played-set statistics"
+                                        else -> result.diagnostic ?: "Stats Plus returned no usable stats"
+                                    }
+                                    failuresByMatch[link.id] = reason
+                                    if (samples.size < MAX_DIAGNOSTIC_SAMPLES) {
+                                        samples.add("${link.id}: $reason")
+                                    }
                                 }
                             }
                             onProgress(collected.size, tried.get())
@@ -143,36 +184,42 @@ class AtpLiveClient(context: Context) {
             }
         }
 
-        // Persist every successful read, even when a sibling page is blocked or the walk budget
-        // expires. The next refresh can then request only the still-missing match IDs instead of
-        // downloading already-read pages again.
+        // Persist good match stats and generic no-play outcomes independently. A known walkover
+        // is not re-requested every five minutes; a retirement stays eligible for stats fetching.
         store.writeAll(eventKey, collected)
-        val found = collected.filterKeys { it in discoveredIds }.values.toList()
-        val missingIds = links.map { it.id }.filterNot { collected.containsKey(it) }
+        store.writeNoPlayIds(eventKey, noPlayIds.toSet())
+
+        val inProgressMatches = inProgressRouteIds.size + inProgressPayloadIds.size
+        val walkoversExcluded = noPlayIds.count { it in archiveIds }
+        val eligibleIds = archiveIdsForRating - noPlayIds - inProgressPayloadIds - doublesPayloadIds
+        val found = collected.filterKeys { it in eligibleIds }.values.toList()
+        val missingIds = eligibleIds.filterNot { collected.containsKey(it) }
         val missingReasons = missingIds.associateWith { id ->
             failuresByMatch[id] ?: "Stats Plus did not return a usable record on this refresh"
         }
         val rating = AceRating.rate(found) ?: error(
             when {
                 found.isNotEmpty() ->
-                    "only ${found.size} of ${links.size} completed matches have Infosys stats"
+                    "only ${found.size} of ${eligibleIds.size} played singles matches have usable Infosys stats"
                 payloads.get() == 0 -> {
                     val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
-                    "Infosys returned no usable JSON for ${links.size} completed matches$sample"
+                    "Infosys returned no usable JSON for ${eligibleIds.size} played singles matches$sample"
                 }
                 else -> {
                     val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
                     "received ${payloads.get()} Infosys JSON payloads but found no usable " +
-                        "set0 ace/service-point rows$sample"
+                        "full-match or played-set ace/service-point rows$sample"
                 }
             },
         )
         return rating.copy(
-            discoveredMatches = links.size,
+            discoveredMatches = eligibleIds.size,
             missingMatchIds = missingIds,
             missingReasons = missingReasons,
             inProgressMatches = inProgressMatches,
+            walkoversExcluded = walkoversExcluded,
         )
+
     }
 
     companion object {
