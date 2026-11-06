@@ -30,6 +30,16 @@ class MatchIdDiscoveryTest {
     }
 
     @Test
+    fun `recognises ATP match-stats URLs as well as legacy stats-centre links`() {
+        val links = AtpMatchLinks.linksFromResultsPage(
+            """<a href="/en/scores/match-stats/archive/2026/352/ms041">Match stats</a>""",
+        )
+        assertEquals(1, links.size)
+        assertEquals("ms041", links.single().id)
+        assertEquals("archive", links.single().section)
+    }
+
+    @Test
     fun `an id linked twice is listed once`() {
         val ids = AtpMatchLinks.fromResultsPage(html)
         assertEquals(ids.size, ids.distinct().size)
