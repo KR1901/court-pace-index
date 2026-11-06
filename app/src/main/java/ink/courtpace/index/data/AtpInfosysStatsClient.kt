@@ -114,7 +114,7 @@ internal class AtpInfosysStatsClient {
         var last = null as Pair<String?, String>?
         for (attempt in 1..MAX_HTTP_ATTEMPTS) {
             last = requestOnce(url)
-            if (last.first != null || !shouldRetry(last.second)) {
+            if (last.first != null || !shouldRetryDiagnostic(last.second)) {
                 return last
             }
             if (attempt == MAX_HTTP_ATTEMPTS) break
@@ -138,7 +138,7 @@ internal class AtpInfosysStatsClient {
         }
     }
 
-    private fun shouldRetry(diagnostic: String): Boolean {
+    internal fun shouldRetryDiagnostic(diagnostic: String): Boolean {
         val status = Regex("""HTTP ([0-9]{3})""").find(diagnostic)?.groupValues?.get(1)?.toIntOrNull()
         // S3 AccessDenied/NoSuchKey are policy/object outcomes, not transient edge failures.
         if (diagnostic.contains("s3-code=AccessDenied", ignoreCase = true) ||
