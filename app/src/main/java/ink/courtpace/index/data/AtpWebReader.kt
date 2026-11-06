@@ -37,12 +37,22 @@ class AtpWebReader(private val context: Context) {
         timeoutMs: Long = 25_000,
         /** Called with each render; return true once the page holds what was asked for. */
         isReady: (String) -> Boolean = { it.isNotBlank() },
+        /**
+         * Wait for the page to stop growing instead of returning at the first sign of content.
+         *
+         * The results page fills in progressively, so returning the moment one match appeared
+         * captured a fraction of the day's play - which is why a "complete" reading kept coming
+         * back with six or seven matches.
+         */
+        settle: Boolean = false,
     ): String? = withTimeoutOrNull(timeoutMs) {
         withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { continuation ->
                 val web = WebView(context.applicationContext)
                 var finished = false
                 var polling = false
+                var lastLength = 0
+                var stablePolls = 0
 
                 fun release(text: String?) {
                     if (finished) return
@@ -59,7 +69,31 @@ class AtpWebReader(private val context: Context) {
                             "(function(){return document.body ? document.body.innerText : ''})()",
                         ) { raw ->
                             val text = decode(raw)
-                            if (text != null && (isReady(text) || text.contains(BLOCKED, true))) {
+                            if (text == null) {
+                                if (!finished) main.postDelayed({ poll() }, POLL_MS)
+                            } else if (text.contains(BLOCKED, true)) {
+                                release(text)
+                            } else if (settle) {
+                                // Scroll so lazy sections load, then wait until the text stops
+                                // growing. Returning at the first match captured a fraction of
+                                // the day's play, which is why "complete" readings came back
+                                // with six or seven matches.
+                                runCatching {
+                                    web.evaluateJavascript(
+                                        "(function(){window.scrollTo(0," +
+                                            " document.body.scrollHeight);})()",
+                                        null,
+                                    )
+                                }
+                                val grew = text.length > lastLength
+                                lastLength = text.length
+                                stablePolls = if (grew) 0 else stablePolls + 1
+                                if (stablePolls >= STABLE_POLLS) {
+                                    release(text)
+                                } else if (!finished) {
+                                    main.postDelayed({ poll() }, POLL_MS)
+                                }
+                            } else if (isReady(text)) {
                                 release(text)
                             } else if (!finished) {
                                 main.postDelayed({ poll() }, POLL_MS)
@@ -147,6 +181,9 @@ class AtpWebReader(private val context: Context) {
         const val BLOCKED = "have been blocked"
 
         const val POLL_MS = 400L
+
+        /** Consecutive polls with no growth before a settling render is complete. */
+        const val STABLE_POLLS = 4
 
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +

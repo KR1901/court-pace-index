@@ -98,7 +98,7 @@ class AtpLiveClient(context: Context) {
 
                             var parsed = shell?.let { AtpStatsParser.parse(AtpResultsParser.toText(it)) }
                             if (parsed == null) {
-                                val rendered = web.read(url) { AtpStatsParser.hasStats(it) }
+                                val rendered = web.read(url, isReady = { AtpStatsParser.hasStats(it) })
                                 if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
                                     blocked = true
                                     return@withPermit
@@ -134,9 +134,14 @@ class AtpLiveClient(context: Context) {
         val url = "https://www.atptour.com/en/scores/current/$slug/$atpId/results"
         // A single page, so it gets a generous deadline: the results page is heavy and was
         // being abandoned at the twelve-second default before it finished rendering.
-        var matches = web.read(url, timeoutMs = RESULTS_RENDER_MS) {
-            it.contains("wins the match", ignoreCase = true)
-        }
+        // Settle, not first-match: the page fills in progressively, and returning early is
+        // what produced a "complete" reading of six matches.
+        var matches = web.read(
+            url,
+            timeoutMs = RESULTS_RENDER_MS,
+            isReady = { it.contains("wins the match", ignoreCase = true) },
+            settle = true,
+        )
             ?.let { AtpResultsParser.parse(AtpResultsParser.toText(it)) }
             .orEmpty()
         if (matches.isEmpty()) {

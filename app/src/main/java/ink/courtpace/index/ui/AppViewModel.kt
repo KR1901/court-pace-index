@@ -232,9 +232,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         livePace = it
                         // The ace figure wins when it covers most of the draw; otherwise the
                         // duration reading is the honest one to show, because it covers all.
+                        // Show whichever figure rests on more matches. The percentage rule let
+                        // a six-match ace reading beat a fifty-five-match duration reading,
+                        // because the duration total had been truncated by an early return.
                         val aceCoverage = liveAce?.matches ?: 0
                         val total = it.matches ?: 0
-                        if (it.rating != null && aceCoverage < (total * 8) / 10) {
+                        if (it.rating != null && total > aceCoverage) {
                             applyLiveRating(event.t, event.s, it.rating, total, null)
                         }
                     }
