@@ -174,6 +174,30 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a live baseline rejects duplicate normalized player names`() {
+        val profiles = (1..20).map { index ->
+            LiveSpeedPlayerProfile(
+                name = "Player $index",
+                serveRate = 0.12,
+                concedeRate = 0.08,
+            )
+        } + LiveSpeedPlayerProfile(
+            name = "Pláyer 1",
+            serveRate = 0.10,
+            concedeRate = 0.07,
+        )
+        val baseline = LiveSpeedBaseline(
+            season = data.dataset.meta.season,
+            profileSeason = data.dataset.meta.season,
+            normalisation = 1.02,
+            generated = "2026-11-06T00:00:00Z",
+            profiles = profiles,
+        )
+
+        assertFalse(DatasetPolicy.isAcceptable(data.dataset.copy(speedBaseline = baseline)))
+    }
+
+    @Test
     fun `an invalid opponent adjustment baseline rejects the dataset`() {
         val invalid = data.dataset.copy(
             speedBaseline = LiveSpeedBaseline(
