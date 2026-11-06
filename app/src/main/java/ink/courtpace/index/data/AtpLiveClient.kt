@@ -4,6 +4,7 @@ import android.content.Context
 import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.AtpEvents
 import ink.courtpace.index.core.live.AtpMatchLinks
+import ink.courtpace.index.core.live.AtpResultsParser
 import ink.courtpace.index.core.live.AtpStatsParser
 import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Tournament
@@ -78,19 +79,22 @@ class AtpLiveClient(context: Context) {
         val collected = ConcurrentHashMap(cached)
         val tried = AtomicInteger(0)
         val withContent = AtomicInteger(0)
+        val routeAttempts = AtomicInteger(0)
         val blocked = AtomicBoolean(false)
+        val samples = java.util.concurrent.ConcurrentLinkedQueue<String>()
         val gate = Semaphore(PARALLEL_PAGES)
 
         val resultsUrl =
             "https://www.atptour.com/en/scores/current/${event.slug}/${event.atpId}/results"
         val source = web.readPageSource(resultsUrl, RESULTS_RENDER_MS).orEmpty()
+        // The results page is authoritative for completion. ATP has emitted both the
+        // /archive and /live stats-centre routes for finished matches during an active event.
+        // Keep the discovered route and try its sibling route only if it yields no usable stats.
         val links = AtpMatchLinks.singlesLinks(
             AtpMatchLinks.linksFromResultsPage(source),
         ).filter { link ->
-            link.atpId == event.atpId &&
-                link.year == event.year &&
-                link.section == "archive"
-        }
+            link.atpId == event.atpId && link.year == event.year
+        }.distinctBy { it.id }
         val pageBytes = source.toByteArray(Charsets.UTF_8).size
         onDiscovery?.invoke(links.size, pageBytes)
 
@@ -116,20 +120,37 @@ class AtpLiveClient(context: Context) {
 
                             val attempt = tried.incrementAndGet()
                             onProgress(collected.size, attempt)
-                            val url = statsUrl(link)
-                            val rendered = web.read(
-                                url,
-                                timeoutMs = MATCH_RENDER_MS,
-                                isReady = { AtpStatsParser.hasStats(it) },
-                            )
-                            if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
-                                blocked.set(true)
-                                return@withPermit
+
+                            var parsed: ink.courtpace.index.core.live.AtpMatchStats? = null
+                            for ((variantIndex, variant) in AtpMatchLinks.routeVariants(link).withIndex()) {
+                                routeAttempts.incrementAndGet()
+                                val rendered = web.read(
+                                    statsUrl(variant),
+                                    timeoutMs = if (variantIndex == 0) MATCH_RENDER_MS else FALLBACK_RENDER_MS,
+                                    isReady = { AtpStatsParser.hasStats(it) },
+                                    returnLastOnTimeout = true,
+                                )
+                                if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
+                                    blocked.set(true)
+                                    break
+                                }
+                                if (rendered != null && rendered.length > MIN_READABLE_PAGE_CHARS) {
+                                    withContent.incrementAndGet()
+                                }
+                                parsed = rendered?.let { snapshot ->
+                                    AtpStatsParser.parse(snapshot)
+                                        ?: AtpStatsParser.parse(AtpResultsParser.toText(snapshot))
+                                }
+                                if (parsed != null) break
+
+                                if (rendered != null && samples.size < MAX_DIAGNOSTIC_SAMPLES) {
+                                    val preview = rendered.replace(Regex("\\s+"), " ")
+                                        .take(DIAGNOSTIC_PREVIEW_CHARS)
+                                    samples.add(
+                                        "${variant.section}/${variant.id}: ${rendered.length} chars · $preview",
+                                    )
+                                }
                             }
-                            if (rendered != null && rendered.length > 400) {
-                                withContent.incrementAndGet()
-                            }
-                            val parsed = rendered?.let { AtpStatsParser.parse(it) }
                             if (parsed != null) collected[link.id] = parsed
                             onProgress(collected.size, tried.get())
                         }
@@ -148,11 +169,15 @@ class AtpLiveClient(context: Context) {
                 found.isNotEmpty() ->
                     "only ${found.size} completed matches have stats so far " +
                         "(${links.size} completed singles links on the results page)"
-                blocked.get() -> "ATP blocked the match-stats page on this device"
+                blocked.get() -> "ATP blocked a match-stats page on this device"
                 withContent.get() == 0 ->
-                    "ATP returned no rendered match stats from ${links.size} completed matches"
-                else ->
-                    "no parseable ace stats in ${withContent.get()} pages that did load"
+                    "no readable stats-page body from ${links.size} matches after " +
+                        "${routeAttempts.get()} archive/live route attempts"
+                else -> {
+                    val sample = samples.peek()?.let { " · sample: $it" }.orEmpty()
+                    "read ${withContent.get()} stats-page bodies but could not recognise " +
+                        "the ace/serve fields$sample"
+                }
             },
         )
     }
@@ -168,7 +193,11 @@ class AtpLiveClient(context: Context) {
         const val RESULTS_RENDER_MS = 45_000L
 
         /** A single match page only needs to wait for its stats to appear. */
-        const val MATCH_RENDER_MS = 25_000L
+        const val MATCH_RENDER_MS = 15_000L
+        const val FALLBACK_RENDER_MS = 8_000L
+        const val MIN_READABLE_PAGE_CHARS = 400
+        const val MAX_DIAGNOSTIC_SAMPLES = 2
+        const val DIAGNOSTIC_PREVIEW_CHARS = 100
 
         /** Small bounded WebView pool; large parallel batches are killed by Android. */
         const val PARALLEL_PAGES = 4
