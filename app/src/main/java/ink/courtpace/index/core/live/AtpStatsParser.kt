@@ -15,6 +15,8 @@ data class AtpMatchStats(
     val secondAces: Int,
     val secondServePoints: Int,
     val firstWon: Boolean,
+    /** ATP match identifier, attached by the live client and preserved in its stats cache. */
+    val matchId: String? = null,
 )
 
 object AtpStatsParser {
@@ -121,6 +123,8 @@ object AceRating {
         val discoveredMatches: Int = matches,
         val missingMatchIds: List<String> = emptyList(),
         val missingReasons: Map<String, String> = emptyMap(),
+        /** Why each player-server side was excluded from the opponent-adjusted mean. */
+        val adjustmentIssues: List<AdjustmentIssue> = emptyList(),
         val inProgressMatches: Int = 0,
         val walkoversExcluded: Int = 0,
     )
@@ -226,11 +230,19 @@ object AceRating {
         )
     }
 
+    data class AdjustmentIssue(
+        val matchId: String?,
+        val server: String,
+        val returner: String,
+        val reason: String,
+    )
+
     data class Coverage(
         val totalServerSides: Int,
         val serverProfilesMatched: Int,
         val returnerProfilesMatched: Int,
         val adjustedServerSides: Int,
+        val issues: List<AdjustmentIssue> = emptyList(),
     )
 
     private data class Evaluation(
@@ -255,8 +267,9 @@ object AceRating {
         var serverProfilesMatched = 0
         var returnerProfilesMatched = 0
         val ratios = mutableListOf<Double>()
+        val issues = mutableListOf<AdjustmentIssue>()
 
-        fun addSide(serverName: String, returnerName: String, aces: Int, servicePoints: Int) {
+        fun addSide(serverName: String, returnerName: String, aces: Int, servicePoints: Int, matchId: String?) {
             totalAces += aces
             totalPoints += servicePoints
 
@@ -267,22 +280,51 @@ object AceRating {
 
             if (serveRate != null) serverProfilesMatched++
             if (concedeRate != null) returnerProfilesMatched++
-            if (serveRate == null || concedeRate == null) return
 
-            if (servicePoints <= 0 || aces < 0 || aces > servicePoints) return
+            fun exclude(reason: String) {
+                issues += AdjustmentIssue(
+                    matchId = matchId,
+                    server = serverName,
+                    returner = returnerName,
+                    reason = reason,
+                )
+            }
+
+            if (serveRate == null && concedeRate == null) {
+                exclude("no server serve profile or returner concession profile")
+                return
+            }
+            if (serveRate == null) {
+                exclude("no server serve profile")
+                return
+            }
+            if (concedeRate == null) {
+                exclude("no returner concession profile")
+                return
+            }
+            if (servicePoints <= 0 || aces < 0 || aces > servicePoints) {
+                exclude("invalid ace/service-point statistics")
+                return
+            }
             val joint = serveRate * concedeRate
             val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
-            if (denominator <= 0.0) return
+            if (!denominator.isFinite() || denominator <= 0.0) {
+                exclude("invalid expected-aces denominator")
+                return
+            }
             val expected = (joint / denominator) * servicePoints
+            if (!expected.isFinite() || expected <= MIN_EXPECTED_ACES) {
+                exclude("zero or invalid expected aces (server=$serveRate, returner=$concedeRate)")
+                return
+            }
             // Match the historical pipeline: retain every valid positive-expectation side.
             // Floor expected aces at 0.5 to avoid unstable ratios without discarding a player side.
-            if (!expected.isFinite() || expected <= MIN_EXPECTED_ACES) return
             ratios += aces.toDouble() / maxOf(expected, EXPECTED_ACES_FLOOR)
         }
 
         matches.forEach { match ->
-            addSide(match.firstPlayer, match.secondPlayer, match.firstAces, match.firstServePoints)
-            addSide(match.secondPlayer, match.firstPlayer, match.secondAces, match.secondServePoints)
+            addSide(match.firstPlayer, match.secondPlayer, match.firstAces, match.firstServePoints, match.matchId)
+            addSide(match.secondPlayer, match.firstPlayer, match.secondAces, match.secondServePoints, match.matchId)
         }
 
         return Evaluation(
@@ -294,6 +336,7 @@ object AceRating {
                 serverProfilesMatched = serverProfilesMatched,
                 returnerProfilesMatched = returnerProfilesMatched,
                 adjustedServerSides = ratios.size,
+                issues = issues.toList(),
             ),
         )
     }
@@ -333,6 +376,7 @@ object AceRating {
             aceRate = pooledAceRate,
             adjustedServerSides = evaluation.coverage.adjustedServerSides,
             totalServerSides = evaluation.coverage.totalServerSides,
+            adjustmentIssues = evaluation.coverage.issues,
         )
     }
 
