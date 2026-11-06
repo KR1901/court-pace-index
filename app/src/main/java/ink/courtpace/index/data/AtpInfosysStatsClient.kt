@@ -95,7 +95,11 @@ internal class AtpInfosysStatsClient {
             if (last.first != null || !shouldRetry(last.second) || attempt == MAX_HTTP_ATTEMPTS) {
                 return last
             }
-            val delayMs = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
+            val retryAfterSeconds = Regex("""retry-after=([0-9]+)""", RegexOption.IGNORE_CASE)
+                .find(last.second)?.groupValues?.get(1)?.toLongOrNull()
+            val exponentialDelay = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
+            val delayMs = (retryAfterSeconds?.times(1_000L) ?: exponentialDelay)
+                .coerceAtMost(MAX_RETRY_DELAY_MS)
             try {
                 Thread.sleep(delayMs)
             } catch (interrupted: InterruptedException) {
@@ -103,7 +107,12 @@ internal class AtpInfosysStatsClient {
                 return null to "Interrupted while retrying Infosys request"
             }
         }
-        return last ?: (null to "No Infosys request attempt was made")
+        val final = last ?: (null to "No Infosys request attempt was made")
+        return if (final.first == null && MAX_HTTP_ATTEMPTS > 1) {
+            null to "${final.second} (after $MAX_HTTP_ATTEMPTS attempts)"
+        } else {
+            final
+        }
     }
 
     private fun shouldRetry(diagnostic: String): Boolean {
@@ -354,6 +363,7 @@ internal class AtpInfosysStatsClient {
         const val READ_TIMEOUT_MS = 15_000
         const val MAX_HTTP_ATTEMPTS = 3
         const val RETRY_BASE_DELAY_MS = 2_000L
+        const val MAX_RETRY_DELAY_MS = 10_000L
         const val MAX_ERROR_BODY_CHARS = 120
         const val ACCEPT_LANGUAGE = "en-US,en;q=0.9"
         const val ATP_ORIGIN = "https://www.atptour.com"
