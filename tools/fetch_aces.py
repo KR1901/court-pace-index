@@ -26,6 +26,11 @@ FIRST_SERVE = re.compile(
     r"First serve\s*([0-9]+)/([0-9]+)\s*\([0-9]+%\))",
     re.I,
 )
+SERVICE_POINTS = re.compile(
+    r"(?:([0-9]+)/([0-9]+)\s*\([0-9]+%\)\s*Service Points Won|"
+    r"Service Points Won\s*([0-9]+)/([0-9]+)\s*\([0-9]+%\))",
+    re.I,
+)
 STATS_LINK = re.compile(
     r"stats[-/]?centre/(archive|live)/(\d{4})/(\d+)/((?:ms|md)\d+)", re.I
 )
@@ -65,6 +70,8 @@ def describe(text):
 def parse(text):
     aces = ACES.search(text or "")
     serves = FIRST_SERVE.findall(text or "")
+    if len(serves) < 2:
+        serves = SERVICE_POINTS.findall(text or "")
     if not aces or len(serves) < 2:
         return None
     try:
