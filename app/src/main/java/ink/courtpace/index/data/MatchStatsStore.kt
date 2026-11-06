@@ -13,27 +13,9 @@ class MatchStatsStore(context: Context) {
 
     private val prefs = context.applicationContext.getSharedPreferences("match-stats", Context.MODE_PRIVATE)
 
-    fun readAll(eventKey: String): Map<String, AtpMatchStats> {
-        val raw = prefs.getString(eventKey, null) ?: return emptyMap()
-        return raw.split('\n')
-            .mapNotNull { line ->
-                val parts = line.split('|')
-                if (parts.size != 8) return@mapNotNull null
-                val id = parts[0]
-                val numbers = parts.drop(1).mapNotNull { it.toIntOrNull() }
-                if (numbers.size != 5) return@mapNotNull null
-                id to AtpMatchStats(
-                    firstPlayer = "cached",
-                    secondPlayer = "cached",
-                    firstAces = numbers[0],
-                    firstServePoints = numbers[1],
-                    secondAces = numbers[2],
-                    secondServePoints = numbers[3],
-                    firstWon = numbers[4] == 1,
-                )
-            }
-            .toMap()
-    }
+    fun readAll(eventKey: String): Map<String, AtpMatchStats> =
+        decodeStatsCache(prefs.getString(eventKey, null).orEmpty())
+
 
     /**
      * Confirmed no-play outcomes (normally walkovers) can be cached separately from stats.
@@ -48,17 +30,88 @@ class MatchStatsStore(context: Context) {
     }
 
     fun writeAll(eventKey: String, stats: Map<String, AtpMatchStats>) {
-        val text = stats.entries.joinToString("\n") { (id, s) ->
-            listOf(
-                id,
-                s.firstAces.toString(),
-                s.firstServePoints.toString(),
-                s.secondAces.toString(),
-                s.secondServePoints.toString(),
-                if (s.firstWon) "1" else "0",
-                "", "",
-            ).joinToString("|")
+        prefs.edit().putString(eventKey, encodeStatsCache(stats)).apply()
+    }
+
+    companion object {
+        private val nameEncoder = java.util.Base64.getUrlEncoder().withoutPadding()
+        private val nameDecoder = java.util.Base64.getUrlDecoder()
+
+        /**
+         * Cache the player identities as well as the numeric stats. Opponent adjustment needs
+         * both names to look up the server's serve rate and the returner's concession rate.
+         */
+        internal fun encodeStatsCache(stats: Map<String, AtpMatchStats>): String =
+            stats.entries
+                .filter { (_, match) ->
+                    isUsablePlayerName(match.firstPlayer) && isUsablePlayerName(match.secondPlayer)
+                }
+                .joinToString("\n") { (id, match) ->
+                    listOf(
+                        id,
+                        encodeName(match.firstPlayer),
+                        encodeName(match.secondPlayer),
+                        match.firstAces.toString(),
+                        match.firstServePoints.toString(),
+                        match.secondAces.toString(),
+                        match.secondServePoints.toString(),
+                        if (match.firstWon) "1" else "0",
+                    ).joinToString("|")
+                }
+
+        /**
+         * Old cache rows stored only five numbers and reconstructed both players as "cached".
+         * They cannot be opponent-adjusted. Reject them so AtpLiveClient refetches those matches
+         * instead of silently counting their two server sides as unmatched.
+         */
+        internal fun decodeStatsCache(raw: String): Map<String, AtpMatchStats> =
+            raw.lineSequence().mapNotNull { line ->
+                val parts = line.split("|")
+                if (parts.size != 8) return@mapNotNull null
+                val firstPlayer = decodeName(parts[1]) ?: return@mapNotNull null
+                val secondPlayer = decodeName(parts[2]) ?: return@mapNotNull null
+                if (!isUsablePlayerName(firstPlayer) || !isUsablePlayerName(secondPlayer)) {
+                    return@mapNotNull null
+                }
+                val firstAces = parts[3].toIntOrNull() ?: return@mapNotNull null
+                val firstPoints = parts[4].toIntOrNull() ?: return@mapNotNull null
+                val secondAces = parts[5].toIntOrNull() ?: return@mapNotNull null
+                val secondPoints = parts[6].toIntOrNull() ?: return@mapNotNull null
+                val firstWon = when (parts[7]) {
+                    "1" -> true
+                    "0" -> false
+                    else -> return@mapNotNull null
+                }
+                if (firstAces < 0 || secondAces < 0 ||
+                    firstPoints <= 0 || secondPoints <= 0 ||
+                    firstAces > firstPoints || secondAces > secondPoints
+                ) return@mapNotNull null
+
+                parts[0] to AtpMatchStats(
+                    firstPlayer = firstPlayer,
+                    secondPlayer = secondPlayer,
+                    firstAces = firstAces,
+                    firstServePoints = firstPoints,
+                    secondAces = secondAces,
+                    secondServePoints = secondPoints,
+                    firstWon = firstWon,
+                )
+            }.toMap()
+
+        private fun encodeName(value: String): String =
+            nameEncoder.encodeToString(value.toByteArray(Charsets.UTF_8))
+
+        private fun decodeName(value: String): String? = runCatching {
+            String(nameDecoder.decode(value), Charsets.UTF_8).takeIf { it.isNotBlank() }
+        }.getOrNull()
+
+        private fun isUsablePlayerName(value: String): Boolean {
+            val clean = value.trim()
+            if (clean.isBlank()) return false
+            if (clean.equals("cached", ignoreCase = true)) return false
+            if (clean.equals("Player 1", ignoreCase = true)) return false
+            if (clean.equals("Player 2", ignoreCase = true)) return false
+            return true
         }
-        prefs.edit().putString(eventKey, text).apply()
     }
 }
