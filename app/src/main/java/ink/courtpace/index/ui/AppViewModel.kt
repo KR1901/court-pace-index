@@ -151,10 +151,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Restore all available per-event ratings before the current scores page is checked. */
     private fun showCachedLiveRatings() {
-        val events = _data.value?.dataset?.live.orEmpty()
+        val dataset = _data.value?.dataset ?: return
+        val baseline = dataset.speedBaseline ?: return
+        val events = dataset.live
         events.forEach { event ->
             val cached = ratingStore.read(event.t)
-                ?.takeIf { it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION }
+                ?.takeIf {
+                    it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
+                        it.season == baseline.season && it.baselineGenerated == baseline.generated
+                }
                 ?: return@forEach
             applyLiveRating(event.t, cached.season, cached.speed, cached.matches, cached.aceRate)
         }
@@ -213,10 +218,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             // Restore cached figures for the events still active; they remain visible while the
             // fresh match pages render, and each row reads only its own cached value.
+            val activeBaseline = _data.value?.dataset?.speedBaseline
             refs.forEach { ref ->
                 val cached = ratingStore.read(ref.tournamentId)
                 if (cached != null && cached.season == ref.year &&
-                    cached.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION
+                    cached.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
+                    activeBaseline != null && cached.baselineGenerated == activeBaseline.generated
                 ) {
                     applyLiveRating(
                         ref.tournamentId,
@@ -279,6 +286,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             matches = rating.matches,
                             aceRate = rating.aceRate,
                             asOf = java.time.Instant.now().toString(),
+                            baselineGenerated = baseline.generated,
                         ),
                     )
                     status(
