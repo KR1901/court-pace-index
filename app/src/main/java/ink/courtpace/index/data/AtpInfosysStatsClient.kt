@@ -43,6 +43,8 @@ internal class AtpInfosysStatsClient {
                     "$year/$eventId/$id/keystats.json",
             )
             val failures = mutableListOf<String>()
+            var lastPayloadBytes = 0
+            var lastEndpoint: String? = null
             for (endpoint in endpoints) {
                 val response = request(endpoint)
                 if (response.first == null) {
@@ -50,6 +52,8 @@ internal class AtpInfosysStatsClient {
                     continue
                 }
                 val raw = response.first!!
+                lastPayloadBytes = raw.toByteArray(StandardCharsets.UTF_8).size
+                lastEndpoint = endpoint
                 try {
                     val envelope = JSONObject(raw)
                     val payload = if (envelope.has("setStats")) {
@@ -61,7 +65,7 @@ internal class AtpInfosysStatsClient {
                     if (stats != null) {
                         return@withContext ReadResult(
                             stats = stats,
-                            payloadBytes = raw.toByteArray(StandardCharsets.UTF_8).size,
+                            payloadBytes = lastPayloadBytes,
                             endpoint = endpoint,
                             diagnostic = null,
                         )
@@ -73,8 +77,8 @@ internal class AtpInfosysStatsClient {
             }
             ReadResult(
                 stats = null,
-                payloadBytes = 0,
-                endpoint = null,
+                payloadBytes = lastPayloadBytes,
+                endpoint = lastEndpoint,
                 diagnostic = failures.joinToString(" | ").take(280),
             )
         }
