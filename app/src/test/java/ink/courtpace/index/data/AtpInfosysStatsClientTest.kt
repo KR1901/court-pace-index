@@ -15,6 +15,14 @@ class AtpInfosysStatsClientTest {
 
 
     @Test
+    fun `uses the user agent expected by the established ATP Infosys scraper`() {
+        assertEquals(
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36",
+            AtpInfosysStatsClient.USER_AGENT,
+        )
+    }
+
+    @Test
     fun `tries the established static keystats feed before the API fallback`() {
         val endpoints = client.endpointsForMatch(2026, 352, "ms043")
 
@@ -267,6 +275,39 @@ class AtpInfosysStatsClientTest {
             AtpInfosysStatsClient.StatRow("1st Serve", "35/48 (73%)", "41/55 (75%)"),
         )
         assertNull(client.parseStatsRows(rows))
+    }
+
+    @Test
+    fun `rejects aces greater than a players total service points`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "8", "2"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "4/7", "5/20"),
+        )
+        assertNull(client.parseStatsRows(rows))
+    }
+
+    @Test
+    fun `retirement with no completed set count still remains played when partial set stats exist`() {
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.INCOMPLETE_STATS,
+            client.classifyMatchData(
+                matchCompleted = true,
+                isDoubles = false,
+                setsCompleted = 0,
+                hasPlayedSetData = true,
+                statsAvailable = false,
+            ),
+        )
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.PLAYED,
+            client.classifyMatchData(
+                matchCompleted = true,
+                isDoubles = false,
+                setsCompleted = 0,
+                hasPlayedSetData = true,
+                statsAvailable = true,
+            ),
+        )
     }
 
     @Test
