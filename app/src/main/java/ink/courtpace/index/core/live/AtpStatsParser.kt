@@ -121,7 +121,7 @@ object AceRating {
         /** Per-ID endpoint/response reason, retained for diagnosis rather than silently dropped. */
         val missingReasons: Map<String, String> = emptyMap(),
         /** Live-route links excluded because their matches are not complete yet. */
-        inProgressMatches: Int = 0,
+        val inProgressMatches: Int = 0,
     )
 
     /** Tour-level ace rate, 2022-2025. */
