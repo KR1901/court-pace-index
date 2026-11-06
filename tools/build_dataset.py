@@ -210,7 +210,9 @@ if os.path.exists(LIVE_FEED):
         if event.get("t") not in known:
             continue
         live_events.append(event)
-        if event.get("speed") is not None:
+        # Never publish an unversioned/legacy pooled-rate live reading as if it used the
+        # current opponent-adjusted method. Runtime live ratings are computed on-device.
+        if event.get("speed") is not None and event.get("methodVersion") == 2:
             readings.append({
                 "t": event["t"], "s": event["s"], "speed": event["speed"],
                 "ace": event.get("ace"), "src": "live",
