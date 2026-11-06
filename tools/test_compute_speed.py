@@ -107,7 +107,7 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertIsNone(live["p4"]["serve_rate"])
         self.assertIsNone(live["p4"]["serve_rate_source"])
 
-    def test_uses_only_the_three_most_recent_prior_seasons(self):
+    def test_uses_only_the_ten_most_recent_prior_seasons(self):
         current = {
             "p1": profile("p1", "Current", serve_rate=None, clay_aces=1, clay_points=20, clay_matches=1),
         }
@@ -125,7 +125,7 @@ class BuildLiveProfilesTests(unittest.TestCase):
              patch.object(compute_speed, "player_rates", side_effect=fake_player_rates):
             compute_speed.build_live_profiles(2026, current)
 
-        self.assertEqual([2025, 2024, 2023], visited)
+        self.assertEqual(list(range(2025, 2015, -1)), visited)
 
 
 if __name__ == "__main__":
