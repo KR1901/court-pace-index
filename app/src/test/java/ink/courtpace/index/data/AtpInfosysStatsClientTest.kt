@@ -144,6 +144,14 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
+    fun `does not waste retries on explicit S3 access denied or missing objects`() {
+        assertEquals(false, client.shouldRetryDiagnostic("HTTP 403; server=AmazonS3; s3-code=AccessDenied"))
+        assertEquals(false, client.shouldRetryDiagnostic("HTTP 403; server=AmazonS3; s3-code=NoSuchKey"))
+        assertEquals(true, client.shouldRetryDiagnostic("HTTP 403; server=CloudFront"))
+        assertEquals(true, client.shouldRetryDiagnostic("HTTP 503; server=AmazonS3"))
+    }
+
+    @Test
     fun `retries transient feed refusal and server errors but not permanent client errors`() {
         listOf(403, 408, 425, 429, 500, 502, 503, 504).forEach { status ->
             assertEquals(true, client.shouldRetryStatus(status))
