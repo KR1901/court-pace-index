@@ -33,7 +33,7 @@ object AtpMatchLinks {
         RegexOption.IGNORE_CASE,
     )
     private val WALKOVER_TEXT = Regex(
-        """(?i)(?:\bw\s*/\s*o\b|\bwalkover\b|\bwalk\s+over\b)""",
+        """(?i)(?:\bw\s*/\s*o\b|\bw\.?o\.?\b|\bwalk[-\s]?over\b)""",
     )
     private val RETIREMENT_TEXT = Regex(
         """(?i)(?:\bret\.?\b|\bretired\b|\bretirement\b)""",
