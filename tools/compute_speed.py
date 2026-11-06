@@ -66,12 +66,8 @@ def num(v):
         return None
 
 
-def season_ratings(year, rows):
-    """Returns {tournament_id: {'speed': r, 'ace': pct, 'matches': n}} for one season."""
-    clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
-    hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
-    ret_ace = defaultdict(float); ret_pts = defaultdict(float)
-
+def valid_rows(rows):
+    """Tour-level main-draw rows with both players' aces and service-point totals."""
     usable = []
     for r in rows:
         if r["tourney_level"] not in LEVELS:
@@ -80,11 +76,33 @@ def season_ratings(year, rows):
         w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
         if None in (w_sv, l_sv, w_ac, l_ac) or w_sv <= 0 or l_sv <= 0:
             continue
-        surface = (r["surface"] or "").strip()
-        wid, lid = r["winner_id"], r["loser_id"]
-        if not wid or not lid:
+        if not r["winner_id"] or not r["loser_id"]:
             continue
         usable.append(r)
+    return usable
+
+
+def player_rates(usable):
+    """
+    Return the historical method's season-level player profiles.
+
+    serve_rate: clay ace rate blended 1/3 with hard/grass ace rate blended 2/3,
+    requiring at least three matches in each available surface bucket.
+    concede_rate: aces conceded while returning / opponents' service points,
+    pooled across surfaces.
+    """
+    clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
+    hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
+    ret_ace = defaultdict(float); ret_pts = defaultdict(float)
+    names = {}
+
+    for r in usable:
+        w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
+        w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
+        wid, lid = r["winner_id"], r["loser_id"]
+        names[wid] = r["winner_name"]
+        names[lid] = r["loser_name"]
+        surface = (r["surface"] or "").strip()
 
         if surface == "Clay":
             clay_ace[wid] += w_ac; clay_sv[wid] += w_sv; clay_n[wid] += 1
@@ -93,10 +111,12 @@ def season_ratings(year, rows):
             hg_ace[wid] += w_ac; hg_sv[wid] += w_sv; hg_n[wid] += 1
             hg_ace[lid] += l_ac; hg_sv[lid] += l_sv; hg_n[lid] += 1
 
+        # The winner is returning against the loser's serve, and vice versa.
         ret_ace[wid] += l_ac; ret_pts[wid] += l_sv
         ret_ace[lid] += w_ac; ret_pts[lid] += w_sv
 
     serve_rate = {}
+    serve_samples = {}
     for p in set(clay_sv) | set(hg_sv):
         c = clay_ace[p] / clay_sv[p] if clay_sv[p] > 0 else None
         h = hg_ace[p] / hg_sv[p] if hg_sv[p] > 0 else None
@@ -106,15 +126,44 @@ def season_ratings(year, rows):
             serve_rate[p] = c
         elif h is not None and c is None and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
             serve_rate[p] = h
-    concede_rate = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
+        if p in serve_rate:
+            serve_samples[p] = {
+                "clayMatches": clay_n[p],
+                "hardGrassMatches": hg_n[p],
+            }
 
+    concede_rate = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
+    return {
+        p: {
+            "id": p,
+            "name": names.get(p, ""),
+            "serve_rate": serve_rate.get(p),
+            "concede_rate": concede_rate.get(p),
+            "serve_matches": sum(serve_samples.get(p, {}).values()),
+            "clay_matches": clay_n[p],
+            "hard_grass_matches": hg_n[p],
+            "return_points": ret_pts.get(p, 0.0),
+        }
+        for p in set(names)
+    }
+
+
+def event_raw_scores(usable, profiles, exclude_event_ids=None):
+    """
+    Apply the historical match-level expected-aces formula to each event.
+
+    Returns raw event means before the season-wide normalisation. The caller can
+    exclude an event (e.g. a tournament still in progress) without changing the
+    player-profile calculation.
+    """
+    excluded = exclude_event_ids or set()
     per_event = defaultdict(list)
     event_aces = defaultdict(float); event_sv = defaultdict(float)
     event_matches = defaultdict(int)
 
     for r in usable:
         tid = NAMES.get((r["tourney_name"] or "").strip())
-        if tid is None:
+        if tid is None or tid in excluded:
             continue
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
         w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
@@ -124,7 +173,8 @@ def season_ratings(year, rows):
         event_matches[tid] += 1
 
         for server, returner, sv, ac in ((wid, lid, w_sv, w_ac), (lid, wid, l_sv, l_ac)):
-            ps, qr = serve_rate.get(server), concede_rate.get(returner)
+            ps = profiles.get(server, {}).get("serve_rate")
+            qr = profiles.get(returner, {}).get("concede_rate")
             if ps is None or qr is None:
                 continue
             denom = ps * qr + (1 - ps) * (1 - qr)
@@ -136,6 +186,14 @@ def season_ratings(year, rows):
             per_event[tid].append(ac / expected)
 
     raw = {t: sum(v) / len(v) for t, v in per_event.items() if len(v) >= 20}
+    return raw, event_aces, event_sv, event_matches
+
+
+def season_ratings(year, rows):
+    """Returns {tournament_id: {'speed': r, 'ace': pct, 'matches': n}} for one season."""
+    usable = valid_rows(rows)
+    profiles = player_rates(usable)
+    raw, event_aces, event_sv, event_matches = event_raw_scores(usable, profiles)
     if not raw:
         return {}
     season_mean = sum(raw.values()) / len(raw)
