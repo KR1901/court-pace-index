@@ -160,4 +160,16 @@ class LiveFeedTest {
         assertFalse(DatasetPolicy.isAcceptable(invalid))
     }
 
+    @Test
+    fun `an unversioned pooled live reading is not accepted as a current-method result`() {
+        val remote = data.dataset.copy(
+            readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
+                t = "paris", s = 2026, speed = 1.47, ace = 11.5, src = "live",
+                live = true, matches = 47,
+            ),
+        )
+        val chosen = DatasetPolicy.choose(data.dataset, remote)
+        assertNull(PaceData(chosen).liveReading("paris", 2026))
+    }
+
 }
