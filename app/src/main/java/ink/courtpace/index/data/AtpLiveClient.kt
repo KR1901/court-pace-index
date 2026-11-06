@@ -184,8 +184,11 @@ class AtpLiveClient(context: Context) {
         /** Keep per-match failure examples compact so the live card remains readable. */
         const val MAX_DIAGNOSTIC_SAMPLES = 2
 
-        /** Small bounded WebView pool; large parallel batches are killed by Android. */
-        const val PARALLEL_PAGES = 4
+        /**
+         * Bound Stats Plus reads to two matches at a time. Combined with per-endpoint retries,
+         * this avoids sending the whole tournament batch as a burst to Infosys.
+         */
+        const val PARALLEL_PAGES = 2
 
         /** Keep whatever has been collected when this internal budget expires. */
         const val WALK_BUDGET_MS = 600_000L
