@@ -61,8 +61,9 @@ def parse(text):
     if not aces or len(serves) < 2:
         return None
     try:
-        total_aces = int(aces.group(1)) + int(aces.group(2))
-        points = int(serves[0][1]) + int(serves[1][1])
+        ace_pair = (aces.group(1), aces.group(2)) if aces.group(1) else (aces.group(3), aces.group(4))
+        total_aces = int(ace_pair[0]) + int(ace_pair[1])
+        points = sum(int(row[1] or row[3]) for row in serves[:2])
     except (TypeError, ValueError):
         return None
     if points <= 0:
@@ -98,20 +99,21 @@ async def discover_completed_singles(context, event):
                 break
             await page.wait_for_timeout(500)
 
-        match_ids = []
-        seen = set()
+        # A finished match can still be linked through ATP's /live/ stats route while its
+        # tournament is underway. Preserve the discovered route; archive/live is not completion.
+        by_id = {}
         for anchor in anchors:
             for match in STATS_LINK.finditer(anchor):
                 section, link_year, link_event, match_id = match.groups()
-                if (section.lower() != "archive" or link_year != year or
+                if (section.lower() not in ("archive", "live") or link_year != year or
                         link_event != event_id or not match_id.lower().startswith("ms")):
                     continue
                 match_id = match_id.lower()
-                if match_id not in seen:
-                    seen.add(match_id)
-                    match_ids.append(match_id)
-        print(f"{event.get('t')}: {len(match_ids)} completed singles links on results page")
-        return match_ids
+                if match_id not in by_id or section.lower() == "archive":
+                    by_id[match_id] = section.lower()
+        links = [(section, match_id) for match_id, section in by_id.items()]
+        print(f"{event.get('t')}: {len(links)} completed singles links on results page")
+        return links
     except Exception as exc:  # noqa: BLE001 - the ATP results page may be temporarily unavailable
         print(f"  ! results page {url}: {exc}")
         return []
@@ -162,15 +164,20 @@ async def main():
                 print(f"{event['t']}: no ATP id, skipped")
                 continue
 
-            match_ids = await discover_completed_singles(context, event)
+            match_links = await discover_completed_singles(context, event)
             aces_total = points_total = 0
             found = 0
             described = 0
-            for match_id in match_ids:
-                url = (f"https://www.atptour.com/en/scores/stats-centre/archive/"
-                       f"{year}/{event_id}/{match_id}")
-                text = await render(context, url)
-                parsed = parse(text)
+            for section, match_id in match_links:
+                other = "live" if section == "archive" else "archive"
+                parsed = None
+                for route in (section, other):
+                    url = (f"https://www.atptour.com/en/scores/stats-centre/{route}/"
+                           f"{year}/{event_id}/{match_id}")
+                    text = await render(context, url)
+                    parsed = parse(text)
+                    if parsed is not None:
+                        break
                 if parsed is None:
                     if described < 3:
                         described += 1
