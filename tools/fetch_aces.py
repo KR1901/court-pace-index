@@ -17,8 +17,15 @@ LIVE = os.path.join(ROOT, "data", "live.json")
 BASELINE = 0.078313
 MIN_MATCHES = 8
 
-ACES = re.compile(r"(\d+)\s*Aces\s*(\d+)\s*Aces")
-FIRST_SERVE = re.compile(r"(\d+)/(\d+)\s*\(\d+%\)\s*First serve")
+ACES = re.compile(
+    r"(?:([0-9]+)\\s*Aces\\s*([0-9]+)\\s*Aces|Aces\\s*([0-9]+)\\s*Aces\\s*([0-9]+))",
+    re.I,
+)
+FIRST_SERVE = re.compile(
+    r"(?:([0-9]+)/([0-9]+)\\s*\\([0-9]+%\\)\\s*First serve|"
+    r"First serve\\s*([0-9]+)/([0-9]+)\\s*\\([0-9]+%\\))",
+    re.I,
+)
 STATS_LINK = re.compile(
     r"stats[-/]?centre/(archive|live)/(\d{4})/(\d+)/((?:ms|md)\d+)", re.I
 )
@@ -61,14 +68,15 @@ def parse(text):
     if not aces or len(serves) < 2:
         return None
     try:
-        ace_pair = (aces.group(1), aces.group(2)) if aces.group(1) else (aces.group(3), aces.group(4))
-        total_aces = int(ace_pair[0]) + int(ace_pair[1])
+        pair = (aces.group(1), aces.group(2)) if aces.group(1) else (aces.group(3), aces.group(4))
+        total_aces = int(pair[0]) + int(pair[1])
         points = sum(int(row[1] or row[3]) for row in serves[:2])
     except (TypeError, ValueError):
         return None
     if points <= 0:
         return None
     return total_aces, points
+
 
 async def discover_completed_singles(context, event):
     """Use the event results page as the authoritative list; never guess match IDs."""
