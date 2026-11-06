@@ -17,23 +17,38 @@ class AtpInfosysStatsClientTest {
     @Test
     fun `uses the user agent expected by the established ATP Infosys scraper`() {
         assertEquals(
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
             AtpInfosysStatsClient.USER_AGENT,
         )
     }
 
     @Test
-    fun `tries the established static keystats feed before the API fallback`() {
+    fun `tries the ATP Stats Plus API before the static S3 feed`() {
         val endpoints = client.endpointsForMatch(2026, 352, "ms043")
 
         assertEquals(
-            "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/2026/352/MS043/keystats.json",
+            "https://itp-atp-sls.infosys-platforms.com/prod/api/stats-plus/v1/keystats/year/2026/eventId/352/matchId/MS043",
             endpoints.first(),
         )
         assertEquals(
-            "https://itp-atp-sls.infosys-platforms.com/prod/api/stats-plus/v1/keystats/year/2026/eventId/352/matchId/MS043",
+            "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/2026/352/MS043/keystats.json",
             endpoints[1],
         )
+    }
+
+    @Test
+    fun `sends the complete browser header set required by Infosys CloudFront`() {
+        val headers = client.requestHeaders()
+
+        assertEquals("application/json, text/plain, */*", headers["Accept"])
+        assertEquals("https://www.atptour.com", headers["Origin"])
+        assertEquals("https://www.atptour.com/", headers["Referer"])
+        assertEquals("?0", headers["sec-ch-ua-mobile"])
+        assertEquals("\"macOS\"", headers["sec-ch-ua-platform"])
+        assertEquals("empty", headers["Sec-Fetch-Dest"])
+        assertEquals("cors", headers["Sec-Fetch-Mode"])
+        assertEquals("cross-site", headers["Sec-Fetch-Site"])
+        assertEquals(true, headers.containsKey("sec-ch-ua"))
     }
 
     @Test
