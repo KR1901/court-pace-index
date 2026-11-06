@@ -136,7 +136,7 @@ class AtpLiveClient(context: Context) {
                                     blocked.set(true)
                                     break
                                 }
-                                val bodyText = rendered?.substringBefore("\\n[ATP_WEBVIEW]").orEmpty()
+                                val bodyText = rendered?.substringBefore("\n[ATP_WEBVIEW]").orEmpty()
                                 if (bodyText.isNotBlank()) withContent.incrementAndGet()
                                 parsed = rendered?.let { snapshot ->
                                     AtpStatsParser.parse(snapshot)
