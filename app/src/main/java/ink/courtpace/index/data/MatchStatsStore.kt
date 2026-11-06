@@ -95,6 +95,7 @@ class MatchStatsStore(context: Context) {
                     secondAces = secondAces,
                     secondServePoints = secondPoints,
                     firstWon = firstWon,
+                    matchId = parts[0],
                 )
             }.toMap()
 
