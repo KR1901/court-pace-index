@@ -211,10 +211,19 @@ class AtpLiveClient(context: Context) {
         val missingReasons = missingIds.associateWith { id ->
             failuresByMatch[id] ?: "Stats Plus did not return a usable record on this refresh"
         }
+        val adjustmentCoverage = AceRating.coverage(found, baseline)
         val rating = AceRating.rate(found, baseline) ?: error(
             when {
-                found.isNotEmpty() ->
-                    "only ${found.size} of ${eligibleIds.size} played singles matches have usable Infosys stats or at least ${AceRating.MIN_ADJUSTED_SERVER_SIDES} opponent-adjusted server observations"
+                found.isNotEmpty() -> {
+                    "usable Infosys stats for ${found.size}/${eligibleIds.size} played singles matches; " +
+                        "opponent adjustment matched ${adjustmentCoverage.adjustedServerSides}/" +
+                        "${adjustmentCoverage.totalServerSides} server sides " +
+                        "(serve profiles ${adjustmentCoverage.serverProfilesMatched}/" +
+                        "${adjustmentCoverage.totalServerSides}, returner profiles " +
+                        "${adjustmentCoverage.returnerProfilesMatched}/" +
+                        "${adjustmentCoverage.totalServerSides}); at least " +
+                        "${AceRating.MIN_ADJUSTED_SERVER_SIDES} adjusted server sides are required"
+                }
                 payloads.get() == 0 -> {
                     val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
                     "Infosys returned no usable JSON for ${eligibleIds.size} played singles matches$sample"
