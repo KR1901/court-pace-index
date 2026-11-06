@@ -27,6 +27,14 @@ object DatasetPolicy {
                 baseline.profiles.size < MIN_SPEED_BASELINE_PROFILES
             ) return false
             if (!baseline.normalisation.isFinite() || baseline.normalisation <= 0.0) return false
+            // AceRating indexes profiles by normalized display name. Reject duplicate keys
+            // rather than allowing archive ID collisions to overwrite one player's tendencies.
+            val normalizedProfileNames = baseline.profiles.map { profile ->
+                java.text.Normalizer.normalize(profile.name, java.text.Normalizer.Form.NFD)
+                    .lowercase(java.util.Locale.ROOT)
+                    .filter { it.isLetterOrDigit() }
+            }
+            if (normalizedProfileNames.distinct().size != normalizedProfileNames.size) return false
             if (baseline.profiles.any { profile ->
                     profile.name.isBlank() ||
                         (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
