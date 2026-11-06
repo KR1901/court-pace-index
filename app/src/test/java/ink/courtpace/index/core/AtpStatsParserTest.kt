@@ -253,6 +253,28 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `ATP shortens compound names to a middle initial and partial surname`() {
+        val realisticBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Adolfo Daniel Vallejo", serveRate = 0.10, concedeRate = 0.08),
+                LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("D. VALLEJO", "D. MERIDA", 5, 80, 4, 82, true)
+        }
+
+        val coverage = AceRating.coverage(matches, realisticBaseline)
+        val result = AceRating.rate(matches, realisticBaseline)!!
+
+        assertEquals(20, coverage.serverProfilesMatched)
+        assertEquals(20, coverage.returnerProfilesMatched)
+        assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
     fun `ambiguous abbreviated names are not assigned to an arbitrary profile`() {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
