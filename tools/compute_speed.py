@@ -159,7 +159,7 @@ def player_rates(usable):
 # A low-sample profile uses a prior equal to roughly three tour matches. This is only
 # used when no qualified player-specific rate is available in the baseline season or
 # any of the preceding three seasons.
-LIVE_PROFILE_FALLBACK_SEASONS = 3
+LIVE_PROFILE_FALLBACK_SEASONS = 10
 LIVE_PROFILE_PRIOR_SERVICE_POINTS = 300.0
 
 
