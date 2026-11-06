@@ -157,27 +157,62 @@ def player_rates(usable):
 
 
 # A low-sample profile uses a prior equal to roughly three tour matches. This is only
-# used for live-baseline players who have neither a qualified current-season profile
-# nor a qualified profile in one of the preceding three seasons.
+# used when no qualified player-specific rate is available in the baseline season or
+# any of the preceding three seasons.
 LIVE_PROFILE_FALLBACK_SEASONS = 3
 LIVE_PROFILE_PRIOR_SERVICE_POINTS = 300.0
 
 
+def _surface_priors(profiles):
+    clay_aces = sum(p["clay_aces"] for p in profiles.values())
+    clay_points = sum(p["clay_service_points"] for p in profiles.values())
+    hard_grass_aces = sum(p["hard_grass_aces"] for p in profiles.values())
+    hard_grass_points = sum(p["hard_grass_service_points"] for p in profiles.values())
+    return {
+        "clay": clay_aces / clay_points if clay_points > 0 else None,
+        "hard_grass": hard_grass_aces / hard_grass_points if hard_grass_points > 0 else None,
+    }
+
+
+def _shrunk_serve_rate(profile, priors):
+    clay_points = profile["clay_service_points"]
+    hard_grass_points = profile["hard_grass_service_points"]
+    clay_estimate = None
+    hard_grass_estimate = None
+
+    if clay_points > 0 and priors["clay"] is not None:
+        clay_estimate = (
+            profile["clay_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * priors["clay"]
+        ) / (clay_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
+    if hard_grass_points > 0 and priors["hard_grass"] is not None:
+        hard_grass_estimate = (
+            profile["hard_grass_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * priors["hard_grass"]
+        ) / (hard_grass_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
+
+    if clay_estimate is not None and hard_grass_estimate is not None:
+        return (1 / 3) * clay_estimate + (2 / 3) * hard_grass_estimate
+    return clay_estimate if clay_estimate is not None else hard_grass_estimate
+
+
 def build_live_profiles(profile_year, current_profiles):
     """
-    Expand the live-only player baseline while preserving the historical rating path.
+    Build a broad but auditable live player baseline.
 
-    Priority for a player's serve rate:
-      1. Qualified profile from the baseline season (unchanged historical threshold).
-      2. Most recent qualified profile from one of the previous three seasons.
-      3. Current-season per-surface rate shrunk toward the current-season tour average.
+    Profiles are the union of players seen in the baseline season and the preceding three
+    ATP seasons. A player's rate comes from the most recent season with a qualified profile.
+    If no season meets the historical three-match surface threshold, a low-sample estimate
+    is shrunk toward that season's surface average using a 300-service-point prior.
 
-    The expected-aces formula and season normaliser are not changed. The fallback source
-    and sample size are retained in the JSON so the app and users can audit coverage.
+    This changes only the *live baseline's player coverage*. Historical season_ratings()
+    continues to use player_rates() unchanged, and the expected-aces formula plus season
+    normaliser are unchanged. Each profile records the year, source and sample behind its rate.
     """
     live = {player_id: dict(profile) for player_id, profile in current_profiles.items()}
+    source_profile_by_id = {player_id: dict(profile) for player_id, profile in current_profiles.items()}
+    source_year_by_id = {player_id: profile_year for player_id in current_profiles}
+    season_profiles = {profile_year: current_profiles}
 
-    for profile in live.values():
+    for player_id, profile in live.items():
         profile["serve_rate_season"] = profile_year if profile["serve_rate"] is not None else None
         profile["serve_rate_source"] = (
             "current-season-qualified" if profile["serve_rate"] is not None else None
@@ -190,80 +225,69 @@ def build_live_profiles(profile_year, current_profiles):
             profile_year if profile["concede_rate"] is not None else None
         )
 
-    missing = {
-        player_id for player_id, profile in live.items()
-        if profile["serve_rate"] is None
-    }
-
-    # Prefer a recent, qualified player-specific rate to a noisy one- or two-match
-    # current-season estimate. Player IDs are stable across the Sackmann yearly files.
-    for historical_year in range(profile_year - 1, max(2011, profile_year - LIVE_PROFILE_FALLBACK_SEASONS - 1), -1):
-        if not missing:
-            break
+    # Union the recent seasons by stable Sackmann player ID. The newest available profile
+    # supplies the display name and, when needed, the raw observations for shrinkage.
+    for historical_year in range(
+        profile_year - 1,
+        max(2011, profile_year - LIVE_PROFILE_FALLBACK_SEASONS - 1),
+        -1,
+    ):
         historical = player_rates(valid_rows(load(historical_year)))
-        for player_id in list(missing):
-            previous = historical.get(player_id)
-            if previous is None or previous["serve_rate"] is None:
-                continue
+        season_profiles[historical_year] = historical
+
+        for player_id, previous in historical.items():
+            if player_id not in live:
+                live[player_id] = dict(previous)
+                source_profile_by_id[player_id] = dict(previous)
+                source_year_by_id[player_id] = historical_year
+                live[player_id]["serve_rate_season"] = None
+                live[player_id]["serve_rate_source"] = None
+                live[player_id]["serve_rate_sample_matches"] = 0
+                live[player_id]["serve_rate_sample_points"] = 0.0
+                live[player_id]["concede_rate_season"] = None
+
             profile = live[player_id]
-            profile["serve_rate"] = previous["serve_rate"]
-            profile["serve_rate_season"] = historical_year
-            profile["serve_rate_source"] = "prior-season-qualified"
-            profile["serve_rate_sample_matches"] = previous["serve_matches"]
-            profile["serve_rate_sample_points"] = (
-                previous["clay_service_points"] + previous["hard_grass_service_points"]
-            )
-            missing.remove(player_id)
+            # Fill only missing values: a qualified newer-season estimate always wins.
+            if profile["serve_rate"] is None and previous["serve_rate"] is not None:
+                profile["serve_rate"] = previous["serve_rate"]
+                profile["serve_rate_season"] = historical_year
+                profile["serve_rate_source"] = "prior-season-qualified"
+                profile["serve_rate_sample_matches"] = previous["serve_matches"]
+                profile["serve_rate_sample_points"] = (
+                    previous["clay_service_points"] + previous["hard_grass_service_points"]
+                )
+            if profile["concede_rate"] is None and previous["concede_rate"] is not None:
+                profile["concede_rate"] = previous["concede_rate"]
+                profile["concede_rate_season"] = historical_year
 
-    if not missing:
-        return live
-
-    # Empirical-Bayes fallback for players with no qualified profile in the recent
-    # three-season window. A prior of 300 service points stabilises sparse current-year
-    # samples; the original 1/3 clay + 2/3 hard/grass weighting is retained.
-    total_clay_aces = sum(p["clay_aces"] for p in current_profiles.values())
-    total_clay_points = sum(p["clay_service_points"] for p in current_profiles.values())
-    total_hg_aces = sum(p["hard_grass_aces"] for p in current_profiles.values())
-    total_hg_points = sum(p["hard_grass_service_points"] for p in current_profiles.values())
-    clay_prior = total_clay_aces / total_clay_points if total_clay_points > 0 else None
-    hard_grass_prior = total_hg_aces / total_hg_points if total_hg_points > 0 else None
-
-    for player_id in list(missing):
-        current = current_profiles[player_id]
-        clay_points = current["clay_service_points"]
-        hard_grass_points = current["hard_grass_service_points"]
-        clay_estimate = None
-        hard_grass_estimate = None
-
-        if clay_points > 0 and clay_prior is not None:
-            clay_estimate = (
-                current["clay_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * clay_prior
-            ) / (clay_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
-        if hard_grass_points > 0 and hard_grass_prior is not None:
-            hard_grass_estimate = (
-                current["hard_grass_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * hard_grass_prior
-            ) / (hard_grass_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
-
-        if clay_estimate is not None and hard_grass_estimate is not None:
-            estimated_rate = (1 / 3) * clay_estimate + (2 / 3) * hard_grass_estimate
-        elif clay_estimate is not None:
-            estimated_rate = clay_estimate
-        else:
-            estimated_rate = hard_grass_estimate
-
-        if estimated_rate is None:
+    # Players without any qualified profile still get a player-specific, explicitly
+    # low-sample estimate when the archive contains their own service-point observations.
+    priors_by_year = {
+        year: _surface_priors(profiles)
+        for year, profiles in season_profiles.items()
+    }
+    for player_id, profile in live.items():
+        if profile["serve_rate"] is not None:
             continue
 
-        profile = live[player_id]
-        profile["serve_rate"] = estimated_rate
-        profile["serve_rate_season"] = profile_year
-        profile["serve_rate_source"] = "current-season-shrunk"
-        profile["serve_rate_sample_matches"] = (
-            current["clay_matches"] + current["hard_grass_matches"]
+        raw_profile = source_profile_by_id[player_id]
+        raw_year = source_year_by_id[player_id]
+        estimate = _shrunk_serve_rate(raw_profile, priors_by_year[raw_year])
+        if estimate is None:
+            continue
+
+        profile["serve_rate"] = estimate
+        profile["serve_rate_season"] = raw_year
+        profile["serve_rate_source"] = (
+            "current-season-shrunk" if raw_year == profile_year else "prior-season-shrunk"
         )
-        profile["serve_rate_sample_points"] = clay_points + hard_grass_points
+        profile["serve_rate_sample_matches"] = (
+            raw_profile["clay_matches"] + raw_profile["hard_grass_matches"]
+        )
+        profile["serve_rate_sample_points"] = (
+            raw_profile["clay_service_points"] + raw_profile["hard_grass_service_points"]
+        )
         profile["serve_rate_prior_points"] = LIVE_PROFILE_PRIOR_SERVICE_POINTS
-        missing.remove(player_id)
 
     return live
 
