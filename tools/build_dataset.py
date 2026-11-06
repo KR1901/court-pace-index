@@ -256,6 +256,11 @@ doc = {
     "tournaments": tournaments,
     "readings": readings,
     "live": live_events,
+    "speedBaseline": (
+        json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json")))
+        if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
+        else None
+    ),
 }
 
 out = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "assets", "pace_dataset.json")
