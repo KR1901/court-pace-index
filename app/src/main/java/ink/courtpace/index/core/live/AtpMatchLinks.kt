@@ -29,14 +29,14 @@ object AtpMatchLinks {
     )
 
     private val MATCH_DIV = Regex(
-        """<div\\b[^>]*\\bclass\\s*=\\s*["']([^"']*)["'][^>]*>""",
+        """<div\b[^>]*\bclass\s*=\s*["']([^"']*)["'][^>]*>""",
         RegexOption.IGNORE_CASE,
     )
     private val WALKOVER_TEXT = Regex(
-        """(?i)(?:\\bw\\s*/\\s*o\\b|\\bwalkover\\b|\\bwalk\\s+over\\b)""",
+        """(?i)(?:\bw\s*/\s*o\b|\bwalkover\b|\bwalk\s+over\b)""",
     )
     private val RETIREMENT_TEXT = Regex(
-        """(?i)(?:\\bret\\.?\\b|\\bretired\\b|\\bretirement\\b)""",
+        """(?i)(?:\bret\.?\b|\bretired\b|\bretirement\b)""",
     )
 
     /**
@@ -46,7 +46,7 @@ object AtpMatchLinks {
      */
     fun linksFromResultsPage(source: String): List<MatchLink> {
         val matchCards = MATCH_DIV.findAll(source)
-            .filter { marker -> marker.groupValues[1].split(Regex("""\\s+""")).any { it == "match" } }
+            .filter { marker -> marker.groupValues[1].split(Regex("""\s+""")).any { it == "match" } }
             .map { it.range.first }
             .toList()
 
@@ -56,12 +56,12 @@ object AtpMatchLinks {
             val cardStart = matchCards.lastOrNull { it <= match.range.first } ?: match.range.first
             val cardEnd = matchCards.firstOrNull { it > match.range.first } ?: source.length
             val cardText = source.substring(cardStart, cardEnd)
-                .replace(Regex("""(?is)<script\\b.*?</script>|<style\\b.*?</style>"""), " ")
+                .replace(Regex("""(?is)<script\b.*?</script>|<style\b.*?</style>"""), " ")
                 .replace(Regex("""(?s)<[^>]*>"""), " ")
                 .replace("&nbsp;", " ")
                 .replace("&#39;", "'")
                 .replace("&amp;", "&")
-                .replace(Regex("""\\s+"""), " ")
+                .replace(Regex("""\s+"""), " ")
                 .trim()
             val resultStatus = when {
                 WALKOVER_TEXT.containsMatchIn(cardText) -> ResultStatus.WALKOVER
