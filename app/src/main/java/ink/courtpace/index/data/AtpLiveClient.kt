@@ -127,7 +127,9 @@ class AtpLiveClient(context: Context) {
                                 val rendered = web.read(
                                     statsUrl(variant),
                                     timeoutMs = if (variantIndex == 0) MATCH_RENDER_MS else FALLBACK_RENDER_MS,
-                                    isReady = { AtpStatsParser.hasStats(it) },
+                                    // Do not return as soon as the ace labels appear: ATP
+                                    // renders the serving denominators progressively too.
+                                    isReady = { AtpStatsParser.parse(it) != null },
                                     returnLastOnTimeout = true,
                                 )
                                 if (rendered != null && rendered.contains(AtpWebReader.BLOCKED, true)) {
