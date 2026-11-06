@@ -110,7 +110,10 @@ object AceRating {
         val aces: Int,
         /** Pooled descriptive ace rate; the rating itself is opponent-adjusted. */
         val aceRate: Double,
+        /** Server-side observations actually used in the opponent-adjusted mean. */
         val adjustedServerSides: Int,
+        /** Possible server sides among matches with usable Infosys statistics. */
+        val totalServerSides: Int = matches * 2,
         val discoveredMatches: Int = matches,
         val missingMatchIds: List<String> = emptyList(),
         val missingReasons: Map<String, String> = emptyMap(),
@@ -307,6 +310,7 @@ object AceRating {
             aces = evaluation.totalAces,
             aceRate = pooledAceRate,
             adjustedServerSides = evaluation.coverage.adjustedServerSides,
+            totalServerSides = evaluation.coverage.totalServerSides,
         )
     }
 
