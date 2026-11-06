@@ -240,11 +240,22 @@ def build_live_profiles(profile_year, current_profiles):
                 live[player_id] = dict(previous)
                 source_profile_by_id[player_id] = dict(previous)
                 source_year_by_id[player_id] = historical_year
-                live[player_id]["serve_rate_season"] = None
-                live[player_id]["serve_rate_source"] = None
-                live[player_id]["serve_rate_sample_matches"] = 0
-                live[player_id]["serve_rate_sample_points"] = 0.0
-                live[player_id]["concede_rate_season"] = None
+                live[player_id]["serve_rate_season"] = (
+                    historical_year if previous["serve_rate"] is not None else None
+                )
+                live[player_id]["serve_rate_source"] = (
+                    "prior-season-qualified" if previous["serve_rate"] is not None else None
+                )
+                live[player_id]["serve_rate_sample_matches"] = (
+                    previous["serve_matches"] if previous["serve_rate"] is not None else 0
+                )
+                live[player_id]["serve_rate_sample_points"] = (
+                    previous["clay_service_points"] + previous["hard_grass_service_points"]
+                    if previous["serve_rate"] is not None else 0.0
+                )
+                live[player_id]["concede_rate_season"] = (
+                    historical_year if previous["concede_rate"] is not None else None
+                )
 
             profile = live[player_id]
             # Fill only missing values: a qualified newer-season estimate always wins.
@@ -435,6 +446,9 @@ def main():
             ),
             "currentSeasonShrunk": sum(
                 p["serveRateSource"] == "current-season-shrunk" for p in live_profile_rows
+            ),
+            "priorSeasonShrunk": sum(
+                p["serveRateSource"] == "prior-season-shrunk" for p in live_profile_rows
             ),
             "withoutServeRate": sum(p["serveRate"] is None for p in live_profile_rows),
         }
