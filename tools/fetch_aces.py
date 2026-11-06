@@ -20,7 +20,7 @@ MIN_MATCHES = 8
 ACES = re.compile(r"(\d+)\s*Aces\s*(\d+)\s*Aces")
 FIRST_SERVE = re.compile(r"(\d+)/(\d+)\s*\(\d+%\)\s*First serve")
 STATS_LINK = re.compile(
-    r"stats[-/]?centre/(archive|live)/(\\d{4})/(\\d+)/((?:ms|md)\\d+)", re.I
+    r"stats[-/]?centre/(archive|live)/(\d{4})/(\d+)/((?:ms|md)\d+)", re.I
 )
 
 
@@ -90,7 +90,7 @@ async def discover_completed_singles(context, event):
                 "nodes => nodes.map(a => [a.href, a.getAttribute('href'), "
                 "a.getAttribute('data-href'), a.getAttribute('data-url')].join(' '))"
             )
-            snapshot = "\\n".join(anchors)
+            snapshot = "\n".join(anchors)
             stable_polls = stable_polls + 1 if snapshot == previous else 0
             previous = snapshot
             # Mirror the app's minimum settle window and require repeated stable snapshots.
