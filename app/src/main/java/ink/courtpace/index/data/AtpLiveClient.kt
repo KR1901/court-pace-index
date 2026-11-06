@@ -86,11 +86,15 @@ class AtpLiveClient(context: Context) {
         val source = web.readPageSource(resultsUrl, RESULTS_RENDER_MS).orEmpty()
         // The results page supplies the completed singles match IDs. Match statistics themselves
         // come from ATP/Infosys JSON, not by scraping the visible HTML or guessing per-match URLs.
-        val links = AtpMatchLinks.singlesLinks(
+        val eventSingles = AtpMatchLinks.singlesLinks(
             AtpMatchLinks.linksFromResultsPage(source),
         ).filter { link ->
             link.atpId == event.atpId && link.year == event.year
         }.distinctBy { it.id }
+        val inProgressMatches = eventSingles.count { it.section == "live" }
+        // A live-route link can already contain partial set stats. It is not a completed
+        // match and must not inflate either the rating numerator or its discovered denominator.
+        val links = AtpMatchLinks.completedSinglesLinks(eventSingles)
         val pageBytes = source.toByteArray(Charsets.UTF_8).size
         onDiscovery?.invoke(links.size, pageBytes)
         val discoveredIds = links.map { it.id }.toSet()
@@ -103,7 +107,8 @@ class AtpLiveClient(context: Context) {
                 .count { it.atpId == event.atpId && it.year == event.year }
             error(
                 "no completed singles stats links on the results page " +
-                    "($pageBytes bytes, $totalStatsLinks stats links found); no match lookups attempted",
+                    "($pageBytes bytes, $totalStatsLinks stats links found, " +
+                    "$inProgressMatches still live); no match lookups attempted",
             )
         }
 
@@ -166,6 +171,7 @@ class AtpLiveClient(context: Context) {
             discoveredMatches = links.size,
             missingMatchIds = missingIds,
             missingReasons = missingReasons,
+            inProgressMatches = inProgressMatches,
         )
     }
 
