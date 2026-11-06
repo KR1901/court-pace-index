@@ -41,6 +41,16 @@ object AtpMatchLinks {
     fun fromResultsPage(source: String): List<String> =
         linksFromResultsPage(source).map { it.id }
 
+    /**
+     * ATP's current-scores feed has used both routes for finished matches during an active event.
+     * The route segment is a page variant, not a reliable match-completion flag, so try the
+     * discovered route first and the other official route second.
+     */
+    fun routeVariants(link: MatchLink): List<MatchLink> {
+        val other = if (link.section == "archive") "live" else "archive"
+        return listOf(link, link.copy(section = other))
+    }
+
     /** Singles only: the surface-speed rating is built from singles serving stats. */
     fun singles(ids: List<String>): List<String> = ids.filter { it.startsWith("ms") }
 
