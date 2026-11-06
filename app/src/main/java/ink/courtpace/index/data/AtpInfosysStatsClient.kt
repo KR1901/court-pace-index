@@ -325,18 +325,14 @@ internal class AtpInfosysStatsClient {
         val secondName = players?.optJSONObject(1)?.optString("player1Name")
             ?.takeIf { it.isNotBlank() } ?: "Player 2"
 
-        // Prefer ATP's set0 whole-match aggregate whenever it contains the required rows.
-        statsRoot.optJSONArray("set0")?.let { wholeMatch ->
-            parseStatsRows(rowsFromJson(wholeMatch), firstName, secondName)?.let { return it }
-        }
-
-        // Retirements can have valid played-set stats but no set0 aggregate. Sum the per-set
-        // aces and service-point denominators instead of dropping a match that was actually played.
+        val wholeMatchRows = statsRoot.optJSONArray("set0")?.let(::rowsFromJson)
+        // Inspect all possible set arrays, not just setsCompleted: a retirement can contain
+        // statistics from a partially played final set beyond the number of completed sets.
         val playedSets = (1..5).mapNotNull { setNumber ->
             val array = statsRoot.optJSONArray("set$setNumber") ?: return@mapNotNull null
             if (array.length() == 0) null else rowsFromJson(array)
         }
-        return aggregateSetStatsRows(playedSets, firstName, secondName)
+        return parseStatsData(wholeMatchRows, playedSets, firstName, secondName)
     }
 
     private fun rowsFromJson(array: JSONArray): List<StatRow> =
@@ -348,6 +344,22 @@ internal class AtpInfosysStatsClient {
                 player2 = row.optString("player2"),
             )
         }
+
+    /**
+     * Full-match aggregate wins to avoid double-counting sets. If the aggregate is absent or
+     * incomplete, sum every non-empty played-set array, including a partial retirement set.
+     */
+    internal fun parseStatsData(
+        wholeMatchRows: List<StatRow>?,
+        playedSets: List<List<StatRow>>,
+        firstName: String = "Player 1",
+        secondName: String = "Player 2",
+    ): AtpMatchStats? {
+        if (wholeMatchRows != null) {
+            parseStatsRows(wholeMatchRows, firstName, secondName)?.let { return it }
+        }
+        return aggregateSetStatsRows(playedSets, firstName, secondName)
+    }
 
     /** Pure row parser: independently testable without Android's mocked org.json classes. */
     internal fun parseStatsRows(
