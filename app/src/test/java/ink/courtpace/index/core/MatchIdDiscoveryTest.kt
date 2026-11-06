@@ -61,6 +61,29 @@ class MatchIdDiscoveryTest {
     }
 
     @Test
+    fun `classifies walkovers and retirements from each ATP match card without match-specific rules`() {
+        val html = """
+            <div class="match">
+              <div class="result-status">W/O</div>
+              <div class="match-cta"><a href="/en/scores/stats-centre/archive/2026/352/ms060">Stats</a></div>
+            </div>
+            <div class="match">
+              <div class="result-status">Ret.</div>
+              <div class="match-cta"><a href="/en/scores/stats-centre/archive/2026/352/ms061">Stats</a></div>
+            </div>
+            <div class="match">
+              <div class="match-cta"><a href="/en/scores/stats-centre/archive/2026/352/ms062">Stats</a></div>
+            </div>
+        """.trimIndent()
+
+        val links = AtpMatchLinks.linksFromResultsPage(html).associateBy { it.id }
+
+        assertEquals(AtpMatchLinks.ResultStatus.WALKOVER, links.getValue("ms060").resultStatus)
+        assertEquals(AtpMatchLinks.ResultStatus.RETIREMENT, links.getValue("ms061").resultStatus)
+        assertEquals(AtpMatchLinks.ResultStatus.UNKNOWN, links.getValue("ms062").resultStatus)
+    }
+
+    @Test
     fun `recognises ATP match-stats URLs as well as legacy stats-centre links`() {
         val links = AtpMatchLinks.linksFromResultsPage(
             """<a href="/en/scores/match-stats/archive/2026/352/ms041">Match stats</a>""",
