@@ -173,40 +173,49 @@ internal class AtpInfosysStatsClient {
         return output.reverse().toString()
     }
 
+    internal data class StatRow(
+        val name: String,
+        val player1: String,
+        val player2: String,
+    )
+
     internal fun parseStats(payload: JSONObject): AtpMatchStats? {
         val statsRoot = payload.optJSONObject("setStats") ?: return null
         val matchRows = statsRoot.optJSONArray("set0") ?: return null
-
-        var firstAcesRaw: String? = null
-        var secondAcesRaw: String? = null
-        var firstServicePointsRaw: String? = null
-        var secondServicePointsRaw: String? = null
-
-        for (i in 0 until matchRows.length()) {
-            val row = matchRows.optJSONObject(i) ?: continue
-            when (row.optString("name").trim().lowercase()) {
-                "aces" -> {
-                    firstAcesRaw = row.optString("player1").trim()
-                    secondAcesRaw = row.optString("player2").trim()
-                }
-                "service points won", "service points" -> {
-                    firstServicePointsRaw = row.optString("player1").trim()
-                    secondServicePointsRaw = row.optString("player2").trim()
-                }
-            }
+        val rows = (0 until matchRows.length()).mapNotNull { index ->
+            val row = matchRows.optJSONObject(index) ?: return@mapNotNull null
+            StatRow(
+                name = row.optString("name"),
+                player1 = row.optString("player1"),
+                player2 = row.optString("player2"),
+            )
         }
-
-        val firstAces = firstAcesRaw?.toIntOrNull() ?: return null
-        val secondAces = secondAcesRaw?.toIntOrNull() ?: return null
-        val firstPoints = denominator(firstServicePointsRaw.orEmpty()) ?: return null
-        val secondPoints = denominator(secondServicePointsRaw.orEmpty()) ?: return null
-        if (firstPoints <= 0 || secondPoints <= 0) return null
-
         val players = payload.optJSONArray("players")
         val firstName = players?.optJSONObject(0)?.optString("player1Name")
             ?.takeIf { it.isNotBlank() } ?: "Player 1"
         val secondName = players?.optJSONObject(1)?.optString("player1Name")
             ?.takeIf { it.isNotBlank() } ?: "Player 2"
+        return parseStatsRows(rows, firstName, secondName)
+    }
+
+    /** Pure row parser: independently testable without Android's mocked org.json classes. */
+    internal fun parseStatsRows(
+        rows: List<StatRow>,
+        firstName: String = "Player 1",
+        secondName: String = "Player 2",
+    ): AtpMatchStats? {
+        val aces = rows.firstOrNull { it.name.trim().equals("aces", ignoreCase = true) }
+            ?: return null
+        val servicePoints = rows.firstOrNull {
+            it.name.trim().equals("service points won", ignoreCase = true) ||
+                it.name.trim().equals("service points", ignoreCase = true)
+        } ?: return null
+
+        val firstAces = aces.player1.trim().toIntOrNull() ?: return null
+        val secondAces = aces.player2.trim().toIntOrNull() ?: return null
+        val firstPoints = denominator(servicePoints.player1) ?: return null
+        val secondPoints = denominator(servicePoints.player2) ?: return null
+        if (firstPoints <= 0 || secondPoints <= 0) return null
 
         return AtpMatchStats(
             firstPlayer = firstName,
