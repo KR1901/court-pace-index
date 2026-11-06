@@ -30,6 +30,21 @@ class MatchIdDiscoveryTest {
     }
 
     @Test
+    fun `completed singles links exclude in-progress live routes`() {
+        val links = AtpMatchLinks.linksFromResultsPage(
+            """
+            <a href="/en/scores/stats-centre/archive/2026/352/ms001">completed</a>
+            <a href="/en/scores/stats-centre/live/2026/352/ms002">in progress</a>
+            <a href="/en/scores/stats-centre/archive/2026/352/md003">doubles</a>
+            """.trimIndent(),
+        )
+
+        val completed = AtpMatchLinks.completedSinglesLinks(links)
+
+        assertEquals(listOf("ms001"), completed.map { it.id })
+    }
+
+    @Test
     fun `recognises ATP match-stats URLs as well as legacy stats-centre links`() {
         val links = AtpMatchLinks.linksFromResultsPage(
             """<a href="/en/scores/match-stats/archive/2026/352/ms041">Match stats</a>""",
