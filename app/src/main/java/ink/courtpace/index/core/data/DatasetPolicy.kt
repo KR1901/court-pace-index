@@ -60,6 +60,11 @@ object DatasetPolicy {
         val speedBaseline = chosen.speedBaseline
             ?.takeIf { it.season == chosen.meta.season }
             ?: bundled.speedBaseline?.takeIf { it.season == chosen.meta.season }
-        return chosen.copy(live = enriched, speedBaseline = speedBaseline)
+        val safeReadings = if (chosen.speedBaseline == null) {
+            chosen.readings.filterNot { it.src == "live" && it.speed != null }
+        } else {
+            chosen.readings
+        }
+        return chosen.copy(live = enriched, readings = safeReadings, speedBaseline = speedBaseline)
     }
 }
