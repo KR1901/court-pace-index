@@ -16,10 +16,12 @@ LIVE = os.path.join(ROOT, "data", "live.json")
 # Tour-level ace rate, 2022-2025: 137,134 aces in 1,751,112 service points.
 BASELINE = 0.078313
 MIN_MATCHES = 8
-MAX_MATCH = 80
 
 ACES = re.compile(r"(\d+)\s*Aces\s*(\d+)\s*Aces")
 FIRST_SERVE = re.compile(r"(\d+)/(\d+)\s*\(\d+%\)\s*First serve")
+STATS_LINK = re.compile(
+    r"stats[-/]?centre/(archive|live)/(\\d{4})/(\\d+)/((?:ms|md)\\d+)", re.I
+)
 
 
 USER_AGENT = (
@@ -67,6 +69,54 @@ def parse(text):
         return None
     return total_aces, points
 
+async def discover_completed_singles(context, event):
+    """Use the event results page as the authoritative list; never guess match IDs."""
+    event_id = str(event.get("atpId") or "")
+    year = str(event.get("s") or "")
+    slug = event.get("slug") or event.get("t")
+    if not event_id or not year or not slug:
+        return []
+
+    url = f"https://www.atptour.com/en/scores/current/{slug}/{event_id}/results"
+    page = await context.new_page()
+    try:
+        await page.goto(url, wait_until="domcontentloaded", timeout=45000)
+        previous = None
+        stable_polls = 0
+        anchors = []
+        for poll in range(90):
+            await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            anchors = await page.locator("a").evaluate_all(
+                "nodes => nodes.map(a => [a.href, a.getAttribute('href'), "
+                "a.getAttribute('data-href'), a.getAttribute('data-url')].join(' '))"
+            )
+            snapshot = "\\n".join(anchors)
+            stable_polls = stable_polls + 1 if snapshot == previous else 0
+            previous = snapshot
+            # Mirror the app's minimum settle window and require repeated stable snapshots.
+            if poll >= 16 and stable_polls >= 4:
+                break
+            await page.wait_for_timeout(500)
+
+        match_ids = []
+        seen = set()
+        for anchor in anchors:
+            for match in STATS_LINK.finditer(anchor):
+                section, link_year, link_event, match_id = match.groups()
+                if (section.lower() != "archive" or link_year != year or
+                        link_event != event_id or not match_id.lower().startswith("ms")):
+                    continue
+                match_id = match_id.lower()
+                if match_id not in seen:
+                    seen.add(match_id)
+                    match_ids.append(match_id)
+        print(f"{event.get('t')}: {len(match_ids)} completed singles links on results page")
+        return match_ids
+    except Exception as exc:  # noqa: BLE001 - the ATP results page may be temporarily unavailable
+        print(f"  ! results page {url}: {exc}")
+        return []
+    finally:
+        await page.close()
 
 async def probe():
     """Render a few known ids and report exactly what comes back. Diagnostic only."""
@@ -112,13 +162,11 @@ async def main():
                 print(f"{event['t']}: no ATP id, skipped")
                 continue
 
+            match_ids = await discover_completed_singles(context, event)
             aces_total = points_total = 0
             found = 0
             described = 0
-            # Match ids are sparse: ms019 and ms031 exist while ms001..ms008 may not, so the
-            # walk covers the whole range instead of stopping at the first run of misses.
-            for n in range(1, MAX_MATCH + 1):
-                match_id = f"ms{n:03d}"
+            for match_id in match_ids:
                 url = (f"https://www.atptour.com/en/scores/stats-centre/archive/"
                        f"{year}/{event_id}/{match_id}")
                 text = await render(context, url)
