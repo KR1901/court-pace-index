@@ -394,7 +394,18 @@ class AtpStatsParserTest {
             ),
         )
 
-        val matches = sampleMatches(10).map { it.copy(matchId = "ms-zero") }
+        val matches = (1..10).map {
+            AtpMatchStats(
+                firstPlayer = "A. Zero",
+                secondPlayer = "B. Zero",
+                firstAces = 6,
+                firstServePoints = 40,
+                secondAces = 6,
+                secondServePoints = 40,
+                firstWon = true,
+                matchId = "ms-zero",
+            )
+        }
         val coverage = AceRating.coverage(matches, zeroBaseline)
 
         assertEquals(0, coverage.adjustedServerSides)
