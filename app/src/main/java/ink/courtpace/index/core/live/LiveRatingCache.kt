@@ -22,6 +22,7 @@ data class CachedLiveRating(
     /** Number of possible server sides among matches with usable Infosys stats. */
     val totalServerSides: Int? = null,
     val aces: Int? = null,
+    val adjustmentIssues: List<AceRating.AdjustmentIssue> = emptyList(),
 ) {
     /**
      * Old caches predate side-coverage metadata. Do not present them as if their coverage
@@ -51,6 +52,7 @@ data class CachedLiveRating(
             adjustedServerSides = adjusted,
             totalServerSides = total,
             discoveredMatches = discovered,
+            adjustmentIssues = adjustmentIssues,
         )
     }
 
@@ -67,12 +69,13 @@ data class CachedLiveRating(
         append("\"discoveredMatches\":").append(discoveredMatches?.toString() ?: "null").append(',')
         append("\"adjustedServerSides\":").append(adjustedServerSides?.toString() ?: "null").append(',')
         append("\"totalServerSides\":").append(totalServerSides?.toString() ?: "null").append(',')
-        append("\"aces\":").append(aces?.toString() ?: "null")
+        append("\"aces\":").append(aces?.toString() ?: "null").append(',')
+        append("\"adjustmentIssues\":\"").append(encodeAdjustmentIssues(adjustmentIssues)).append("\"")
         append('}')
     }
 
     companion object {
-        const val CURRENT_METHOD_VERSION = 2
+        const val CURRENT_METHOD_VERSION = 3
         const val LEGACY_METHOD_VERSION = 1
         /** Tolerant on purpose: a corrupt or older cache must never break the app. */
         fun fromJson(raw: String?): CachedLiveRating? {
@@ -90,6 +93,7 @@ data class CachedLiveRating(
                 val adjustedServerSides = field(raw, "adjustedServerSides")?.toIntOrNull()
                 val totalServerSides = field(raw, "totalServerSides")?.toIntOrNull()
                 val aces = field(raw, "aces")?.toIntOrNull()
+                val adjustmentIssues = decodeAdjustmentIssues(field(raw, "adjustmentIssues"))
                 CachedLiveRating(
                     tournamentId = tournament,
                     season = season,
@@ -103,8 +107,43 @@ data class CachedLiveRating(
                     adjustedServerSides = adjustedServerSides,
                     totalServerSides = totalServerSides,
                     aces = aces,
+                    adjustmentIssues = adjustmentIssues,
                 )
             }.getOrNull()
+        }
+
+        private fun encodeAdjustmentIssues(issues: List<AceRating.AdjustmentIssue>): String {
+            val encoder = java.util.Base64.getUrlEncoder().withoutPadding()
+            return encoder.encodeToString(
+                issues.joinToString("\n") { issue ->
+                    listOf(
+                        issue.matchId.orEmpty(),
+                        issue.server,
+                        issue.returner,
+                        issue.reason,
+                    ).joinToString("|")
+                }.toByteArray(Charsets.UTF_8),
+            )
+        }
+
+        private fun decodeAdjustmentIssues(encoded: String?): List<AceRating.AdjustmentIssue> {
+            if (encoded.isNullOrBlank()) return emptyList()
+            return runCatching {
+                val decoded = String(
+                    java.util.Base64.getUrlDecoder().decode(encoded),
+                    Charsets.UTF_8,
+                )
+                decoded.lineSequence().mapNotNull { line ->
+                    val parts = line.split("|")
+                    if (parts.size != 4) return@mapNotNull null
+                    AceRating.AdjustmentIssue(
+                        matchId = parts[0].ifBlank { null },
+                        server = parts[1],
+                        returner = parts[2],
+                        reason = parts[3],
+                    )
+                }.toList()
+            }.getOrDefault(emptyList())
         }
 
         private fun field(raw: String, name: String): String? {
