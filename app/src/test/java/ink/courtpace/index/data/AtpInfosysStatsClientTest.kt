@@ -15,6 +15,16 @@ class AtpInfosysStatsClientTest {
 
 
     @Test
+    fun `retries transient feed refusal and server errors but not permanent client errors`() {
+        listOf(403, 408, 425, 429, 500, 502, 503, 504).forEach { status ->
+            assertEquals(true, client.shouldRetryStatus(status))
+        }
+        listOf(200, 204, 400, 401, 404, 422).forEach { status ->
+            assertEquals(false, client.shouldRetryStatus(status))
+        }
+    }
+
+    @Test
     fun `derives the documented ATP Infosys AES key for a known timestamp`() {
         assertEquals("#3zfbzn55vkkiln$", client.cipherKey(1_700_000_000_000L))
     }
