@@ -14,6 +14,7 @@ data class CachedLiveRating(
     val aceRate: Double?,
     val asOf: String,
     val methodVersion: Int = CURRENT_METHOD_VERSION,
+    val baselineGenerated: String = "",
 ) {
     fun toJson(): String = buildString {
         append('{')
@@ -23,7 +24,8 @@ data class CachedLiveRating(
         append("\"matches\":").append(matches).append(',')
         append("\"ace\":").append(aceRate ?: "null").append(',')
         append("\"asOf\":\"").append(asOf.replace("\"", "")).append("\",")
-        append("\"methodVersion\":").append(methodVersion)
+        append("\"methodVersion\":").append(methodVersion).append(',')
+        append("\"baselineGenerated\":\"").append(baselineGenerated.replace("\"", "")).append('\"')
         append('}')
     }
 
@@ -41,7 +43,8 @@ data class CachedLiveRating(
                 val ace = field(raw, "ace")?.toDoubleOrNull()
                 val asOf = field(raw, "asOf") ?: ""
                 val methodVersion = field(raw, "methodVersion")?.toIntOrNull() ?: LEGACY_METHOD_VERSION
-                CachedLiveRating(tournament, season, speed, matches, ace, asOf, methodVersion)
+                val baselineGenerated = field(raw, "baselineGenerated") ?: ""
+                CachedLiveRating(tournament, season, speed, matches, ace, asOf, methodVersion, baselineGenerated)
             }.getOrNull()
         }
 
