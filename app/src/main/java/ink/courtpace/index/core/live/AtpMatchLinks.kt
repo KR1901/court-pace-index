@@ -1,7 +1,7 @@
 package ink.courtpace.index.core.live
 
 /**
- * A stats-centre link found on an ATP results page.
+ * A match-statistics link found on an ATP results page.
  *
  * Keep the section/year/event id from the href: completed matches are normally linked under
  * archive, while a currently playing match can have a live link. Reconstructing every URL as an
@@ -16,8 +16,11 @@ object AtpMatchLinks {
         val atpId: Int,
     )
 
+    // ATP's match detail pages use /match-stats/{archive|live}/... . The older
+    // stats-centre route is also accepted as a discovery alias, but is not the page URL
+    // used for the per-match statistics cards.
     private val LINK = Regex(
-        """(?i)stats[-/]?centre/(?:((?:live|archive))/)?([0-9]{4})/([0-9]+)/((?:ms|md)[0-9]+)"""
+        """(?i)(?:match[-/]?stats|stats[-/]?centre)/(?:((?:live|archive))/)?([0-9]{4})/([0-9]+)/((?:ms|md)[0-9]+)"""
     )
 
     /** Every distinct match in page order; prefer an archive link if the same id appears twice. */
