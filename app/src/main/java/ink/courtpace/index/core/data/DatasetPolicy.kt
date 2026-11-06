@@ -30,7 +30,18 @@ object DatasetPolicy {
             if (baseline.profiles.any { profile ->
                     profile.name.isBlank() ||
                         (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
-                        (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0))
+                        (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0)) ||
+                        (profile.serveRateSeason != null && profile.serveRateSeason !in 2012..baseline.season) ||
+                        (profile.concedeRateSeason != null && profile.concedeRateSeason !in 2012..baseline.season) ||
+                        (profile.serveRateSampleMatches != null && profile.serveRateSampleMatches < 1) ||
+                        (profile.serveRateSampleServicePoints != null && profile.serveRateSampleServicePoints < 1) ||
+                        (profile.serveRatePriorServicePoints != null &&
+                            (!profile.serveRatePriorServicePoints.isFinite() || profile.serveRatePriorServicePoints <= 0.0)) ||
+                        (profile.serveRateSource != null && profile.serveRateSource !in setOf(
+                            "current-season-qualified",
+                            "prior-season-qualified",
+                            "current-season-shrunk",
+                        ))
                 }) return false
             val usableProfiles = baseline.profiles.count { profile ->
                 profile.serveRate != null || profile.concedeRate != null
