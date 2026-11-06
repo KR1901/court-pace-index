@@ -1,0 +1,1089 @@
+{
+ "season": 2026,
+ "profileSeason": 2026,
+ "normalisation": 9.166147969872771,
+ "generated": "2026-11-06T16:34:12.394922+00:00",
+ "profiles": [
+  {
+   "name": "Miomir Kecmanovic",
+   "serveRate": 0.06395998835305622,
+   "concedeRate": 0.12853773584905662
+  },
+  {
+   "name": "Marcos Giron",
+   "serveRate": 0.04942405890036813,
+   "concedeRate": 0.11346018322762509
+  },
+  {
+   "name": "Arthur Fils",
+   "serveRate": 0.06555993374045939,
+   "concedeRate": 0.08680020544427323
+  },
+  {
+   "name": "Jakub Mensik",
+   "serveRate": 0.14010476605224734,
+   "concedeRate": 0.06543778801843318
+  },
+  {
+   "name": "Bu Yunchaokete",
+   "serveRate": null,
+   "concedeRate": 0.2289156626506024
+  },
+  {
+   "name": "Jack Draper",
+   "serveRate": null,
+   "concedeRate": 0.12166666666666667
+  },
+  {
+   "name": "Damir Dzumhur",
+   "serveRate": 0.019814925465277026,
+   "concedeRate": 0.0586890243902439
+  },
+  {
+   "name": "Colton Smith",
+   "serveRate": null,
+   "concedeRate": 0.05128205128205128
+  },
+  {
+   "name": "Hugo Gaston",
+   "serveRate": null,
+   "concedeRate": 0.05925925925925926
+  },
+  {
+   "name": "Alejandro Davidovich Fokina",
+   "serveRate": 0.048356807511737085,
+   "concedeRate": 0.12132582864290181
+  },
+  {
+   "name": "Ugo Humbert",
+   "serveRate": 0.09227351561846335,
+   "concedeRate": 0.07129000969932105
+  },
+  {
+   "name": "Dane Sweeny",
+   "serveRate": 0.013513513513513514,
+   "concedeRate": 0.19081272084805653
+  },
+  {
+   "name": "Arthur Fery",
+   "serveRate": 0.06451612903225806,
+   "concedeRate": 0.09236947791164658
+  },
+  {
+   "name": "Filip Cristian Jianu",
+   "serveRate": null,
+   "concedeRate": 0.0
+  },
+  {
+   "name": "Igor Ribeiro Marcondes",
+   "serveRate": null,
+   "concedeRate": 0.02654867256637168
+  },
+  {
+   "name": "Alexander Bublik",
+   "serveRate": 0.12014018852791265,
+   "concedeRate": 0.09826589595375723
+  },
+  {
+   "name": "Hamad Medjedovic",
+   "serveRate": 0.10170391416470896,
+   "concedeRate": 0.08140403286034353
+  },
+  {
+   "name": "Thiago Monteiro",
+   "serveRate": null,
+   "concedeRate": 0.11666666666666667
+  },
+  {
+   "name": "Ethan Quinn",
+   "serveRate": 0.09304014946628515,
+   "concedeRate": 0.09690230341540905
+  },
+  {
+   "name": "Federico Coria",
+   "serveRate": null,
+   "concedeRate": 0.06060606060606061
+  },
+  {
+   "name": "Denis Shapovalov",
+   "serveRate": 0.09518259518259517,
+   "concedeRate": 0.03852080123266564
+  },
+  {
+   "name": "Zhizhen Zhang",
+   "serveRate": 0.09324410452517527,
+   "concedeRate": 0.13357400722021662
+  },
+  {
+   "name": "Alexander Zverev",
+   "serveRate": 0.12447492755401446,
+   "concedeRate": 0.0747978436657682
+  },
+  {
+   "name": "Christopher Oconnell",
+   "serveRate": null,
+   "concedeRate": 0.0811965811965812
+  },
+  {
+   "name": "Stefanos Sakellaridis",
+   "serveRate": null,
+   "concedeRate": 0.023809523809523808
+  },
+  {
+   "name": "Moise Kouame",
+   "serveRate": null,
+   "concedeRate": 0.08626198083067092
+  },
+  {
+   "name": "Arthur Cazaux",
+   "serveRate": null,
+   "concedeRate": 0.07317073170731707
+  },
+  {
+   "name": "Alexander Shevchenko",
+   "serveRate": 0.06994005674878329,
+   "concedeRate": 0.07173913043478261
+  },
+  {
+   "name": "Dusan Lajovic",
+   "serveRate": 0.03314917127071823,
+   "concedeRate": 0.10275689223057644
+  },
+  {
+   "name": "Juan Manuel Cerundolo",
+   "serveRate": null,
+   "concedeRate": 0.0580875781948168
+  },
+  {
+   "name": "Filip Misolic",
+   "serveRate": null,
+   "concedeRate": 0.11904761904761904
+  },
+  {
+   "name": "Alex Molcan",
+   "serveRate": 0.050359712230215826,
+   "concedeRate": 0.06150341685649203
+  },
+  {
+   "name": "Marin Cilic",
+   "serveRate": 0.13182802798366564,
+   "concedeRate": 0.1203263086335826
+  },
+  {
+   "name": "Raphael Collignon",
+   "serveRate": null,
+   "concedeRate": 0.09240506329113925
+  },
+  {
+   "name": "Reilly Opelka",
+   "serveRate": null,
+   "concedeRate": 0.08406647116324535
+  },
+  {
+   "name": "Billy Harris",
+   "serveRate": null,
+   "concedeRate": 0.05921052631578947
+  },
+  {
+   "name": "Reda Bennani",
+   "serveRate": null,
+   "concedeRate": 0.031914893617021274
+  },
+  {
+   "name": "James Watt",
+   "serveRate": null,
+   "concedeRate": 0.030303030303030304
+  },
+  {
+   "name": "Elmer Moller",
+   "serveRate": 0.028888888888888888,
+   "concedeRate": 0.04824561403508772
+  },
+  {
+   "name": "Andrea Pellegrino",
+   "serveRate": 0.03237410071942446,
+   "concedeRate": 0.07476635514018691
+  },
+  {
+   "name": "Terence Atmane",
+   "serveRate": 0.09502617246275456,
+   "concedeRate": 0.08269230769230769
+  },
+  {
+   "name": "Tristan Schoolkate",
+   "serveRate": 0.11920529801324503,
+   "concedeRate": 0.08053691275167785
+  },
+  {
+   "name": "Daniil Medvedev",
+   "serveRate": 0.09075896875688325,
+   "concedeRate": 0.03705228489090161
+  },
+  {
+   "name": "Luca Van Assche",
+   "serveRate": 0.037037037037037035,
+   "concedeRate": 0.04633204633204633
+  },
+  {
+   "name": "Zachary Svajda",
+   "serveRate": 0.09089865058857306,
+   "concedeRate": 0.12958115183246074
+  },
+  {
+   "name": "Novak Djokovic",
+   "serveRate": null,
+   "concedeRate": 0.1042311661506708
+  },
+  {
+   "name": "Yannick Hanfmann",
+   "serveRate": 0.09482260047123056,
+   "concedeRate": 0.07551919446192575
+  },
+  {
+   "name": "Pedro Martinez",
+   "serveRate": null,
+   "concedeRate": 0.10191082802547771
+  },
+  {
+   "name": "Rinky Hijikata",
+   "serveRate": 0.057639802447323016,
+   "concedeRate": 0.1211840888066605
+  },
+  {
+   "name": "Sumit Nagal",
+   "serveRate": null,
+   "concedeRate": 0.03333333333333333
+  },
+  {
+   "name": "Francisco Cerundolo",
+   "serveRate": 0.04506829012136648,
+   "concedeRate": 0.048418024928092045
+  },
+  {
+   "name": "Pablo Llamas Ruiz",
+   "serveRate": 0.003472222222222222,
+   "concedeRate": 0.055944055944055944
+  },
+  {
+   "name": "Nishesh Basavareddy",
+   "serveRate": null,
+   "concedeRate": 0.13318284424379231
+  },
+  {
+   "name": "Michael Mmoh",
+   "serveRate": 0.1256544502617801,
+   "concedeRate": 0.11538461538461539
+  },
+  {
+   "name": "Elias Ymer",
+   "serveRate": null,
+   "concedeRate": 0.07
+  },
+  {
+   "name": "Matteo Berrettini",
+   "serveRate": 0.1199240761611009,
+   "concedeRate": 0.05012964563526361
+  },
+  {
+   "name": "Yibing Wu",
+   "serveRate": null,
+   "concedeRate": 0.10273081924577374
+  },
+  {
+   "name": "Diego Dedura Palomero",
+   "serveRate": null,
+   "concedeRate": 0.027777777777777776
+  },
+  {
+   "name": "Chun Hsin Tseng",
+   "serveRate": null,
+   "concedeRate": 0.0
+  },
+  {
+   "name": "Carlos Alcaraz",
+   "serveRate": 0.06110977916300381,
+   "concedeRate": 0.04866635470285447
+  },
+  {
+   "name": "Jaume Munar",
+   "serveRate": 0.06970680834317197,
+   "concedeRate": 0.053747161241483724
+  },
+  {
+   "name": "Alex Bolt",
+   "serveRate": null,
+   "concedeRate": 0.0661764705882353
+  },
+  {
+   "name": "Mackenzie Mcdonald",
+   "serveRate": null,
+   "concedeRate": 0.12111801242236025
+  },
+  {
+   "name": "Roman Andres Burruchaga",
+   "serveRate": 0.03673938002296211,
+   "concedeRate": 0.04157303370786517
+  },
+  {
+   "name": "Arthur Rinderknech",
+   "serveRate": 0.12751526670538338,
+   "concedeRate": 0.057905009759271306
+  },
+  {
+   "name": "Dalibor Svrcina",
+   "serveRate": null,
+   "concedeRate": 0.08008658008658008
+  },
+  {
+   "name": "Radu David Turcanu",
+   "serveRate": null,
+   "concedeRate": 0.0392156862745098
+  },
+  {
+   "name": "Valentin Royer",
+   "serveRate": 0.06868725993350763,
+   "concedeRate": 0.11832460732984293
+  },
+  {
+   "name": "Titouan Droguet",
+   "serveRate": 0.17236196246976207,
+   "concedeRate": 0.08308157099697885
+  },
+  {
+   "name": "Marc Andrea Huesler",
+   "serveRate": null,
+   "concedeRate": 0.028169014084507043
+  },
+  {
+   "name": "Otto Virtanen",
+   "serveRate": null,
+   "concedeRate": 0.0392156862745098
+  },
+  {
+   "name": "Giovanni Mpetshi Perricard",
+   "serveRate": 0.1657665098651593,
+   "concedeRate": 0.08620689655172414
+  },
+  {
+   "name": "Kyrian Jacquet",
+   "serveRate": null,
+   "concedeRate": 0.16981132075471697
+  },
+  {
+   "name": "Nicolas Jarry",
+   "serveRate": null,
+   "concedeRate": 0.08139534883720931
+  },
+  {
+   "name": "Alex De Minaur",
+   "serveRate": 0.05033337265277005,
+   "concedeRate": 0.06149732620320856
+  },
+  {
+   "name": "Roberto Carballes Baena",
+   "serveRate": null,
+   "concedeRate": 0.16666666666666666
+  },
+  {
+   "name": "Botic Van De Zandschulp",
+   "serveRate": 0.08141592156591983,
+   "concedeRate": 0.0710093896713615
+  },
+  {
+   "name": "Tomas Machac",
+   "serveRate": 0.06257966665053163,
+   "concedeRate": 0.08283049917718047
+  },
+  {
+   "name": "Federico Agustin Gomez",
+   "serveRate": null,
+   "concedeRate": 0.031746031746031744
+  },
+  {
+   "name": "Thiago Agustin Tirante",
+   "serveRate": 0.13835032434016023,
+   "concedeRate": 0.05611899932386748
+  },
+  {
+   "name": "Frances Tiafoe",
+   "serveRate": 0.07476329409442786,
+   "concedeRate": 0.12705464238116393
+  },
+  {
+   "name": "Pierre Hugues Herbert",
+   "serveRate": null,
+   "concedeRate": 0.041666666666666664
+  },
+  {
+   "name": "Max Schoenhaus",
+   "serveRate": null,
+   "concedeRate": 0.07692307692307693
+  },
+  {
+   "name": "Pablo Carreno Busta",
+   "serveRate": 0.03747276688453159,
+   "concedeRate": 0.14743589743589744
+  },
+  {
+   "name": "Andrea Vavassori",
+   "serveRate": 0.10679611650485436,
+   "concedeRate": 0.08854166666666667
+  },
+  {
+   "name": "Marco Trungelliti",
+   "serveRate": 0.0448318804483188,
+   "concedeRate": 0.061764705882352944
+  },
+  {
+   "name": "Taylor Fritz",
+   "serveRate": null,
+   "concedeRate": 0.10899470899470899
+  },
+  {
+   "name": "Matteo Arnaldi",
+   "serveRate": 0.05653980752405949,
+   "concedeRate": 0.051696284329563816
+  },
+  {
+   "name": "Hady Habib",
+   "serveRate": null,
+   "concedeRate": 0.019230769230769232
+  },
+  {
+   "name": "Brandon Nakashima",
+   "serveRate": 0.12785460452837852,
+   "concedeRate": 0.1188118811881188
+  },
+  {
+   "name": "Benjamin Hassan",
+   "serveRate": null,
+   "concedeRate": 0.14754098360655737
+  },
+  {
+   "name": "Aleksandar Vukic",
+   "serveRate": 0.06900584795321638,
+   "concedeRate": 0.12920353982300886
+  },
+  {
+   "name": "Fabian Marozsan",
+   "serveRate": 0.047928469251700204,
+   "concedeRate": 0.08241469816272966
+  },
+  {
+   "name": "Corentin Moutet",
+   "serveRate": 0.04501856872546528,
+   "concedeRate": 0.04850444624090541
+  },
+  {
+   "name": "Tommy Paul",
+   "serveRate": 0.0803198181744389,
+   "concedeRate": 0.06777777777777778
+  },
+  {
+   "name": "Jesper De Jong",
+   "serveRate": 0.06991164281804675,
+   "concedeRate": 0.09022556390977443
+  },
+  {
+   "name": "Thanasi Kokkinakis",
+   "serveRate": null,
+   "concedeRate": 0.08888888888888889
+  },
+  {
+   "name": "Edas Butvilas",
+   "serveRate": null,
+   "concedeRate": 0.046296296296296294
+  },
+  {
+   "name": "Clement Tabur",
+   "serveRate": null,
+   "concedeRate": 0.07207207207207207
+  },
+  {
+   "name": "Jacob Fearnley",
+   "serveRate": null,
+   "concedeRate": 0.106
+  },
+  {
+   "name": "Carlos Taberner",
+   "serveRate": null,
+   "concedeRate": 0.2
+  },
+  {
+   "name": "Emilio Nava",
+   "serveRate": 0.11485343531716809,
+   "concedeRate": 0.06015625
+  },
+  {
+   "name": "Hugo Dellien",
+   "serveRate": null,
+   "concedeRate": 0.045871559633027525
+  },
+  {
+   "name": "Mees Rottgering",
+   "serveRate": null,
+   "concedeRate": 0.14473684210526316
+  },
+  {
+   "name": "Hugo Grenier",
+   "serveRate": null,
+   "concedeRate": 0.06666666666666667
+  },
+  {
+   "name": "Joao Lucas Reis Da Silva",
+   "serveRate": null,
+   "concedeRate": 0.08695652173913043
+  },
+  {
+   "name": "Roberto Bautista Agut",
+   "serveRate": 0.03976522377109317,
+   "concedeRate": 0.13715455475946775
+  },
+  {
+   "name": "Nikoloz Basilashvili",
+   "serveRate": null,
+   "concedeRate": 0.11556982343499198
+  },
+  {
+   "name": "Daniel Altmaier",
+   "serveRate": 0.08549515930821569,
+   "concedeRate": 0.058734939759036146
+  },
+  {
+   "name": "Ugo Blanchet",
+   "serveRate": null,
+   "concedeRate": 0.184
+  },
+  {
+   "name": "Sho Shimabukuro",
+   "serveRate": 0.12602739726027398,
+   "concedeRate": 0.0731070496083551
+  },
+  {
+   "name": "Joao Fonseca",
+   "serveRate": 0.08072743669147964,
+   "concedeRate": 0.08277254374158816
+  },
+  {
+   "name": "Daniel Merida Aguilar",
+   "serveRate": null,
+   "concedeRate": 0.034688995215311005
+  },
+  {
+   "name": "Zizou Bergs",
+   "serveRate": 0.09373530012159295,
+   "concedeRate": 0.08680310515172901
+  },
+  {
+   "name": "Timofey Skatov",
+   "serveRate": null,
+   "concedeRate": 0.1188118811881188
+  },
+  {
+   "name": "Jiri Lehecka",
+   "serveRate": 0.09693099763396915,
+   "concedeRate": 0.06873614190687362
+  },
+  {
+   "name": "Luis Guto Miguel",
+   "serveRate": null,
+   "concedeRate": 0.0
+  },
+  {
+   "name": "Aleksandar Kovacevic",
+   "serveRate": 0.14015541882712812,
+   "concedeRate": 0.1459177764910249
+  },
+  {
+   "name": "Cameron Norrie",
+   "serveRate": 0.06266047267387972,
+   "concedeRate": 0.09473684210526316
+  },
+  {
+   "name": "Patrick Kypson",
+   "serveRate": 0.08280454699694605,
+   "concedeRate": 0.1798780487804878
+  },
+  {
+   "name": "Taha Baadi",
+   "serveRate": null,
+   "concedeRate": 0.05
+  },
+  {
+   "name": "Rei Sakamoto",
+   "serveRate": 0.07582938388625593,
+   "concedeRate": 0.09382716049382717
+  },
+  {
+   "name": "Gustavo Heide",
+   "serveRate": null,
+   "concedeRate": 0.03076923076923077
+  },
+  {
+   "name": "Jannik Sinner",
+   "serveRate": 0.1372948297959789,
+   "concedeRate": 0.05820503191888847
+  },
+  {
+   "name": "Karen Khachanov",
+   "serveRate": 0.09140542919612686,
+   "concedeRate": 0.08596837944664032
+  },
+  {
+   "name": "Alex Michelsen",
+   "serveRate": 0.07814245695079183,
+   "concedeRate": 0.10433162552398696
+  },
+  {
+   "name": "Felix Auger Aliassime",
+   "serveRate": 0.12841069450693204,
+   "concedeRate": 0.07008216529724505
+  },
+  {
+   "name": "Gael Monfils",
+   "serveRate": 0.09397659733040598,
+   "concedeRate": 0.05398110661268556
+  },
+  {
+   "name": "Thijs Boogaard",
+   "serveRate": null,
+   "concedeRate": 0.13846153846153847
+  },
+  {
+   "name": "Federico Cina",
+   "serveRate": 0.028455284552845527,
+   "concedeRate": 0.095
+  },
+  {
+   "name": "Rafael Jodar",
+   "serveRate": 0.054759563609121126,
+   "concedeRate": 0.05271084337349398
+  },
+  {
+   "name": "Gianluca Cadenasso ",
+   "serveRate": null,
+   "concedeRate": 0.09523809523809523
+  },
+  {
+   "name": "Jack Pinnington Jones",
+   "serveRate": null,
+   "concedeRate": 0.15966386554621848
+  },
+  {
+   "name": "Sebastian Korda",
+   "serveRate": 0.13488372093023257,
+   "concedeRate": 0.07356948228882834
+  },
+  {
+   "name": "Martin Damm",
+   "serveRate": 0.1846206942619848,
+   "concedeRate": 0.13372093023255813
+  },
+  {
+   "name": "Quentin Halys",
+   "serveRate": null,
+   "concedeRate": 0.10183150183150183
+  },
+  {
+   "name": "Moez Echargui",
+   "serveRate": null,
+   "concedeRate": 0.20481927710843373
+  },
+  {
+   "name": "Ignacio Buse",
+   "serveRate": null,
+   "concedeRate": 0.04091754494730316
+  },
+  {
+   "name": "Vilius Gaubas",
+   "serveRate": 0.026455026455026454,
+   "concedeRate": 0.056896551724137934
+  },
+  {
+   "name": "Jan Choinski",
+   "serveRate": null,
+   "concedeRate": 0.1527777777777778
+  },
+  {
+   "name": "Raul Brancaccio",
+   "serveRate": null,
+   "concedeRate": 0.14457831325301204
+  },
+  {
+   "name": "Francisco Comesana",
+   "serveRate": 0.10469145284102321,
+   "concedeRate": 0.060461416070007955
+  },
+  {
+   "name": "Matias Soto",
+   "serveRate": null,
+   "concedeRate": 0.08620689655172414
+  },
+  {
+   "name": "Tomas Barrios Vera",
+   "serveRate": null,
+   "concedeRate": 0.12852664576802508
+  },
+  {
+   "name": "Mariano Navone",
+   "serveRate": 0.03317178943522137,
+   "concedeRate": 0.03906976744186046
+  },
+  {
+   "name": "Tomas Martin Etcheverry",
+   "serveRate": 0.08692567654722286,
+   "concedeRate": 0.07242739333094299
+  },
+  {
+   "name": "Learner Tien",
+   "serveRate": 0.08355516132876553,
+   "concedeRate": 0.0792894280762565
+  },
+  {
+   "name": "Nick Kyrgios",
+   "serveRate": null,
+   "concedeRate": 0.2127659574468085
+  },
+  {
+   "name": "Adam Walton",
+   "serveRate": 0.07557277136027914,
+   "concedeRate": 0.10947109471094711
+  },
+  {
+   "name": "Vit Kopriva",
+   "serveRate": 0.0633160877063316,
+   "concedeRate": 0.07183257918552036
+  },
+  {
+   "name": "Trevor Svajda",
+   "serveRate": null,
+   "concedeRate": 0.1111111111111111
+  },
+  {
+   "name": "Gabriel Diallo",
+   "serveRate": 0.08580439402744017,
+   "concedeRate": 0.08497316636851521
+  },
+  {
+   "name": "Tallon Griekspoor",
+   "serveRate": 0.10952541936314757,
+   "concedeRate": 0.15095785440613027
+  },
+  {
+   "name": "Arthur Gea",
+   "serveRate": null,
+   "concedeRate": 0.062381852551984876
+  },
+  {
+   "name": "Eliot Spizzirri",
+   "serveRate": 0.09482758620689655,
+   "concedeRate": 0.09226932668329177
+  },
+  {
+   "name": "Casper Ruud",
+   "serveRate": 0.08262116321119949,
+   "concedeRate": 0.0779520295202952
+  },
+  {
+   "name": "Ben Shelton",
+   "serveRate": 0.13137686475910978,
+   "concedeRate": 0.07197943444730077
+  },
+  {
+   "name": "Jason Kubler",
+   "serveRate": null,
+   "concedeRate": 0.21296296296296297
+  },
+  {
+   "name": "Flavio Cobolli",
+   "serveRate": 0.08584332221435557,
+   "concedeRate": 0.074487895716946
+  },
+  {
+   "name": "Mubarak Shannan Zayid",
+   "serveRate": null,
+   "concedeRate": 0.125
+  },
+  {
+   "name": "Alejandro Tabilo",
+   "serveRate": 0.09228201410485525,
+   "concedeRate": 0.0958904109589041
+  },
+  {
+   "name": "Luca Nardi",
+   "serveRate": null,
+   "concedeRate": 0.07468879668049792
+  },
+  {
+   "name": "Rodrigo Pacheco Mendez",
+   "serveRate": null,
+   "concedeRate": 0.12658227848101267
+  },
+  {
+   "name": "Stan Wawrinka",
+   "serveRate": 0.08839857439636686,
+   "concedeRate": 0.09993753903810118
+  },
+  {
+   "name": "Alexander Blockx",
+   "serveRate": null,
+   "concedeRate": 0.04336283185840708
+  },
+  {
+   "name": "Adrian Mannarino",
+   "serveRate": 0.06362381051191217,
+   "concedeRate": 0.13195435092724678
+  },
+  {
+   "name": "Benjamin Bonzi",
+   "serveRate": null,
+   "concedeRate": 0.09541284403669725
+  },
+  {
+   "name": "Mattia Bellucci",
+   "serveRate": 0.08837209302325581,
+   "concedeRate": 0.062159214830970554
+  },
+  {
+   "name": "Henrique Rocha",
+   "serveRate": null,
+   "concedeRate": 0.03076923076923077
+  },
+  {
+   "name": "Guy Den Ouden",
+   "serveRate": null,
+   "concedeRate": 0.0423728813559322
+  },
+  {
+   "name": "Justin Engel",
+   "serveRate": null,
+   "concedeRate": 0.0748663101604278
+  },
+  {
+   "name": "Adolfo Daniel Vallejo",
+   "serveRate": 0.049528301886792456,
+   "concedeRate": 0.05116279069767442
+  },
+  {
+   "name": "Vitaliy Sachko",
+   "serveRate": null,
+   "concedeRate": 0.07547169811320754
+  },
+  {
+   "name": "Alexis Galarneau",
+   "serveRate": null,
+   "concedeRate": 0.0967741935483871
+  },
+  {
+   "name": "Juncheng Shang",
+   "serveRate": 0.058027079303675046,
+   "concedeRate": 0.15098468271334792
+  },
+  {
+   "name": "Andrey Rublev",
+   "serveRate": 0.08580053407639615,
+   "concedeRate": 0.07554945054945054
+  },
+  {
+   "name": "Jan Lennard Struff",
+   "serveRate": 0.09620406290410044,
+   "concedeRate": 0.10270880361173815
+  },
+  {
+   "name": "Marton Fucsovics",
+   "serveRate": 0.06510984258778757,
+   "concedeRate": 0.061457418788410885
+  },
+  {
+   "name": "Lorenzo Musetti",
+   "serveRate": 0.05422926726045053,
+   "concedeRate": 0.0566272557560672
+  },
+  {
+   "name": "Grigor Dimitrov",
+   "serveRate": null,
+   "concedeRate": 0.12129380053908356
+  },
+  {
+   "name": "Alexei Popyrin",
+   "serveRate": 0.14539018327689218,
+   "concedeRate": 0.08066666666666666
+  },
+  {
+   "name": "Francesco Passaro",
+   "serveRate": 0.03278688524590164,
+   "concedeRate": 0.041237113402061855
+  },
+  {
+   "name": "Coleman Wong",
+   "serveRate": null,
+   "concedeRate": 0.09531502423263329
+  },
+  {
+   "name": "Michael Zheng",
+   "serveRate": 0.026378896882494004,
+   "concedeRate": 0.125
+  },
+  {
+   "name": "Liam Draxl",
+   "serveRate": null,
+   "concedeRate": 0.08614232209737828
+  },
+  {
+   "name": "Jaime Faria",
+   "serveRate": null,
+   "concedeRate": 0.0778688524590164
+  },
+  {
+   "name": "Facundo Diaz Acosta",
+   "serveRate": null,
+   "concedeRate": 0.028169014084507043
+  },
+  {
+   "name": "Thiago Seyboth Wild",
+   "serveRate": null,
+   "concedeRate": 0.06896551724137931
+  },
+  {
+   "name": "Sebastian Ofner",
+   "serveRate": 0.09169054441260745,
+   "concedeRate": 0.06349206349206349
+  },
+  {
+   "name": "Alexandre Muller",
+   "serveRate": 0.05342152217152217,
+   "concedeRate": 0.12060889929742388
+  },
+  {
+   "name": "Jordan Thompson",
+   "serveRate": null,
+   "concedeRate": 0.058823529411764705
+  },
+  {
+   "name": "Sebastian Baez",
+   "serveRate": 0.027239702116549407,
+   "concedeRate": 0.08932882665379044
+  },
+  {
+   "name": "Martin Landaluce",
+   "serveRate": 0.06090083966979596,
+   "concedeRate": 0.06996381182147166
+  },
+  {
+   "name": "Dino Prizmic",
+   "serveRate": 0.05142858454342442,
+   "concedeRate": 0.0624
+  },
+  {
+   "name": "Camilo Ugo Carabelli",
+   "serveRate": 0.04742638011544313,
+   "concedeRate": 0.08142201834862385
+  },
+  {
+   "name": "Shintaro Mochizuki",
+   "serveRate": 0.03932584269662921,
+   "concedeRate": 0.11326860841423948
+  },
+  {
+   "name": "Luka Pavlovic",
+   "serveRate": null,
+   "concedeRate": 0.08955223880597014
+  },
+  {
+   "name": "Karim Bennani",
+   "serveRate": null,
+   "concedeRate": 0.16292134831460675
+  },
+  {
+   "name": "Francesco Maestrelli",
+   "serveRate": null,
+   "concedeRate": 0.06481481481481481
+  },
+  {
+   "name": "Alex Barrena",
+   "serveRate": null,
+   "concedeRate": 0.04895104895104895
+  },
+  {
+   "name": "Gabi Adrian Boitan",
+   "serveRate": null,
+   "concedeRate": 0.02857142857142857
+  },
+  {
+   "name": "Valentin Vacherot",
+   "serveRate": 0.12410907614579572,
+   "concedeRate": 0.08984145625366999
+  },
+  {
+   "name": "Darwin Blanch",
+   "serveRate": null,
+   "concedeRate": 0.11475409836065574
+  },
+  {
+   "name": "Luciano Darderi",
+   "serveRate": 0.09481643734636966,
+   "concedeRate": 0.06962271489692727
+  },
+  {
+   "name": "Lautaro Midon",
+   "serveRate": null,
+   "concedeRate": 0.018518518518518517
+  },
+  {
+   "name": "Nicolai Budkov Kjaer",
+   "serveRate": null,
+   "concedeRate": 0.14285714285714285
+  },
+  {
+   "name": "Laslo Djere",
+   "serveRate": null,
+   "concedeRate": 0.10891089108910891
+  },
+  {
+   "name": "Lorenzo Sonego",
+   "serveRate": 0.07545617795284712,
+   "concedeRate": 0.027287319422150885
+  },
+  {
+   "name": "Hubert Hurkacz",
+   "serveRate": 0.1719041430102378,
+   "concedeRate": 0.0891218872870249
+  },
+  {
+   "name": "Stefanos Tsitsipas",
+   "serveRate": 0.09174940293797883,
+   "concedeRate": 0.05720228809152366
+  },
+  {
+   "name": "Jenson Brooksby",
+   "serveRate": 0.02750406326565267,
+   "concedeRate": 0.08144329896907217
+  },
+  {
+   "name": "Nuno Borges",
+   "serveRate": 0.07235653235653236,
+   "concedeRate": 0.1
+  },
+  {
+   "name": "Cristian Garin",
+   "serveRate": null,
+   "concedeRate": 0.07908163265306123
+  },
+  {
+   "name": "James Duckworth",
+   "serveRate": null,
+   "concedeRate": 0.1111111111111111
+  },
+  {
+   "name": "Kamil Majchrzak",
+   "serveRate": 0.07068107213586175,
+   "concedeRate": 0.11794871794871795
+  },
+  {
+   "name": "Marko Topo",
+   "serveRate": null,
+   "concedeRate": 0.10714285714285714
+  }
+ ],
+ "ratedEvents": 20
+}
