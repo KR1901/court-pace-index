@@ -149,6 +149,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         publish(PaceData(current.dataset.copy(readings = withoutOld + reading)), keepSeason = true)
     }
 
+    /** Restore cached ratings only when their adjusted-side coverage is also available. */
+    private fun restoreCachedLiveRating(cached: ink.courtpace.index.core.live.CachedLiveRating) {
+        val result = cached.toAceRatingResultOrNull() ?: return
+        liveAceByEvent = liveAceByEvent + (cached.tournamentId to result)
+        applyLiveRating(
+            cached.tournamentId,
+            cached.season,
+            cached.speed,
+            cached.matches,
+            cached.aceRate,
+        )
+    }
+
     /** Restore all available per-event ratings before the current scores page is checked. */
     private fun showCachedLiveRatings() {
         val dataset = _data.value?.dataset ?: return
@@ -157,11 +170,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         events.forEach { event ->
             val cached = ratingStore.read(event.t)
                 ?.takeIf {
-                    it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
+                    it.methodVersion == ink.courtpace.index.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
                         it.season == baseline.season && it.baselineGenerated == baseline.generated
                 }
                 ?: return@forEach
-            applyLiveRating(event.t, cached.season, cached.speed, cached.matches, cached.aceRate)
+            restoreCachedLiveRating(cached)
         }
     }
 
@@ -225,13 +238,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     cached.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
                     activeBaseline != null && cached.baselineGenerated == activeBaseline.generated
                 ) {
-                    applyLiveRating(
-                        ref.tournamentId,
-                        cached.season,
-                        cached.speed,
-                        cached.matches,
-                        cached.aceRate,
-                    )
+                    restoreCachedLiveRating(cached)
                 }
             }
 
@@ -287,6 +294,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             aceRate = rating.aceRate,
                             asOf = java.time.Instant.now().toString(),
                             baselineGenerated = baseline.generated,
+                            discoveredMatches = rating.discoveredMatches,
+                            adjustedServerSides = rating.adjustedServerSides,
+                            totalServerSides = rating.totalServerSides,
+                            aces = rating.aces,
                         ),
                     )
                     status(
