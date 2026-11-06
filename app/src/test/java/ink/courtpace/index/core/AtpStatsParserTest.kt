@@ -253,6 +253,51 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `ATP full first name with shortened surname resolves to the unique multi-part profile`() {
+        val realisticBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Tommy Paul", serveRate = 0.10, concedeRate = 0.08),
+                LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("Tommy PAUL", "Daniel MERIDA", 5, 80, 4, 82, true)
+        }
+
+        val coverage = AceRating.coverage(matches, realisticBaseline)
+        val result = AceRating.rate(matches, realisticBaseline)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.serverProfilesMatched)
+        assertEquals(20, coverage.returnerProfilesMatched)
+        assertEquals(20, result.adjustedServerSides)
+        assertTrue(coverage.issues.isEmpty())
+    }
+
+    @Test
+    fun `shortened full names remain unresolved when more than one profile matches`() {
+        val ambiguousBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Tommy Paul", serveRate = 0.10, concedeRate = 0.08),
+                LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
+                LiveSpeedPlayerProfile("Daniel Merida Garcia", serveRate = 0.11, concedeRate = 0.09),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("Tommy PAUL", "Daniel MERIDA", 5, 80, 4, 82, true)
+        }
+
+        val coverage = AceRating.coverage(matches, ambiguousBaseline)
+
+        assertEquals(0, coverage.adjustedServerSides)
+        assertEquals(10, coverage.issues.size)
+    }
+
+    @Test
     fun `ATP shortens compound names to a middle initial and partial surname`() {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
