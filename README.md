@@ -36,7 +36,7 @@ and returners who were actually on court, and compare with what those same playe
 produced on a tour-average surface. 1.00 is average; the usual range across ATP events is
 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
 
-The live card is a provisional event-level estimate: completed singles-match aces divided by service points, compared with the 7.8313% tour baseline. The published historical series uses the fuller server/returner adjustment described above, so a live reading is not presented as a retrospective Tennis Abstract figure.
+The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
 
 The 2025–26 readings are the published Tennis Abstract figures. Earlier seasons are recomputed
 by this project from the public ATP match archive using the same method; the recomputation
