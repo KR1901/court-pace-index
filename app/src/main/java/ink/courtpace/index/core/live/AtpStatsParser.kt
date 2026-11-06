@@ -3,9 +3,9 @@ package ink.courtpace.index.core.live
 /**
  * Serve statistics from one ATP "Stats Centre" match page.
  *
- * Those pages are server-rendered - a plain GET returns the numbers - unlike the tournament
- * results page, which carries no aces at all. The parser reads the flattened text, so class
- * names and markup changes do not matter.
+ * The ATP stats view populates its numbers client-side. This parser consumes the text snapshot
+ * returned by the device WebView, so markup classes do not matter and player headings are not
+ * required for the event-level ace-rate calculation.
  */
 data class AtpMatchStats(
     val firstPlayer: String,
@@ -39,13 +39,10 @@ object AtpStatsParser {
 
     /** True when the page carried numbers rather than the empty JavaScript template. */
     private fun acePair(text: String): Pair<Int, Int>? {
-        val before = ACES_BEFORE_LABELS.find(text)
-        val after = before ?: LABELS_BEFORE_ACES.find(text)
-        if (after == null) return null
-        val firstGroup = if (before != null) 1 else 1
-        val secondGroup = if (before != null) 2 else 2
-        val first = after.groupValues[firstGroup].toIntOrNull() ?: return null
-        val second = after.groupValues[secondGroup].toIntOrNull() ?: return null
+        val match = ACES_BEFORE_LABELS.find(text) ?: LABELS_BEFORE_ACES.find(text)
+            ?: return null
+        val first = match.groupValues[1].toIntOrNull() ?: return null
+        val second = match.groupValues[2].toIntOrNull() ?: return null
         return first to second
     }
 
