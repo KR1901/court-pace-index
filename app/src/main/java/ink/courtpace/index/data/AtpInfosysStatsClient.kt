@@ -186,7 +186,7 @@ internal class AtpInfosysStatsClient {
             httpClient.newCall(requestBuilder.build()).execute().use { response ->
                 val body = response.body?.string().orEmpty()
                 if (response.isSuccessful && body.isNotBlank()) {
-                    body to "HTTP ZZ{response.code}"
+                    body to "HTTP ${response.code}"
                 } else {
                     val server = response.header("Server")?.take(48)
                     val retryAfter = response.header("Retry-After")?.take(16)
@@ -195,20 +195,20 @@ internal class AtpInfosysStatsClient {
                     val s3Message = Regex("""<Message>([^<]+)</Message>""", RegexOption.IGNORE_CASE)
                         .find(body)?.groupValues?.get(1)
                     val details = buildList {
-                        add("HTTP ZZ{response.code} (ZZ{body.length} chars)")
+                        add("HTTP ${response.code} (${body.length} chars)")
                         if (!server.isNullOrBlank()) add("server=$server")
                         if (!s3Code.isNullOrBlank()) add("s3-code=$s3Code")
                         if (!s3Message.isNullOrBlank()) add("s3-message=$s3Message")
                         if (!retryAfter.isNullOrBlank()) add("retry-after=$retryAfter")
                         if (s3Code.isNullOrBlank() && body.isNotBlank()) {
-                            add("body=ZZ{body.trim().take(MAX_ERROR_BODY_CHARS)}")
+                            add("body=${body.trim().take(MAX_ERROR_BODY_CHARS)}")
                         }
                     }.joinToString("; ")
                     null to details
                 }
             }
         } catch (error: Exception) {
-            null to "ZZ{error.javaClass.simpleName}: ZZ{error.message.orEmpty().take(100)}"
+            null to "${error.javaClass.simpleName}: ${error.message.orEmpty().take(100)}"
         }
     }
 
