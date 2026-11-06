@@ -5,6 +5,7 @@ import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.AtpEvents
 import ink.courtpace.index.core.live.AtpMatchLinks
 import ink.courtpace.index.core.model.LiveEvent
+import ink.courtpace.index.core.model.LiveSpeedBaseline
 import ink.courtpace.index.core.model.Tournament
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -55,11 +56,13 @@ class AtpLiveClient(context: Context) {
      */
     suspend fun fetchAceRating(
         event: AtpEvents.Ref,
+        baseline: LiveSpeedBaseline,
         onProgress: (found: Int, tried: Int) -> Unit = { _, _ -> },
         onDiscovery: ((ids: Int, pageBytes: Int) -> Unit)? = null,
     ): Result<AceRating.Result> {
         return try {
-            Result.success(fetchAceRatingInternal(event, onProgress, onDiscovery))
+            require(baseline.season == event.year) { "speed baseline season does not match the live event" }
+            Result.success(fetchAceRatingInternal(event, baseline, onProgress, onDiscovery))
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (error: Exception) {
@@ -69,6 +72,7 @@ class AtpLiveClient(context: Context) {
 
     private suspend fun fetchAceRatingInternal(
         event: AtpEvents.Ref,
+        baseline: LiveSpeedBaseline,
         onProgress: (found: Int, tried: Int) -> Unit,
         onDiscovery: ((ids: Int, pageBytes: Int) -> Unit)?,
     ): AceRating.Result {
@@ -207,10 +211,10 @@ class AtpLiveClient(context: Context) {
         val missingReasons = missingIds.associateWith { id ->
             failuresByMatch[id] ?: "Stats Plus did not return a usable record on this refresh"
         }
-        val rating = AceRating.rate(found) ?: error(
+        val rating = AceRating.rate(found, baseline) ?: error(
             when {
                 found.isNotEmpty() ->
-                    "only ${found.size} of ${eligibleIds.size} played singles matches have usable Infosys stats"
+                    "only ${found.size} of ${eligibleIds.size} played singles matches have usable Infosys stats or at least ${AceRating.MIN_ADJUSTED_SERVER_SIDES} opponent-adjusted server observations"
                 payloads.get() == 0 -> {
                     val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
                     "Infosys returned no usable JSON for ${eligibleIds.size} played singles matches$sample"
