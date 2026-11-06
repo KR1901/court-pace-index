@@ -58,6 +58,57 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
+    fun `aggregates played sets when a retired match has no set zero total`() {
+        val set1 = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "20/30", "25/40"),
+        )
+        val set2 = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "1", "4"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "11/16", "12/18"),
+        )
+
+        val stats = client.aggregateSetStatsRows(
+            listOf(set1, set2),
+            "A. Rinderknech",
+            "F. Cerundolo",
+        )!!
+
+        assertEquals(4, stats.firstAces)
+        assertEquals(6, stats.secondAces)
+        assertEquals(46, stats.firstServePoints)
+        assertEquals(58, stats.secondServePoints)
+    }
+
+    @Test
+    fun `does not count a set that lacks service point totals`() {
+        val played = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "20/30", "25/40"),
+        )
+        val incomplete = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "1", "4"),
+        )
+
+        val stats = client.aggregateSetStatsRows(listOf(played, incomplete))!!
+
+        assertEquals(3, stats.firstAces)
+        assertEquals(2, stats.secondAces)
+        assertEquals(30, stats.firstServePoints)
+        assertEquals(40, stats.secondServePoints)
+    }
+
+    @Test
+    fun `returns no match stats when every played set is a walkover or has no points`() {
+        assertNull(client.aggregateSetStatsRows(emptyList()))
+        assertNull(
+            client.aggregateSetStatsRows(
+                listOf(listOf(AtpInfosysStatsClient.StatRow("Aces", "0", "0"))),
+            ),
+        )
+    }
+
+    @Test
     fun `matches statistic row names without case sensitivity`() {
         val rows = listOf(
             AtpInfosysStatsClient.StatRow("ACES", "7", "2"),
