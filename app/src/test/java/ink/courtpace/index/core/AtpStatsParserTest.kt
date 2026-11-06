@@ -394,10 +394,14 @@ class AtpStatsParserTest {
             ),
         )
 
-        val coverage = AceRating.coverage(sampleMatches(10), zeroBaseline)
+        val matches = sampleMatches(10).map { it.copy(matchId = "ms-zero") }
+        val coverage = AceRating.coverage(matches, zeroBaseline)
 
         assertEquals(0, coverage.adjustedServerSides)
-        assertNull(AceRating.rate(sampleMatches(10), zeroBaseline))
+        assertEquals(20, coverage.issues.size)
+        assertTrue(coverage.issues.all { it.matchId == "ms-zero" })
+        assertTrue(coverage.issues.all { it.reason.contains("zero or invalid expected aces") })
+        assertNull(AceRating.rate(matches, zeroBaseline))
     }
 
     @Test
