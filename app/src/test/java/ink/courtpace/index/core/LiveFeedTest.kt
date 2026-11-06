@@ -3,6 +3,8 @@ package ink.courtpace.index.core
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.LiveEvent
+import ink.courtpace.index.core.model.LiveSpeedBaseline
+import ink.courtpace.index.core.model.LiveSpeedPlayerProfile
 import ink.courtpace.index.core.model.Metric
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -131,4 +133,31 @@ class LiveFeedTest {
         )
         assertTrue(DatasetPolicy.isAcceptable(extra))
     }
+    @Test
+    fun `a remote dataset without the new baseline cannot erase the bundled one`() {
+        val bundled = data.dataset.copy(
+            speedBaseline = LiveSpeedBaseline(
+                season = 2026,
+                normalisation = 1.02,
+                profiles = listOf(
+                    LiveSpeedPlayerProfile("Player One", serveRate = 0.12, concedeRate = 0.08),
+                ),
+            ),
+        )
+        val chosen = DatasetPolicy.choose(bundled, data.dataset.copy(speedBaseline = null))
+        assertEquals(bundled.speedBaseline, chosen.speedBaseline)
+    }
+
+    @Test
+    fun `an invalid opponent adjustment baseline rejects the dataset`() {
+        val invalid = data.dataset.copy(
+            speedBaseline = LiveSpeedBaseline(
+                season = 2026,
+                normalisation = -1.0,
+                profiles = emptyList(),
+            ),
+        )
+        assertFalse(DatasetPolicy.isAcceptable(invalid))
+    }
+
 }
