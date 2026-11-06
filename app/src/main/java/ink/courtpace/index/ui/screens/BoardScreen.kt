@@ -364,20 +364,18 @@ private fun LivePendingRow(
                                 append(ace.matches)
                                 append("/")
                                 append(ace.discoveredMatches)
-                                append(" matches")
+                                append(" completed")
+                                if (ace.inProgressMatches > 0) {
+                                    append(" · ")
+                                    append(ace.inProgressMatches)
+                                    append(" live excluded")
+                                }
                                 if (ace.missingMatchIds.isNotEmpty()) {
-                                    append(" · missing ")
+                                    append("\\nMissing: ")
                                     append(
                                         ace.missingMatchIds.take(2).joinToString(", ") { id ->
                                             val reason = ace.missingReasons[id].orEmpty()
-                                            val shortReason = when {
-                                                reason.contains("HTTP 404", ignoreCase = true) -> "no feed record"
-                                                reason.contains("setStats.set0", ignoreCase = true) -> "no full-match stats"
-                                                reason.contains("padding", ignoreCase = true) ||
-                                                    reason.contains("cipher", ignoreCase = true) -> "decode failure"
-                                                reason.contains("HTTP 403", ignoreCase = true) -> "feed blocked"
-                                                else -> reason.substringAfterLast(": ").take(34).ifBlank { "unavailable" }
-                                            }
+                                            val shortReason = missingReasonLabel(reason)
                                             "$id ($shortReason)"
                                         },
                                     )
@@ -420,6 +418,17 @@ private fun LivePendingRow(
             }
         }
     }
+}
+
+private fun missingReasonLabel(reason: String): String = when {
+    reason.contains("HTTP 404", ignoreCase = true) -> "no feed record"
+    reason.contains("HTTP 403", ignoreCase = true) -> "feed blocked"
+    reason.contains("HTTP 429", ignoreCase = true) -> "rate limited"
+    reason.contains("timeout", ignoreCase = true) -> "timeout"
+    reason.contains("setStats.set0", ignoreCase = true) -> "no full-match stats"
+    reason.contains("padding", ignoreCase = true) ||
+        reason.contains("cipher", ignoreCase = true) -> "decode failure"
+    else -> reason.substringAfterLast(": ").take(34).ifBlank { "unavailable" }
 }
 
 @Composable
