@@ -359,7 +359,30 @@ private fun LivePendingRow(
                         if (datasetRating != null) {
                             append(" · live speed ")
                             append(String.format(java.util.Locale.UK, "%.2f", datasetRating))
-                            if (datasetMatches != null && datasetMatches > 0) {
+                            if (ace != null) {
+                                append(" · ")
+                                append(ace.matches)
+                                append("/")
+                                append(ace.discoveredMatches)
+                                append(" matches")
+                                if (ace.missingMatchIds.isNotEmpty()) {
+                                    append(" · missing ")
+                                    append(
+                                        ace.missingMatchIds.take(2).joinToString(", ") { id ->
+                                            val reason = ace.missingReasons[id].orEmpty()
+                                            val shortReason = when {
+                                                reason.contains("HTTP 404", ignoreCase = true) -> "no feed record"
+                                                reason.contains("setStats.set0", ignoreCase = true) -> "no full-match stats"
+                                                reason.contains("padding", ignoreCase = true) ||
+                                                    reason.contains("cipher", ignoreCase = true) -> "decode failure"
+                                                reason.contains("HTTP 403", ignoreCase = true) -> "feed blocked"
+                                                else -> reason.substringAfterLast(": ").take(34).ifBlank { "unavailable" }
+                                            }
+                                            "$id ($shortReason)"
+                                        },
+                                    )
+                                }
+                            } else if (datasetMatches != null && datasetMatches > 0) {
                                 append(" · ")
                                 append(datasetMatches)
                                 append(" matches")
