@@ -55,6 +55,31 @@ class LiveRatingCacheTest {
     }
 
     @Test
+    fun `server-side denominator includes completed matches whose stats are still missing`() {
+        val partial = CachedLiveRating(
+            tournamentId = "paris",
+            season = 2026,
+            speed = 1.41,
+            matches = 40,
+            aceRate = 0.112,
+            asOf = "2026-11-06T17:00:00Z",
+            baselineGenerated = "2026-11-06T16:34:12Z",
+            discoveredMatches = 48,
+            adjustedServerSides = 70,
+            totalServerSides = 96,
+            aces = 420,
+        )
+
+        val restored = CachedLiveRating.fromJson(partial.toJson())!!
+        val result = restored.toAceRatingResultOrNull()!!
+
+        assertEquals(40, result.matches)
+        assertEquals(48, result.discoveredMatches)
+        assertEquals(70, result.adjustedServerSides)
+        assertEquals(96, result.totalServerSides)
+    }
+
+    @Test
     fun `an old cache without side coverage is not presented as fully covered`() {
         val legacy = """{"t":"paris","s":2026,"speed":1.41,"matches":48,"ace":0.112,"asOf":"2026-11-06T17:00:00Z","methodVersion":2,"baselineGenerated":"2026-11-06T16:34:12Z"}"""
         val restored = CachedLiveRating.fromJson(legacy)!!
