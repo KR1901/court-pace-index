@@ -45,6 +45,22 @@ class MatchIdDiscoveryTest {
     }
 
     @Test
+    fun `keeps confirmed Paris retirement IDs in the completed singles set`() {
+        val links = AtpMatchLinks.linksFromResultsPage(
+            """
+            <a href="/en/scores/stats-centre/archive/2026/352/ms043">Rinderknech Cerundolo</a>
+            <a href="/en/scores/stats-centre/archive/2026/352/ms053">Shapovalov Khachanov</a>
+            <a href="/en/scores/stats-centre/live/2026/352/ms054">live match</a>
+            <a href="/en/scores/stats-centre/archive/2026/352/md043">doubles</a>
+            """.trimIndent(),
+        )
+
+        val completedIds = AtpMatchLinks.completedSinglesLinks(links).map { it.id }
+
+        assertEquals(listOf("ms043", "ms053"), completedIds)
+    }
+
+    @Test
     fun `recognises ATP match-stats URLs as well as legacy stats-centre links`() {
         val links = AtpMatchLinks.linksFromResultsPage(
             """<a href="/en/scores/match-stats/archive/2026/352/ms041">Match stats</a>""",
