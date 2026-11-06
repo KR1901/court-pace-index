@@ -119,11 +119,13 @@ fun MethodScreen(data: PaceData) {
             Spacer(Modifier.height(10.dp))
             Text(
                 text = "Player tendencies come from the baseline's profile season or the most recent " +
-                    "qualified profile in the three seasons before it. Where a player has no qualified profile, " +
+                    "qualified profile in the ten seasons before it. Where a player has no qualified profile, " +
                     "their own available surface-specific serve sample is shrunk toward that season's " +
-                    "surface average using a 300-service-point prior. This changes the player inputs, " +
-                    "not the expected-aces formula or the season normalisation; low-sample estimates " +
-                    "are labelled in the baseline.",
+                    "surface average using a 300-service-point prior. For each server side, expected aces " +
+                    "are calculated from the server's serve rate and the returner's ace-concession rate. " +
+                    "Positive expected-ace counts below 0.5 are floored at 0.5 rather than dropping that " +
+                    "side or letting a tiny denominator dominate. Historical and live ratings use this " +
+                    "same rule; low-sample estimates are labelled in the baseline.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
@@ -268,11 +270,12 @@ fun MethodScreen(data: PaceData) {
         Spacer(Modifier.height(16.dp))
         GlassNote(
             "Speed figures for 2012-2025 are recomputed by this project from the public ATP match " +
-                "archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the published method and " +
-                "normalised per season; 2025-26 readings published by Tennis Abstract take precedence " +
-                "where they exist. The two agree closely - correlation 0.93, mean absolute difference " +
-                "0.10 - but they are not the same series, and the app dims the computed seasons " +
-                "wherever it shows them.",
+                "archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the server/returner-adjusted " +
+                "method, a 0.5 expected-ace floor for positive low expectations, and season normalisation. " +
+                "2025-26 readings published by Tennis Abstract take precedence where they exist. The " +
+                "recomputed 2026 event ratings compare with the published reference at correlation 0.962 " +
+                "and mean absolute difference 0.090; they are not the same series, and the app dims the " +
+                "computed seasons wherever it shows them.",
         )
         Spacer(Modifier.height(12.dp))
         GlassNote(
