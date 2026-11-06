@@ -279,6 +279,7 @@ class AtpStatsParserTest {
         val result = AceRating.rate(matches, baseline)!!
         assertEquals(15, result.matches)
         assertEquals(30, result.adjustedServerSides)
+        assertEquals(30, result.totalServerSides)
         assertEquals(12 * 15, result.aces)
         assertEquals(0.15, result.aceRate, 1e-9)
     }
