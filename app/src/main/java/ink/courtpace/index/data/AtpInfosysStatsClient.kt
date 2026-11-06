@@ -26,25 +26,41 @@ import javax.crypto.spec.SecretKeySpec
  */
 internal class AtpInfosysStatsClient {
 
+    enum class MatchDataState {
+        PLAYED,
+        NO_PLAYED_DATA,
+        IN_PROGRESS,
+        DOUBLES,
+        INCOMPLETE_STATS,
+        UNAVAILABLE,
+    }
+
     data class ReadResult(
         val stats: AtpMatchStats?,
         val payloadBytes: Int,
         val endpoint: String?,
         val diagnostic: String?,
+        val state: MatchDataState = MatchDataState.UNAVAILABLE,
     )
+
+    /** The static JSON feed is the established public ATP Stats Plus endpoint. */
+    internal fun endpointsForMatch(year: Int, eventId: Int, matchId: String): List<String> {
+        val id = matchId.uppercase()
+        return listOf(
+            "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/" +
+                "$year/$eventId/$id/keystats.json",
+            "https://itp-atp-sls.infosys-platforms.com/prod/api/stats-plus/v1/keystats/" +
+                "year/$year/eventId/$eventId/matchId/$id",
+        )
+    }
 
     suspend fun read(year: Int, eventId: Int, matchId: String): ReadResult =
         withContext(Dispatchers.IO) {
-            val id = matchId.uppercase()
-            val endpoints = listOf(
-                "https://itp-atp-sls.infosys-platforms.com/prod/api/stats-plus/v1/keystats/" +
-                    "year/$year/eventId/$eventId/matchId/$id",
-                "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/" +
-                    "$year/$eventId/$id/keystats.json",
-            )
+            val endpoints = endpointsForMatch(year, eventId, matchId)
             val failures = mutableListOf<String>()
             var lastPayloadBytes = 0
             var lastEndpoint: String? = null
+            var lastState = MatchDataState.UNAVAILABLE
             for (endpoint in endpoints) {
                 val response = request(endpoint)
                 if (response.first == null) {
@@ -62,15 +78,17 @@ internal class AtpInfosysStatsClient {
                         decryptEnvelope(envelope)
                     }
                     val stats = parseStats(payload)
+                    lastState = classifyPayload(payload, stats != null)
                     if (stats != null) {
                         return@withContext ReadResult(
                             stats = stats,
                             payloadBytes = lastPayloadBytes,
                             endpoint = endpoint,
                             diagnostic = null,
+                            state = MatchDataState.PLAYED,
                         )
                     }
-                    failures += "${endpoint.substringAfter("/prod/")}: JSON had no usable setStats.set0 ace/service rows"
+                    failures += "${endpoint.substringAfter("/prod/")}: ${payloadDiagnostic(payload, lastState)}"
                 } catch (error: Exception) {
                     failures += "${endpoint.substringAfter("/prod/")}: ${error.javaClass.simpleName}: ${error.message.orEmpty().take(100)}"
                 }
@@ -80,6 +98,7 @@ internal class AtpInfosysStatsClient {
                 payloadBytes = lastPayloadBytes,
                 endpoint = lastEndpoint,
                 diagnostic = failures.joinToString(" | ").take(280),
+                state = lastState,
             )
         }
 
@@ -137,11 +156,9 @@ internal class AtpInfosysStatsClient {
             connection.connectTimeout = CONNECT_TIMEOUT_MS
             connection.readTimeout = READ_TIMEOUT_MS
             connection.instanceFollowRedirects = true
+            // Match the minimal headers used by the established ATP Infosys scraper.
+            // Synthetic browser Origin/Referer headers can trigger a different edge policy.
             connection.setRequestProperty("User-Agent", USER_AGENT)
-            connection.setRequestProperty("Accept", "application/json, text/plain, */*")
-            connection.setRequestProperty("Accept-Language", ACCEPT_LANGUAGE)
-            connection.setRequestProperty("Origin", ATP_ORIGIN)
-            connection.setRequestProperty("Referer", "$ATP_ORIGIN/")
             val status = connection.responseCode
             val stream = if (status in 200..299) connection.inputStream else connection.errorStream
             val body = stream?.bufferedReader(StandardCharsets.UTF_8)?.use { it.readText() }.orEmpty()
@@ -234,6 +251,64 @@ internal class AtpInfosysStatsClient {
             current = division[0]
         }
         return output.reverse().toString()
+    }
+
+    /**
+     * Classify a JSON match independently of the event-specific ID. A retirement is PLAYED when
+     * either set0 or any played set has the required stats. Empty completed data with zero sets
+     * means no play (typically a walkover); it is not treated as a failed retirement.
+     */
+    internal fun classifyPayload(payload: JSONObject, statsAvailable: Boolean): MatchDataState {
+        val matchCompleted = payload.takeIf { it.has("matchCompleted") }
+            ?.optBoolean("matchCompleted")
+        val isDoubles = payload.takeIf { it.has("isDoubles") }?.optBoolean("isDoubles")
+        val setsCompleted = payload.takeIf { it.has("setsCompleted") }
+            ?.optInt("setsCompleted")
+        val statsRoot = payload.optJSONObject("setStats")
+        val hasPlayedSetData = (1..5).any { setNumber ->
+            (statsRoot?.optJSONArray("set$setNumber")?.length() ?: 0) > 0
+        }
+
+        return classifyMatchData(
+            matchCompleted = matchCompleted,
+            isDoubles = isDoubles,
+            setsCompleted = setsCompleted,
+            hasPlayedSetData = hasPlayedSetData,
+            statsAvailable = statsAvailable,
+        )
+    }
+
+    internal fun classifyMatchData(
+        matchCompleted: Boolean?,
+        isDoubles: Boolean?,
+        setsCompleted: Int?,
+        hasPlayedSetData: Boolean,
+        statsAvailable: Boolean,
+    ): MatchDataState = when {
+        isDoubles == true -> MatchDataState.DOUBLES
+        matchCompleted == false -> MatchDataState.IN_PROGRESS
+        statsAvailable -> MatchDataState.PLAYED
+        hasPlayedSetData -> MatchDataState.INCOMPLETE_STATS
+        matchCompleted == true && setsCompleted == 0 ->
+            MatchDataState.NO_PLAYED_DATA
+        else -> MatchDataState.INCOMPLETE_STATS
+    }
+
+    private fun payloadDiagnostic(payload: JSONObject, state: MatchDataState): String {
+        val completed = payload.opt("matchCompleted")
+        val doubles = payload.opt("isDoubles")
+        val sets = payload.opt("setsCompleted")
+        return when (state) {
+            MatchDataState.NO_PLAYED_DATA ->
+                "completed result has zero played sets (walkover/no-play)"
+            MatchDataState.IN_PROGRESS -> "match is not marked completed"
+            MatchDataState.DOUBLES -> "payload is marked doubles"
+            MatchDataState.INCOMPLETE_STATS ->
+                "match completed=$completed, doubles=$doubles, setsCompleted=$sets; " +
+                    "missing complete Aces/Service Points Won rows"
+            MatchDataState.PLAYED -> "match stats available"
+            MatchDataState.UNAVAILABLE -> "no Stats Plus payload"
+        }
     }
 
     internal data class StatRow(
@@ -366,10 +441,8 @@ internal class AtpInfosysStatsClient {
         const val RETRY_BASE_DELAY_MS = 2_000L
         const val MAX_RETRY_DELAY_MS = 10_000L
         const val MAX_ERROR_BODY_CHARS = 120
-        const val ACCEPT_LANGUAGE = "en-US,en;q=0.9"
-        const val ATP_ORIGIN = "https://www.atptour.com"
         const val USER_AGENT =
-            "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/47.0.2526.106 Safari/537.36"
     }
 }
