@@ -74,11 +74,11 @@ class AtpStatsParserTest {
     @Test
     fun `parses the alternate ATP layout with labels before values and no player abbreviations`() {
         val alternate = page
-            .replace("7\\nAces\\n2\\nAces", "Aces\\n7\\nAces\\n2")
-            .replace("82/126 (65%)\\nFirst serve", "First serve\\n82/126 (65%)")
-            .replace("64/132 (48%)\\nFirst serve", "First serve\\n64/132 (48%)")
-            .replace("        F. Comesana\\n", "")
-            .replace("        D. Rincon\\n", "")
+            .replace("7\nAces\n2\nAces", "Aces\n7\nAces\n2")
+            .replace("82/126 (65%)\nFirst serve", "First serve\n82/126 (65%)")
+            .replace("64/132 (48%)\nFirst serve", "First serve\n64/132 (48%)")
+            .replace("        F. Comesana\n", "")
+            .replace("        D. Rincon\n", "")
 
         val stats = AtpStatsParser.parse(alternate)!!
 
