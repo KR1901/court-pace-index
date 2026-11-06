@@ -12,7 +12,7 @@ the public archive mirror. Only tour-level main-draw matches with serve stats ar
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, json, os, sys, urllib.request
+import csv, json, os, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timezone
 from urllib.error import HTTPError
@@ -303,6 +303,68 @@ def build_live_profiles(profile_year, current_profiles):
     return live
 
 
+def _normalise_profile_name(name):
+    return "".join(
+        char for char in unicodedata.normalize("NFKD", name).casefold()
+        if char.isalnum()
+    )
+
+
+def dedupe_live_profiles(profiles):
+    """
+    Collapse duplicate archive IDs that refer to the same normalized player name.
+
+    This is important because the Android profile index is name-keyed. Prefer a qualified
+    current-season serve rate, then a qualified recent-season rate, then a shrunk estimate.
+    Within a source tier, prefer the newest season and larger player-specific sample. Retain
+    the most recent available return-concession rate independently.
+    """
+    source_priority = {
+        "current-season-qualified": 4,
+        "prior-season-qualified": 3,
+        "current-season-shrunk": 2,
+        "prior-season-shrunk": 1,
+    }
+    chosen = {}
+
+    for profile in profiles:
+        name = (profile.get("name") or "").strip()
+        key = _normalise_profile_name(name)
+        if not key:
+            continue
+
+        rank = (
+            source_priority.get(profile.get("serve_rate_source"), 0),
+            profile.get("serve_rate_season") or 0,
+            profile.get("serve_rate_sample_points") or 0,
+            profile.get("serve_rate_sample_matches") or 0,
+        )
+        existing = chosen.get(key)
+        if existing is None or rank > existing["_serve_rank"]:
+            candidate = dict(profile)
+            candidate["_serve_rank"] = rank
+            chosen[key] = candidate
+
+        # If duplicate IDs exist for one name, use the newest return-concession profile.
+        candidate = chosen[key]
+        if (
+            profile.get("concede_rate") is not None and
+            (
+                candidate.get("concede_rate") is None or
+                (profile.get("concede_rate_season") or 0) >
+                (candidate.get("concede_rate_season") or 0)
+            )
+        ):
+            candidate["concede_rate"] = profile["concede_rate"]
+            candidate["concede_rate_season"] = profile.get("concede_rate_season")
+
+    result = []
+    for profile in chosen.values():
+        profile.pop("_serve_rank", None)
+        result.append(profile)
+    return result
+
+
 def event_raw_scores(usable, profiles, exclude_event_ids=None):
     """
     Apply the historical match-level expected-aces formula to each event.
@@ -420,6 +482,8 @@ def main():
         # Expand only the live baseline. Historical season_ratings() continues to use
         # its original qualified profiles and therefore keeps all published rankings intact.
         live_profiles = build_live_profiles(profile_year, profiles)
+        unique_live_profiles = dedupe_live_profiles(live_profiles.values())
+        duplicate_name_records_collapsed = len(live_profiles) - len(unique_live_profiles)
         live_profile_rows = [
             {
                 "name": profile["name"],
@@ -434,7 +498,7 @@ def main():
                 "serveRatePriorServicePoints": profile.get("serve_rate_prior_points"),
                 "concedeRateSeason": profile["concede_rate_season"],
             }
-            for profile in live_profiles.values()
+            for profile in unique_live_profiles
             if profile["name"] and (
                 profile["serve_rate"] is not None or profile["concede_rate"] is not None
             )
@@ -463,6 +527,7 @@ def main():
             "profiles": live_profile_rows,
             "profileCoverage": {
                 "playerProfiles": len(live_profile_rows),
+                "duplicateNameRecordsCollapsed": duplicate_name_records_collapsed,
                 **source_counts,
             },
             "ratedEvents": len(raw_events),
