@@ -170,15 +170,31 @@ object AceRating {
     private data class ProfileIndex(
         val exact: Map<String, ink.courtpace.index.core.model.LiveSpeedPlayerProfile>,
         val aliases: Map<String, List<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>>,
+        val tokenAliases: Map<String, List<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>>,
     ) {
         fun resolve(displayName: String): ink.courtpace.index.core.model.LiveSpeedPlayerProfile? {
             val key = normaliseName(displayName)
             exact[key]?.let { return it }
 
-            val alias = abbreviatedNameAlias(displayName) ?: return null
-            // A short-name collision must not silently assign one player's rates to another.
-            return aliases[alias]?.singleOrNull()
+            val abbreviated = abbreviatedNameAlias(displayName)
+            if (abbreviated != null) {
+                // A short-name collision must not silently assign one player's rates to another.
+                return aliases[abbreviated]?.singleOrNull()
+            }
+
+            // Infosys sometimes supplies the first name plus a shortened surname
+            // (for example "Daniel Merida"), while the ATP archive stores the full
+            // multi-part name ("Daniel Merida Aguilar"). Match contiguous name tokens,
+            // but only when the resulting profile is unique.
+            val tokenAlias = tokenSequenceAlias(displayName) ?: return null
+            return tokenAliases[tokenAlias]?.singleOrNull()
         }
+    }
+
+    private fun tokenSequenceAlias(value: String): String? {
+        val parts = value.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+        if (parts.size < 2) return null
+        return parts.joinToString("") { normaliseName(it) }.takeIf { it.isNotBlank() }
     }
 
     private fun profileIndex(
@@ -186,6 +202,7 @@ object AceRating {
     ): ProfileIndex {
         val exact = profiles.associateBy { normaliseName(it.name) }
         val aliases = linkedMapOf<String, MutableList<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>>()
+        val tokenAliases = linkedMapOf<String, MutableList<ink.courtpace.index.core.model.LiveSpeedPlayerProfile>>()
 
         fun addAlias(alias: String, profile: ink.courtpace.index.core.model.LiveSpeedPlayerProfile) {
             if (alias.isBlank()) return
@@ -198,6 +215,20 @@ object AceRating {
         profiles.forEach { profile ->
             val parts = profile.name.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
             if (parts.size < 2) return@forEach
+
+            // Index each contiguous multi-token span from a full archive name. This safely
+            // handles ATP's "Daniel Merida" label for "Daniel Merida Aguilar"; collisions
+            // remain unresolved instead of selecting an arbitrary player's profile.
+            for (start in parts.indices) {
+                for (end in start + 1 until parts.size) {
+                    val key = parts.subList(start, end + 1)
+                        .joinToString("") { normaliseName(it) }
+                    val matches = tokenAliases.getOrPut(key) { mutableListOf() }
+                    if (matches.none { normaliseName(it.name) == normaliseName(profile.name) }) {
+                        matches += profile
+                    }
+                }
+            }
 
             /*
              * ATP score/result labels can shorten compound names in more than one way:
@@ -227,6 +258,7 @@ object AceRating {
         return ProfileIndex(
             exact = exact,
             aliases = aliases.mapValues { (_, values) -> values.toList() },
+            tokenAliases = tokenAliases.mapValues { (_, values) -> values.toList() },
         )
     }
 
