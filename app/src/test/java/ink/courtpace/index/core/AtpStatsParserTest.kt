@@ -90,6 +90,19 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `uses explicit service points when the first serve rows are absent`() {
+        val withoutFirstServe = page
+            .replace(Regex("""(?m)^.*First serve.*$"""), "")
+            .replace(Regex("""(?m)^.*1st serve points won.*$"""), "")
+            .replace(Regex("""(?m)^.*2nd serve points won.*$"""), "")
+
+        val stats = AtpStatsParser.parse(withoutFirstServe)!!
+
+        assertEquals(126, stats.firstServePoints)
+        assertEquals(132, stats.secondServePoints)
+    }
+
+    @Test
     fun `identifies which side won`() {
         val stats = AtpStatsParser.parse(page)!!
         assertFalse("Rincon won, and he is the second player", stats.firstWon)
