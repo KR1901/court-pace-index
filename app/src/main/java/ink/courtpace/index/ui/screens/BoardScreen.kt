@@ -370,8 +370,13 @@ private fun LivePendingRow(
                                     append(ace.inProgressMatches)
                                     append(" live excluded")
                                 }
+                                if (ace.walkoversExcluded > 0) {
+                                    append(" · ")
+                                    append(ace.walkoversExcluded)
+                                    append(" walkovers excluded")
+                                }
                                 if (ace.missingMatchIds.isNotEmpty()) {
-                                    append("\\nMissing: ")
+                                    append("\nMissing: ")
                                     append(
                                         ace.missingMatchIds.take(2).joinToString(", ") { id ->
                                             val reason = ace.missingReasons[id].orEmpty()
