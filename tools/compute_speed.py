@@ -15,6 +15,7 @@ Run:  python3 tools/compute_speed.py            # compute and validate against 2
 import csv, json, os, sys, urllib.request
 from collections import defaultdict
 from datetime import date, datetime, timezone
+from urllib.error import HTTPError
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
@@ -217,7 +218,13 @@ def main():
 
     history = {}
     for year in YEARS:
-        rows = load(year)
+        try:
+            rows = load(year)
+        except HTTPError as error:
+            if year == date.today().year and error.code == 404:
+                print(f"{year}: archive not published yet; skipping current-year history")
+                continue
+            raise
         ratings = season_ratings(year, rows)
         history[year] = ratings
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
@@ -238,21 +245,34 @@ def main():
     if "--write" in sys.argv:
         # Export the same season-wide player profiles and normaliser used by historical Speed.
         current_year = date.today().year
-        current_usable = valid_rows(load(current_year))
-        profiles = player_rates(current_usable)
-        raw_events, _, _, _ = event_raw_scores(current_usable, profiles)
+        # Use the current season once it has enough rated events; at season start, use the
+        # previous completed season's player profiles and normaliser rather than publishing
+        # an unstable baseline or reverting to a different live formula.
+        profile_year = current_year
+        try:
+            profile_rows = valid_rows(load(profile_year))
+        except HTTPError:
+            profile_rows = []
+        profiles = player_rates(profile_rows)
+        raw_events, _, _, _ = event_raw_scores(profile_rows, profiles)
+        if len(raw_events) < 5:
+            profile_year = current_year - 1
+            profile_rows = valid_rows(load(profile_year))
+            profiles = player_rates(profile_rows)
+            raw_events, _, _, _ = event_raw_scores(profile_rows, profiles)
         if not raw_events:
-            raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events")
+            raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events in current or previous season")
         normalisation = sum(raw_events.values()) / len(raw_events)
         baseline = {
             "season": current_year,
-            "normalisation": round(normalisation, 10),
+            "profileSeason": profile_year,
+            "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
             "profiles": [
                 {
                     "name": profile["name"],
-                    "serveRate": round(profile["serve_rate"], 10) if profile["serve_rate"] is not None else None,
-                    "concedeRate": round(profile["concede_rate"], 10) if profile["concede_rate"] is not None else None,
+                    "serveRate": profile["serve_rate"],
+                    "concedeRate": profile["concede_rate"],
                 }
                 for profile in profiles.values()
                 if profile["name"] and (profile["serve_rate"] is not None or profile["concede_rate"] is not None)
