@@ -309,10 +309,13 @@ class AtpStatsParserTest {
             )
         }
         val coverage = AceRating.coverage(matches, liveBaseline)
+        val rating = AceRating.rate(matches, liveBaseline)!!
 
         assertEquals(56, coverage.totalServerSides)
         assertEquals(56, coverage.serverProfilesMatched)
         assertEquals(56, coverage.returnerProfilesMatched)
+        assertEquals(56, coverage.adjustedServerSides)
+        assertEquals(56, rating.adjustedServerSides)
     }
 
     @Test
@@ -345,6 +348,47 @@ class AtpStatsParserTest {
         assertEquals(96, fortyEight.totalServerSides)
         assertEquals(49, fortyNine.matches)
         assertEquals(98, fortyNine.totalServerSides)
+    }
+
+    @Test
+    fun `includes every valid side with positive expected aces below half an ace`() {
+        val lowAceBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("A. Low", serveRate = 0.01, concedeRate = 0.01),
+                LiveSpeedPlayerProfile("B. Low", serveRate = 0.01, concedeRate = 0.01),
+            ),
+        )
+        val matches = sampleMatches(10).map {
+            it.copy(firstAces = 1, secondAces = 1, firstServePoints = 80, secondServePoints = 82)
+        }
+
+        val coverage = AceRating.coverage(matches, lowAceBaseline)
+        val result = AceRating.rate(matches, lowAceBaseline)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.serverProfilesMatched)
+        assertEquals(20, coverage.returnerProfilesMatched)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
+    fun `zero expected aces remain excluded and never cause division by zero`() {
+        val zeroBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("A. Zero", serveRate = 0.10, concedeRate = 0.0),
+                LiveSpeedPlayerProfile("B. Zero", serveRate = 0.10, concedeRate = 0.0),
+            ),
+        )
+
+        val coverage = AceRating.coverage(sampleMatches(10), zeroBaseline)
+
+        assertEquals(0, coverage.adjustedServerSides)
+        assertNull(AceRating.rate(sampleMatches(10), zeroBaseline))
     }
 
     @Test
