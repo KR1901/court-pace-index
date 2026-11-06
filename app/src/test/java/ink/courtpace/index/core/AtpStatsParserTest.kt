@@ -360,8 +360,16 @@ class AtpStatsParserTest {
                 LiveSpeedPlayerProfile("B. Low", serveRate = 0.01, concedeRate = 0.01),
             ),
         )
-        val matches = sampleMatches(10).map {
-            it.copy(firstAces = 1, secondAces = 1, firstServePoints = 80, secondServePoints = 82)
+        val matches = (1..10).map {
+            AtpMatchStats(
+                firstPlayer = "A. Low",
+                secondPlayer = "B. Low",
+                firstAces = 1,
+                firstServePoints = 80,
+                secondAces = 1,
+                secondServePoints = 82,
+                firstWon = true,
+            )
         }
 
         val coverage = AceRating.coverage(matches, lowAceBaseline)
