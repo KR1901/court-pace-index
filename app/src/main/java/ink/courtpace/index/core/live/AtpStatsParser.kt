@@ -111,38 +111,79 @@ object AceRating {
 
     data class Result(
         val rating: Double,
+        /** All successfully parsed, completed singles matches included in the input. */
         val matches: Int,
         val aces: Int,
+        /** Pooled descriptive ace rate; the rating itself is opponent-adjusted. */
         val aceRate: Double,
-        /** Number of completed singles links found on the current ATP results page. */
+        val adjustedServerSides: Int,
         val discoveredMatches: Int = matches,
-        /** Current results-page match IDs for which Infosys has not supplied usable stats. */
         val missingMatchIds: List<String> = emptyList(),
-        /** Per-ID endpoint/response reason, retained for diagnosis rather than silently dropped. */
         val missingReasons: Map<String, String> = emptyMap(),
-        /** Live-route or feed-marked in-progress links excluded from the rating. */
         val inProgressMatches: Int = 0,
-        /** Confirmed walkovers/no-play results excluded without attempting to invent statistics. */
         val walkoversExcluded: Int = 0,
     )
 
-    /** Tour-level ace rate, 2022-2025. */
-    const val BASELINE_ACE_RATE = 0.078313
-
-    /** Fewer matches than this and the figure says more about the draw than the court. */
+    /** Preserve the historical pipeline's minimum event sample: twenty server-side observations. */
     const val MIN_MATCHES = 8
+    const val MIN_ADJUSTED_SERVER_SIDES = 20
 
-    fun rate(matches: List<AtpMatchStats>): Result? {
-        if (matches.size < MIN_MATCHES) return null
-        val aces = matches.sumOf { it.firstAces + it.secondAces }
-        val points = matches.sumOf { it.firstServePoints + it.secondServePoints }
-        if (points <= 0) return null
-        val aceRate = aces.toDouble() / points
+    private fun normaliseName(value: String): String {
+        val decomposed = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+        return decomposed
+            .replace(Regex("\\p{M}+"), "")
+            .lowercase()
+            .filter { it.isLetterOrDigit() }
+    }
+
+    /**
+     * Same opponent-adjusted calculation as tools/compute_speed.py:
+     * expected aces = ((serveRate * concedeRate) /
+     * (serveRate * concedeRate + (1-serveRate) * (1-concedeRate))) * servicePoints.
+     * Average actual/expected ratios over both server sides, then divide by the season-wide
+     * mean of event raw scores. Missing player profiles are omitted, never replaced by the
+     * pooled-rate approximation.
+     */
+    fun rate(matches: List<AtpMatchStats>, baseline: ink.courtpace.index.core.model.LiveSpeedBaseline): Result? {
+        if (matches.size < MIN_MATCHES || baseline.normalisation <= 0.0 ||
+            !baseline.normalisation.isFinite()
+        ) return null
+
+        val profiles = baseline.profiles.associateBy { normaliseName(it.name) }
+        var totalAces = 0
+        var totalPoints = 0
+        val ratios = mutableListOf<Double>()
+
+        fun addSide(serverName: String, returnerName: String, aces: Int, servicePoints: Int) {
+            totalAces += aces
+            totalPoints += servicePoints
+            val server = profiles[normaliseName(serverName)] ?: return
+            val returner = profiles[normaliseName(returnerName)] ?: return
+            val serveRate = server.serveRate ?: return
+            val concedeRate = returner.concedeRate ?: return
+            if (servicePoints <= 0 || aces < 0 || aces > servicePoints) return
+            val joint = serveRate * concedeRate
+            val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
+            if (denominator <= 0.0) return
+            val expected = (joint / denominator) * servicePoints
+            if (expected <= 0.5) return
+            ratios += aces.toDouble() / expected
+        }
+
+        matches.forEach { match ->
+            addSide(match.firstPlayer, match.secondPlayer, match.firstAces, match.firstServePoints)
+            addSide(match.secondPlayer, match.firstPlayer, match.secondAces, match.secondServePoints)
+        }
+
+        if (totalPoints <= 0 || ratios.size < MIN_ADJUSTED_SERVER_SIDES) return null
+        val rawEventScore = ratios.average()
+        val pooledAceRate = totalAces.toDouble() / totalPoints
         return Result(
-            rating = aceRate / BASELINE_ACE_RATE,
+            rating = rawEventScore / baseline.normalisation,
             matches = matches.size,
-            aces = aces,
-            aceRate = aceRate,
+            aces = totalAces,
+            aceRate = pooledAceRate,
+            adjustedServerSides = ratios.size,
         )
     }
 }
