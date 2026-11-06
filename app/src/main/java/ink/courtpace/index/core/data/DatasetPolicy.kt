@@ -11,6 +11,7 @@ object DatasetPolicy {
 
     const val MIN_TOURNAMENTS = 20
     const val MIN_READINGS = 50
+    const val MIN_SPEED_BASELINE_PROFILES = 20
 
     fun isAcceptable(dataset: PaceDataset): Boolean {
         if (dataset.tournaments.size < MIN_TOURNAMENTS) return false
@@ -20,13 +21,21 @@ object DatasetPolicy {
         if (ids.size != dataset.tournaments.size) return false
         if (dataset.readings.any { it.t !in ids }) return false
         dataset.speedBaseline?.let { baseline ->
-            if (baseline.season != dataset.meta.season || baseline.profileSeason !in 1990..2100) return false
+            if (baseline.season != dataset.meta.season ||
+                baseline.profileSeason !in (baseline.season - 1)..baseline.season ||
+                baseline.generated.isBlank() ||
+                baseline.profiles.size < MIN_SPEED_BASELINE_PROFILES
+            ) return false
             if (!baseline.normalisation.isFinite() || baseline.normalisation <= 0.0) return false
             if (baseline.profiles.any { profile ->
                     profile.name.isBlank() ||
                         (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
                         (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0))
                 }) return false
+            val usableProfiles = baseline.profiles.count { profile ->
+                profile.serveRate != null || profile.concedeRate != null
+            }
+            if (usableProfiles < MIN_SPEED_BASELINE_PROFILES) return false
         }
         return dataset.readings.all { reading ->
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
