@@ -274,6 +274,17 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `possible server-side denominator grows with the completed match count`() {
+        val fortyEight = AceRating.rate(sampleMatches(48), baseline)!!
+        val fortyNine = AceRating.rate(sampleMatches(49), baseline)!!
+
+        assertEquals(48, fortyEight.matches)
+        assertEquals(96, fortyEight.totalServerSides)
+        assertEquals(49, fortyNine.matches)
+        assertEquals(98, fortyNine.totalServerSides)
+    }
+
+    @Test
     fun `every parsed match contributes both players service observations`() {
         val matches = sampleMatches(15)
         val result = AceRating.rate(matches, baseline)!!
