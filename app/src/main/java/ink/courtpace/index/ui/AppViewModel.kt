@@ -291,7 +291,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         const val WALK_TIMEOUT_MS = 600_000L
 
         /** The results page is small and server-rendered; it has no excuse to take long. */
-        const val RESULTS_TIMEOUT_MS = 40_000L
+        const val RESULTS_TIMEOUT_MS = 90_000L
 
         const val MAX_COMPARE = 3
     }
