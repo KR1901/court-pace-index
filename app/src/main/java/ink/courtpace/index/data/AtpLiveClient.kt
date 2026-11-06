@@ -4,7 +4,6 @@ import android.content.Context
 import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.AtpEvents
 import ink.courtpace.index.core.live.AtpMatchLinks
-import ink.courtpace.index.core.live.AtpStatsParser
 import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Tournament
 import kotlinx.coroutines.CancellationException
@@ -16,7 +15,6 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
