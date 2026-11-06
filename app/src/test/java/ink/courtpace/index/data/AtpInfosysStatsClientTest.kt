@@ -1,6 +1,5 @@
 package ink.courtpace.index.data
 
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -10,26 +9,14 @@ class AtpInfosysStatsClientTest {
     private val client = AtpInfosysStatsClient()
 
     @Test
-    fun `extracts both players aces and total service points from set zero`() {
-        val payload = JSONObject(
-            """
-            {
-              "players": [
-                {"player1Name": "A. De Minaur"},
-                {"player1Name": "A. Rublev"}
-              ],
-              "setStats": {
-                "set0": [
-                  {"name": "Serve Rating", "player1": "229", "player2": "270"},
-                  {"name": "Aces", "player1": "5", "player2": "4"},
-                  {"name": "Service Points Won", "player1": "53/96", "player2": "52/79"}
-                ]
-              }
-            }
-            """.trimIndent(),
+    fun `extracts both players aces and total service points from set zero rows`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Serve Rating", "229", "270"),
+            AtpInfosysStatsClient.StatRow("Aces", "5", "4"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "53/96", "52/79"),
         )
 
-        val stats = client.parseStats(payload)!!
+        val stats = client.parseStatsRows(rows, "A. De Minaur", "A. Rublev")!!
 
         assertEquals("A. De Minaur", stats.firstPlayer)
         assertEquals("A. Rublev", stats.secondPlayer)
@@ -41,20 +28,12 @@ class AtpInfosysStatsClientTest {
 
     @Test
     fun `matches statistic row names without case sensitivity`() {
-        val payload = JSONObject(
-            """
-            {
-              "setStats": {
-                "set0": [
-                  {"name": "ACES", "player1": "7", "player2": "2"},
-                  {"name": "service points won", "player1": "71/126", "player2": "77/132"}
-                ]
-              }
-            }
-            """.trimIndent(),
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("ACES", "7", "2"),
+            AtpInfosysStatsClient.StatRow("service points won", "71/126", "77/132"),
         )
 
-        val stats = client.parseStats(payload)!!
+        val stats = client.parseStatsRows(rows)!!
 
         assertEquals(7, stats.firstAces)
         assertEquals(2, stats.secondAces)
@@ -63,27 +42,26 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
-    fun `does not rate a payload missing service point denominators`() {
-        val payload = JSONObject(
-            """
-            {"setStats":{"set0":[
-              {"name":"Aces","player1":"7","player2":"2"}
-            ]}}
-            """.trimIndent(),
-        )
-        assertNull(client.parseStats(payload))
+    fun `does not rate rows missing service point denominators`() {
+        val rows = listOf(AtpInfosysStatsClient.StatRow("Aces", "7", "2"))
+        assertNull(client.parseStatsRows(rows))
     }
 
     @Test
-    fun `does not mistake set one for the full match aggregate`() {
-        val payload = JSONObject(
-            """
-            {"setStats":{"set1":[
-              {"name":"Aces","player1":"7","player2":"2"},
-              {"name":"Service Points Won","player1":"71/126","player2":"77/132"}
-            ]}}
-            """.trimIndent(),
+    fun `requires a full-match service aggregate row`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "7", "2"),
+            AtpInfosysStatsClient.StatRow("1st Serve", "35/48 (73%)", "41/55 (75%)"),
         )
-        assertNull(client.parseStats(payload))
+        assertNull(client.parseStatsRows(rows))
+    }
+
+    @Test
+    fun `rejects non-positive service point totals`() {
+        val rows = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "7", "2"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "4/0", "5/0"),
+        )
+        assertNull(client.parseStatsRows(rows))
     }
 }
