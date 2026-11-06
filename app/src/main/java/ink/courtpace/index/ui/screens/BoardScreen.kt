@@ -365,6 +365,11 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.discoveredMatches)
                                 append(" completed")
+                                append(" · ")
+                                append(ace.adjustedServerSides)
+                                append("/")
+                                append(ace.totalServerSides)
+                                append(" server sides adjusted")
                                 if (ace.inProgressMatches > 0) {
                                     append(" · ")
                                     append(ace.inProgressMatches)
