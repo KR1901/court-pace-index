@@ -83,7 +83,42 @@ internal class AtpInfosysStatsClient {
             )
         }
 
+    /**
+     * ATP's own Infosys scraper retries failed requests up to three times with exponential
+     * backoff. A single 403 can be a transient edge refusal; do not permanently drop a match
+     * after one response. Each endpoint still has its own bounded retry budget.
+     */
     private fun request(url: String): Pair<String?, String> {
+        var last = null as Pair<String?, String>?
+        for (attempt in 1..MAX_HTTP_ATTEMPTS) {
+            last = requestOnce(url)
+            if (last.first != null || !shouldRetry(last.second) || attempt == MAX_HTTP_ATTEMPTS) {
+                return last
+            }
+            val delayMs = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
+            try {
+                Thread.sleep(delayMs)
+            } catch (interrupted: InterruptedException) {
+                Thread.currentThread().interrupt()
+                return null to "Interrupted while retrying Infosys request"
+            }
+        }
+        return last ?: (null to "No Infosys request attempt was made")
+    }
+
+    private fun shouldRetry(diagnostic: String): Boolean {
+        val status = Regex("""HTTP (\\d{3})""").find(diagnostic)?.groupValues?.get(1)?.toIntOrNull()
+        return when {
+            status == null -> diagnostic.contains("Exception", ignoreCase = true) ||
+                diagnostic.contains("timeout", ignoreCase = true) ||
+                diagnostic.contains("reset", ignoreCase = true)
+            status == 403 || status == 408 || status == 425 || status == 429 -> true
+            status in 500..599 -> true
+            else -> false
+        }
+    }
+
+    private fun requestOnce(url: String): Pair<String?, String> {
         val connection = URL(url).openConnection() as HttpURLConnection
         return try {
             connection.requestMethod = "GET"
@@ -92,6 +127,7 @@ internal class AtpInfosysStatsClient {
             connection.instanceFollowRedirects = true
             connection.setRequestProperty("User-Agent", USER_AGENT)
             connection.setRequestProperty("Accept", "application/json, text/plain, */*")
+            connection.setRequestProperty("Accept-Language", ACCEPT_LANGUAGE)
             connection.setRequestProperty("Origin", ATP_ORIGIN)
             connection.setRequestProperty("Referer", "$ATP_ORIGIN/")
             val status = connection.responseCode
@@ -100,7 +136,16 @@ internal class AtpInfosysStatsClient {
             if (status in 200..299 && body.isNotBlank()) {
                 body to "HTTP $status"
             } else {
-                null to "HTTP $status (${body.length} chars)"
+                val server = connection.getHeaderField("Server")?.take(48)
+                val retryAfter = connection.getHeaderField("Retry-After")?.take(16)
+                val sample = body.replace(Regex("""\\s+"""), " ").take(MAX_ERROR_BODY_CHARS)
+                val details = buildList {
+                    add("HTTP $status (${body.length} chars)")
+                    if (!server.isNullOrBlank()) add("server=$server")
+                    if (!retryAfter.isNullOrBlank()) add("retry-after=$retryAfter")
+                    if (sample.isNotBlank()) add("body=$sample")
+                }.joinToString("; ")
+                null to details
             }
         } catch (error: Exception) {
             null to "${error.javaClass.simpleName}: ${error.message.orEmpty().take(100)}"
@@ -304,10 +349,14 @@ internal class AtpInfosysStatsClient {
 
     companion object {
         const val CONNECT_TIMEOUT_MS = 8_000
-        const val READ_TIMEOUT_MS = 12_000
+        const val READ_TIMEOUT_MS = 15_000
+        const val MAX_HTTP_ATTEMPTS = 3
+        const val RETRY_BASE_DELAY_MS = 2_000L
+        const val MAX_ERROR_BODY_CHARS = 120
+        const val ACCEPT_LANGUAGE = "en-US,en;q=0.9"
         const val ATP_ORIGIN = "https://www.atptour.com"
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/124.0 Mobile Safari/537.36"
+                "Chrome/47.0.2526.106 Safari/537.36"
     }
 }
