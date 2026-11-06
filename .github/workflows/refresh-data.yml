@@ -74,6 +74,9 @@ jobs:
           assert coverage.get("withoutServeRate") == 0, (
               f"{coverage.get('withoutServeRate')} active baseline profiles still lack a server rate"
           )
+          assert coverage.get("withoutConcedeRate") == 0, (
+              f"{coverage.get('withoutConcedeRate')} active baseline profiles still lack a return-concession rate"
+          )
           assert coverage.get("currentSeasonQualified", 0) + coverage.get("priorSeasonQualified", 0) + \
                  coverage.get("currentSeasonShrunk", 0) + coverage.get("priorSeasonShrunk", 0) == len(profiles), \
                  "profile source counts do not add up"
