@@ -3,10 +3,41 @@ package ink.courtpace.index.data
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 class AtpInfosysStatsClientTest {
 
     private val client = AtpInfosysStatsClient()
+
+
+    @Test
+    fun `derives the documented ATP Infosys AES key for a known timestamp`() {
+        assertEquals("#3zfbzn55vkkiln$", client.cipherKey(1_700_000_000_000L))
+    }
+
+    @Test
+    fun `decrypts an AES CBC Infosys response envelope with PKCS7 padding`() {
+        val timestamp = 1_700_000_000_000L
+        val clearText = """{"setStats":{"set0":[]}}"""
+        val clearBytes = clearText.toByteArray(StandardCharsets.UTF_8)
+        val padding = 16 - (clearBytes.size % 16)
+        val padded = clearBytes + ByteArray(padding) { padding.toByte() }
+
+        val keyText = client.cipherKey(timestamp)
+        val cipher = Cipher.getInstance("AES/CBC/NoPadding")
+        cipher.init(
+            Cipher.ENCRYPT_MODE,
+            SecretKeySpec(keyText.toByteArray(StandardCharsets.UTF_8), "AES"),
+            IvParameterSpec(keyText.uppercase().toByteArray(StandardCharsets.UTF_8)),
+        )
+        val encoded = Base64.getEncoder().encodeToString(cipher.doFinal(padded))
+
+        assertEquals(clearText, client.decryptResponse(timestamp, encoded))
+    }
 
     @Test
     fun `extracts both players aces and total service points from set zero rows`() {
