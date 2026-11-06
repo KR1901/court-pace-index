@@ -118,6 +118,17 @@ fun MethodScreen(data: PaceData) {
             )
             Spacer(Modifier.height(10.dp))
             Text(
+                text = "Player tendencies come from the current season or the most recent qualified " +
+                    "profile in the preceding three seasons. Where a player has no qualified profile, " +
+                    "their own available surface-specific serve sample is shrunk toward that season's " +
+                    "surface average using a 300-service-point prior. This changes the player inputs, " +
+                    "not the expected-aces formula or the season normalisation; low-sample estimates " +
+                    "are labelled in the baseline.",
+                style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
+                color = colors.textDim,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
                 text = "Because it is behavioural it absorbs everything else that changed — heat, humidity, " +
                     "wind, altitude, the balls — not just the paint. It covers every tour-level event, but " +
                     "it needs matches to have been played, so small draws are noisy.",
