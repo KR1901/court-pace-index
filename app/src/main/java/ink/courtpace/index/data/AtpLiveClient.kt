@@ -157,7 +157,7 @@ class AtpLiveClient(context: Context) {
                             when {
                                 result.stats != null &&
                                     result.state == AtpInfosysStatsClient.MatchDataState.PLAYED -> {
-                                    collected[link.id] = result.stats
+                                    collected[link.id] = result.stats.copy(matchId = link.id)
                                     failuresByMatch.remove(link.id)
                                 }
                                 result.state == AtpInfosysStatsClient.MatchDataState.NO_PLAYED_DATA &&
