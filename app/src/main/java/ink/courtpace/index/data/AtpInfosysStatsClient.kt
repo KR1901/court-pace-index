@@ -423,7 +423,7 @@ internal class AtpInfosysStatsClient {
             val a2 = aces.player2.trim().toIntOrNull() ?: return null
             val p1 = denominator(servicePoints.player1) ?: return null
             val p2 = denominator(servicePoints.player2) ?: return null
-            if (p1 <= 0 || p2 <= 0) return null
+            if (p1 <= 0 || p2 <= 0 || a1 > p1 || a2 > p2) return null
 
             firstAces += a1
             secondAces += a2
