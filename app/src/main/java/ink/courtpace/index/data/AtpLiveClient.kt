@@ -136,9 +136,8 @@ class AtpLiveClient(context: Context) {
                                     blocked.set(true)
                                     break
                                 }
-                                if (rendered != null && rendered.length > MIN_READABLE_PAGE_CHARS) {
-                                    withContent.incrementAndGet()
-                                }
+                                val bodyText = rendered?.substringBefore("\\n[ATP_WEBVIEW]").orEmpty()
+                                if (bodyText.isNotBlank()) withContent.incrementAndGet()
                                 parsed = rendered?.let { snapshot ->
                                     AtpStatsParser.parse(snapshot)
                                         ?: AtpStatsParser.parse(AtpResultsParser.toText(snapshot))
@@ -172,9 +171,11 @@ class AtpLiveClient(context: Context) {
                     "only ${found.size} completed matches have stats so far " +
                         "(${links.size} completed singles links on the results page)"
                 blocked.get() -> "ATP blocked a match-stats page on this device"
-                withContent.get() == 0 ->
+                withContent.get() == 0 -> {
+                    val sample = samples.peek()?.let { " · page sample: $it" }.orEmpty()
                     "no readable stats-page body from ${links.size} matches after " +
-                        "${routeAttempts.get()} archive/live route attempts"
+                        "${routeAttempts.get()} archive/live route attempts$sample"
+                }
                 else -> {
                     val sample = samples.peek()?.let { " · sample: $it" }.orEmpty()
                     "read ${withContent.get()} stats-page bodies but could not recognise " +
