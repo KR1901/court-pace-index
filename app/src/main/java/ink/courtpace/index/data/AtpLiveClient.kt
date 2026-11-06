@@ -143,7 +143,7 @@ class AtpLiveClient(context: Context) {
         // downloading already-read pages again.
         store.writeAll(eventKey, collected)
         val found = collected.filterKeys { it in discoveredIds }.values.toList()
-        val missingIds = links.map { it.id }.filterNot { it in collected }
+        val missingIds = links.map { it.id }.filterNot { collected.containsKey(it) }
         val missingReasons = missingIds.associateWith { id ->
             failuresByMatch[id] ?: "Stats Plus did not return a usable record on this refresh"
         }
