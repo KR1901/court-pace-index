@@ -109,7 +109,18 @@ object AtpStatsParser {
  */
 object AceRating {
 
-    data class Result(val rating: Double, val matches: Int, val aces: Int, val aceRate: Double)
+    data class Result(
+        val rating: Double,
+        val matches: Int,
+        val aces: Int,
+        val aceRate: Double,
+        /** Number of completed singles links found on the current ATP results page. */
+        val discoveredMatches: Int = matches,
+        /** Current results-page match IDs for which Infosys has not supplied usable stats. */
+        val missingMatchIds: List<String> = emptyList(),
+        /** Per-ID endpoint/response reason, retained for diagnosis rather than silently dropped. */
+        val missingReasons: Map<String, String> = emptyMap(),
+    )
 
     /** Tour-level ace rate, 2022-2025. */
     const val BASELINE_ACE_RATE = 0.078313
