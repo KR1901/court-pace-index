@@ -28,11 +28,66 @@ class LiveRatingCacheTest {
         assertNull(CachedLiveRating.fromJson("{\"t\":\"paris\"}"))
     }
     @Test
+    fun `side coverage and discovered-match counts survive a cache round trip`() {
+        val original = CachedLiveRating(
+            tournamentId = "paris",
+            season = 2026,
+            speed = 1.41,
+            matches = 48,
+            aceRate = 0.112,
+            asOf = "2026-11-06T17:00:00Z",
+            baselineGenerated = "2026-11-06T16:34:12Z",
+            discoveredMatches = 48,
+            adjustedServerSides = 91,
+            totalServerSides = 96,
+            aces = 512,
+        )
+
+        val restored = CachedLiveRating.fromJson(original.toJson())!!
+
+        assertEquals(original, restored)
+        val result = restored.toAceRatingResultOrNull()!!
+        assertEquals(48, result.matches)
+        assertEquals(48, result.discoveredMatches)
+        assertEquals(91, result.adjustedServerSides)
+        assertEquals(96, result.totalServerSides)
+        assertEquals(512, result.aces)
+    }
+
+    @Test
+    fun `an old cache without side coverage is not presented as fully covered`() {
+        val legacy = """{"t":"paris","s":2026,"speed":1.41,"matches":48,"ace":0.112,"asOf":"2026-11-06T17:00:00Z","methodVersion":2,"baselineGenerated":"2026-11-06T16:34:12Z"}"""
+        val restored = CachedLiveRating.fromJson(legacy)!!
+
+        assertNull(restored.adjustedServerSides)
+        assertNull(restored.totalServerSides)
+        assertNull(restored.toAceRatingResultOrNull())
+    }
+
+    @Test
+    fun `cache rejects impossible adjusted-side coverage`() {
+        val invalid = CachedLiveRating(
+            tournamentId = "paris",
+            season = 2026,
+            speed = 1.41,
+            matches = 48,
+            aceRate = 0.112,
+            asOf = "2026-11-06T17:00:00Z",
+            discoveredMatches = 48,
+            adjustedServerSides = 97,
+            totalServerSides = 96,
+        )
+
+        assertNull(invalid.toAceRatingResultOrNull())
+    }
+
+    @Test
     fun `a legacy pooled-rate cache is recognised as an old method`() {
         val legacy = """{"t":"paris","s":2026,"speed":1.47,"matches":47,"ace":11.5,"asOf":"2026-11-06T00:00:00Z"}"""
         val restored = CachedLiveRating.fromJson(legacy)!!
         assertEquals(CachedLiveRating.LEGACY_METHOD_VERSION, restored.methodVersion)
         assertEquals(false, restored.methodVersion == CachedLiveRating.CURRENT_METHOD_VERSION)
+        assertNull(restored.toAceRatingResultOrNull())
     }
 
 }
