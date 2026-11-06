@@ -35,6 +35,29 @@ class MatchIdDiscoveryTest {
         assertEquals(ids.size, ids.distinct().size)
     }
 
+
+    @Test
+    fun `discovers the complete 55-match main draw from sparse ATP IDs`() {
+        // Real ATP match IDs are sparse; the reader must follow links, not assume ms001..ms055.
+        val ids = (1..70).filter { it % 5 != 0 }.take(55).map { "ms%03d".format(it) }
+        val html = buildString {
+            ids.forEach { id ->
+                append("""<a href="/en/scores/stats-centre/archive/2026/352/$id">stats</a>""")
+            }
+            // Noise that must not inflate the completed-singles count.
+            append("""<a href="/en/scores/stats-centre/live/2026/352/${ids.first()}">live</a>""")
+            append("""<a href="/en/scores/stats-centre/archive/2026/352/md001">doubles</a>""")
+            append("""<a href="/en/scores/stats-centre/archive/2026/400/ms900">another event</a>""")
+        }
+
+        val completedSingles = AtpMatchLinks.singlesLinks(
+            AtpMatchLinks.linksFromResultsPage(html),
+        ).filter { it.atpId == 352 && it.year == 2026 && it.section == "archive" }
+
+        assertEquals(55, completedSingles.size)
+        assertEquals(ids, completedSingles.map { it.id })
+    }
+
     @Test
     fun `a page with no stats links yields nothing rather than inventing ids`() {
         assertTrue(AtpMatchLinks.fromResultsPage("<div>no links here</div>").isEmpty())
