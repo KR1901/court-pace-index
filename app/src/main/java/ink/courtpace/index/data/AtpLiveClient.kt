@@ -162,7 +162,8 @@ class AtpLiveClient(context: Context) {
                                     collected.remove(link.id)
                                     failuresByMatch.remove(link.id)
                                 }
-                                result.state == AtpInfosysStatsClient.MatchDataState.IN_PROGRESS -> {
+                                result.state == AtpInfosysStatsClient.MatchDataState.IN_PROGRESS &&
+                                    link.resultStatus != AtpMatchLinks.ResultStatus.RETIREMENT -> {
                                     inProgressPayloadIds.add(link.id)
                                     collected.remove(link.id)
                                 }
@@ -175,6 +176,9 @@ class AtpLiveClient(context: Context) {
                                         link.resultStatus == AtpMatchLinks.ResultStatus.RETIREMENT &&
                                             result.state == AtpInfosysStatsClient.MatchDataState.NO_PLAYED_DATA ->
                                             "ATP result card marks retirement, but Stats Plus returned no played-set statistics"
+                                        link.resultStatus == AtpMatchLinks.ResultStatus.RETIREMENT &&
+                                            result.state == AtpInfosysStatsClient.MatchDataState.IN_PROGRESS ->
+                                            "ATP result card marks retirement, but Stats Plus has not marked the match completed"
                                         else -> result.diagnostic ?: "Stats Plus returned no usable stats"
                                     }
                                     failuresByMatch[link.id] = reason
