@@ -200,8 +200,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     onOpen = { push(Route.Detail(it.id)) },
                                     refreshing = vm.refreshState is RefreshState.Running,
                                     onRefresh = { vm.refresh() },
-                                    livePace = vm.livePace,
-                                    liveAce = vm.liveAce,
+                                    liveAceByEvent = vm.liveAceByEvent,
                                     liveProgress = vm.liveAceProgress,
                                     liveNote = vm.livePaceNote,
                                     statusNote = when (val state = vm.refreshState) {

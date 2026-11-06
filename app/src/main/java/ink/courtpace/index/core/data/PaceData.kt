@@ -58,11 +58,20 @@ class PaceData(val dataset: PaceDataset) {
      * wants rather than just which season.
      */
     fun reading(id: String, season: Int, metric: Metric): PaceReading? =
-        byTournament[id]?.firstOrNull { it.s == season && it.value(metric) != null }
+        byTournament[id]?.firstOrNull {
+            it.s == season && it.src == "live" && it.value(metric) != null
+        } ?: byTournament[id]?.firstOrNull {
+            it.s == season && it.value(metric) != null
+        }
+
+    /** A live-only reading; historical published values must not masquerade as a live result. */
+    fun liveReading(id: String, season: Int): PaceReading? =
+        dataset.readings.lastOrNull { it.t == id && it.s == season && it.src == "live" }
 
     /** The stored reading behind a figure, so callers can say how many matches it rests on. */
     fun reading(id: String, season: Int): ink.courtpace.index.core.model.PaceReading? =
-        dataset.readings.firstOrNull { it.t == id && it.s == season }
+        dataset.readings.firstOrNull { it.t == id && it.s == season && it.src == "live" }
+            ?: dataset.readings.firstOrNull { it.t == id && it.s == season }
 
     fun value(id: String, season: Int, metric: Metric): Double? =
         reading(id, season, metric)?.value(metric)

@@ -4,6 +4,14 @@ name: Refresh dataset
 # app's optional "check for updates" action. Weekly, plus on demand.
 
 on:
+  push:
+    branches: [main, fix/live-tournament-discovery-and-refresh]
+    paths:
+      - 'tools/compute_speed.py'
+      - 'tools/test_compute_speed.py'
+      - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
+      - 'tools/build_dataset.py'
+      - '.github/workflows/refresh-data.yml'
   schedule:
     - cron: '0 6 * * 1'
   workflow_dispatch:
@@ -11,11 +19,19 @@ on:
 permissions:
   contents: write
 
+# Never let two dataset refreshes race to publish generated files to the same branch.
+concurrency:
+  group: refresh-data-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -28,14 +44,85 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Test live player profile fallback
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+
       - name: Recompute the speed series from the match archive
         run: python3 tools/compute_speed.py --write
+
+      - name: Validate the generated season baseline
+        run: |
+          python3 - <<'PY'
+          import json, math, unicodedata
+          from datetime import date
+          from pathlib import Path
+
+          path = Path("data/live_speed_baseline.json")
+          assert path.is_file(), "the live opponent-adjustment baseline was not generated"
+          baseline = json.loads(path.read_text())
+          season = date.today().year
+          assert baseline.get("season") == season, f"expected season {season}, got {baseline.get('season')}"
+          assert baseline.get("profileSeason") in (season, season - 1), "unexpected player-profile season"
+          normalisation = baseline.get("normalisation")
+          assert isinstance(normalisation, (int, float)) and math.isfinite(normalisation) and normalisation > 0
+          assert baseline.get("ratedEvents", 0) >= 5, "too few rated events to establish a stable normaliser"
+          profiles = baseline.get("profiles")
+          assert isinstance(profiles, list) and len(profiles) >= 20, "too few player profiles were generated"
+          normalized_names = [
+              "".join(ch for ch in unicodedata.normalize("NFKD", p.get("name", "")).casefold() if ch.isalnum())
+              for p in profiles
+          ]
+          assert all(normalized_names) and len(set(normalized_names)) == len(normalized_names), (
+              "duplicate or blank normalized player names remain in the live baseline"
+          )
+          usable = [p for p in profiles if p.get("name") and
+                    (p.get("serveRate") is not None or p.get("concedeRate") is not None)]
+          assert len(usable) >= 20, "too few usable player profiles were generated"
+          coverage = baseline.get("profileCoverage") or {}
+          assert coverage.get("playerProfiles") == len(profiles), "profile coverage count does not match the baseline"
+          assert coverage.get("withoutServeRate") == 0, (
+              f"{coverage.get('withoutServeRate')} active baseline profiles still lack a server rate"
+          )
+          assert coverage.get("withoutConcedeRate") == 0, (
+              f"{coverage.get('withoutConcedeRate')} active baseline profiles still lack a return-concession rate"
+          )
+          assert coverage.get("currentSeasonQualified", 0) + coverage.get("priorSeasonQualified", 0) + \
+                 coverage.get("currentSeasonShrunk", 0) + coverage.get("priorSeasonShrunk", 0) == len(profiles), \
+                 "profile source counts do not add up"
+          for profile in usable:
+              for key in ("serveRate", "concedeRate"):
+                  value = profile.get(key)
+                  valid = value is None or (
+                      isinstance(value, (int, float)) and math.isfinite(value) and 0 <= value <= 1
+                  )
+                  assert valid, f"invalid {key} for {profile.get('name')}"
+          print(f"Baseline OK: season={season}, profileSeason={baseline['profileSeason']}, "
+                f"profiles={len(usable)}, events={baseline['ratedEvents']}, normalisation={normalisation:.6f}")
+          PY
 
       - name: Rebuild the dataset
         run: python3 tools/build_dataset.py
 
       - name: Publish the file the app refreshes from
         run: cp app/src/main/assets/pace_dataset.json data/latest.json
+
+      - name: Verify published dataset carries the same baseline
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          baseline = json.loads(Path("data/live_speed_baseline.json").read_text())
+          for filename in ("app/src/main/assets/pace_dataset.json", "data/latest.json"):
+              dataset = json.loads(Path(filename).read_text())
+              embedded = dataset.get("speedBaseline")
+              assert embedded, f"{filename} is missing speedBaseline"
+              assert dataset["meta"]["season"] == baseline["season"]
+              assert embedded["season"] == baseline["season"]
+              assert embedded["generated"] == baseline["generated"]
+              assert len(embedded["profiles"]) == len(baseline["profiles"])
+          print("Bundled and downloadable datasets contain the validated current-season baseline.")
+          PY
 
       - name: Verify
         run: ./gradlew :app:testDebugUnitTest --stacktrace
@@ -45,9 +132,26 @@ jobs:
           git config user.name "court-pace-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data app/src/main/assets/pace_dataset.json
-          if git diff --quiet --cached; then
+          if git diff --cached --quiet; then
             echo "No change in the dataset."
-          else
-            git commit -m "chore: refresh dataset from the match archive"
-            git push
+            exit 0
           fi
+
+          git commit -m "chore: refresh dataset from the match archive"
+          branch="$GITHUB_REF_NAME"
+          for attempt in 1 2 3; do
+            git fetch origin "refs/heads/$branch:refs/remotes/origin/$branch"
+            if ! git rebase "origin/$branch"; then
+              git rebase --abort || true
+              echo "Could not safely rebase the generated dataset onto the latest $branch."
+              exit 1
+            fi
+            if git push origin "HEAD:refs/heads/$branch"; then
+              echo "Published the refreshed dataset to $branch."
+              exit 0
+            fi
+            echo "Push raced with another branch update (attempt $attempt/3)."
+            sleep $((attempt * 2))
+          done
+          echo "Could not publish the refreshed dataset after three attempts."
+          exit 1

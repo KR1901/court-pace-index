@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Used only by the optional "check for updates" action, which reads a JSON file this
-         project publishes. Nothing is sent anywhere. -->
+    <!-- Read-only HTTPS requests for live ATP tournament results, Infosys match statistics,
+         and the optional app-update manifest. No user account data is transmitted. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

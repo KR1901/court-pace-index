@@ -210,7 +210,9 @@ if os.path.exists(LIVE_FEED):
         if event.get("t") not in known:
             continue
         live_events.append(event)
-        if event.get("speed") is not None:
+        # Never publish an unversioned/legacy pooled-rate live reading as if it used the
+        # current opponent-adjusted method. Runtime live ratings are computed on-device.
+        if event.get("speed") is not None and event.get("methodVersion") == 2:
             readings.append({
                 "t": event["t"], "s": event["s"], "speed": event["speed"],
                 "ace": event.get("ace"), "src": "live",
@@ -220,8 +222,16 @@ if os.path.exists(LIVE_FEED):
 
 doc = {
     "meta": {
-        "generated": "2026-11-03",
-        "season": 2026,
+        "generated": (
+            json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))).get("generated", "2026-11-03")
+            if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
+            else "2026-11-03"
+        ),
+        "season": (
+            json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))).get("season", 2026)
+            if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
+            else 2026
+        ),
         "sources": [
             {
                 "id": "courtspeed",
@@ -256,6 +266,11 @@ doc = {
     "tournaments": tournaments,
     "readings": readings,
     "live": live_events,
+    "speedBaseline": (
+        json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json")))
+        if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
+        else None
+    ),
 }
 
 out = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "assets", "pace_dataset.json")

@@ -3,6 +3,8 @@ package ink.courtpace.index.core
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.LiveEvent
+import ink.courtpace.index.core.model.LiveSpeedBaseline
+import ink.courtpace.index.core.model.LiveSpeedPlayerProfile
 import ink.courtpace.index.core.model.Metric
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,6 +54,30 @@ class LiveFeedTest {
         assertTrue(merged.liveWithoutRating(2026, Metric.SPEED).none { it.first.id == "paris" })
         assertEquals(1.04, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
         assertTrue(merged.seasonRows("paris").first { it.season == 2026 }.speed != null)
+    }
+
+    @Test
+    fun `a fresh live value and match count take precedence over a published season value`() {
+        val withoutParisSeason = data.dataset.readings.filterNot {
+            it.t == "paris" && it.s == 2026 && it.speed != null
+        }
+        val merged = PaceData(
+            data.dataset.copy(
+                readings = withoutParisSeason + listOf(
+                    ink.courtpace.index.core.model.PaceReading(
+                        t = "paris", s = 2026, speed = 0.91, src = "tennisabstract",
+                    ),
+                    ink.courtpace.index.core.model.PaceReading(
+                        t = "paris", s = 2026, speed = 1.12, src = "live",
+                        live = true, matches = 55,
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals(1.12, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals(55, merged.reading("paris", 2026)!!.matches)
+        assertEquals("live", merged.reading("paris", 2026, Metric.SPEED)!!.src)
     }
 
     @Test
@@ -107,4 +133,92 @@ class LiveFeedTest {
         )
         assertTrue(DatasetPolicy.isAcceptable(extra))
     }
+    @Test
+    fun `a remote dataset without the new baseline cannot erase the bundled one`() {
+        val bundled = data.dataset.copy(
+            speedBaseline = LiveSpeedBaseline(
+                season = 2026,
+                normalisation = 1.02,
+                profiles = listOf(
+                    LiveSpeedPlayerProfile("Player One", serveRate = 0.12, concedeRate = 0.08),
+                ),
+            ),
+        )
+        val chosen = DatasetPolicy.choose(bundled, data.dataset.copy(speedBaseline = null))
+        assertEquals(bundled.speedBaseline, chosen.speedBaseline)
+    }
+
+    @Test
+    fun `a live speed baseline must contain enough usable player profiles`() {
+        val profiles = (1..20).map { index ->
+            LiveSpeedPlayerProfile(
+                name = "Player $index",
+                serveRate = 0.12,
+                concedeRate = 0.08,
+            )
+        }
+        val baseline = LiveSpeedBaseline(
+            season = data.dataset.meta.season,
+            profileSeason = data.dataset.meta.season,
+            normalisation = 1.02,
+            generated = "2026-11-06T00:00:00Z",
+            profiles = profiles,
+        )
+
+        assertTrue(DatasetPolicy.isAcceptable(data.dataset.copy(speedBaseline = baseline)))
+        assertFalse(
+            DatasetPolicy.isAcceptable(
+                data.dataset.copy(speedBaseline = baseline.copy(profiles = profiles.take(19))),
+            ),
+        )
+    }
+
+    @Test
+    fun `a live baseline rejects duplicate normalized player names`() {
+        val profiles = (1..20).map { index ->
+            LiveSpeedPlayerProfile(
+                name = "Player $index",
+                serveRate = 0.12,
+                concedeRate = 0.08,
+            )
+        } + LiveSpeedPlayerProfile(
+            name = "Pláyer 1",
+            serveRate = 0.10,
+            concedeRate = 0.07,
+        )
+        val baseline = LiveSpeedBaseline(
+            season = data.dataset.meta.season,
+            profileSeason = data.dataset.meta.season,
+            normalisation = 1.02,
+            generated = "2026-11-06T00:00:00Z",
+            profiles = profiles,
+        )
+
+        assertFalse(DatasetPolicy.isAcceptable(data.dataset.copy(speedBaseline = baseline)))
+    }
+
+    @Test
+    fun `an invalid opponent adjustment baseline rejects the dataset`() {
+        val invalid = data.dataset.copy(
+            speedBaseline = LiveSpeedBaseline(
+                season = 2026,
+                normalisation = -1.0,
+                profiles = emptyList(),
+            ),
+        )
+        assertFalse(DatasetPolicy.isAcceptable(invalid))
+    }
+
+    @Test
+    fun `an unversioned pooled live reading is not accepted as a current-method result`() {
+        val remote = data.dataset.copy(
+            readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
+                t = "paris", s = 2026, speed = 1.47, ace = 11.5, src = "live",
+                live = true, matches = 47,
+            ),
+        )
+        val chosen = DatasetPolicy.choose(data.dataset, remote)
+        assertNull(PaceData(chosen).liveReading("paris", 2026))
+    }
+
 }
