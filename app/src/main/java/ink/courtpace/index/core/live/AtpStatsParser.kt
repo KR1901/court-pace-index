@@ -19,38 +19,66 @@ data class AtpMatchStats(
 
 object AtpStatsParser {
 
-    private val ACES = Regex("""([0-9]+)\s*Aces\s*([0-9]+)\s*Aces""")
-    private val FIRST_SERVE = Regex("""([0-9]+)/([0-9]+)\s*\([0-9]+%\)\s*First serve""")
+    // ATP has rendered both "7 Aces 2 Aces" and "Aces 7 Aces 2" across page versions.
+    private val ACES_BEFORE_LABELS = Regex(
+        """([0-9]+)\s*Aces\s*([0-9]+)\s*Aces""",
+        RegexOption.IGNORE_CASE,
+    )
+    private val LABELS_BEFORE_ACES = Regex(
+        """Aces\s*([0-9]+)\s*Aces\s*([0-9]+)""",
+        RegexOption.IGNORE_CASE,
+    )
+    // The denominator is total service points, not first-serve points won.
+    private val FIRST_SERVE = Regex(
+        """(?:([0-9]+)/([0-9]+)\s*\([0-9]+%\)\s*First serve|First serve\s*([0-9]+)/([0-9]+)\s*\([0-9]+%\))""",
+        RegexOption.IGNORE_CASE,
+    )
     // "F. Comesana" - the two short names that flank the score.
     private val SHORT_NAME = Regex("""^[A-Z]\.[\s\u00a0]+[A-Za-z\u00c0-\u024f'\- ]{2,30}$""")
     private val WINNER = Regex("""([A-Z][^.]{2,40}?)\s+wins the match""", RegexOption.IGNORE_CASE)
 
     /** True when the page carried numbers rather than the empty JavaScript template. */
-    fun hasStats(text: String): Boolean = ACES.containsMatchIn(text)
+    private fun acePair(text: String): Pair<Int, Int>? {
+        val before = ACES_BEFORE_LABELS.find(text)
+        val after = before ?: LABELS_BEFORE_ACES.find(text)
+        if (after == null) return null
+        val firstGroup = if (before != null) 1 else 1
+        val secondGroup = if (before != null) 2 else 2
+        val first = after.groupValues[firstGroup].toIntOrNull() ?: return null
+        val second = after.groupValues[secondGroup].toIntOrNull() ?: return null
+        return first to second
+    }
+
+    fun hasStats(text: String): Boolean = acePair(text) != null
 
     fun parse(text: String): AtpMatchStats? {
-        val aces = ACES.find(text) ?: return null
+        val (firstAces, secondAces) = acePair(text) ?: return null
         val serves = FIRST_SERVE.findAll(text).toList()
         if (serves.size < 2) return null
 
+        // The full player-name headings are cosmetic for this metric. Some ATP page renders omit
+        // the abbreviated names, while the ace and serve totals remain sufficient to rate a match.
         val names = text.lines().map { it.trim() }.filter { SHORT_NAME.matches(it) }
-        if (names.size < 2) return null
+        val firstPlayer = names.getOrNull(0) ?: "Player 1"
+        val secondPlayer = names.getOrNull(1) ?: "Player 2"
 
-        val firstAces = aces.groupValues[1].toIntOrNull() ?: return null
-        val secondAces = aces.groupValues[2].toIntOrNull() ?: return null
-        // The denominator of "first serve made/attempted" is that player's total service
-        // points: first-serve attempts plus second-serve attempts.
-        val firstPoints = serves[0].groupValues[2].toIntOrNull() ?: return null
-        val secondPoints = serves[1].groupValues[2].toIntOrNull() ?: return null
+        // Both supported ATP layouts preserve made/attempted; the second value is total service
+        // points (first-serve plus second-serve attempts).
+        fun servicePoints(match: MatchResult): Int? =
+            (match.groups[2]?.value ?: match.groups[4]?.value)?.toIntOrNull()
+
+        val firstPoints = servicePoints(serves[0]) ?: return null
+        val secondPoints = servicePoints(serves[1]) ?: return null
         if (firstPoints <= 0 || secondPoints <= 0) return null
 
         val winner = WINNER.find(text)?.groupValues?.get(1)?.trim().orEmpty()
-        val firstSurname = names[0].substringAfter(". ").trim()
-        val firstWon = winner.isNotEmpty() && winner.contains(firstSurname, ignoreCase = true)
+        val firstSurname = firstPlayer.substringAfter(". ", "").trim()
+        val firstWon = firstSurname.isNotEmpty() &&
+            winner.isNotEmpty() && winner.contains(firstSurname, ignoreCase = true)
 
         return AtpMatchStats(
-            firstPlayer = names[0],
-            secondPlayer = names[1],
+            firstPlayer = firstPlayer,
+            secondPlayer = secondPlayer,
             firstAces = firstAces,
             firstServePoints = firstPoints,
             secondAces = secondAces,
