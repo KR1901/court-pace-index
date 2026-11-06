@@ -81,7 +81,7 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
-    fun `does not count a set that lacks service point totals`() {
+    fun `rejects a retirement fallback if any played set lacks service point totals`() {
         val played = listOf(
             AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
             AtpInfosysStatsClient.StatRow("Service Points Won", "20/30", "25/40"),
@@ -90,12 +90,7 @@ class AtpInfosysStatsClientTest {
             AtpInfosysStatsClient.StatRow("Aces", "1", "4"),
         )
 
-        val stats = client.aggregateSetStatsRows(listOf(played, incomplete))!!
-
-        assertEquals(3, stats.firstAces)
-        assertEquals(2, stats.secondAces)
-        assertEquals(30, stats.firstServePoints)
-        assertEquals(40, stats.secondServePoints)
+        assertNull(client.aggregateSetStatsRows(listOf(played, incomplete)))
     }
 
     @Test
