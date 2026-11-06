@@ -68,6 +68,17 @@ app labels and dims the computed seasons wherever it shows them.
    with serve stats, used by `tools/compute_speed.py` to recompute the speed series back to
    2012. This is the only derived series in the app.
 
+### Live Surface Speed coverage
+
+The live ATP result row shows two separate coverage fractions:
+
+- `matches / discoveredMatches`: completed eligible singles matches with usable Infosys statistics, divided by completed eligible singles matches discovered from ATP.
+- `adjustedServerSides / totalServerSides`: server-side observations that entered the opponent-adjusted mean, divided by `2 × discoveredMatches`. The denominator grows as more completed matches are discovered; it is not a fixed tournament constant.
+
+A match contributes up to two server-side observations. An observation is included only when both players have usable serve and return-concession profiles, the serve statistics are valid, and the historical expected-aces value is greater than 0.5. That final guard is part of the historical calculation; it must not be bypassed just to display 96/96. Therefore a result below 96/96 can be valid even when all player names resolve.
+
+The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. Each profile records its source season and sample size. Historical ranked calculations and the season normaliser are unchanged.
+
 ### Refreshing
 
 `data/latest.json` is the file the app's refresh button reads. A scheduled workflow
