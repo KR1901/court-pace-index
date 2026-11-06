@@ -237,6 +237,11 @@ class AtpLiveClient(context: Context) {
         )
         return rating.copy(
             discoveredMatches = eligibleIds.size,
+            // The denominator tracks every eligible completed singles match discovered on
+            // ATP (two possible server sides each), not only matches whose Stats Plus payload
+            // happened to arrive. The separate matches/discoveredMatches fraction exposes
+            // missing match-stat payloads without shrinking the event denominator.
+            totalServerSides = eligibleIds.size * 2,
             missingMatchIds = missingIds,
             missingReasons = missingReasons,
             inProgressMatches = inProgressMatches,
