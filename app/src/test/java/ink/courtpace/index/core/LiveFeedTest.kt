@@ -149,6 +149,31 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a live speed baseline must contain enough usable player profiles`() {
+        val profiles = (1..20).map { index ->
+            LiveSpeedPlayerProfile(
+                name = "Player $index",
+                serveRate = 0.12,
+                concedeRate = 0.08,
+            )
+        }
+        val baseline = LiveSpeedBaseline(
+            season = data.dataset.meta.season,
+            profileSeason = data.dataset.meta.season,
+            normalisation = 1.02,
+            generated = "2026-11-06T00:00:00Z",
+            profiles = profiles,
+        )
+
+        assertTrue(DatasetPolicy.isAcceptable(data.dataset.copy(speedBaseline = baseline)))
+        assertFalse(
+            DatasetPolicy.isAcceptable(
+                data.dataset.copy(speedBaseline = baseline.copy(profiles = profiles.take(19))),
+            ),
+        )
+    }
+
+    @Test
     fun `an invalid opponent adjustment baseline rejects the dataset`() {
         val invalid = data.dataset.copy(
             speedBaseline = LiveSpeedBaseline(
