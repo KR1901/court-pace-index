@@ -14,10 +14,11 @@ Run:  python3 tools/compute_speed.py            # compute and validate against 2
 """
 import csv, json, os, sys, urllib.request
 from collections import defaultdict
+from datetime import date, datetime, timezone
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
-YEARS = range(2012, 2027)
+YEARS = range(2012, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F"}          # Slams, Masters, ATP 250/500, Finals
 MIN_MATCHES_PER_SURFACE = 3
 
@@ -235,6 +236,34 @@ def main():
         print(f"\nvalidation on {n} events in 2026: correlation r = {r:.3f}, mean |diff| = {mae:.3f}")
 
     if "--write" in sys.argv:
+        # Export the same season-wide player profiles and normaliser used by historical Speed.
+        current_year = date.today().year
+        current_usable = valid_rows(load(current_year))
+        profiles = player_rates(current_usable)
+        raw_events, _, _, _ = event_raw_scores(current_usable, profiles)
+        if not raw_events:
+            raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events")
+        normalisation = sum(raw_events.values()) / len(raw_events)
+        baseline = {
+            "season": current_year,
+            "normalisation": round(normalisation, 10),
+            "generated": datetime.now(timezone.utc).isoformat(),
+            "profiles": [
+                {
+                    "name": profile["name"],
+                    "serveRate": round(profile["serve_rate"], 10) if profile["serve_rate"] is not None else None,
+                    "concedeRate": round(profile["concede_rate"], 10) if profile["concede_rate"] is not None else None,
+                }
+                for profile in profiles.values()
+                if profile["name"] and (profile["serve_rate"] is not None or profile["concede_rate"] is not None)
+            ],
+            "ratedEvents": len(raw_events),
+        }
+        baseline_path = os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json")
+        os.makedirs(os.path.dirname(baseline_path), exist_ok=True)
+        json.dump(baseline, open(baseline_path, "w"), indent=1, ensure_ascii=False)
+        print(f"wrote {baseline_path}: {len(baseline['profiles'])} player profiles, normalisation {normalisation:.6f}")
+
         out_path = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
