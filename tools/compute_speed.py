@@ -162,6 +162,7 @@ def player_rates(usable):
 LIVE_PROFILE_FALLBACK_SEASONS = 10
 LIVE_PROFILE_PRIOR_SERVICE_POINTS = 300.0
 MIN_EXPECTED_ACES = 0.0
+EXPECTED_ACES_FLOOR = 0.5
 
 
 def _surface_priors(profiles):
@@ -399,11 +400,12 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None):
             if denom <= 0:
                 continue
             expected = ((ps * qr) / denom) * sv
-            # Keep every mathematically valid player-server side. The former 0.5-ace
-            # floor dropped low-ace players from live events; both historical and live
-            # calculations now share the positive-expectation-only rule.
+            # Keep every mathematically valid player-server side. A 0.5-ace floor is
+            # applied to the expected count (rather than dropping the side) so tiny
+            # expectations cannot dominate the event mean. Android uses the same rule.
             if expected <= MIN_EXPECTED_ACES:
                 continue
+            expected = max(expected, EXPECTED_ACES_FLOOR)
             per_event[tid].append(ac / expected)
 
     raw = {t: sum(v) / len(v) for t, v in per_event.items() if len(v) >= 20}
@@ -552,8 +554,8 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": "2026-11-04",
-            "method": "ace rate adjusted for the servers and returners in each match, "
-                      "normalised so a tour-average event of the season reads 1.00",
+            "method": "ace rate adjusted for the servers and returners in each match; positive expected-ace "
+                      "values are floored at 0.5 to retain valid low-ace sides, normalised so a tour-average event of the season reads 1.00",
             "source": "ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0)",
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
