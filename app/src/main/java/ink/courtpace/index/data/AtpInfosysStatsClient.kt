@@ -347,13 +347,35 @@ internal class AtpInfosysStatsClient {
         val player2: String,
     )
 
+    /** Prefer full ATP player names when the feed exposes them; older payloads only have initials. */
+    internal fun playerName(
+        firstName: String?,
+        lastName: String?,
+        abbreviatedName: String?,
+        fallback: String,
+    ): String {
+        fun clean(value: String?): String? =
+            value?.trim()?.takeIf { it.isNotBlank() && !it.equals("null", ignoreCase = true) }
+
+        val fullName = listOfNotNull(clean(firstName), clean(lastName)).joinToString(" ")
+            .takeIf { it.isNotBlank() }
+        return fullName ?: clean(abbreviatedName) ?: fallback
+    }
+
     internal fun parseStats(payload: JSONObject): AtpMatchStats? {
         val statsRoot = payload.optJSONObject("setStats") ?: return null
         val players = payload.optJSONArray("players")
-        val firstName = players?.optJSONObject(0)?.optString("player1Name")
-            ?.takeIf { it.isNotBlank() } ?: "Player 1"
-        val secondName = players?.optJSONObject(1)?.optString("player1Name")
-            ?.takeIf { it.isNotBlank() } ?: "Player 2"
+        fun playerAt(index: Int, fallback: String): String {
+            val player = players?.optJSONObject(index) ?: return fallback
+            return playerName(
+                firstName = player.optString("player1FirstName"),
+                lastName = player.optString("player1LastName"),
+                abbreviatedName = player.optString("player1Name"),
+                fallback = fallback,
+            )
+        }
+        val firstName = playerAt(0, "Player 1")
+        val secondName = playerAt(1, "Player 2")
 
         val wholeMatchRows = statsRoot.optJSONArray("set0")?.let(::rowsFromJson)
         // Inspect all possible set arrays, not just setsCompleted: a retirement can contain
