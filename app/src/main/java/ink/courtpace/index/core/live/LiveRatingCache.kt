@@ -35,7 +35,7 @@ data class CachedLiveRating(
         if (
             matches <= 0 ||
             discovered < matches ||
-            total != matches * 2 ||
+            total != discovered * 2 ||
             adjusted < AceRating.MIN_ADJUSTED_SERVER_SIDES ||
             adjusted > total ||
             !speed.isFinite() ||
