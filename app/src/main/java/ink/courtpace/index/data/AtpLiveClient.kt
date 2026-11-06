@@ -97,8 +97,12 @@ class AtpLiveClient(context: android.content.Context) {
                         // worth a browser, and the rest are skipped instead of waiting out a
                         // render timeout - that wait, on every non-existent id, is what kept the
                         // count at thirteen.
-                        val shell = get(url)
-                        if (shell != null && !looksLikeMatch(shell)) {
+                        val (status, shell) = probe(url)
+                        // Only a page that does not exist is safe to skip. An earlier version
+                        // also skipped when the raw HTML title looked wrong, but that title is
+                        // generic until JavaScript sets it - so real matches were being thrown
+                        // away, which is why the count fell from fourteen to six.
+                        if (status == 404) {
                             return@withPermit
                         }
                         if (shell != null && shell.contains(AtpWebReader.BLOCKED, true)) {
@@ -138,25 +142,6 @@ class AtpLiveClient(context: android.content.Context) {
     }
 
     /**
-     * The match ids the event actually has, taken from the links on its results page.
-     *
-     * Walking a guessed range was the wrong approach: the ids are sparse in a way that does not
-     * follow the draw, so ninety-five attempts found fourteen matches while the rest of the
-     * range was empty. The results page links to every match's stats page, so its own hrefs are
-     * the authoritative list.
-     */
-    /** The page title names the match when the id exists; a placeholder means it does not. */
-    /** The event's URL slug, needed to reach its results page. */
-    /**
-     * The URL slug for an event. Paris is the only one currently live, but returning "paris" for
-     * every id - as this did - would silently request the wrong page for any other event.
-     */
-    private fun looksLikeMatch(html: String): Boolean =
-        Regex("<title>(.*?)</title>", RegexOption.DOT_MATCHES_ALL)
-            .find(html)?.groupValues?.get(1)
-            ?.contains(" vs", ignoreCase = true) == true
-
-    /**
      * A plain GET, always off the main thread.
      *
      * This was a blocking call invoked from a coroutine running on Main, so Android threw
@@ -164,7 +149,14 @@ class AtpLiveClient(context: android.content.Context) {
      * - silently, every time. That is why discovery always reported "0B page" and never found a
      * single link, while the WebView path kept working because it loads asynchronously.
      */
-    private suspend fun get(url: String): String? = kotlinx.coroutines.withContext(Dispatchers.IO) {
+    private suspend fun get(url: String): String? = probe(url).second
+
+    /**
+     * Status code and body. The status is what distinguishes "this match does not exist" from
+     * "this page needs rendering", and only the first is safe to skip.
+     */
+    private suspend fun probe(url: String): Pair<Int, String?> =
+        kotlinx.coroutines.withContext(Dispatchers.IO) {
         try {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
@@ -178,14 +170,16 @@ class AtpLiveClient(context: android.content.Context) {
             instanceFollowRedirects = true
         }
         try {
-            if (connection.responseCode in 200..299) {
+            val status = connection.responseCode
+            val body = if (status in 200..299) {
                 connection.inputStream.bufferedReader().use { it.readText() }
             } else null
+            status to body
         } finally {
             connection.disconnect()
         }
         } catch (error: Exception) {
-            null
+            0 to null
         }
     }
 
