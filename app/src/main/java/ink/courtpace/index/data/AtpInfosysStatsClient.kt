@@ -21,10 +21,9 @@ import javax.crypto.spec.SecretKeySpec
 /**
  * Reads ATP Stats Plus directly from the Infosys JSON feed.
  *
- * ATP's browser page is only a presentation layer. The Infosys response contains a setStats.set0
- * array with one row per statistic and player1/player2 values. Some responses wrap that JSON in
- * an AES-CBC envelope (lastModified + base64 response); both the API and static feed variants are
- * supported because ATP has used both.
+ * The ATP Stats Centre API is tried first, with the static S3 feed as fallback. Infosys
+ * CloudFront/WAF requires browser-equivalent headers and HTTP/2. Responses contain setStats rows
+ * and may be AES-CBC wrapped (lastModified + base64 response).
  */
 internal class AtpInfosysStatsClient {
 
@@ -45,7 +44,7 @@ internal class AtpInfosysStatsClient {
         val state: MatchDataState = MatchDataState.UNAVAILABLE,
     )
 
-    /** The static JSON feed is the established public ATP Stats Plus endpoint. */
+    /** API first, static S3 feed second; both routes are used by Infosys integrations. */
     internal fun endpointsForMatch(year: Int, eventId: Int, matchId: String): List<String> {
         val id = matchId.uppercase()
         // The ATP Stats Centre uses the API route; static S3 is the fallback.
@@ -106,9 +105,8 @@ internal class AtpInfosysStatsClient {
         }
 
     /**
-     * ATP's own Infosys scraper retries failed requests up to three times with exponential
-     * backoff. A single 403 can be a transient edge refusal; do not permanently drop a match
-     * after one response. Each endpoint still has its own bounded retry budget.
+     * Retry transient edge/server failures, but don't repeat explicit S3 policy/object denials.
+     * Each endpoint has its own bounded retry budget before trying the alternate route.
      */
     private fun request(url: String): Pair<String?, String> {
         var last = null as Pair<String?, String>?
