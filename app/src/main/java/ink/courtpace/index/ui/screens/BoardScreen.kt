@@ -373,7 +373,7 @@ private fun LivePendingRow(
                                 if (ace.walkoversExcluded > 0) {
                                     append(" · ")
                                     append(ace.walkoversExcluded)
-                                    append(" walkovers excluded")
+                                    append(" walkovers/no-play excluded")
                                 }
                                 if (ace.missingMatchIds.isNotEmpty()) {
                                     append("\nMissing: ")
@@ -384,6 +384,11 @@ private fun LivePendingRow(
                                             "$id ($shortReason)"
                                         },
                                     )
+                                    if (ace.missingMatchIds.size > 2) {
+                                        append(" +")
+                                        append(ace.missingMatchIds.size - 2)
+                                        append(" more")
+                                    }
                                 }
                             } else if (datasetMatches != null && datasetMatches > 0) {
                                 append(" · ")
@@ -418,7 +423,7 @@ private fun LivePendingRow(
                     },
                     style = TextStyle(fontSize = 11.sp),
                     color = colors.textDim,
-                    maxLines = 2,
+                    maxLines = 3,
                 )
             }
         }
