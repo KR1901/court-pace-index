@@ -33,6 +33,11 @@ object AtpStatsParser {
         """(?:([0-9]+)/([0-9]+)\s*\([0-9]+%\)\s*First serve|First serve\s*([0-9]+)/([0-9]+)\s*\([0-9]+%\))""",
         RegexOption.IGNORE_CASE,
     )
+    // Total service points are also printed explicitly on ATP's stats cards.
+    private val SERVICE_POINTS = Regex(
+        """(?:([0-9]+)/([0-9]+)\s*\([0-9]+%\)\s*Service Points Won|Service Points Won\s*([0-9]+)/([0-9]+)\s*\([0-9]+%\))""",
+        RegexOption.IGNORE_CASE,
+    )
     // "F. Comesana" - the two short names that flank the score.
     private val SHORT_NAME = Regex("""^[A-Z]\.[\s\u00a0]+[A-Za-z\u00c0-\u024f'\- ]{2,30}$""")
     private val WINNER = Regex("""([A-Z][^.]{2,40}?)\s+wins the match""", RegexOption.IGNORE_CASE)
@@ -50,8 +55,12 @@ object AtpStatsParser {
 
     fun parse(text: String): AtpMatchStats? {
         val (firstAces, secondAces) = acePair(text) ?: return null
-        val serves = FIRST_SERVE.findAll(text).toList()
-        if (serves.size < 2) return null
+        // First-serve attempts' denominator is total service points. If ATP changes the
+        // order/name of that field, fall back to its explicit Service Points Won row, whose
+        // denominator is the same total.
+        val serves = FIRST_SERVE.findAll(text).toList().takeIf { it.size >= 2 }
+            ?: SERVICE_POINTS.findAll(text).toList().takeIf { it.size >= 2 }
+            ?: return null
 
         // The full player-name headings are cosmetic for this metric. Some ATP page renders omit
         // the abbreviated names, while the ace and serve totals remain sufficient to rate a match.
