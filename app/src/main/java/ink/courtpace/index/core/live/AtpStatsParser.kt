@@ -120,8 +120,10 @@ object AceRating {
         val missingMatchIds: List<String> = emptyList(),
         /** Per-ID endpoint/response reason, retained for diagnosis rather than silently dropped. */
         val missingReasons: Map<String, String> = emptyMap(),
-        /** Live-route links excluded because their matches are not complete yet. */
+        /** Live-route or feed-marked in-progress links excluded from the rating. */
         val inProgressMatches: Int = 0,
+        /** Confirmed walkovers/no-play results excluded without attempting to invent statistics. */
+        val walkoversExcluded: Int = 0,
     )
 
     /** Tour-level ace rate, 2022-2025. */
