@@ -41,6 +41,7 @@ object DatasetPolicy {
                             "current-season-qualified",
                             "prior-season-qualified",
                             "current-season-shrunk",
+                            "prior-season-shrunk",
                         ))
                 }) return false
             val usableProfiles = baseline.profiles.count { profile ->
