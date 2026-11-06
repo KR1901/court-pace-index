@@ -427,8 +427,10 @@ def main():
                 "concedeRate": profile["concede_rate"],
                 "serveRateSeason": profile["serve_rate_season"],
                 "serveRateSource": profile["serve_rate_source"],
-                "serveRateSampleMatches": profile["serve_rate_sample_matches"],
-                "serveRateSampleServicePoints": profile["serve_rate_sample_points"],
+                "serveRateSampleMatches": int(profile["serve_rate_sample_matches"]),
+                # Service-point totals are integer counts. The archive parser uses float
+                # arithmetic for rates, so explicitly cast before serialising for Kotlin Int?.
+                "serveRateSampleServicePoints": int(round(profile["serve_rate_sample_points"])),
                 "serveRatePriorServicePoints": profile.get("serve_rate_prior_points"),
                 "concedeRateSeason": profile["concede_rate_season"],
             }
