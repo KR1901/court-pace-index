@@ -112,11 +112,13 @@ internal class AtpInfosysStatsClient {
             status == null -> diagnostic.contains("Exception", ignoreCase = true) ||
                 diagnostic.contains("timeout", ignoreCase = true) ||
                 diagnostic.contains("reset", ignoreCase = true)
-            status == 403 || status == 408 || status == 425 || status == 429 -> true
-            status in 500..599 -> true
-            else -> false
+            else -> shouldRetryStatus(status)
         }
     }
+
+    internal fun shouldRetryStatus(status: Int): Boolean =
+        status == 403 || status == 408 || status == 425 || status == 429 ||
+            status in 500..599
 
     private fun requestOnce(url: String): Pair<String?, String> {
         val connection = URL(url).openConnection() as HttpURLConnection
