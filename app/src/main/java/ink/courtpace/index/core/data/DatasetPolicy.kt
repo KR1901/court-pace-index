@@ -20,7 +20,7 @@ object DatasetPolicy {
         if (ids.size != dataset.tournaments.size) return false
         if (dataset.readings.any { it.t !in ids }) return false
         dataset.speedBaseline?.let { baseline ->
-            if (baseline.season != dataset.meta.season) return false
+            if (baseline.season != dataset.meta.season || baseline.profileSeason !in 1990..2100) return false
             if (!baseline.normalisation.isFinite() || baseline.normalisation <= 0.0) return false
             if (baseline.profiles.any { profile ->
                     profile.name.isBlank() ||
