@@ -37,6 +37,20 @@ class AtpInfosysStatsClientTest {
     }
 
     @Test
+    fun `validated archive stats win over a stale not-completed metadata flag`() {
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.PLAYED,
+            client.classifyMatchData(
+                matchCompleted = false,
+                isDoubles = false,
+                setsCompleted = 1,
+                hasPlayedSetData = true,
+                statsAvailable = true,
+            ),
+        )
+    }
+
+    @Test
     fun `classifies match outcomes generically from feed metadata and played-set presence`() {
         assertEquals(
             AtpInfosysStatsClient.MatchDataState.NO_PLAYED_DATA,
