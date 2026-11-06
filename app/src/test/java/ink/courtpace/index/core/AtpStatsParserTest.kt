@@ -3,6 +3,8 @@ package ink.courtpace.index.core
 import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.live.AtpMatchStats
 import ink.courtpace.index.core.live.AtpStatsParser
+import ink.courtpace.index.core.model.LiveSpeedBaseline
+import ink.courtpace.index.core.model.LiveSpeedPlayerProfile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -115,19 +117,34 @@ class AtpStatsParserTest {
         assertNull(AtpStatsParser.parse(template))
     }
 
+    private val baseline = LiveSpeedBaseline(
+        season = 2026,
+        normalisation = 1.0,
+        profiles = listOf(
+            LiveSpeedPlayerProfile("A. Server", serveRate = 0.15, concedeRate = 0.10),
+            LiveSpeedPlayerProfile("B. Returner", serveRate = 0.25, concedeRate = 0.20),
+        ),
+    )
+
+    private fun sampleMatches(count: Int = 10) = (1..count).map {
+        AtpMatchStats("A. Server", "B. Returner", 6, 40, 6, 40, true)
+    }
+
     @Test
-    fun `a rating needs enough matches to mean anything`() {
-        val one = AtpStatsParser.parse(page)!!
-        assertNull(AceRating.rate(listOf(one)))
+    fun `a rating needs enough matches and adjusted server observations`() {
+        assertNull(AceRating.rate(sampleMatches(1), baseline))
+        assertNull(
+            AceRating.rate(
+                sampleMatches(10),
+                baseline.copy(profiles = baseline.profiles.filterNot { it.name == "B. Returner" }),
+            ),
+        )
     }
 
     @Test
     fun `live result preserves discovered denominator and missing match diagnostics`() {
-        val matches = (1..AceRating.MIN_MATCHES).map {
-            AtpMatchStats("A. Server", "B. Returner", 6, 40, 6, 40, true)
-        }
-        val result = AceRating.rate(matches)!!.copy(
-            discoveredMatches = 10,
+        val result = AceRating.rate(sampleMatches())!!.copy(
+            discoveredMatches = 12,
             missingMatchIds = listOf("ms051", "ms054"),
             missingReasons = mapOf(
                 "ms051" to "HTTP 404",
@@ -137,57 +154,49 @@ class AtpStatsParserTest {
             walkoversExcluded = 1,
         )
 
-        assertEquals(8, result.matches)
-        assertEquals(10, result.discoveredMatches)
+        assertEquals(10, result.matches)
+        assertEquals(12, result.discoveredMatches)
         assertEquals(listOf("ms051", "ms054"), result.missingMatchIds)
         assertEquals("HTTP 404", result.missingReasons["ms051"])
         assertEquals(1, result.inProgressMatches)
         assertEquals(1, result.walkoversExcluded)
+        assertEquals(20, result.adjustedServerSides)
     }
 
     @Test
-    fun `a serve-dominated event rates above one`() {
-        val matches = (1..AceRating.MIN_MATCHES).map {
-            AtpMatchStats("A. Server", "B. Returner", 6, 40, 6, 40, true)
-        }
-        val result = AceRating.rate(matches)!!
-        assertEquals(AceRating.MIN_MATCHES, result.matches)
-        assertEquals(12 * AceRating.MIN_MATCHES, result.aces)
-        // 12 aces per 80 service points is 15%, well above the 7.83% tour rate.
-        assertEquals(0.15 / AceRating.BASELINE_ACE_RATE, result.rating, 1e-6)
-        assertTrue("expected a fast reading, got ${result.rating}", result.rating > 1.0)
+    fun `rating uses server and returner tendencies rather than pooled ace rate`() {
+        val ordinary = AceRating.rate(sampleMatches())!!
+        val strongerReturner = AceRating.rate(
+            sampleMatches(),
+            baseline.copy(
+                profiles = listOf(
+                    baseline.profiles[0],
+                    baseline.profiles[1].copy(concedeRate = 0.35),
+                ),
+            ),
+        )!!
+
+        assertEquals(0.15, ordinary.aceRate, 1e-9)
+        assertTrue(
+            "opponent adjustment should change the rating when returner tendency changes",
+            kotlin.math.abs(ordinary.rating - strongerReturner.rating) > 1e-3,
+        )
     }
 
     @Test
-    fun `an event serving at the tour rate rates at one`() {
-        // 78 aces per 1000 service points is 7.8%, the tour rate, so the rating is 1.00.
-        val matches = (1..AceRating.MIN_MATCHES).map {
-            AtpMatchStats("A. Server", "B. Returner", 78, 1000, 78, 1000, true)
-        }
-        val result = AceRating.rate(matches)!!
-        assertEquals(1.0, result.rating, 0.02)
+    fun `historical normalisation centres a tour average event at one`() {
+        val raw = AceRating.rate(sampleMatches())!!
+        val centred = AceRating.rate(sampleMatches(), baseline.copy(normalisation = raw.rating))!!
+        assertEquals(1.0, centred.rating, 1e-9)
     }
 
     @Test
-    fun `the rating covers every match it is given, not a sample`() {
-        // Thirty matches with identical numbers must report thirty, and the same rate.
-        val matches = (1..30).map {
-            AtpMatchStats("A. Server", "B. Returner", 4, 50, 4, 50, true)
-        }
+    fun `every parsed match contributes both players service observations`() {
+        val matches = sampleMatches(15)
         val result = AceRating.rate(matches)!!
-        assertEquals(30, result.matches)
-        assertEquals(8 * 30, result.aces)
-        // One match must not dominate: dropping half leaves the same rate.
-        val half = AceRating.rate(matches.take(15))!!
-        assertEquals(result.rating, half.rating, 1e-9)
-    }
-
-    @Test
-    fun `a slow event rates below one`() {
-        val matches = (1..AceRating.MIN_MATCHES).map {
-            AtpMatchStats("A. Server", "B. Returner", 1, 60, 1, 60, true)
-        }
-        val result = AceRating.rate(matches)!!
-        assertTrue("expected a slow reading, got ${result.rating}", result.rating < 1.0)
+        assertEquals(15, result.matches)
+        assertEquals(30, result.adjustedServerSides)
+        assertEquals(12 * 15, result.aces)
+        assertEquals(80 * 15, result.aceRate.let { (it * 1200).toInt() })
     }
 }
