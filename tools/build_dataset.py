@@ -220,8 +220,16 @@ if os.path.exists(LIVE_FEED):
 
 doc = {
     "meta": {
-        "generated": "2026-11-03",
-        "season": 2026,
+        "generated": (
+            json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))).get("generated", "2026-11-03")
+            if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
+            else "2026-11-03"
+        ),
+        "season": (
+            json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))).get("season", 2026)
+            if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
+            else 2026
+        ),
         "sources": [
             {
                 "id": "courtspeed",
