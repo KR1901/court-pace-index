@@ -18,12 +18,12 @@ BASELINE = 0.078313
 MIN_MATCHES = 8
 
 ACES = re.compile(
-    r"(?:([0-9]+)\\s*Aces\\s*([0-9]+)\\s*Aces|Aces\\s*([0-9]+)\\s*Aces\\s*([0-9]+))",
+    r"(?:([0-9]+)\s*Aces\s*([0-9]+)\s*Aces|Aces\s*([0-9]+)\s*Aces\s*([0-9]+))",
     re.I,
 )
 FIRST_SERVE = re.compile(
-    r"(?:([0-9]+)/([0-9]+)\\s*\\([0-9]+%\\)\\s*First serve|"
-    r"First serve\\s*([0-9]+)/([0-9]+)\\s*\\([0-9]+%\\))",
+    r"(?:([0-9]+)/([0-9]+)\s*\([0-9]+%\)\s*First serve|"
+    r"First serve\s*([0-9]+)/([0-9]+)\s*\([0-9]+%\))",
     re.I,
 )
 STATS_LINK = re.compile(
