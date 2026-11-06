@@ -58,7 +58,9 @@ class AtpWebReader(private val context: Context) {
                     if (finished || !polling) return
                     runCatching {
                         web.evaluateJavascript(
-                            "(function(){return document.body ? document.body.innerText : ''})()",
+                            "(function(){var b=document.body;return (b?b.innerText:'')+" +
+                                "'\\n[ATP_WEBVIEW] url='+location.href+' title='+document.title+" +
+                                "' ready='+document.readyState})()",
                         ) { raw ->
                             val text = decode(raw)
                             if (text != null) latestText = text
