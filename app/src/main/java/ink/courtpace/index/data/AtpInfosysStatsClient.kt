@@ -92,9 +92,10 @@ internal class AtpInfosysStatsClient {
         var last = null as Pair<String?, String>?
         for (attempt in 1..MAX_HTTP_ATTEMPTS) {
             last = requestOnce(url)
-            if (last.first != null || !shouldRetry(last.second) || attempt == MAX_HTTP_ATTEMPTS) {
+            if (last.first != null || !shouldRetry(last.second)) {
                 return last
             }
+            if (attempt == MAX_HTTP_ATTEMPTS) break
             val retryAfterSeconds = Regex("""retry-after=([0-9]+)""", RegexOption.IGNORE_CASE)
                 .find(last.second)?.groupValues?.get(1)?.toLongOrNull()
             val exponentialDelay = RETRY_BASE_DELAY_MS * (1L shl (attempt - 1))
@@ -149,7 +150,7 @@ internal class AtpInfosysStatsClient {
             } else {
                 val server = connection.getHeaderField("Server")?.take(48)
                 val retryAfter = connection.getHeaderField("Retry-After")?.take(16)
-                val sample = body.replace(Regex("""[ \\t\\r\\n]+"""), " ").take(MAX_ERROR_BODY_CHARS)
+                val sample = body.trim().take(MAX_ERROR_BODY_CHARS)
                 val details = buildList {
                     add("HTTP $status (${body.length} chars)")
                     if (!server.isNullOrBlank()) add("server=$server")
