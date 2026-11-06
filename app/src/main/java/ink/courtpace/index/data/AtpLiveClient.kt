@@ -143,7 +143,7 @@ class AtpLiveClient(context: Context) {
         // downloading already-read pages again.
         store.writeAll(eventKey, collected)
         val found = collected.values.toList()
-        AceRating.rate(found) ?: error(
+        return AceRating.rate(found) ?: error(
             when {
                 found.isNotEmpty() ->
                     "only ${found.size} completed matches have stats so far " +
