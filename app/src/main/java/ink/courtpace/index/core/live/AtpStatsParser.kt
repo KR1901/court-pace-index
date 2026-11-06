@@ -129,6 +129,7 @@ object AceRating {
     const val MIN_MATCHES = 8
     const val MIN_ADJUSTED_SERVER_SIDES = 20
     const val MIN_EXPECTED_ACES = 0.0
+    const val EXPECTED_ACES_FLOOR = 0.5
 
     private fun normaliseName(value: String): String {
         val decomposed = java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
@@ -273,10 +274,10 @@ object AceRating {
             val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
             if (denominator <= 0.0) return
             val expected = (joint / denominator) * servicePoints
-            // Match the historical pipeline: retain every valid side with positive expected aces.
-            // A 0.5-ace floor silently discarded valid low-ace players and prevented full coverage.
+            // Match the historical pipeline: retain every valid positive-expectation side.
+            // Floor expected aces at 0.5 to avoid unstable ratios without discarding a player side.
             if (!expected.isFinite() || expected <= MIN_EXPECTED_ACES) return
-            ratios += aces.toDouble() / expected
+            ratios += aces.toDouble() / maxOf(expected, EXPECTED_ACES_FLOOR)
         }
 
         matches.forEach { match ->
@@ -307,8 +308,10 @@ object AceRating {
      * Same opponent-adjusted calculation as tools/compute_speed.py:
      * expected aces = ((serveRate * concedeRate) /
      * (serveRate * concedeRate + (1-serveRate) * (1-concedeRate))) * servicePoints.
-     * Average actual/expected ratios over both server sides, then divide by the season-wide
-     * mean of historical event raw scores. Missing player profiles are omitted, never replaced
+     * Expected-ace counts below 0.5 are floored at 0.5 rather than excluded, so valid low-ace
+     * player sides remain covered without allowing tiny expectations to dominate. Average
+     * actual/expected ratios over both server sides, then divide by the season-wide mean of
+     * historical event raw scores. Missing player profiles are omitted, never replaced
      * by the pooled-rate approximation.
      */
     fun rate(
