@@ -423,7 +423,7 @@ internal class AtpInfosysStatsClient {
             val a2 = aces.player2.trim().toIntOrNull() ?: return null
             val p1 = denominator(servicePoints.player1) ?: return null
             val p2 = denominator(servicePoints.player2) ?: return null
-            if (p1 <= 0 || p2 <= 0 || a1 > p1 || a2 > p2) return null
+            if (p1 <= 0 || p2 <= 0 || a1 < 0 || a2 < 0 || a1 > p1 || a2 > p2) return null
 
             firstAces += a1
             secondAces += a2
@@ -446,10 +446,18 @@ internal class AtpInfosysStatsClient {
         )
     }
 
+    /**
+     * Stats Plus formats this as service-points-won / total-service-points (possibly followed by
+     * a percentage). Keep the denominator for the rating, but validate the ratio itself.
+     */
     private fun denominator(value: String): Int? {
         val ratio = value.trim().substringBefore(" ")
         val parts = ratio.split("/")
-        return if (parts.size == 2) parts[1].toIntOrNull() else null
+        if (parts.size != 2) return null
+        val won = parts[0].toIntOrNull() ?: return null
+        val total = parts[1].toIntOrNull() ?: return null
+        if (won < 0 || total <= 0 || won > total) return null
+        return total
     }
 
     companion object {
