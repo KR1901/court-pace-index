@@ -15,6 +15,98 @@ class AtpInfosysStatsClientTest {
 
 
     @Test
+    fun `tries the established static keystats feed before the API fallback`() {
+        val endpoints = client.endpointsForMatch(2026, 352, "ms043")
+
+        assertEquals(
+            "https://itp-atp-sls.infosys-platforms.com/static/prod/stats-plus/2026/352/MS043/keystats.json",
+            endpoints.first(),
+        )
+        assertEquals(
+            "https://itp-atp-sls.infosys-platforms.com/prod/api/stats-plus/v1/keystats/year/2026/eventId/352/matchId/MS043",
+            endpoints[1],
+        )
+    }
+
+    @Test
+    fun `classifies match outcomes generically from feed metadata and played-set presence`() {
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.NO_PLAYED_DATA,
+            client.classifyMatchData(true, false, 0, false, false),
+        )
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.PLAYED,
+            client.classifyMatchData(true, false, 2, true, true),
+        )
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.INCOMPLETE_STATS,
+            client.classifyMatchData(true, false, 2, true, false),
+        )
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.IN_PROGRESS,
+            client.classifyMatchData(false, false, 0, true, false),
+        )
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.DOUBLES,
+            client.classifyMatchData(true, true, 2, true, true),
+        )
+        assertEquals(
+            AtpInfosysStatsClient.MatchDataState.INCOMPLETE_STATS,
+            client.classifyMatchData(null, false, null, false, false),
+        )
+    }
+
+    @Test
+    fun `uses set zero aggregate instead of double counting the per-set rows`() {
+        val whole = listOf(
+            AtpInfosysStatsClient.StatRow("Aces", "7", "5"),
+            AtpInfosysStatsClient.StatRow("Service Points Won", "47/69", "45/68"),
+        )
+        val sets = listOf(
+            listOf(
+                AtpInfosysStatsClient.StatRow("Aces", "4", "3"),
+                AtpInfosysStatsClient.StatRow("Service Points Won", "25/38", "24/36"),
+            ),
+            listOf(
+                AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
+                AtpInfosysStatsClient.StatRow("Service Points Won", "22/31", "21/32"),
+            ),
+        )
+
+        val stats = client.parseStatsData(whole, sets)!!
+
+        assertEquals(7, stats.firstAces)
+        assertEquals(5, stats.secondAces)
+        assertEquals(69, stats.firstServePoints)
+        assertEquals(68, stats.secondServePoints)
+    }
+
+    @Test
+    fun `falls back across every played set including a partially played final set`() {
+        val sets = listOf(
+            listOf(
+                AtpInfosysStatsClient.StatRow("Aces", "3", "2"),
+                AtpInfosysStatsClient.StatRow("Service Points Won", "20/30", "25/40"),
+            ),
+            listOf(
+                AtpInfosysStatsClient.StatRow("Aces", "1", "4"),
+                AtpInfosysStatsClient.StatRow("Service Points Won", "11/16", "12/18"),
+            ),
+            listOf(
+                AtpInfosysStatsClient.StatRow("Aces", "2", "1"),
+                AtpInfosysStatsClient.StatRow("Service Points Won", "8/13", "9/14"),
+            ),
+        )
+
+        val stats = client.parseStatsData(null, sets)!!
+
+        assertEquals(6, stats.firstAces)
+        assertEquals(7, stats.secondAces)
+        assertEquals(59, stats.firstServePoints)
+        assertEquals(72, stats.secondServePoints)
+    }
+
+    @Test
     fun `retries transient feed refusal and server errors but not permanent client errors`() {
         listOf(403, 408, 425, 429, 500, 502, 503, 504).forEach { status ->
             assertEquals(true, client.shouldRetryStatus(status))
