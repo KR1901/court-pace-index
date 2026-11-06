@@ -20,9 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Reads completed singles matches from ATP pages on the device and computes the live ace rating.
  *
- * ATP blocks plain HTTP clients for these pages. The on-device WebView is used for the current
- * scores hub, tournament results links and JavaScript-rendered match stats; no guessed match-ID
- * range or third-party API key is required.
+ * The on-device WebView is used only to read the ATP current-scores/results pages and discover
+ * completed singles match IDs. Per-match statistics are read from ATP's Infosys Stats Plus JSON
+ * feed; no per-match HTML scraping, guessed match-ID range or third-party API key is required.
  */
 class AtpLiveClient(context: Context) {
 
@@ -85,7 +85,7 @@ class AtpLiveClient(context: Context) {
             "https://www.atptour.com/en/scores/current/${event.slug}/${event.atpId}/results"
         val source = web.readPageSource(resultsUrl, RESULTS_RENDER_MS).orEmpty()
         // The results page supplies the completed singles match IDs. Match statistics themselves
-        // come from ATP/Infosys JSON, not by scraping the visible HTML or a guessed page URL.
+        // come from ATP/Infosys JSON, not by scraping the visible HTML or guessing per-match URLs.
         val links = AtpMatchLinks.singlesLinks(
             AtpMatchLinks.linksFromResultsPage(source),
         ).filter { link ->
