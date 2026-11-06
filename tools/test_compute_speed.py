@@ -59,6 +59,14 @@ class BuildLiveProfilesTests(unittest.TestCase):
                 "p2", "Prior Season", serve_rate=0.095,
                 clay_aces=20, clay_points=200, clay_matches=5, serve_matches=5,
             ),
+            "p5": profile(
+                "p5", "Historical Only", serve_rate=0.10,
+                clay_aces=12, clay_points=120, clay_matches=4, serve_matches=4,
+            ),
+            "p6": profile(
+                "p6", "Historical Low Sample", serve_rate=None,
+                hard_grass_aces=2, hard_grass_points=45, hard_grass_matches=1,
+            ),
         }
 
         def fake_load(year):
@@ -86,6 +94,14 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual("current-season-shrunk", live["p3"]["serve_rate_source"])
         self.assertEqual(2026, live["p3"]["serve_rate_season"])
         self.assertEqual(300.0, live["p3"]["serve_rate_prior_points"])
+
+        self.assertEqual(0.10, live["p5"]["serve_rate"])
+        self.assertEqual("prior-season-qualified", live["p5"]["serve_rate_source"])
+        self.assertEqual(2025, live["p5"]["serve_rate_season"])
+
+        self.assertIsNotNone(live["p6"]["serve_rate"])
+        self.assertEqual("prior-season-shrunk", live["p6"]["serve_rate_source"])
+        self.assertEqual(2025, live["p6"]["serve_rate_season"])
 
         # Never manufacture a rate if the archive contains no serve-side sample at all.
         self.assertIsNone(live["p4"]["serve_rate"])
