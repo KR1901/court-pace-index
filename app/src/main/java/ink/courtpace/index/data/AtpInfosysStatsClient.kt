@@ -176,22 +176,30 @@ internal class AtpInfosysStatsClient {
     internal fun parseStats(payload: JSONObject): AtpMatchStats? {
         val statsRoot = payload.optJSONObject("setStats") ?: return null
         val matchRows = statsRoot.optJSONArray("set0") ?: return null
-        var aces: JSONArray? = null
-        var servicePoints: JSONArray? = null
+
+        var firstAcesRaw: String? = null
+        var secondAcesRaw: String? = null
+        var firstServicePointsRaw: String? = null
+        var secondServicePointsRaw: String? = null
+
         for (i in 0 until matchRows.length()) {
             val row = matchRows.optJSONObject(i) ?: continue
             when (row.optString("name").trim().lowercase()) {
-                "aces" -> aces = JSONArray().put(row.opt("player1")).put(row.opt("player2"))
-                "service points won", "service points" -> servicePoints =
-                    JSONArray().put(row.opt("player1")).put(row.opt("player2"))
+                "aces" -> {
+                    firstAcesRaw = row.optString("player1").trim()
+                    secondAcesRaw = row.optString("player2").trim()
+                }
+                "service points won", "service points" -> {
+                    firstServicePointsRaw = row.optString("player1").trim()
+                    secondServicePointsRaw = row.optString("player2").trim()
+                }
             }
         }
-        val aceRow = aces ?: return null
-        val pointRow = servicePoints ?: return null
-        val firstAces = aceRow.optString(0).toIntOrNull() ?: return null
-        val secondAces = aceRow.optString(1).toIntOrNull() ?: return null
-        val firstPoints = denominator(pointRow.optString(0)) ?: return null
-        val secondPoints = denominator(pointRow.optString(1)) ?: return null
+
+        val firstAces = firstAcesRaw?.toIntOrNull() ?: return null
+        val secondAces = secondAcesRaw?.toIntOrNull() ?: return null
+        val firstPoints = denominator(firstServicePointsRaw.orEmpty()) ?: return null
+        val secondPoints = denominator(secondServicePointsRaw.orEmpty()) ?: return null
         if (firstPoints <= 0 || secondPoints <= 0) return null
 
         val players = payload.optJSONArray("players")
