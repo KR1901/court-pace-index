@@ -170,7 +170,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         events.forEach { event ->
             val cached = ratingStore.read(event.t)
                 ?.takeIf {
-                    it.methodVersion == ink.courtpace.index.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
+                    it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
                         it.season == baseline.season && it.baselineGenerated == baseline.generated
                 }
                 ?: return@forEach
