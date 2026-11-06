@@ -33,7 +33,11 @@ class AtpWebReader(private val context: Context) {
         isReady: (String) -> Boolean = { it.isNotBlank() },
         /** Wait for the page to stop growing instead of returning at the first sign of content. */
         settle: Boolean = false,
-    ): String? = withTimeoutOrNull(timeoutMs) {
+        /** Return the latest DOM text if the expected stats marker never appears before timeout. */
+        returnLastOnTimeout: Boolean = false,
+    ): String? {
+        var latestText: String? = null
+        val result = withTimeoutOrNull(timeoutMs) {
         withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { continuation ->
                 val web = WebView(context.applicationContext)
@@ -57,6 +61,7 @@ class AtpWebReader(private val context: Context) {
                             "(function(){return document.body ? document.body.innerText : ''})()",
                         ) { raw ->
                             val text = decode(raw)
+                            if (text != null) latestText = text
                             if (text == null) {
                                 if (!finished) main.postDelayed({ poll() }, POLL_MS)
                             } else if (text.contains(BLOCKED, true)) {
@@ -111,6 +116,8 @@ class AtpWebReader(private val context: Context) {
                 }, POLL_MS * 2)
             }
         }
+        }
+        return result ?: if (returnLastOnTimeout) latestText else null
     }
 
     /**
