@@ -189,8 +189,11 @@ object AceRating {
             // "Alex de Minaur" -> "ademinaur", matching "A. DE MINAUR".
             addAlias(normaliseName(parts.first().take(1) + parts.drop(1).joinToString("")), profile)
 
-            // "Juan Manuel Cerundolo" -> "jmcerundolo", matching "J. M. CERUNDOLO".
             if (parts.size >= 3) {
+                // Allow ATP to omit a middle initial: "J. CERUNDOLO" -> "Juan Manuel Cerundolo".
+                addAlias(normaliseName(parts.first().take(1) + parts.last()), profile)
+
+                // "J. M. CERUNDOLO" -> "Juan Manuel Cerundolo".
                 val initials = parts.dropLast(1).joinToString("") { it.take(1) }
                 addAlias(normaliseName(initials + parts.last()), profile)
             }
