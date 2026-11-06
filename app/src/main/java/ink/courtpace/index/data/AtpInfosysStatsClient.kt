@@ -265,17 +265,17 @@ internal class AtpInfosysStatsClient {
 
         for (rows in sets) {
             val aces = rows.firstOrNull { it.name.trim().equals("aces", ignoreCase = true) }
-                ?: continue
+                ?: return null
             val servicePoints = rows.firstOrNull {
                 it.name.trim().equals("service points won", ignoreCase = true) ||
                     it.name.trim().equals("service points", ignoreCase = true)
-            } ?: continue
+            } ?: return null
 
-            val a1 = aces.player1.trim().toIntOrNull() ?: continue
-            val a2 = aces.player2.trim().toIntOrNull() ?: continue
-            val p1 = denominator(servicePoints.player1) ?: continue
-            val p2 = denominator(servicePoints.player2) ?: continue
-            if (p1 <= 0 || p2 <= 0) continue
+            val a1 = aces.player1.trim().toIntOrNull() ?: return null
+            val a2 = aces.player2.trim().toIntOrNull() ?: return null
+            val p1 = denominator(servicePoints.player1) ?: return null
+            val p2 = denominator(servicePoints.player2) ?: return null
+            if (p1 <= 0 || p2 <= 0) return null
 
             firstAces += a1
             secondAces += a2
