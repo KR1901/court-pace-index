@@ -118,8 +118,8 @@ fun MethodScreen(data: PaceData) {
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "Player tendencies come from the current season or the most recent qualified " +
-                    "profile in the preceding three seasons. Where a player has no qualified profile, " +
+                text = "Player tendencies come from the baseline's profile season or the most recent " +
+                    "qualified profile in the three seasons before it. Where a player has no qualified profile, " +
                     "their own available surface-specific serve sample is shrunk toward that season's " +
                     "surface average using a 300-service-point prior. This changes the player inputs, " +
                     "not the expected-aces formula or the season normalisation; low-sample estimates " +
