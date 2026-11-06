@@ -151,6 +151,7 @@ data class LiveSpeedBaseline(
     val season: Int,
     val normalisation: Double,
     val profiles: List<LiveSpeedPlayerProfile> = emptyList(),
+    val generated: String = "",
 )
 
 @Serializable
