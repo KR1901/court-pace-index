@@ -143,7 +143,7 @@ class AtpStatsParserTest {
 
     @Test
     fun `live result preserves discovered denominator and missing match diagnostics`() {
-        val result = AceRating.rate(sampleMatches())!!.copy(
+        val result = AceRating.rate(sampleMatches(), baseline)!!.copy(
             discoveredMatches = 12,
             missingMatchIds = listOf("ms051", "ms054"),
             missingReasons = mapOf(
@@ -193,10 +193,10 @@ class AtpStatsParserTest {
     @Test
     fun `every parsed match contributes both players service observations`() {
         val matches = sampleMatches(15)
-        val result = AceRating.rate(matches)!!
+        val result = AceRating.rate(matches, baseline)!!
         assertEquals(15, result.matches)
         assertEquals(30, result.adjustedServerSides)
         assertEquals(12 * 15, result.aces)
-        assertEquals(80 * 15, result.aceRate.let { (it * 1200).toInt() })
+        assertEquals(0.15, result.aceRate, 1e-9)
     }
 }
