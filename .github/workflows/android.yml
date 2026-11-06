@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix/live-tournament-discovery-and-refresh]
   pull_request:
   workflow_dispatch:
 
