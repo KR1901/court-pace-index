@@ -19,6 +19,15 @@ object DatasetPolicy {
         val ids = dataset.tournaments.map { it.id }.toSet()
         if (ids.size != dataset.tournaments.size) return false
         if (dataset.readings.any { it.t !in ids }) return false
+        dataset.speedBaseline?.let { baseline ->
+            if (baseline.season != dataset.meta.season) return false
+            if (!baseline.normalisation.isFinite() || baseline.normalisation <= 0.0) return false
+            if (baseline.profiles.any { profile ->
+                    profile.name.isBlank() ||
+                        (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
+                        (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0))
+                }) return false
+        }
         return dataset.readings.all { reading ->
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
                 (reading.speed == null || reading.speed in 0.30..2.0) &&
@@ -48,6 +57,9 @@ object DatasetPolicy {
             else bundled.live.firstOrNull { it.t == event.t && it.s == event.s && it.atpId != null }
                 ?: event
         }
-        return chosen.copy(live = enriched)
+        val speedBaseline = chosen.speedBaseline
+            ?.takeIf { it.season == chosen.meta.season }
+            ?: bundled.speedBaseline?.takeIf { it.season == chosen.meta.season }
+        return chosen.copy(live = enriched, speedBaseline = speedBaseline)
     }
 }
