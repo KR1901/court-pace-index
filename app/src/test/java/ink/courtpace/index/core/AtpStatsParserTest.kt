@@ -134,6 +134,7 @@ class AtpStatsParserTest {
                 "ms054" to "JSON had no setStats.set0 rows",
             ),
             inProgressMatches = 1,
+            walkoversExcluded = 1,
         )
 
         assertEquals(8, result.matches)
@@ -141,6 +142,7 @@ class AtpStatsParserTest {
         assertEquals(listOf("ms051", "ms054"), result.missingMatchIds)
         assertEquals("HTTP 404", result.missingReasons["ms051"])
         assertEquals(1, result.inProgressMatches)
+        assertEquals(1, result.walkoversExcluded)
     }
 
     @Test
