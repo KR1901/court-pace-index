@@ -13,6 +13,7 @@ data class CachedLiveRating(
     val matches: Int,
     val aceRate: Double?,
     val asOf: String,
+    val methodVersion: Int = CURRENT_METHOD_VERSION,
 ) {
     fun toJson(): String = buildString {
         append('{')
@@ -21,11 +22,14 @@ data class CachedLiveRating(
         append("\"speed\":").append(speed).append(',')
         append("\"matches\":").append(matches).append(',')
         append("\"ace\":").append(aceRate ?: "null").append(',')
-        append("\"asOf\":\"").append(asOf.replace("\"", "")).append('"')
+        append("\"asOf\":\"").append(asOf.replace("\"", "")).append("\",")
+        append("\"methodVersion\":").append(methodVersion)
         append('}')
     }
 
     companion object {
+        const val CURRENT_METHOD_VERSION = 2
+        const val LEGACY_METHOD_VERSION = 1
         /** Tolerant on purpose: a corrupt or older cache must never break the app. */
         fun fromJson(raw: String?): CachedLiveRating? {
             if (raw.isNullOrBlank()) return null
@@ -36,7 +40,8 @@ data class CachedLiveRating(
                 val matches = field(raw, "matches")?.toIntOrNull() ?: 0
                 val ace = field(raw, "ace")?.toDoubleOrNull()
                 val asOf = field(raw, "asOf") ?: ""
-                CachedLiveRating(tournament, season, speed, matches, ace, asOf)
+                val methodVersion = field(raw, "methodVersion")?.toIntOrNull() ?: LEGACY_METHOD_VERSION
+                CachedLiveRating(tournament, season, speed, matches, ace, asOf, methodVersion)
             }.getOrNull()
         }
 
