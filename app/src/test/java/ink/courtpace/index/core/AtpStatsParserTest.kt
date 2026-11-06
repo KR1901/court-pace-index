@@ -191,6 +191,70 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `ATP abbreviated player names resolve to full historical profile names`() {
+        val realisticBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
+                LiveSpeedPlayerProfile("Andrey Rublev", serveRate = 0.14, concedeRate = 0.08),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("A. DE MINAUR", "A. RUBLEV", 6, 40, 5, 38, true)
+        }
+
+        val coverage = AceRating.coverage(matches, realisticBaseline)
+        val result = AceRating.rate(matches, realisticBaseline)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.serverProfilesMatched)
+        assertEquals(20, coverage.returnerProfilesMatched)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
+    fun `ATP names with multiple initials resolve compound given names`() {
+        val realisticBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Juan Manuel Cerundolo", serveRate = 0.11, concedeRate = 0.09),
+                LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("J. M. CERUNDOLO", "A. DE MINAUR", 4, 37, 6, 41, true)
+        }
+
+        val result = AceRating.rate(matches, realisticBaseline)!!
+
+        assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
+    fun `ambiguous abbreviated names are not assigned to an arbitrary profile`() {
+        val ambiguousBaseline = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("Alex Smith", serveRate = 0.12, concedeRate = 0.10),
+                LiveSpeedPlayerProfile("Andrew Smith", serveRate = 0.14, concedeRate = 0.08),
+                LiveSpeedPlayerProfile("Bob Jones", serveRate = 0.11, concedeRate = 0.09),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("A. SMITH", "B. JONES", 5, 39, 4, 40, true)
+        }
+
+        val coverage = AceRating.coverage(matches, ambiguousBaseline)
+
+        assertEquals(0, coverage.adjustedServerSides)
+        assertNull(AceRating.rate(matches, ambiguousBaseline))
+    }
+
+    @Test
     fun `every parsed match contributes both players service observations`() {
         val matches = sampleMatches(15)
         val result = AceRating.rate(matches, baseline)!!
