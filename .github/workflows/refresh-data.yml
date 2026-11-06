@@ -9,6 +9,7 @@ on:
     paths:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
+      - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
       - 'tools/build_dataset.py'
       - '.github/workflows/refresh-data.yml'
   schedule:
