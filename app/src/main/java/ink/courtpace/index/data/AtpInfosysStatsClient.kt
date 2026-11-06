@@ -107,7 +107,7 @@ internal class AtpInfosysStatsClient {
     }
 
     private fun shouldRetry(diagnostic: String): Boolean {
-        val status = Regex("""HTTP (\\d{3})""").find(diagnostic)?.groupValues?.get(1)?.toIntOrNull()
+        val status = Regex("""HTTP ([0-9]{3})""").find(diagnostic)?.groupValues?.get(1)?.toIntOrNull()
         return when {
             status == null -> diagnostic.contains("Exception", ignoreCase = true) ||
                 diagnostic.contains("timeout", ignoreCase = true) ||
@@ -140,7 +140,7 @@ internal class AtpInfosysStatsClient {
             } else {
                 val server = connection.getHeaderField("Server")?.take(48)
                 val retryAfter = connection.getHeaderField("Retry-After")?.take(16)
-                val sample = body.replace(Regex("""\\s+"""), " ").take(MAX_ERROR_BODY_CHARS)
+                val sample = body.replace(Regex("""[ \\t\\r\\n]+"""), " ").take(MAX_ERROR_BODY_CHARS)
                 val details = buildList {
                     add("HTTP $status (${body.length} chars)")
                     if (!server.isNullOrBlank()) add("server=$server")
