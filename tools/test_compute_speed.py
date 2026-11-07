@@ -358,3 +358,27 @@ class PlayerRateEligibilityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class CurrentSeasonSourceTests(unittest.TestCase):
+    def test_tml_atp_250_and_500_levels_are_eligible(self):
+        row = {
+            "tourney_level": "250",
+            "w_svpt": "80",
+            "l_svpt": "82",
+            "w_ace": "6",
+            "l_ace": "6",
+            "winner_id": "p1",
+            "loser_id": "p2",
+        }
+        row_500 = dict(row, tourney_level="500")
+
+        self.assertEqual(2, len(compute_speed.valid_rows([row, row_500])))
+
+    def test_tml_event_aliases_are_mapped(self):
+        self.assertEqual("montecarlo", compute_speed.NAMES["Monte Carlo"])
+        self.assertEqual("cincinnati", compute_speed.NAMES["Cincinnati"])
+        self.assertEqual("shanghai", compute_speed.NAMES["Shanghai"])
+        self.assertEqual("shertogenbosch", compute_speed.NAMES["'s-Hertogenbosch"])
+        self.assertEqual("lavercup", compute_speed.NAMES["Laver Cup"])
