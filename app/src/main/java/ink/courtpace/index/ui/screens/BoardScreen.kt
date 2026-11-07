@@ -94,10 +94,20 @@ fun BoardScreen(
     scrollState: ScrollState = rememberScrollState(),
 ) {
     val colors = PaceTheme.colors
-    val ranking = PaceAnalytics.ranking(data, season, metric, surfaces)
+    val comparableSpeedSources = if (metric == Metric.SPEED) setOf("computed", "live") else null
+    val ranking = PaceAnalytics.ranking(
+        data, season, metric, surfaces, speedSources = comparableSpeedSources,
+    )
+    val taOnlyRanking = if (metric == Metric.SPEED) {
+        PaceAnalytics.ranking(data, season, metric, surfaces, speedSources = setOf("tennisabstract"))
+    } else {
+        emptyList()
+    }
     val top = ranking.firstOrNull()
     val bottom = ranking.lastOrNull()
-    val average = PaceAnalytics.average(data, season, metric)
+    val average = PaceAnalytics.average(
+        data, season, metric, speedSources = comparableSpeedSources,
+    )
     val speedSourceCounts = if (metric == Metric.SPEED) {
         data.entries(season, metric).groupingBy { (tournament, _) ->
             data.speedSource(tournament.id, season)
@@ -145,7 +155,7 @@ fun BoardScreen(
                 Metric.CPI ->
                     "Physical bounce readings from Hawk-Eye, ${ranking.size} events in $season."
                 Metric.SPEED ->
-                    "Calibrated ace rate, with Tennis Abstract references where available, ${ranking.size} events in $season."
+                    "${ranking.size} CALC/LIVE ratings and ${taOnlyRanking.size} TA-only references in $season."
             },
             style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
             color = colors.textDim,
@@ -198,12 +208,12 @@ fun BoardScreen(
                         modifier = Modifier.weight(1f),
                     )
                     StatTile(
-                        label = if (metric == Metric.SPEED) "Mixed-source avg" else "Field average",
+                        label = if (metric == Metric.SPEED) "CALC / LIVE avg" else "Field average",
                         value = PaceAnalytics.format(average, metric),
                         caption = if (metric == Metric.SPEED) {
                             "${speedSourceCounts["computed"] ?: 0} CALC · " +
-                                "${speedSourceCounts["tennisabstract"] ?: 0} TA · " +
-                                "${speedSourceCounts["live"] ?: 0} LIVE"
+                                "${speedSourceCounts["live"] ?: 0} LIVE · " +
+                                "${speedSourceCounts["tennisabstract"] ?: 0} TA-only"
                         } else {
                             "${ranking.size} events"
                         },
@@ -241,7 +251,11 @@ fun BoardScreen(
         Spacer(Modifier.height(22.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             SectionLabel(
-                text = if (surfaces.isEmpty()) "Ranked" else surfaces.joinToString(" + ") { it.label } + " only",
+                text = when (metric) {
+                    Metric.CPI -> if (surfaces.isEmpty()) "Ranked" else surfaces.joinToString(" + ") { it.label } + " only"
+                    Metric.SPEED -> if (surfaces.isEmpty()) "CALC / LIVE ranked"
+                        else surfaces.joinToString(" + ") { it.label } + " CALC / LIVE"
+                },
                 modifier = Modifier.weight(1f),
             )
             Text(
@@ -253,7 +267,13 @@ fun BoardScreen(
         Spacer(Modifier.height(10.dp))
 
         if (ranking.isEmpty()) {
-            GlassNote("No $season readings for this filter. Try another season or surface.")
+            GlassNote(
+                if (metric == Metric.SPEED && taOnlyRanking.isNotEmpty()) {
+                    "No CALC/LIVE readings for this filter. TA-only references are listed separately below."
+                } else {
+                    "No $season readings for this filter. Try another season or surface."
+                },
+            )
         } else {
             val min = ranking.minOf { it.value }
             val max = ranking.maxOf { it.value }
@@ -272,6 +292,33 @@ fun BoardScreen(
             }
         }
 
+        if (metric == Metric.SPEED && taOnlyRanking.isNotEmpty()) {
+            Spacer(Modifier.height(18.dp))
+            SectionLabel(text = "TA-only references")
+            Spacer(Modifier.height(5.dp))
+            Text(
+                text = "Published Tennis Abstract values are shown separately. They are not ranked against CALC because the two source populations are normalised independently.",
+                style = TextStyle(fontSize = 11.sp, lineHeight = 15.sp),
+                color = colors.textFaint,
+            )
+            Spacer(Modifier.height(10.dp))
+            val taMin = taOnlyRanking.minOf { it.value }
+            val taMax = taOnlyRanking.maxOf { it.value }
+            taOnlyRanking.forEach { row ->
+                RankRow(
+                    row = row,
+                    metric = metric,
+                    min = taMin,
+                    max = taMax,
+                    live = false,
+                    speedSource = "tennisabstract",
+                    publishedSpeed = null,
+                    onClick = { onOpen(row.tournament) },
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
         if (statusNote != null) {
             Spacer(Modifier.height(12.dp))
             GlassNote(statusNote)
@@ -282,9 +329,9 @@ fun BoardScreen(
             text = when (metric) {
                 Metric.CPI -> "Court Pace Index from the courtspeed.com database, compiled from ATP and " +
                     "Tennis TV broadcast data. Centre-court readings."
-                Metric.SPEED -> "CALC is the calibrated server/returner-adjusted rating from archive or live matches; " +
-                    "TA is the published Tennis Abstract figure. CALC ranks wherever available, with TA shown " +
-                    "beside it as a reference; TA-only rows are labelled fallbacks. 1.00 = tour average."
+                Metric.SPEED -> "CALC/LIVE is the calibrated server/returner-adjusted rating; original TA values " +
+                    "are shown beside CALC rows where available and otherwise in a separate reference list. " +
+                    "The two sources are not mixed in one ranking. 1.00 = tour average within each source."
             },
         )
         Spacer(Modifier.height(LocalTabBarInset.current))
