@@ -494,7 +494,7 @@ class AtpStatsParserTest {
         assertEquals(0, coverage.adjustedServerSides)
         assertEquals(20, coverage.issues.size)
         assertTrue(coverage.issues.all { it.matchId == "ms-zero" })
-        assertTrue(coverage.issues.all { it.reason.contains("zero or invalid expected aces") })
+        assertTrue(coverage.issues.all { it.reason.contains("invalid server/returner ace-rate profile") })
         assertNull(AceRating.rate(matches, zeroBaseline))
     }
 
