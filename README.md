@@ -33,8 +33,9 @@ rubber wears the grit off the surface.
 
 **Surface speed** — a behavioural reading. Count the aces at an event, adjust for the servers
 and returners who were actually on court, and compare with what those same players would have
-produced on a tour-average surface. 1.00 is average; the usual range across ATP events is
-0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
+produced on a tour-average surface. Expected-ace odds are calculated as server odds × returner
+ace-concession odds ÷ tour-average ace odds. 1.00 is average; the usual range across ATP events
+is 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
 
 The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
 
@@ -75,9 +76,9 @@ The live ATP result row shows two separate coverage fractions:
 - `matches / discoveredMatches`: completed eligible singles matches with usable Infosys statistics, divided by completed eligible singles matches discovered from ATP.
 - `adjustedServerSides / totalServerSides`: server-side observations that entered the opponent-adjusted mean, divided by `2 × discoveredMatches`. The denominator grows as more completed matches are discovered; it is not a fixed tournament constant.
 
-Each completed match contributes two possible server-side observations. A side is included when the server has a usable serve-rate profile, the returner has a usable ace-concession profile, the service statistics are valid, and expected aces are positive. Expected-ace values below 0.5 are floored to 0.5 when calculating the actual/expected ratio; they are **not** discarded from coverage. Therefore, when all 49 completed matches have usable Stats Plus statistics and both players have valid profiles, the expected coverage is 98/98. Lower coverage must be accounted for by missing match-stat payloads and/or visible per-side exclusion diagnostics; it must not result from a 0.5-ace cutoff.
+Each completed match contributes two possible server-side observations. A side is included when the server has a usable serve-rate profile, the returner has a usable ace-concession profile, service statistics are valid, and the calibrated expected-ace value is positive. Calibration uses the season's overall ace/service-point rate as its neutral odds anchor. Expected-ace values below 0.5 are floored to 0.5 when calculating the actual/expected ratio; they are **not** discarded from coverage. Therefore, when all 49 completed matches have usable Stats Plus statistics and both players have valid profiles, the expected coverage is 98/98. Lower coverage must be accounted for by missing match-stat payloads and/or visible per-side exclusion diagnostics; it must not result from the floor.
 
-The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. Each profile records its source season and sample size. Historical ranked calculations and the season normaliser are unchanged.
+The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. It also carries the tour-average ace rate used to calibrate expected-ace odds. Each profile records its source season and sample size. Historical and live ratings use the same calibrated formula.
 
 ### Refreshing
 
