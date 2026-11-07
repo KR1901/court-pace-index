@@ -12,7 +12,7 @@ the public archive mirror. Only tour-level main-draw matches with serve stats ar
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, json, os, sys, urllib.request, unicodedata
+import csv, json, math, os, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timezone
 from urllib.error import HTTPError
