@@ -312,9 +312,9 @@ def build_live_profiles(profile_year, current_profiles):
     Build a broad but auditable live player baseline.
 
     Profiles are the union of players seen in the baseline season and the preceding three
-    ATP seasons. A player's rate comes from the most recent season with a qualified profile.
-    If no season meets the historical three-match surface threshold, a low-sample estimate
-    is shrunk toward that season's surface average using a 300-service-point prior.
+    ATP seasons. Serve rates prefer the most recent qualified profile, then a shrunk estimate.
+    Returner rates prefer surface-qualified concession profiles over pooled fallbacks, even
+    when the qualified profile comes from a prior season.
 
     This changes only the *live baseline's player coverage*. Historical season_ratings()
     continues to use player_rates() unchanged, and the expected-aces formula plus season
@@ -339,6 +339,9 @@ def build_live_profiles(profile_year, current_profiles):
         profile["concede_rate_season"] = (
             profile_year if profile["concede_rate"] is not None else None
         )
+        profile["concede_rate_source"] = profile.get("concede_rate_source")
+        profile["concede_matches"] = profile.get("concede_matches", 0)
+        profile["concede_service_points"] = profile.get("concede_service_points", 0.0)
 
     # Union the recent seasons by stable Sackmann player ID. The newest available profile
     # supplies the display name and, when needed, the raw observations for shrinkage.
@@ -384,10 +387,19 @@ def build_live_profiles(profile_year, current_profiles):
                     "serve_service_points",
                     previous["clay_service_points"] + previous["hard_grass_service_points"],
                 )
-            if profile["concede_rate"] is None and previous["concede_rate"] is not None:
+            previous_concede_source = previous.get("concede_rate_source")
+            current_concede_source = profile.get("concede_rate_source")
+            prefer_previous_concede = (
+                profile["concede_rate"] is None
+                or (
+                    current_concede_source != "surface-qualified"
+                    and previous_concede_source == "surface-qualified"
+                )
+            )
+            if prefer_previous_concede and previous["concede_rate"] is not None:
                 profile["concede_rate"] = previous["concede_rate"]
                 profile["concede_rate_season"] = historical_year
-                profile["concede_rate_source"] = previous.get("concede_rate_source")
+                profile["concede_rate_source"] = previous_concede_source
                 profile["concede_matches"] = previous.get("concede_matches", 0)
                 profile["concede_service_points"] = previous.get("concede_service_points", 0.0)
 
@@ -437,7 +449,8 @@ def dedupe_live_profiles(profiles):
     This is important because the Android profile index is name-keyed. Prefer a qualified
     current-season serve rate, then a qualified recent-season rate, then a shrunk estimate.
     Within a source tier, prefer the newest season and larger player-specific sample. Retain
-    the most recent available return-concession rate independently.
+    the best available return-concession rate independently: a surface-qualified profile
+    takes precedence over a pooled fallback, then the newest season wins.
     """
     source_priority = {
         "current-season-qualified": 4,
@@ -465,16 +478,21 @@ def dedupe_live_profiles(profiles):
             candidate["_serve_rank"] = rank
             chosen[key] = candidate
 
-        # If duplicate IDs exist for one name, use the newest return-concession profile.
+        # If duplicate IDs exist for one name, prefer a surface-qualified returner
+        # profile, then the newest season and largest qualified surface sample.
         candidate = chosen[key]
-        if (
-            profile.get("concede_rate") is not None and
-            (
-                candidate.get("concede_rate") is None or
-                (profile.get("concede_rate_season") or 0) >
-                (candidate.get("concede_rate_season") or 0)
-            )
-        ):
+        concede_priority = {"surface-qualified": 2, "pooled-fallback": 1}
+        candidate_concede_rank = (
+            concede_priority.get(candidate.get("concede_rate_source"), 0),
+            candidate.get("concede_rate_season") or 0,
+            candidate.get("concede_service_points") or 0,
+        )
+        profile_concede_rank = (
+            concede_priority.get(profile.get("concede_rate_source"), 0),
+            profile.get("concede_rate_season") or 0,
+            profile.get("concede_service_points") or 0,
+        )
+        if profile.get("concede_rate") is not None and profile_concede_rank > candidate_concede_rank:
             candidate["concede_rate"] = profile["concede_rate"]
             candidate["concede_rate_season"] = profile.get("concede_rate_season")
             candidate["concede_rate_source"] = profile.get("concede_rate_source")
