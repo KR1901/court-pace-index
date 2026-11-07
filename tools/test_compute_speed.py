@@ -13,6 +13,9 @@ def profile(
     *,
     serve_rate=None,
     concede_rate=0.08,
+    concede_rate_source="pooled-fallback",
+    concede_matches=0,
+    concede_service_points=0.0,
     clay_aces=0.0,
     clay_points=0.0,
     clay_matches=0,
@@ -26,6 +29,9 @@ def profile(
         "name": name,
         "serve_rate": serve_rate,
         "concede_rate": concede_rate,
+        "concede_rate_source": concede_rate_source,
+        "concede_matches": concede_matches,
+        "concede_service_points": concede_service_points,
         "serve_matches": serve_matches,
         "clay_matches": clay_matches,
         "hard_grass_matches": hard_grass_matches,
@@ -434,5 +440,70 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
         self.assertAlmostEqual(0.15, player["pooled_concede_rate"])
         self.assertEqual("pooled-fallback", player["concede_rate_source"])
         self.assertEqual(0, player["concede_matches"])
+
+    def test_live_baseline_prefers_a_prior_surface_qualified_returner_over_current_pooled_fallback(self):
+        current = {
+            "player": profile(
+                "player", "Player", serve_rate=0.10, concede_rate=0.07,
+                concede_rate_source="pooled-fallback",
+                clay_aces=12, clay_points=150, clay_matches=2,
+            )
+        }
+        prior = {
+            "player": profile(
+                "player", "Player", serve_rate=0.09, concede_rate=0.14,
+                concede_rate_source="surface-qualified",
+                concede_matches=6, concede_service_points=600,
+                clay_aces=20, clay_points=200, clay_matches=4,
+            )
+        }
+
+        with patch.object(compute_speed, "load", return_value=[{"year": 2025}]), \
+             patch.object(compute_speed, "valid_rows", side_effect=lambda rows: rows), \
+             patch.object(compute_speed, "player_rates", return_value=prior):
+            live = compute_speed.build_live_profiles(2026, current)
+
+        self.assertAlmostEqual(0.10, live["player"]["serve_rate"])
+        self.assertAlmostEqual(0.14, live["player"]["concede_rate"])
+        self.assertEqual("surface-qualified", live["player"]["concede_rate_source"])
+        self.assertEqual(2025, live["player"]["concede_rate_season"])
+        self.assertEqual(6, live["player"]["concede_matches"])
+
+
+class ReturnerProfileDedupeTests(unittest.TestCase):
+    def test_surface_qualified_concede_profile_beats_newer_pooled_fallback(self):
+        prior = profile(
+            "old-id", "Alex Player", serve_rate=0.09, concede_rate=0.15,
+            concede_rate_source="surface-qualified",
+            concede_matches=6, concede_service_points=600,
+            serve_matches=5,
+        )
+        prior.update({
+            "serve_rate_season": 2025,
+            "serve_rate_source": "prior-season-qualified",
+            "serve_rate_sample_matches": 5,
+            "serve_rate_sample_points": 500,
+            "concede_rate_season": 2025,
+        })
+        current = profile(
+            "new-id", "Alex Player", serve_rate=0.11, concede_rate=0.07,
+            concede_rate_source="pooled-fallback",
+            serve_matches=9,
+        )
+        current.update({
+            "serve_rate_season": 2026,
+            "serve_rate_source": "current-season-qualified",
+            "serve_rate_sample_matches": 9,
+            "serve_rate_sample_points": 900,
+            "concede_rate_season": 2026,
+        })
+
+        result = compute_speed.dedupe_live_profiles([prior, current])
+
+        self.assertEqual(1, len(result))
+        self.assertAlmostEqual(0.11, result[0]["serve_rate"])
+        self.assertAlmostEqual(0.15, result[0]["concede_rate"])
+        self.assertEqual("surface-qualified", result[0]["concede_rate_source"])
+        self.assertEqual(2025, result[0]["concede_rate_season"])
 
 
