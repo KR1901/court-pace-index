@@ -132,12 +132,15 @@ def player_rates(usable):
 
     serve_rate: clay ace rate blended 1/3 with hard/grass ace rate blended 2/3,
     requiring at least three matches in each available surface bucket.
-    concede_rate: aces conceded while returning / opponents' service points,
-    pooled across surfaces.
+    concede_rate: returner ace-concession rate built with the same surface weighting
+    and per-surface three-match qualification. If neither surface qualifies, use the
+    pooled concession rate as a coverage-preserving fallback.
     """
     clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
     hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
     ret_ace = defaultdict(float); ret_pts = defaultdict(float)
+    ret_clay_ace = defaultdict(float); ret_clay_pts = defaultdict(float); ret_clay_n = defaultdict(int)
+    ret_hg_ace = defaultdict(float); ret_hg_pts = defaultdict(float); ret_hg_n = defaultdict(int)
     names = {}
 
     for r in usable:
@@ -151,9 +154,13 @@ def player_rates(usable):
         if surface == "Clay":
             clay_ace[wid] += w_ac; clay_sv[wid] += w_sv; clay_n[wid] += 1
             clay_ace[lid] += l_ac; clay_sv[lid] += l_sv; clay_n[lid] += 1
+            ret_clay_ace[wid] += l_ac; ret_clay_pts[wid] += l_sv; ret_clay_n[wid] += 1
+            ret_clay_ace[lid] += w_ac; ret_clay_pts[lid] += w_sv; ret_clay_n[lid] += 1
         elif surface in ("Hard", "Grass"):
             hg_ace[wid] += w_ac; hg_sv[wid] += w_sv; hg_n[wid] += 1
             hg_ace[lid] += l_ac; hg_sv[lid] += l_sv; hg_n[lid] += 1
+            ret_hg_ace[wid] += l_ac; ret_hg_pts[wid] += l_sv; ret_hg_n[wid] += 1
+            ret_hg_ace[lid] += w_ac; ret_hg_pts[lid] += w_sv; ret_hg_n[lid] += 1
 
         # The winner is returning against the loser's serve, and vice versa.
         ret_ace[wid] += l_ac; ret_pts[wid] += l_sv
@@ -188,13 +195,59 @@ def player_rates(usable):
                 ),
             }
 
-    concede_rate = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
+    pooled_concede_rate = {
+        p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0
+    }
+    concede_rate = {}
+    concede_samples = {}
+    for p in ret_pts:
+        c = ret_clay_ace[p] / ret_clay_pts[p] if ret_clay_pts[p] > 0 else None
+        h = ret_hg_ace[p] / ret_hg_pts[p] if ret_hg_pts[p] > 0 else None
+        clay_qualified = c is not None and ret_clay_n[p] >= MIN_MATCHES_PER_SURFACE
+        hard_grass_qualified = h is not None and ret_hg_n[p] >= MIN_MATCHES_PER_SURFACE
+
+        # Keep the returner adjustment symmetric with the server profile. A player
+        # qualified on one surface is still usable; a small secondary-surface sample
+        # cannot pull the rate toward an unstable blend.
+        if clay_qualified and hard_grass_qualified:
+            concede_rate[p] = (1 / 3) * c + (2 / 3) * h
+        elif clay_qualified:
+            concede_rate[p] = c
+        elif hard_grass_qualified:
+            concede_rate[p] = h
+        elif p in pooled_concede_rate:
+            concede_rate[p] = pooled_concede_rate[p]
+
+        use_clay = clay_qualified
+        use_hard_grass = hard_grass_qualified
+        concede_samples[p] = {
+            "clayMatches": ret_clay_n[p] if use_clay else 0,
+            "hardGrassMatches": ret_hg_n[p] if use_hard_grass else 0,
+            "servicePoints": (
+                (ret_clay_pts[p] if use_clay else 0.0)
+                + (ret_hg_pts[p] if use_hard_grass else 0.0)
+            ),
+        }
+
     return {
         p: {
             "id": p,
             "name": names.get(p, ""),
             "serve_rate": serve_rate.get(p),
             "concede_rate": concede_rate.get(p),
+            "pooled_concede_rate": pooled_concede_rate.get(p),
+            "concede_rate_source": (
+                "surface-qualified"
+                if p in concede_samples and (
+                    concede_samples[p]["clayMatches"] + concede_samples[p]["hardGrassMatches"]
+                ) > 0
+                else "pooled-fallback"
+            ),
+            "concede_matches": (
+                concede_samples.get(p, {}).get("clayMatches", 0)
+                + concede_samples.get(p, {}).get("hardGrassMatches", 0)
+            ),
+            "concede_service_points": concede_samples.get(p, {}).get("servicePoints", 0.0),
             "serve_matches": (
                 serve_samples.get(p, {}).get("clayMatches", 0)
                 + serve_samples.get(p, {}).get("hardGrassMatches", 0)
