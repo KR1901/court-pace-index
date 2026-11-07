@@ -581,7 +581,7 @@ def main():
         for variant in VARIANTS
     }
     print(
-        f"\nCOMPLETED-SEASON SUMMARY (2012-{datetime_now_year() - 1}): "
+        f"\nCOMPLETED-SEASON SUMMARY ({FIRST_ARCHIVE_SEASON}-{datetime_now_year() - 1}): "
         f"{len(complete_indices)} common events across {len(complete_seasons)} completed seasons"
     )
     for variant in VARIANTS:
