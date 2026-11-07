@@ -30,6 +30,7 @@ class CommonEventNormalisationTests(unittest.TestCase):
             "drop": {"a": 2.0, "b": 4.0, "not_common": 100.0},
             "floor": {"a": 1.0, "b": 3.0, "not_common": 200.0},
             "calibrated": {"a": 4.0, "b": 2.0, "not_common": 300.0},
+            "surface_returner": {"a": 3.0, "b": 3.0, "not_common": 350.0},
             "pooled": {"a": 10.0, "b": 10.0, "not_common": 400.0},
         }
         normalised, common = comparison.normalise_on_common_events(raw, {"a", "b", "unrated"})
@@ -146,6 +147,28 @@ class PlayerRateEligibilityTests(unittest.TestCase):
         serve, _concede, _surface_concede, _tour = comparison.player_rates(rows)
 
         self.assertAlmostEqual(0.10, serve["player"])
+
+
+
+class SurfaceReturnerProfileTests(unittest.TestCase):
+    def test_surface_weighted_returner_rate_matches_server_profile_construction(self):
+        rows = []
+        for surface, rate in (("Clay", 0.10), ("Hard", 0.20)):
+            for index in range(3):
+                rows.append({
+                    "surface": surface,
+                    "winner_id": "returner",
+                    "loser_id": f"{surface}-{index}",
+                    "w_svpt": 100,
+                    "l_svpt": 100,
+                    "w_ace": 8,
+                    "l_ace": int(rate * 100),
+                })
+
+        _serve, pooled, surface_concede, _tour = comparison.player_rates(rows)
+
+        self.assertAlmostEqual(0.15, pooled["returner"])
+        self.assertAlmostEqual((0.10 / 3) + (0.20 * 2 / 3), surface_concede["returner"])
 
 
 class SurfaceStratifiedMetricsTests(unittest.TestCase):
