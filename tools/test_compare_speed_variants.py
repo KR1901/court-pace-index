@@ -40,6 +40,27 @@ class CommonEventNormalisationTests(unittest.TestCase):
         self.assertEqual(comparison.normalise_on_common_events(raw, {"a"}), ({}, []))
 
 
+class SeasonStratifiedBootstrapTests(unittest.TestCase):
+    def test_resampling_preserves_each_seasons_event_count(self):
+        keys = [
+            (2012, "a"), (2012, "b"), (2012, "c"),
+            (2013, "d"), (2013, "e"),
+        ]
+        draws = comparison.season_stratified_draws(keys, iterations=20, seed=7)
+        self.assertEqual(len(draws), 20)
+        for draw in draws:
+            self.assertEqual(len(draw), len(keys))
+            self.assertEqual(sum(index in (0, 1, 2) for index in draw), 3)
+            self.assertEqual(sum(index in (3, 4) for index in draw), 2)
+
+    def test_stratified_bootstrap_is_reproducible(self):
+        keys = [(2012, "a"), (2012, "b"), (2013, "c")]
+        self.assertEqual(
+            comparison.season_stratified_draws(keys, 10, 99),
+            comparison.season_stratified_draws(keys, 10, 99),
+        )
+
+
 class MetricTests(unittest.TestCase):
     def test_reports_rank_correlation_error_and_signed_bias(self):
         result = comparison.metrics([(0.8, 0.9), (1.0, 1.0), (1.2, 1.1)])
