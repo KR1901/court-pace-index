@@ -387,6 +387,9 @@ def build_live_profiles(profile_year, current_profiles):
             if profile["concede_rate"] is None and previous["concede_rate"] is not None:
                 profile["concede_rate"] = previous["concede_rate"]
                 profile["concede_rate_season"] = historical_year
+                profile["concede_rate_source"] = previous.get("concede_rate_source")
+                profile["concede_matches"] = previous.get("concede_matches", 0)
+                profile["concede_service_points"] = previous.get("concede_service_points", 0.0)
 
     # Players without any qualified profile still get a player-specific, explicitly
     # low-sample estimate when the archive contains their own service-point observations.
@@ -474,6 +477,9 @@ def dedupe_live_profiles(profiles):
         ):
             candidate["concede_rate"] = profile["concede_rate"]
             candidate["concede_rate_season"] = profile.get("concede_rate_season")
+            candidate["concede_rate_source"] = profile.get("concede_rate_source")
+            candidate["concede_matches"] = profile.get("concede_matches", 0)
+            candidate["concede_service_points"] = profile.get("concede_service_points", 0.0)
 
     result = []
     for profile in chosen.values():
@@ -704,8 +710,7 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; positive "
-                      "expected-ace values are floored at 0.5, normalised so a tour-average event reads 1.00",
+            "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; both player profiles use qualified clay (1/3) and hard/grass (2/3) rates, with pooled returner fallback when neither surface qualifies; positive expected-ace values are floored at 0.5 and season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
