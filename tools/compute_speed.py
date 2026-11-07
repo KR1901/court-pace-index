@@ -6,8 +6,8 @@ actually hit with the aces the same server would have been expected to hit again
 returner on a neutral surface, then average the ratios across the event and normalise so a
 tour-average event for the season reads 1.00.
 
-Data: the public ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), fetched from
-the public archive mirror. Only tour-level main-draw matches with serve stats are used.
+Data: Jeff Sackmann ATP archive for historical seasons; TennisMyLife ATP database for the
+current season. Only tour-level main-draw matches with serve stats are used.
 
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
@@ -19,8 +19,10 @@ from urllib.error import HTTPError
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
+TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
 YEARS = range(2012, date.today().year + 1)
-LEVELS = {"G", "M", "A", "F"}          # Slams, Masters, ATP 250/500, Finals
+LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Finals
+SOURCE_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 
 # CSV event name -> tournament id used by the app
@@ -32,7 +34,10 @@ NAMES = {
     "Rome Masters": "rome", "Canada Masters": "canada",
     "Cincinnati Masters": "cincinnati", "Shanghai Masters": "shanghai",
     "Paris Masters": "paris", "Tour Finals": "atpfinals",
-    "Brisbane": "brisbane", "Hong Kong": "hongkong", "United Cup": "unitedcup", "Auckland": "auckland",
+    "Brisbane": "brisbane", "Hong Kong": "hongkong", "United Cup": "unitedcup", "Laver Cup": "lavercup", "Auckland": "auckland",
+    # TennisMyLife uses these shorter/alternate event labels in its ATP CSV.
+    "Monte Carlo": "montecarlo", "Cincinnati": "cincinnati", "Shanghai": "shanghai",
+    "'s-Hertogenbosch": "shertogenbosch", "’s-Hertogenbosch": "shertogenbosch",
     "Adelaide": "adelaide", "Montpellier": "montpellier", "Dallas": "dallas",
     "Rotterdam": "rotterdam", "Delray Beach": "delraybeach",
     "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Doha": "doha",
@@ -53,10 +58,46 @@ NAMES = {
 
 def load(year):
     os.makedirs(CACHE, exist_ok=True)
+
+    # The Sackmann mirror's 2026 snapshot stops in May. TML publishes a current-year
+    # ATP match table through the end of the season; refresh it on every pipeline run.
+    if year == date.today().year:
+        tml_path = os.path.join(CACHE, f"tml_atp_matches_{year}.csv")
+        request = urllib.request.Request(
+            TML_CURRENT_URL.format(year),
+            headers={"User-Agent": "CourtPaceIndex/1.0", "Accept": "text/csv"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                payload = response.read()
+            if not payload.startswith(b"tourney_id,") or b"w_svpt" not in payload[:4096]:
+                raise ValueError("TennisMyLife returned an unexpected ATP CSV schema")
+            with open(tml_path, "wb") as f:
+                f.write(payload)
+            SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database"
+        except (HTTPError, urllib.error.URLError, TimeoutError, ValueError) as error:
+            if os.path.exists(tml_path):
+                print(f"warning: TML refresh failed ({error}); using cached TML current-season data")
+                SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database (cached)"
+            else:
+                print(f"warning: TML unavailable ({error}); falling back to Sackmann current-year archive")
+                path = os.path.join(CACHE, f"atp_matches_{year}.csv")
+                if not os.path.exists(path):
+                    with urllib.request.urlopen(MIRROR.format(year), timeout=90) as response:
+                        with open(path, "wb") as f:
+                            f.write(response.read())
+                SOURCE_BY_YEAR[year] = "Jeff Sackmann ATP archive (current-year fallback)"
+                with open(path, newline="") as f:
+                    return list(csv.DictReader(f))
+        with open(tml_path, newline="") as f:
+            return list(csv.DictReader(f))
+
     path = os.path.join(CACHE, f"atp_matches_{year}.csv")
     if not os.path.exists(path):
-        with urllib.request.urlopen(MIRROR.format(year), timeout=90) as r:
-            open(path, "wb").write(r.read())
+        with urllib.request.urlopen(MIRROR.format(year), timeout=90) as response:
+            with open(path, "wb") as f:
+                f.write(response.read())
+    SOURCE_BY_YEAR[year] = "Jeff Sackmann ATP archive"
     with open(path, newline="") as f:
         return list(csv.DictReader(f))
 
@@ -482,6 +523,7 @@ def main():
                        if r.get("speed") is not None and r["s"] == 2026}
 
     history = {}
+    season_sources = {}
     for year in YEARS:
         try:
             rows = load(year)
@@ -492,6 +534,7 @@ def main():
             raise
         ratings = season_ratings(year, rows)
         history[year] = ratings
+        season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
 
     ours = history.get(2026, {})
@@ -609,7 +652,8 @@ def main():
             "generated": date.today().isoformat(),
             "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; positive "
                       "expected-ace values are floored at 0.5, normalised so a tour-average event reads 1.00",
-            "source": "ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0)",
+            "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
+            "season_sources": {str(y): source for y, source in season_sources.items()},
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
                         for y, ratings in history.items()},
