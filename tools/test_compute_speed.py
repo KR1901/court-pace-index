@@ -362,10 +362,6 @@ class PlayerRateEligibilityTests(unittest.TestCase):
         self.assertEqual(600.0, player["serve_service_points"])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 
 class CurrentSeasonSourceTests(unittest.TestCase):
     def test_tml_atp_250_and_500_levels_are_eligible(self):
@@ -507,3 +503,5 @@ class ReturnerProfileDedupeTests(unittest.TestCase):
         self.assertEqual(2025, result[0]["concede_rate_season"])
 
 
+if __name__ == "__main__":
+    unittest.main()
