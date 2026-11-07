@@ -90,6 +90,41 @@ class PaceAnalyticsTest {
         assertEquals(2024, PaceAnalytics.previousSeason(sample, "montpellier", 2026, Metric.SPEED))
     }
 
+
+    @Test
+    fun `speed rankings and averages can isolate CALC from TA-only references`() {
+        val calcTournament = data.tournaments[0]
+        val taTournament = data.tournaments[1]
+        val sample = PaceData(
+            data.dataset.copy(
+                tournaments = listOf(calcTournament, taTournament),
+                readings = listOf(
+                    PaceReading(
+                        t = calcTournament.id, s = 2026, speed = 1.40,
+                        publishedSpeed = 1.20, src = "computed",
+                    ),
+                    PaceReading(t = taTournament.id, s = 2026, speed = 1.30, src = "tennisabstract"),
+                ),
+            ),
+        )
+
+        val calc = PaceAnalytics.ranking(
+            sample, 2026, Metric.SPEED, speedSources = setOf("computed", "live"),
+        )
+        val taOnly = PaceAnalytics.ranking(
+            sample, 2026, Metric.SPEED, speedSources = setOf("tennisabstract"),
+        )
+
+        assertEquals(listOf(calcTournament.id), calc.map { it.tournament.id })
+        assertEquals(listOf(taTournament.id), taOnly.map { it.tournament.id })
+        assertEquals(1.40, PaceAnalytics.average(
+            sample, 2026, Metric.SPEED, speedSources = setOf("computed", "live"),
+        )!!, 1e-9)
+        assertEquals(1.30, PaceAnalytics.average(
+            sample, 2026, Metric.SPEED, speedSources = setOf("tennisabstract"),
+        )!!, 1e-9)
+    }
+
     @Test
     fun `three year average stays inside the window`() {
         val average = PaceAnalytics.threeYearAverage(data, "miami", 2026, Metric.CPI)
