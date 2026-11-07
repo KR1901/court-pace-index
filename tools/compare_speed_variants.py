@@ -282,6 +282,23 @@ def interval(values):
     return percentile(clean, 0.025), percentile(clean, 0.975)
 
 
+def season_stratified_draws(keys, iterations, seed):
+    """Resample events within each fixed season stratum, preserving its event count."""
+    by_season = defaultdict(list)
+    for index, (season, _event_id) in enumerate(keys):
+        by_season[season].append(index)
+    seasons = sorted(by_season)
+    rng = random.Random(seed)
+    draws = []
+    for _ in range(iterations):
+        sample = []
+        for season in seasons:
+            event_indices = by_season[season]
+            sample.extend(rng.choice(event_indices) for _ in event_indices)
+        draws.append(sample)
+    return draws
+
+
 # ---------------------------------------------------------------- Tennis Abstract references
 
 def tournament_key(name):
@@ -531,23 +548,57 @@ def main():
 
     # Season-stratified paired bootstrap: preserve each season's event count and resample
     # events within that season. All variants use identical sampled event indices.
-    by_season = defaultdict(list)
-    for index, (season, _event_id) in enumerate(shared):
-        by_season[season].append(index)
-    available_seasons = sorted(by_season)
-    rng = random.Random(args.seed)
-    draws = []
-    for _ in range(args.boot):
-        sampled_indices = []
-        for season in available_seasons:
-            event_indices = by_season[season]
-            sampled_indices.extend(rng.choice(event_indices) for _ in event_indices)
-        draws.append(sampled_indices)
+    available_seasons = sorted({season for season, _event_id in shared})
+    draws = season_stratified_draws(shared, args.boot, args.seed)
     boot = {v: [metrics([table[v][i] for i in d]) for d in draws] for v in VARIANTS}
 
     print(f"\nScored on {len(shared)} events across {len(available_seasons)} seasons, rated by every variant "
           f"and matched to Tennis Abstract; {args.boot} season-stratified paired bootstrap resamples\n")
     print("Each season's Tennis Abstract reference is re-centred on that same common event subset.")
+    complete_indices = [
+        index for index, (season, _event_id) in enumerate(shared)
+        if season < datetime_now_year()
+    ]
+    complete_keys = [shared[index] for index in complete_indices]
+    complete_seasons = sorted({season for season, _event_id in complete_keys})
+    complete_table = {
+        variant: [table[variant][index] for index in complete_indices]
+        for variant in VARIANTS
+    }
+    complete_draws = season_stratified_draws(complete_keys, args.boot, args.seed + 1)
+    complete_boot = {
+        variant: [
+            metrics([complete_table[variant][i] for i in draw])
+            for draw in complete_draws
+        ]
+        for variant in VARIANTS
+    }
+    print(
+        f"\nCOMPLETED-SEASON SUMMARY (2012-{datetime_now_year() - 1}): "
+        f"{len(complete_indices)} common events across {len(complete_seasons)} completed seasons"
+    )
+    for variant in VARIANTS:
+        point = metrics(complete_table[variant])
+        r_low, r_high = interval([sample["r"] for sample in complete_boot[variant]])
+        rho_low, rho_high = interval([sample["rho"] for sample in complete_boot[variant]])
+        mae_low, mae_high = interval([sample["mae"] for sample in complete_boot[variant]])
+        print(
+            f"{variant:11s} r={point['r']:.3f} [{r_low:.3f},{r_high:.3f}] "
+            f"rho={point['rho']:.3f} [{rho_low:.3f},{rho_high:.3f}] "
+            f"MAE={point['mae']:.3f} [{mae_low:.3f},{mae_high:.3f}]"
+        )
+    print("Completed-season paired differences: calibrated minus floor")
+    for metric in ("r", "rho", "mae"):
+        differences = [
+            complete_boot["calibrated"][i][metric] - complete_boot["floor"][i][metric]
+            for i in range(args.boot)
+        ]
+        low, high = interval(differences)
+        point_difference = (
+            metrics(complete_table["calibrated"])[metric]
+            - metrics(complete_table["floor"])[metric]
+        )
+        print(f"  {metric}: {point_difference:+.3f} [{low:+.3f},{high:+.3f}]")
     metric_labels = (
         ("r", "Pearson r"),
         ("rho", "Spearman rho"),
