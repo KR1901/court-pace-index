@@ -246,19 +246,18 @@ doc = {
                 "id": "tennisabstract",
                 "name": "Tennis Abstract ATP Surface Speed Ratings",
                 "metric": "Speed",
-                "detail": "Ace rate per event adjusted with a season-calibrated server/returner odds ratio, "
-                          "centred on 1.00 for a tour-average surface. Last update 2026-11-02.",
+                "detail": "Published ATP Surface Speed ratings and ace rates as reported by Tennis Abstract. "
+                          "The figures are reproduced as published, not recomputed by this project.",
                 "url": "https://tennisabstract.com/reports/atp_surface_speed.html",
             },
             {
                 "id": "computed",
                 "name": "Computed history - from Jeff Sackmann's ATP archive",
                 "metric": "Speed",
-                "detail": "Seasons before 2026 are recomputed here from the public ATP match archive "
-                          "compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the published method: ace "
-                          "rate adjusted for the server and returner in every match, normalised so a "
-                          "tour-average event reads 1.00. Reproduces the published 2026 figures with "
-                          "r = 0.93 and a mean absolute difference of 0.10. Non-commercial use only.",
+                "detail": "Historical seasons are recomputed from the public ATP match archive compiled "
+                          "by Jeff Sackmann (CC BY-NC-SA 4.0), using a season-calibrated server/returner "
+                          "odds-ratio expectation, a 0.5 expected-ace floor, and season normalisation. "
+                          "Non-commercial use only.",
                 "url": "https://github.com/Aneeshers/tennis-sackmann-archive",
             },
         ],
