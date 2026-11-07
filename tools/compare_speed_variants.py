@@ -688,6 +688,20 @@ def main():
             - metrics(complete_table["floor"])[metric]
         )
         print(f"  {metric}: {point_difference:+.3f} [{low:+.3f},{high:+.3f}]")
+
+    print("\\nCompleted-season paired differences: surface_returner (candidate production) minus calibrated (pooled returner)")
+    for metric in ("r", "rho", "mae"):
+        differences = [
+            complete_boot["surface_returner"][i][metric] - complete_boot["calibrated"][i][metric]
+            for i in range(args.boot)
+        ]
+        low, high = interval(differences)
+        point_difference = (
+            metrics(complete_table["surface_returner"])[metric]
+            - metrics(complete_table["calibrated"])[metric]
+        )
+        print(f"  {metric}: {point_difference:+.3f} [{low:+.3f},{high:+.3f}]")
+
     metric_labels = (
         ("r", "Pearson r"),
         ("rho", "Spearman rho"),
@@ -742,7 +756,7 @@ def main():
     print(
         "\nInterpretation: higher r/rho and lower MAE are closer to the published reference. "
         "Bias near zero indicates less systematic over/under-rating. Each season's published "
-        "reference and all four variants are centred on the exact same event subset. Agreement "
+        "reference and all six variants are centred on the exact same event subset. Agreement "
         "with Tennis Abstract is a reference comparison, not proof of a better physical court-speed measure. "
         "Bootstrap resampling is stratified by season to preserve the observed season composition."
     )
