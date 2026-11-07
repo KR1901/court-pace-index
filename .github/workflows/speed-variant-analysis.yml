@@ -18,7 +18,7 @@ permissions:
 jobs:
   compare:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - name: Check out PR code
         uses: actions/checkout@v4
@@ -29,20 +29,22 @@ jobs:
       - name: Cache ATP match archive
         uses: actions/cache@v4
         with:
-          path: .cache/atp
-          key: atp-match-archive-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py') }}
+          path: |
+            .cache/atp
+            .cache/tennisabstract
+          key: tennis-history-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py', 'tools/compare_speed_variants.py') }}
           restore-keys: |
-            atp-match-archive-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
       - name: Test comparison methodology
         run: python3 -m unittest discover -s tools -p "test_compare_speed_variants.py" -v
-      - name: Compare 2025 and 2026 variants against Tennis Abstract
+      - name: Compare all archive seasons (2012-current) against annual Tennis Abstract tables
         run: |
-          python3 tools/compare_speed_variants.py --seasons 2025 2026 --boot 5000 --baseline drop | tee formula-comparison.txt
+          python3 tools/compare_speed_variants.py --seasons $(seq 2012 "$(date +%Y)") --reference-source tennisabstract --boot 5000 --baseline drop | tee formula-comparison.txt
           cat formula-comparison.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Upload comparison output
         uses: actions/upload-artifact@v4
         with:
-          name: expected-aces-formula-comparison
+          name: expected-aces-formula-comparison-2012-2026
           path: formula-comparison.txt
           if-no-files-found: error
           retention-days: 30
