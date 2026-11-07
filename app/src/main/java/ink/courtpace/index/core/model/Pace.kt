@@ -158,6 +158,8 @@ data class LiveSpeedPlayerProfile(
 data class LiveSpeedBaseline(
     val season: Int,
     val normalisation: Double,
+    /** Season-wide ace probability per service point used to calibrate player odds. */
+    val tourAceRate: Double? = null,
     val profiles: List<LiveSpeedPlayerProfile> = emptyList(),
     val generated: String = "",
     /** Season used to estimate player tendencies; can be the prior year during a cold start. */
