@@ -1,0 +1,48 @@
+name: Expected-aces formula comparison
+
+on:
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/speed-variant-analysis.yml"
+      - "tools/compute_speed.py"
+      - "tools/compare_speed_variants.py"
+      - "tools/test_compare_speed_variants.py"
+      - "app/src/main/assets/pace_dataset.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out PR code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache ATP match archive
+        uses: actions/cache@v4
+        with:
+          path: .cache/atp
+          key: atp-match-archive-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py') }}
+          restore-keys: |
+            atp-match-archive-${{ runner.os }}-
+      - name: Test comparison methodology
+        run: python3 -m unittest discover -s tools -p "test_compare_speed_variants.py" -v
+      - name: Compare 2025 and 2026 variants against Tennis Abstract
+        run: |
+          python3 tools/compare_speed_variants.py --seasons 2025 2026 --boot 5000 --baseline drop | tee formula-comparison.txt
+          cat formula-comparison.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload comparison output
+        uses: actions/upload-artifact@v4
+        with:
+          name: expected-aces-formula-comparison
+          path: formula-comparison.txt
+          if-no-files-found: error
+          retention-days: 30
