@@ -36,7 +36,7 @@ slower than a final-week one.
 |---|---|
 | Source | Tennis Abstract, ATP Surface Speed Ratings |
 | Metric | Ace rate adjusted for the field, 1.00 = tour average, usual range 0.50–1.50 |
-| Coverage in this app | 62 published event-season values across 2025–2026 (last update 2026-11-02); 31 are retained as side-by-side references where CALC exists |
+| Coverage in this app | 62 published event-season values across 2025–2026; 60 are retained side by side with CALC (4 in 2025 and 56 in 2026) |
 | URL | https://tennisabstract.com/reports/atp_surface_speed.html |
 
 What it is: for every match, compare the aces actually hit with the aces the same server and
@@ -67,24 +67,27 @@ terms and obtain written permission before any commercial use or raw-data republ
 
 | | |
 |---|---|
-| Source | ATP match archive compiled by Jeff Sackmann, CC BY-NC-SA 4.0 |
+| Source | Jeff Sackmann ATP archive (historical) and TennisMyLife ATP database (current season) |
 | Mirror used | https://github.com/Aneeshers/tennis-sackmann-archive |
 | Metric | Same ace-based scale as above |
-| Coverage in this app | 685 calculated readings, 2012–2026, including 31 with published TA comparisons |
+| Coverage in this app | 718 CALC readings, 2012–2026, including 60 side-by-side TA comparisons |
 | Script | `tools/compute_speed.py` |
 
-Every tour-level main-draw match with serve stats is read. For each player and season the ace
-rate is computed on clay and on hard/grass, blended one third to two thirds, and each player's
-rate of conceding aces while returning is recorded. For every match, the aces the server would
-be expected to hit against that returner on a neutral surface come from the odds-ratio
-combination of those two rates; the ratio of actual to expected aces is averaged across the
-event, and the season is normalised so a tour-average event reads 1.00.
+Every tour-level main-draw match with serve stats is read. For each player and season, both
+the server ace rate and the returner ace-concession rate are built with the same surface rule:
+calculate separate clay and hard/grass rates, require at least three matches in a surface bucket,
+and blend qualified rates one third to two thirds. If only one surface qualifies, use that rate;
+for returners only, fall back to the pooled concession rate when neither surface qualifies.
+For every server side, neutral-surface expected aces come from the calibrated odds-ratio
+combination of the server and returner's profiles. The event rating is the average of valid
+actual/expected server-side ratios, then season-normalised so the tour-average event reads 1.00.
 
 Where a published Tennis Abstract figure and a calibrated archive calculation both exist, the
 calibrated calculation is the primary ranking value and the original published figure is retained
-as `publishedSpeed`. There are currently 31 such event-season comparisons (27 in 2026 and
-four in 2025). Where the archive has no calculation, the published value remains as a labelled
-fallback. The two methods are different estimates; the TA value is retained for transparency,
+as `publishedSpeed`. There are currently 60 such event-season comparisons (56 in 2026 and four in 2025). The
+2026 dataset now has 57 CALC readings and one TA-only fallback (Laver Cup, which has only
+14 eligible server sides against the 20-side minimum). Where the archive has no calculation,
+the published value remains as a labelled fallback. The two methods are different estimates; the TA value is retained for transparency,
 not treated as ground truth.
 
 ## Fields in the dataset
