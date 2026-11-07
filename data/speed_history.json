@@ -1,6 +1,6 @@
 {
  "generated": "2026-11-07",
- "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; positive expected-ace values are floored at 0.5, normalised so a tour-average event reads 1.00",
+ "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; both player profiles use qualified clay (1/3) and hard/grass (2/3) rates, with pooled returner fallback when neither surface qualifies; positive expected-ace values are floored at 0.5 and season-normalised",
  "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
  "season_sources": {
   "2012": "Jeff Sackmann ATP archive",
