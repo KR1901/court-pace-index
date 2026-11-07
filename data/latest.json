@@ -14,14 +14,14 @@
     "id": "tennisabstract",
     "name": "Tennis Abstract ATP Surface Speed Ratings",
     "metric": "Speed",
-    "detail": "Ace rate per event adjusted for the servers and returners in each match, centred on 1.00 for a tour-average surface. Last update 2026-11-02.",
+    "detail": "Published ATP Surface Speed ratings and ace rates as reported by Tennis Abstract. The figures are reproduced as published, not recomputed by this project.",
     "url": "https://tennisabstract.com/reports/atp_surface_speed.html"
    },
    {
     "id": "computed",
     "name": "Computed history - from Jeff Sackmann's ATP archive",
     "metric": "Speed",
-    "detail": "Historical ace-based ratings are recomputed from the ATP match archive using a season-calibrated server/returner odds-ratio formula, with a 0.5 expected-ace floor and season normalisation. Non-commercial use only.",
+    "detail": "Historical seasons are recomputed from the ATP match archive using a season-calibrated server/returner odds-ratio expectation, a 0.5 expected-ace floor, and season normalisation. Non-commercial use only.",
     "url": "https://github.com/Aneeshers/tennis-sackmann-archive"
    }
   ]
