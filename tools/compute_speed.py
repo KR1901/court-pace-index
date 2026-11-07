@@ -122,16 +122,28 @@ def player_rates(usable):
     for p in set(clay_sv) | set(hg_sv):
         c = clay_ace[p] / clay_sv[p] if clay_sv[p] > 0 else None
         h = hg_ace[p] / hg_sv[p] if hg_sv[p] > 0 else None
-        if c is not None and h is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
+        clay_qualified = c is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE
+        hard_grass_qualified = h is not None and hg_n[p] >= MIN_MATCHES_PER_SURFACE
+
+        # Qualification is surface-specific. One or two matches on the other surface
+        # must not invalidate a player's adequately sampled surface profile.
+        if clay_qualified and hard_grass_qualified:
             serve_rate[p] = (1 / 3) * c + (2 / 3) * h
-        elif c is not None and h is None and clay_n[p] >= MIN_MATCHES_PER_SURFACE:
+        elif clay_qualified:
             serve_rate[p] = c
-        elif h is not None and c is None and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
+        elif hard_grass_qualified:
             serve_rate[p] = h
+
         if p in serve_rate:
+            use_clay = clay_qualified
+            use_hard_grass = hard_grass_qualified
             serve_samples[p] = {
-                "clayMatches": clay_n[p],
-                "hardGrassMatches": hg_n[p],
+                "clayMatches": clay_n[p] if use_clay else 0,
+                "hardGrassMatches": hg_n[p] if use_hard_grass else 0,
+                "servicePoints": (
+                    (clay_sv[p] if use_clay else 0.0)
+                    + (hg_sv[p] if use_hard_grass else 0.0)
+                ),
             }
 
     concede_rate = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
@@ -141,7 +153,11 @@ def player_rates(usable):
             "name": names.get(p, ""),
             "serve_rate": serve_rate.get(p),
             "concede_rate": concede_rate.get(p),
-            "serve_matches": sum(serve_samples.get(p, {}).values()),
+            "serve_matches": (
+                serve_samples.get(p, {}).get("clayMatches", 0)
+                + serve_samples.get(p, {}).get("hardGrassMatches", 0)
+            ),
+            "serve_service_points": serve_samples.get(p, {}).get("servicePoints", 0.0),
             "clay_matches": clay_n[p],
             "hard_grass_matches": hg_n[p],
             "return_points": ret_pts.get(p, 0.0),
@@ -221,7 +237,9 @@ def build_live_profiles(profile_year, current_profiles):
         )
         profile["serve_rate_sample_matches"] = profile["serve_matches"]
         profile["serve_rate_sample_points"] = (
-            profile["clay_service_points"] + profile["hard_grass_service_points"]
+            profile.get("serve_service_points")
+            if profile["serve_rate"] is not None and profile.get("serve_service_points") is not None
+            else profile["clay_service_points"] + profile["hard_grass_service_points"]
         )
         profile["concede_rate_season"] = (
             profile_year if profile["concede_rate"] is not None else None
@@ -252,7 +270,8 @@ def build_live_profiles(profile_year, current_profiles):
                     previous["serve_matches"] if previous["serve_rate"] is not None else 0
                 )
                 live[player_id]["serve_rate_sample_points"] = (
-                    previous["clay_service_points"] + previous["hard_grass_service_points"]
+                    previous.get("serve_service_points",
+                                 previous["clay_service_points"] + previous["hard_grass_service_points"])
                     if previous["serve_rate"] is not None else 0.0
                 )
                 live[player_id]["concede_rate_season"] = (
@@ -266,8 +285,9 @@ def build_live_profiles(profile_year, current_profiles):
                 profile["serve_rate_season"] = historical_year
                 profile["serve_rate_source"] = "prior-season-qualified"
                 profile["serve_rate_sample_matches"] = previous["serve_matches"]
-                profile["serve_rate_sample_points"] = (
-                    previous["clay_service_points"] + previous["hard_grass_service_points"]
+                profile["serve_rate_sample_points"] = previous.get(
+                    "serve_service_points",
+                    previous["clay_service_points"] + previous["hard_grass_service_points"],
                 )
             if profile["concede_rate"] is None and previous["concede_rate"] is not None:
                 profile["concede_rate"] = previous["concede_rate"]
