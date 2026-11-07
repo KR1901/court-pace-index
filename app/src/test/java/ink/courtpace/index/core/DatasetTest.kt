@@ -85,8 +85,12 @@ class DatasetTest {
         assertTrue(computed.all { it.s in 2012..2026 })
         val comparisons = computed.filter { it.publishedSpeed != null }
         assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
-        assertEquals(1.26, data.value("montpellier", 2026, Metric.SPEED)!!, 0.001)
-        assertEquals(1.49, data.publishedSpeed("montpellier", 2026)!!, 0.001)
+        val montpellier = comparisons.first {
+            it.t == "montpellier" && it.s == 2026
+        }
+        assertEquals(montpellier.speed, data.value("montpellier", 2026, Metric.SPEED))
+        assertEquals(montpellier.publishedSpeed, data.publishedSpeed("montpellier", 2026)!!, 0.001)
+        assertEquals(1.49, montpellier.publishedSpeed!!, 0.001)
         assertEquals("computed", data.speedSource("montpellier", 2026))
         val taOnly = data.dataset.readings.first {
             it.s == 2026 && it.src == "tennisabstract" && it.speed != null
