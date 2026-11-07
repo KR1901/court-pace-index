@@ -56,7 +56,7 @@ MIN_SIDES = 20
 FIRST_ARCHIVE_SEASON = 2012
 TA_URL = "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year={year}"
 TA_CACHE = os.path.join(ROOT, ".cache", "tennisabstract")
-TA_REQUEST_DELAY_SECONDS = 1.0
+TA_REQUEST_DELAY_SECONDS = 4.0
 
 
 def datetime_now_year():
@@ -365,10 +365,14 @@ def fetch_tennis_abstract_season(year, cache_dir=TA_CACHE):
     if html is None or not parse_tennis_abstract_page(html):
         request = Request(
             TA_URL.format(year=year),
-            headers={"User-Agent": "CourtPaceIndex-formula-analysis/1.0 (research; contact via GitHub)"},
+            headers={
+                "User-Agent": "CourtPaceIndex-formula-analysis/1.0 (research; contact via GitHub)",
+                "Accept": "text/html,application/xhtml+xml",
+                "Connection": "close",
+            },
         )
         last_error = None
-        for attempt in range(4):
+        for attempt in range(6):
             try:
                 with urlopen(request, timeout=45) as response:
                     html = response.read().decode("utf-8", errors="replace")
@@ -377,7 +381,21 @@ def fetch_tennis_abstract_season(year, cache_dir=TA_CACHE):
                 last_error = error
                 if isinstance(error, HTTPError) and error.code not in (429, 500, 502, 503, 504):
                     raise
-                time.sleep(2 ** attempt)
+                retry_after = None
+                if isinstance(error, HTTPError):
+                    retry_after = error.headers.get("Retry-After")
+                try:
+                    server_delay = float(retry_after) if retry_after else 0.0
+                except (TypeError, ValueError):
+                    server_delay = 0.0
+                backoff = min(60.0, 3.0 * (2 ** attempt))
+                delay = max(server_delay, backoff)
+                print(
+                    f"Tennis Abstract {year}: request attempt {attempt + 1}/6 failed "
+                    f"({error}); retrying in {delay:.0f}s",
+                    file=sys.stderr,
+                )
+                time.sleep(delay)
         else:
             raise RuntimeError(f"could not fetch Tennis Abstract {year}: {last_error}")
         if not parse_tennis_abstract_page(html):
