@@ -253,11 +253,7 @@ fun TournamentScreen(
                                         ?: reading.speed?.let { PaceAnalytics.format(it, Metric.SPEED) }
                                         ?: "–",
                                     style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
-                                    color = if (reading.cpi == null && reading.speedSource == "computed") {
-                                        colors.textDim
-                                    } else {
-                                        colors.text
-                                    },
+                                    color = colors.text,
                                 )
                                 Spacer(Modifier.width(5.dp))
                                 // CPI and speed are different scales; never let the reader

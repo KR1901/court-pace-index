@@ -98,6 +98,13 @@ fun BoardScreen(
     val top = ranking.firstOrNull()
     val bottom = ranking.lastOrNull()
     val average = PaceAnalytics.average(data, season, metric)
+    val speedSourceCounts = if (metric == Metric.SPEED) {
+        data.entries(season, metric).groupingBy { (tournament, _) ->
+            data.speedSource(tournament.id, season)
+        }.eachCount()
+    } else {
+        emptyMap()
+    }
 
     val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Column(
@@ -191,9 +198,15 @@ fun BoardScreen(
                         modifier = Modifier.weight(1f),
                     )
                     StatTile(
-                        label = "Field average",
+                        label = if (metric == Metric.SPEED) "Mixed-source avg" else "Field average",
                         value = PaceAnalytics.format(average, metric),
-                        caption = "${ranking.size} events",
+                        caption = if (metric == Metric.SPEED) {
+                            "${speedSourceCounts["computed"] ?: 0} CALC · " +
+                                "${speedSourceCounts["tennisabstract"] ?: 0} TA · " +
+                                "${speedSourceCounts["live"] ?: 0} LIVE"
+                        } else {
+                            "${ranking.size} events"
+                        },
                         color = colors.text,
                         modifier = Modifier.weight(1f),
                     )
