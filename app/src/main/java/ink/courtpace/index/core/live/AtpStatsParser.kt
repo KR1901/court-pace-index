@@ -294,6 +294,7 @@ object AceRating {
         }
 
         val profiles = profileIndex(baseline.profiles)
+        val tourAceRate = baseline.tourAceRate
         var totalAces = 0
         var totalPoints = 0
         var serverProfilesMatched = 0
@@ -338,19 +339,33 @@ object AceRating {
                 exclude("invalid ace/service-point statistics")
                 return
             }
-            val joint = serveRate * concedeRate
-            val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
-            if (!denominator.isFinite() || denominator <= 0.0) {
-                exclude("invalid expected-aces denominator")
+            if (tourAceRate == null || !tourAceRate.isFinite() || tourAceRate <= 0.0 || tourAceRate >= 1.0) {
+                exclude("season tour-average ace rate is unavailable or invalid")
                 return
             }
-            val expected = (joint / denominator) * servicePoints
+            if (!serveRate.isFinite() || serveRate <= 0.0 || serveRate >= 1.0 ||
+                !concedeRate.isFinite() || concedeRate <= 0.0 || concedeRate >= 1.0
+            ) {
+                exclude("invalid server/returner ace-rate profile")
+                return
+            }
+            // Calibrated odds-ratio (log5) expectation: server odds × returner concession
+            // odds ÷ season tour-average ace odds. This puts the expectation on the actual
+            // tour ace-rate scale; the 0.5 floor is retained only for rare tiny expectations.
+            val serverOdds = serveRate / (1.0 - serveRate)
+            val returnerOdds = concedeRate / (1.0 - concedeRate)
+            val tourOdds = tourAceRate / (1.0 - tourAceRate)
+            val matchupOdds = (serverOdds * returnerOdds) / tourOdds
+            if (!matchupOdds.isFinite() || matchupOdds <= 0.0) {
+                exclude("invalid calibrated expected-aces odds")
+                return
+            }
+            val expectedAceRate = matchupOdds / (1.0 + matchupOdds)
+            val expected = expectedAceRate * servicePoints
             if (!expected.isFinite() || expected <= MIN_EXPECTED_ACES) {
-                exclude("zero or invalid expected aces (server=$serveRate, returner=$concedeRate)")
+                exclude("zero or invalid calibrated expected aces (server=$serveRate, returner=$concedeRate)")
                 return
             }
-            // Match the historical pipeline: retain every valid positive-expectation side.
-            // Floor expected aces at 0.5 to avoid unstable ratios without discarding a player side.
             ratios += aces.toDouble() / maxOf(expected, EXPECTED_ACES_FLOOR)
         }
 
@@ -380,11 +395,10 @@ object AceRating {
     ): Coverage = evaluate(matches, baseline).coverage
 
     /**
-     * Same opponent-adjusted calculation as tools/compute_speed.py:
-     * expected aces = ((serveRate * concedeRate) /
-     * (serveRate * concedeRate + (1-serveRate) * (1-concedeRate))) * servicePoints.
-     * Expected-ace counts below 0.5 are floored at 0.5 rather than excluded, so valid low-ace
-     * player sides remain covered without allowing tiny expectations to dominate. Average
+     * Same calibrated opponent-adjusted calculation as tools/compute_speed.py:
+     * expected ace odds = odds(server serve rate) × odds(returner concession rate) /
+     * odds(season tour-average ace rate), then multiplied by service points.
+     * Expected-ace counts below 0.5 are floored at 0.5 rather than excluded. Average
      * actual/expected ratios over both server sides, then divide by the season-wide mean of
      * historical event raw scores. Missing player profiles are omitted, never replaced
      * by the pooled-rate approximation.
