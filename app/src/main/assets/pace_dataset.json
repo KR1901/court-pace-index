@@ -1,6 +1,6 @@
 {
  "meta": {
-  "generated": "2026-11-06T20:30:12.349937+00:00",
+  "generated": "2026-11-07T06:00:00.000Z",
   "season": 2026,
   "sources": [
    {
@@ -21,7 +21,7 @@
     "id": "computed",
     "name": "Computed history - from Jeff Sackmann's ATP archive",
     "metric": "Speed",
-    "detail": "Seasons before 2026 are recomputed here from the public ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the published method: ace rate adjusted for the server and returner in every match, normalised so a tour-average event reads 1.00. Reproduces the published 2026 figures with r = 0.93 and a mean absolute difference of 0.10. Non-commercial use only.",
+    "detail": "Historical ace-based ratings are recomputed from the ATP match archive using a season-calibrated server/returner odds-ratio formula, with a 0.5 expected-ace floor and season normalisation. Non-commercial use only.",
     "url": "https://github.com/Aneeshers/tennis-sackmann-archive"
    }
   ]
@@ -662,25 +662,25 @@
   {
    "t": "ausopen",
    "s": 2017,
-   "cpi": 42.0,
+   "cpi": 42,
    "src": "courtspeed"
   },
   {
    "t": "ausopen",
    "s": 2020,
-   "cpi": 43.0,
+   "cpi": 43,
    "src": "courtspeed"
   },
   {
    "t": "ausopen",
    "s": 2021,
-   "cpi": 50.0,
+   "cpi": 50,
    "src": "courtspeed"
   },
   {
    "t": "indianwells",
    "s": 2016,
-   "cpi": 30.0,
+   "cpi": 30,
    "src": "courtspeed"
   },
   {
@@ -704,7 +704,7 @@
   {
    "t": "indianwells",
    "s": 2021,
-   "cpi": 32.0,
+   "cpi": 32,
    "src": "courtspeed"
   },
   {
@@ -824,7 +824,7 @@
   {
    "t": "montecarlo",
    "s": 2023,
-   "cpi": 30.0,
+   "cpi": 30,
    "src": "courtspeed"
   },
   {
@@ -836,7 +836,7 @@
   {
    "t": "montecarlo",
    "s": 2025,
-   "cpi": 29.0,
+   "cpi": 29,
    "src": "courtspeed"
   },
   {
@@ -878,7 +878,7 @@
   {
    "t": "madrid",
    "s": 2024,
-   "cpi": 27.0,
+   "cpi": 27,
    "src": "courtspeed"
   },
   {
@@ -896,13 +896,13 @@
   {
    "t": "rome",
    "s": 2016,
-   "cpi": 24.0,
+   "cpi": 24,
    "src": "courtspeed"
   },
   {
    "t": "rome",
    "s": 2017,
-   "cpi": 22.0,
+   "cpi": 22,
    "src": "courtspeed"
   },
   {
@@ -938,13 +938,13 @@
   {
    "t": "rolandgarros",
    "s": 2017,
-   "cpi": 21.0,
+   "cpi": 21,
    "src": "courtspeed"
   },
   {
    "t": "wimbledon",
    "s": 2017,
-   "cpi": 37.0,
+   "cpi": 37,
    "src": "courtspeed"
   },
   {
@@ -1034,7 +1034,7 @@
   {
    "t": "cincinnati",
    "s": 2021,
-   "cpi": 43.0,
+   "cpi": 43,
    "src": "courtspeed"
   },
   {
@@ -1058,13 +1058,13 @@
   {
    "t": "cincinnati",
    "s": 2025,
-   "cpi": 43.0,
+   "cpi": 43,
    "src": "courtspeed"
   },
   {
    "t": "cincinnati",
    "s": 2026,
-   "cpi": 39.0,
+   "cpi": 39,
    "src": "courtspeed"
   },
   {
@@ -1076,7 +1076,7 @@
   {
    "t": "usopen",
    "s": 2020,
-   "cpi": 43.0,
+   "cpi": 43,
    "src": "courtspeed"
   },
   {
@@ -1100,7 +1100,7 @@
   {
    "t": "shanghai",
    "s": 2018,
-   "cpi": 40.0,
+   "cpi": 40,
    "src": "courtspeed"
   },
   {
@@ -1226,7 +1226,7 @@
   {
    "t": "atpfinals",
    "s": 2014,
-   "cpi": 34.0,
+   "cpi": 34,
    "src": "courtspeed"
   },
   {
@@ -1395,7 +1395,7 @@
    "t": "lyon",
    "s": 2026,
    "speed": 1.21,
-   "ace": 12.0,
+   "ace": 12,
    "date": "2026-10-19",
    "src": "tennisabstract"
   },
@@ -1403,7 +1403,7 @@
    "t": "basel",
    "s": 2026,
    "speed": 1.2,
-   "ace": 15.0,
+   "ace": 15,
    "date": "2026-10-26",
    "src": "tennisabstract"
   },
@@ -1427,7 +1427,7 @@
    "t": "mallorca",
    "s": 2026,
    "speed": 1.18,
-   "ace": 11.0,
+   "ace": 11,
    "date": "2026-06-21",
    "src": "tennisabstract"
   },
@@ -1539,7 +1539,7 @@
    "t": "unitedcup",
    "s": 2026,
    "speed": 1.07,
-   "ace": 14.0,
+   "ace": 14,
    "date": "2026-01-05",
    "src": "tennisabstract"
   },
@@ -1595,7 +1595,7 @@
    "t": "shertogenbosch",
    "s": 2026,
    "speed": 0.95,
-   "ace": 11.0,
+   "ace": 11,
    "date": "2026-06-08",
    "src": "tennisabstract"
   },
@@ -1619,7 +1619,7 @@
    "t": "marrakech",
    "s": 2026,
    "speed": 0.93,
-   "ace": 8.0,
+   "ace": 8,
    "date": "2026-03-30",
    "src": "tennisabstract"
   },
@@ -1707,7 +1707,7 @@
    "t": "houston",
    "s": 2026,
    "speed": 0.67,
-   "ace": 9.0,
+   "ace": 9,
    "date": "2026-03-30",
    "src": "tennisabstract"
   },
@@ -1723,7 +1723,7 @@
    "t": "geneva",
    "s": 2026,
    "speed": 0.65,
-   "ace": 7.0,
+   "ace": 7,
    "date": "2026-05-17",
    "src": "tennisabstract"
   },
@@ -1794,231 +1794,231 @@
   {
    "t": "brisbane",
    "s": 2012,
-   "speed": 1.29,
+   "speed": 1.18,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2012,
-   "speed": 0.89,
+   "speed": 0.98,
    "ace": 6.1,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2012,
-   "speed": 0.9,
+   "speed": 1.02,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2012,
-   "speed": 1.12,
-   "ace": 7.0,
+   "speed": 0.96,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2012,
-   "speed": 1.49,
-   "ace": 10.0,
+   "speed": 1.5,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2012,
-   "speed": 0.44,
-   "ace": 3.0,
+   "speed": 0.81,
+   "ace": 2.9,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2012,
-   "speed": 0.96,
-   "ace": 7.0,
+   "speed": 0.87,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2012,
-   "speed": 0.69,
+   "speed": 0.89,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2012,
-   "speed": 0.73,
+   "speed": 1.05,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2012,
-   "speed": 0.98,
+   "speed": 0.95,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2012,
-   "speed": 1.25,
+   "speed": 1.12,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2012,
-   "speed": 0.88,
+   "speed": 0.86,
    "ace": 6.1,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2012,
-   "speed": 0.91,
+   "speed": 0.9,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2012,
-   "speed": 0.72,
+   "speed": 0.69,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2012,
-   "speed": 0.65,
+   "speed": 0.72,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2012,
-   "speed": 0.72,
+   "speed": 1,
    "ace": 5.3,
    "src": "computed"
   },
   {
    "t": "bucharest",
    "s": 2012,
-   "speed": 0.67,
+   "speed": 0.71,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2012,
-   "speed": 0.59,
+   "speed": 0.87,
    "ace": 3.7,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2012,
-   "speed": 1.01,
+   "speed": 0.94,
    "ace": 7.1,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2012,
-   "speed": 1.17,
-   "ace": 8.0,
+   "speed": 1.15,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2012,
-   "speed": 0.58,
+   "speed": 0.61,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2012,
-   "speed": 1.02,
+   "speed": 0.85,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2012,
-   "speed": 1.23,
+   "speed": 1.19,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2012,
-   "speed": 1.27,
+   "speed": 1.06,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2012,
-   "speed": 0.88,
+   "speed": 1.18,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2012,
-   "speed": 1.0,
+   "speed": 0.94,
    "ace": 6.3,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2012,
-   "speed": 1.57,
+   "speed": 1.23,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2012,
-   "speed": 0.75,
+   "speed": 0.91,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2012,
-   "speed": 0.86,
+   "speed": 1.01,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2012,
-   "speed": 0.67,
-   "ace": 4.0,
+   "speed": 0.75,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2012,
-   "speed": 1.03,
+   "speed": 0.93,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2012,
-   "speed": 0.65,
-   "ace": 4.0,
+   "speed": 0.82,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2012,
-   "speed": 0.72,
+   "speed": 0.91,
    "ace": 5.4,
    "src": "computed"
   },
@@ -2032,189 +2032,189 @@
   {
    "t": "canada",
    "s": 2012,
-   "speed": 1.11,
+   "speed": 1.04,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2012,
-   "speed": 1.11,
+   "speed": 1.1,
    "ace": 8.5,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2012,
-   "speed": 1.16,
+   "speed": 1.15,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2012,
-   "speed": 1.34,
+   "speed": 1.05,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2012,
-   "speed": 1.17,
+   "speed": 1.06,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2012,
-   "speed": 1.11,
+   "speed": 1.02,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2012,
-   "speed": 1.15,
+   "speed": 1.22,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2012,
-   "speed": 1.18,
+   "speed": 1.07,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2012,
-   "speed": 1.24,
+   "speed": 1.12,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2012,
-   "speed": 1.3,
-   "ace": 9.0,
+   "speed": 1.21,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2012,
-   "speed": 1.26,
+   "speed": 1.15,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2012,
-   "speed": 1.17,
+   "speed": 0.87,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2013,
-   "speed": 1.2,
+   "speed": 1.31,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2013,
-   "speed": 0.89,
+   "speed": 0.92,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2013,
-   "speed": 1.05,
+   "speed": 1.19,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2013,
-   "speed": 1.28,
+   "speed": 1.07,
    "ace": 8.1,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2013,
-   "speed": 1.07,
+   "speed": 1.14,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2013,
-   "speed": 0.91,
+   "speed": 1.33,
    "ace": 5.2,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2013,
-   "speed": 1.24,
+   "speed": 1.22,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2013,
-   "speed": 0.57,
+   "speed": 0.81,
    "ace": 3.7,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2013,
-   "speed": 0.66,
+   "speed": 0.8,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2013,
-   "speed": 0.94,
+   "speed": 0.86,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2013,
-   "speed": 0.93,
+   "speed": 0.95,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2013,
-   "speed": 0.82,
-   "ace": 6.0,
+   "speed": 0.79,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2013,
-   "speed": 0.86,
+   "speed": 0.87,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2013,
-   "speed": 0.68,
+   "speed": 0.74,
    "ace": 6.3,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2013,
-   "speed": 0.63,
+   "speed": 0.66,
    "ace": 4.7,
    "src": "computed"
   },
@@ -2228,294 +2228,294 @@
   {
    "t": "bucharest",
    "s": 2013,
-   "speed": 0.65,
+   "speed": 0.68,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2013,
-   "speed": 0.56,
+   "speed": 0.72,
    "ace": 3.3,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2013,
-   "speed": 1.06,
+   "speed": 0.98,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2013,
-   "speed": 0.83,
+   "speed": 0.87,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2013,
-   "speed": 0.79,
-   "ace": 6.0,
+   "speed": 0.81,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2013,
-   "speed": 0.95,
+   "speed": 0.8,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2013,
-   "speed": 1.08,
+   "speed": 1.16,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2013,
-   "speed": 1.3,
+   "speed": 1.06,
    "ace": 10.2,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2013,
-   "speed": 1.1,
+   "speed": 1.14,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2013,
-   "speed": 1.18,
+   "speed": 1.09,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2013,
-   "speed": 1.53,
+   "speed": 1.25,
    "ace": 10.1,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2013,
-   "speed": 0.66,
+   "speed": 0.7,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2013,
-   "speed": 0.84,
+   "speed": 0.98,
    "ace": 5.5,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2013,
-   "speed": 0.81,
-   "ace": 5.0,
+   "speed": 0.83,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2013,
-   "speed": 1.16,
+   "speed": 1.28,
    "ace": 7.9,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2013,
-   "speed": 0.72,
+   "speed": 0.94,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2013,
-   "speed": 0.9,
+   "speed": 0.89,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2013,
-   "speed": 1.22,
+   "speed": 1.07,
    "ace": 10.1,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2013,
-   "speed": 0.9,
+   "speed": 0.97,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2013,
-   "speed": 1.17,
+   "speed": 1.13,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2013,
-   "speed": 1.25,
+   "speed": 1.17,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2013,
-   "speed": 1.26,
+   "speed": 1.05,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2013,
-   "speed": 0.96,
-   "ace": 9.0,
+   "speed": 0.99,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2013,
-   "speed": 0.86,
+   "speed": 0.9,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2013,
-   "speed": 1.41,
+   "speed": 1.27,
    "ace": 11.1,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2013,
-   "speed": 1.34,
+   "speed": 1.33,
    "ace": 10.7,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2013,
-   "speed": 1.45,
+   "speed": 1.25,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2013,
-   "speed": 1.1,
+   "speed": 1.02,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2013,
-   "speed": 1.21,
+   "speed": 1.1,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2013,
-   "speed": 1.22,
+   "speed": 1.15,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2014,
-   "speed": 1.32,
+   "speed": 1.13,
    "ace": 11.6,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2014,
-   "speed": 0.84,
+   "speed": 0.83,
    "ace": 6.5,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2014,
-   "speed": 1.06,
+   "speed": 1.05,
    "ace": 8.1,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2014,
-   "speed": 1.36,
+   "speed": 1.15,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2014,
-   "speed": 1.16,
-   "ace": 10.0,
+   "speed": 1.17,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2014,
-   "speed": 0.58,
+   "speed": 0.74,
    "ace": 3.5,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2014,
-   "speed": 1.26,
+   "speed": 1.05,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2014,
-   "speed": 0.88,
-   "ace": 9.0,
+   "speed": 0.89,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2014,
-   "speed": 0.74,
+   "speed": 0.81,
    "ace": 4.7,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2014,
-   "speed": 0.92,
+   "speed": 0.89,
    "ace": 8.5,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2014,
-   "speed": 0.99,
+   "speed": 0.97,
    "ace": 7.1,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2014,
-   "speed": 0.93,
+   "speed": 0.86,
    "ace": 7.1,
    "src": "computed"
   },
@@ -2529,49 +2529,49 @@
   {
    "t": "houston",
    "s": 2014,
-   "speed": 0.65,
-   "ace": 6.0,
+   "speed": 0.75,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2014,
-   "speed": 0.66,
+   "speed": 0.65,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2014,
-   "speed": 0.7,
+   "speed": 0.84,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "bucharest",
    "s": 2014,
-   "speed": 0.58,
+   "speed": 0.63,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2014,
-   "speed": 0.61,
+   "speed": 0.89,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2014,
-   "speed": 0.92,
+   "speed": 0.9,
    "ace": 6.1,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2014,
-   "speed": 0.9,
+   "speed": 0.96,
    "ace": 7.2,
    "src": "computed"
   },
@@ -2585,469 +2585,469 @@
   {
    "t": "rolandgarros",
    "s": 2014,
-   "speed": 0.89,
+   "speed": 0.78,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2014,
-   "speed": 1.39,
+   "speed": 1.29,
    "ace": 10.6,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2014,
-   "speed": 1.39,
+   "speed": 1.31,
    "ace": 11.2,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2014,
-   "speed": 1.06,
+   "speed": 1.1,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2014,
-   "speed": 1.24,
+   "speed": 1.27,
    "ace": 10.8,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2014,
-   "speed": 1.6,
+   "speed": 1.34,
    "ace": 11.1,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2014,
-   "speed": 0.7,
+   "speed": 1.06,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2014,
-   "speed": 0.94,
+   "speed": 1.15,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2014,
-   "speed": 0.7,
+   "speed": 0.93,
    "ace": 4.7,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2014,
-   "speed": 0.73,
+   "speed": 0.93,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2014,
-   "speed": 0.84,
+   "speed": 0.9,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2014,
-   "speed": 0.76,
+   "speed": 0.89,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2014,
-   "speed": 1.11,
+   "speed": 1.01,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2014,
-   "speed": 1.07,
+   "speed": 0.94,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2014,
-   "speed": 1.19,
+   "speed": 1.14,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2014,
-   "speed": 1.19,
+   "speed": 1.1,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2014,
-   "speed": 1.31,
+   "speed": 1.11,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2014,
-   "speed": 1.27,
+   "speed": 1.3,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2014,
-   "speed": 0.9,
-   "ace": 7.0,
+   "speed": 0.83,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2014,
-   "speed": 1.02,
-   "ace": 9.0,
+   "speed": 0.97,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2014,
-   "speed": 1.33,
+   "speed": 1.28,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2014,
-   "speed": 1.33,
+   "speed": 1.31,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2014,
-   "speed": 1.25,
+   "speed": 1.19,
    "ace": 11.5,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2014,
-   "speed": 1.09,
+   "speed": 1.07,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2014,
-   "speed": 0.84,
+   "speed": 0.85,
    "ace": 6.6,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2015,
-   "speed": 1.2,
+   "speed": 1.16,
    "ace": 11.6,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2015,
-   "speed": 1.03,
+   "speed": 1.08,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2015,
-   "speed": 1.19,
+   "speed": 1.25,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2015,
-   "speed": 1.35,
+   "speed": 1.2,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2015,
-   "speed": 1.18,
+   "speed": 1.4,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2015,
-   "speed": 1.2,
+   "speed": 1.16,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2015,
-   "speed": 0.84,
+   "speed": 0.83,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2015,
-   "speed": 0.76,
+   "speed": 0.94,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2015,
-   "speed": 0.76,
+   "speed": 0.72,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2015,
-   "speed": 0.67,
+   "speed": 1.04,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2015,
-   "speed": 0.96,
+   "speed": 0.94,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2015,
-   "speed": 1.05,
+   "speed": 1.02,
    "ace": 8.1,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2015,
-   "speed": 0.9,
+   "speed": 0.92,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2015,
-   "speed": 0.81,
+   "speed": 0.9,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2015,
-   "speed": 0.62,
-   "ace": 5.0,
+   "speed": 0.65,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2015,
-   "speed": 0.64,
+   "speed": 0.78,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "bucharest",
    "s": 2015,
-   "speed": 0.69,
+   "speed": 0.75,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2015,
-   "speed": 0.7,
+   "speed": 0.71,
    "ace": 5.2,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2015,
-   "speed": 1.01,
-   "ace": 7.0,
+   "speed": 0.98,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2015,
-   "speed": 0.84,
+   "speed": 0.87,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2015,
-   "speed": 0.93,
+   "speed": 0.94,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2015,
-   "speed": 0.76,
+   "speed": 0.86,
    "ace": 4.7,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2015,
-   "speed": 0.89,
+   "speed": 0.77,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2015,
-   "speed": 1.12,
+   "speed": 1.06,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2015,
-   "speed": 1.41,
+   "speed": 1.27,
    "ace": 11.4,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2015,
-   "speed": 1.18,
-   "ace": 10.0,
+   "speed": 1.19,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2015,
-   "speed": 1.4,
+   "speed": 1.21,
    "ace": 14.1,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2015,
-   "speed": 1.39,
+   "speed": 1.2,
    "ace": 10.4,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2015,
-   "speed": 0.74,
+   "speed": 0.79,
    "ace": 5.1,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2015,
-   "speed": 0.6,
+   "speed": 0.74,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2015,
-   "speed": 0.81,
+   "speed": 0.96,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2015,
-   "speed": 0.69,
+   "speed": 0.72,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2015,
-   "speed": 0.86,
+   "speed": 0.93,
    "ace": 6.5,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2015,
-   "speed": 1.22,
+   "speed": 1.1,
    "ace": 11.3,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2015,
-   "speed": 1.08,
+   "speed": 1.03,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2015,
-   "speed": 1.15,
+   "speed": 1.03,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2015,
-   "speed": 1.36,
+   "speed": 1.25,
    "ace": 11.5,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2015,
-   "speed": 1.28,
-   "ace": 9.0,
+   "speed": 1.08,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2015,
-   "speed": 1.31,
+   "speed": 1.17,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2015,
-   "speed": 0.91,
+   "speed": 1.04,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2015,
-   "speed": 1.04,
+   "speed": 0.99,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2015,
-   "speed": 1.06,
+   "speed": 1.01,
    "ace": 9.7,
    "src": "computed"
   },
@@ -3061,154 +3061,154 @@
   {
    "t": "basel",
    "s": 2015,
-   "speed": 1.08,
+   "speed": 1.02,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2015,
-   "speed": 1.04,
+   "speed": 1.02,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2015,
-   "speed": 0.89,
-   "ace": 6.0,
+   "speed": 0.96,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2016,
-   "speed": 1.16,
+   "speed": 1.04,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2016,
-   "speed": 0.95,
+   "speed": 1.15,
    "ace": 6.5,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2016,
-   "speed": 1.08,
+   "speed": 1.1,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2016,
-   "speed": 1.48,
+   "speed": 1.26,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2016,
-   "speed": 1.23,
+   "speed": 1.16,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2016,
-   "speed": 0.87,
+   "speed": 0.95,
    "ace": 5.5,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2016,
-   "speed": 1.19,
+   "speed": 1.04,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2016,
-   "speed": 0.85,
+   "speed": 0.83,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2016,
-   "speed": 0.74,
-   "ace": 6.0,
+   "speed": 0.93,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2016,
-   "speed": 0.91,
+   "speed": 0.88,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2016,
-   "speed": 0.86,
+   "speed": 0.94,
    "ace": 7.4,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2016,
-   "speed": 0.82,
+   "speed": 0.81,
    "ace": 6.5,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2016,
-   "speed": 0.98,
+   "speed": 0.99,
    "ace": 7.5,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2016,
-   "speed": 0.85,
+   "speed": 0.86,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2016,
-   "speed": 0.96,
+   "speed": 0.98,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2016,
-   "speed": 0.7,
+   "speed": 0.72,
    "ace": 5.1,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2016,
-   "speed": 0.63,
+   "speed": 0.68,
    "ace": 4.5,
    "src": "computed"
   },
   {
    "t": "bucharest",
    "s": 2016,
-   "speed": 0.68,
+   "speed": 0.77,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2016,
-   "speed": 0.74,
+   "speed": 0.81,
    "ace": 5.8,
    "src": "computed"
   },
@@ -3222,182 +3222,182 @@
   {
    "t": "madrid",
    "s": 2016,
-   "speed": 0.9,
+   "speed": 0.88,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2016,
-   "speed": 0.72,
+   "speed": 0.78,
    "ace": 5.6,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2016,
-   "speed": 0.78,
+   "speed": 0.82,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2016,
-   "speed": 0.93,
+   "speed": 0.79,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2016,
-   "speed": 1.11,
+   "speed": 1.09,
    "ace": 11.8,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2016,
-   "speed": 1.54,
+   "speed": 1.39,
    "ace": 11.2,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2016,
-   "speed": 1.22,
+   "speed": 1.16,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2016,
-   "speed": 1.36,
+   "speed": 1.17,
    "ace": 12.9,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2016,
-   "speed": 1.33,
+   "speed": 1.07,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2016,
-   "speed": 0.56,
+   "speed": 0.78,
    "ace": 4.1,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2016,
-   "speed": 0.74,
+   "speed": 0.85,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2016,
-   "speed": 1.29,
+   "speed": 1.23,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2016,
-   "speed": 0.87,
+   "speed": 1.08,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2016,
-   "speed": 0.54,
+   "speed": 0.87,
    "ace": 3.7,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2016,
-   "speed": 1.15,
+   "speed": 1.05,
    "ace": 11.8,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2016,
-   "speed": 1.11,
+   "speed": 1.12,
    "ace": 9.9,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2016,
-   "speed": 0.92,
+   "speed": 0.91,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2016,
-   "speed": 1.22,
+   "speed": 1.16,
    "ace": 10.8,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2016,
-   "speed": 1.12,
+   "speed": 1.07,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2016,
-   "speed": 1.01,
+   "speed": 0.87,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2016,
-   "speed": 1.36,
+   "speed": 1.29,
    "ace": 11.1,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2016,
-   "speed": 1.25,
+   "speed": 1.31,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2016,
-   "speed": 0.99,
+   "speed": 1.05,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2016,
-   "speed": 1.16,
+   "speed": 1.09,
    "ace": 10.4,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2016,
-   "speed": 1.05,
-   "ace": 8.0,
+   "speed": 1.03,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2016,
-   "speed": 1.14,
+   "speed": 1.18,
    "ace": 9.3,
    "src": "computed"
   },
@@ -3411,98 +3411,98 @@
   {
    "t": "paris",
    "s": 2016,
-   "speed": 1.22,
+   "speed": 1.18,
    "ace": 10.6,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2016,
-   "speed": 1.03,
+   "speed": 1.09,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2017,
-   "speed": 1.01,
+   "speed": 1,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2017,
-   "speed": 1.12,
+   "speed": 0.98,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2017,
-   "speed": 1.26,
+   "speed": 1.14,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2017,
-   "speed": 1.32,
+   "speed": 1.17,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2017,
-   "speed": 1.06,
-   "ace": 9.0,
+   "speed": 1.08,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2017,
-   "speed": 0.82,
+   "speed": 0.98,
    "ace": 5.1,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2017,
-   "speed": 1.14,
-   "ace": 9.0,
+   "speed": 1.07,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2017,
-   "speed": 0.98,
+   "speed": 1.01,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2017,
-   "speed": 0.71,
+   "speed": 0.92,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2017,
-   "speed": 0.91,
+   "speed": 0.92,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2017,
-   "speed": 0.89,
+   "speed": 0.93,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2017,
-   "speed": 0.98,
+   "speed": 1.02,
    "ace": 7.4,
    "src": "computed"
   },
@@ -3516,147 +3516,147 @@
   {
    "t": "houston",
    "s": 2017,
-   "speed": 1.04,
-   "ace": 8.0,
+   "speed": 1.01,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2017,
-   "speed": 0.9,
+   "speed": 0.87,
    "ace": 6.1,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2017,
-   "speed": 0.51,
+   "speed": 0.52,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2017,
-   "speed": 0.57,
+   "speed": 0.58,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2017,
-   "speed": 0.47,
+   "speed": 0.6,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2017,
-   "speed": 0.97,
-   "ace": 7.0,
+   "speed": 1.04,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2017,
-   "speed": 0.95,
+   "speed": 0.93,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2017,
-   "speed": 0.85,
+   "speed": 0.92,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2017,
-   "speed": 0.9,
+   "speed": 0.91,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "lyon",
    "s": 2017,
-   "speed": 0.86,
+   "speed": 0.89,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2017,
-   "speed": 0.91,
+   "speed": 0.82,
    "ace": 6.2,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2017,
-   "speed": 1.15,
+   "speed": 0.97,
    "ace": 11.7,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2017,
-   "speed": 1.43,
-   "ace": 13.0,
+   "speed": 1.28,
+   "ace": 13,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2017,
-   "speed": 1.13,
+   "speed": 1.09,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2017,
-   "speed": 1.38,
+   "speed": 1.25,
    "ace": 13.3,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2017,
-   "speed": 1.08,
+   "speed": 1.06,
    "ace": 8.5,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2017,
-   "speed": 1.17,
+   "speed": 1.04,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2017,
-   "speed": 0.8,
+   "speed": 0.94,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2017,
-   "speed": 0.59,
+   "speed": 0.77,
    "ace": 3.5,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2017,
-   "speed": 0.93,
+   "speed": 0.97,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2017,
-   "speed": 0.88,
+   "speed": 1.05,
    "ace": 5.8,
    "src": "computed"
   },
@@ -3670,14 +3670,14 @@
   {
    "t": "losCabos",
    "s": 2017,
-   "speed": 0.97,
+   "speed": 0.99,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2017,
-   "speed": 1.16,
+   "speed": 1.13,
    "ace": 9.4,
    "src": "computed"
   },
@@ -3691,441 +3691,441 @@
   {
    "t": "cincinnati",
    "s": 2017,
-   "speed": 1.14,
+   "speed": 1.2,
    "ace": 11.2,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2017,
-   "speed": 1.06,
+   "speed": 1.17,
    "ace": 7.9,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2017,
-   "speed": 1.06,
+   "speed": 0.94,
    "ace": 7.5,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2017,
-   "speed": 1.25,
+   "speed": 1.29,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2017,
-   "speed": 1.24,
-   "ace": 9.0,
+   "speed": 1.25,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2017,
-   "speed": 0.92,
-   "ace": 8.0,
+   "speed": 0.93,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2017,
-   "speed": 1.12,
+   "speed": 1.22,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2017,
-   "speed": 1.45,
+   "speed": 1.46,
    "ace": 12.4,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2017,
-   "speed": 0.96,
+   "speed": 0.94,
    "ace": 8.5,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2017,
-   "speed": 0.98,
+   "speed": 1,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2017,
-   "speed": 1.09,
+   "speed": 1,
    "ace": 9.9,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2017,
-   "speed": 1.02,
+   "speed": 0.84,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2018,
-   "speed": 1.36,
+   "speed": 1.23,
    "ace": 10.9,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2018,
-   "speed": 0.96,
+   "speed": 0.89,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2018,
-   "speed": 1.19,
+   "speed": 1.21,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2018,
-   "speed": 1.31,
+   "speed": 1.14,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2018,
-   "speed": 1.15,
+   "speed": 1.08,
    "ace": 8.5,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2018,
-   "speed": 0.74,
+   "speed": 0.83,
    "ace": 4.7,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2018,
-   "speed": 1.2,
+   "speed": 1.12,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2018,
-   "speed": 1.06,
+   "speed": 0.99,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2018,
-   "speed": 0.69,
-   "ace": 5.0,
+   "speed": 0.85,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2018,
-   "speed": 1.0,
+   "speed": 0.99,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2018,
-   "speed": 1.02,
-   "ace": 8.0,
+   "speed": 1.01,
+   "ace": 7.9,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2018,
-   "speed": 0.9,
+   "speed": 0.82,
    "ace": 7.4,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2018,
-   "speed": 0.82,
+   "speed": 0.79,
    "ace": 7.1,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2018,
-   "speed": 0.9,
+   "speed": 0.84,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2018,
-   "speed": 0.59,
+   "speed": 0.81,
    "ace": 3.6,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2018,
-   "speed": 0.6,
+   "speed": 0.58,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2018,
-   "speed": 0.62,
+   "speed": 0.67,
    "ace": 4.7,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2018,
-   "speed": 0.57,
+   "speed": 0.84,
    "ace": 3.6,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2018,
-   "speed": 0.76,
+   "speed": 0.83,
    "ace": 6.1,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2018,
-   "speed": 0.9,
+   "speed": 0.87,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2018,
-   "speed": 0.72,
+   "speed": 0.77,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2018,
-   "speed": 1.08,
+   "speed": 1.06,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "lyon",
    "s": 2018,
-   "speed": 0.84,
+   "speed": 1.13,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2018,
-   "speed": 0.89,
-   "ace": 6.0,
+   "speed": 0.79,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2018,
-   "speed": 1.21,
+   "speed": 1.12,
    "ace": 10.2,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2018,
-   "speed": 1.31,
+   "speed": 1.25,
    "ace": 13.5,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2018,
-   "speed": 1.09,
+   "speed": 1.17,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2018,
-   "speed": 1.36,
+   "speed": 1.24,
    "ace": 13.4,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2018,
-   "speed": 0.99,
+   "speed": 0.93,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2018,
-   "speed": 1.29,
+   "speed": 1.12,
    "ace": 10.4,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2018,
-   "speed": 0.67,
+   "speed": 0.85,
    "ace": 3.8,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2018,
-   "speed": 0.8,
+   "speed": 0.86,
    "ace": 5.3,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2018,
-   "speed": 1.13,
+   "speed": 1.18,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2018,
-   "speed": 0.76,
-   "ace": 5.0,
+   "speed": 0.83,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2018,
-   "speed": 0.83,
+   "speed": 0.95,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2018,
-   "speed": 0.86,
+   "speed": 0.96,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2018,
-   "speed": 1.06,
-   "ace": 8.0,
+   "speed": 0.94,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2018,
-   "speed": 1.2,
+   "speed": 1.18,
    "ace": 9.9,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2018,
-   "speed": 1.1,
-   "ace": 10.0,
+   "speed": 0.99,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2018,
-   "speed": 1.04,
-   "ace": 8.0,
+   "speed": 1.06,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2018,
-   "speed": 1.18,
+   "speed": 1.01,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2018,
-   "speed": 1.24,
+   "speed": 1.43,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2018,
-   "speed": 1.04,
+   "speed": 0.98,
    "ace": 9.2,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2018,
-   "speed": 1.0,
+   "speed": 1.07,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2018,
-   "speed": 1.27,
+   "speed": 1.32,
    "ace": 11.5,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2018,
-   "speed": 1.21,
+   "speed": 1.14,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2018,
-   "speed": 1.16,
+   "speed": 1.03,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2018,
-   "speed": 1.21,
-   "ace": 10.0,
+   "speed": 1.14,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2018,
-   "speed": 1.03,
-   "ace": 9.0,
+   "speed": 1.05,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2018,
-   "speed": 1.04,
+   "speed": 1.02,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2019,
-   "speed": 1.23,
+   "speed": 1.22,
    "ace": 13.5,
    "src": "computed"
   },
@@ -4139,546 +4139,546 @@
   {
    "t": "auckland",
    "s": 2019,
-   "speed": 0.99,
+   "speed": 0.96,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2019,
-   "speed": 1.46,
+   "speed": 1.26,
    "ace": 10.6,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2019,
-   "speed": 1.22,
+   "speed": 1.14,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2019,
-   "speed": 0.5,
-   "ace": 3.0,
+   "speed": 0.66,
+   "ace": 3,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2019,
-   "speed": 0.89,
+   "speed": 0.91,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2019,
-   "speed": 1.1,
+   "speed": 1.02,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2019,
-   "speed": 0.69,
+   "speed": 0.78,
    "ace": 4.5,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2019,
-   "speed": 0.95,
+   "speed": 0.9,
    "ace": 10.6,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2019,
-   "speed": 0.95,
+   "speed": 0.96,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2019,
-   "speed": 0.78,
+   "speed": 0.82,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2019,
-   "speed": 0.94,
+   "speed": 0.91,
    "ace": 8.1,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2019,
-   "speed": 0.83,
-   "ace": 7.0,
+   "speed": 0.81,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2019,
-   "speed": 0.82,
+   "speed": 1.08,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2019,
-   "speed": 0.51,
+   "speed": 0.54,
    "ace": 3.6,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2019,
-   "speed": 0.58,
+   "speed": 0.65,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2019,
-   "speed": 0.57,
-   "ace": 4.0,
+   "speed": 0.69,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2019,
-   "speed": 0.73,
+   "speed": 0.74,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2019,
-   "speed": 0.79,
+   "speed": 0.75,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2019,
-   "speed": 0.71,
+   "speed": 0.72,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2019,
-   "speed": 0.83,
+   "speed": 0.91,
    "ace": 5.3,
    "src": "computed"
   },
   {
    "t": "lyon",
    "s": 2019,
-   "speed": 0.99,
+   "speed": 0.94,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2019,
-   "speed": 0.85,
+   "speed": 0.81,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2019,
-   "speed": 1.11,
+   "speed": 1.03,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2019,
-   "speed": 1.37,
+   "speed": 1.26,
    "ace": 12.5,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2019,
-   "speed": 1.29,
+   "speed": 1.25,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2019,
-   "speed": 1.26,
+   "speed": 1.13,
    "ace": 10.9,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2019,
-   "speed": 1.06,
+   "speed": 1.08,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2019,
-   "speed": 1.16,
+   "speed": 1,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2019,
-   "speed": 0.79,
-   "ace": 5.0,
+   "speed": 0.93,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2019,
-   "speed": 0.72,
+   "speed": 0.83,
    "ace": 4.5,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2019,
-   "speed": 0.77,
+   "speed": 1.03,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2019,
-   "speed": 0.85,
+   "speed": 0.88,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2019,
-   "speed": 0.81,
+   "speed": 0.89,
    "ace": 5.2,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2019,
-   "speed": 0.87,
+   "speed": 0.95,
    "ace": 6.2,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2019,
-   "speed": 1.12,
+   "speed": 1.06,
    "ace": 11.9,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2019,
-   "speed": 1.09,
+   "speed": 1.05,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2019,
-   "speed": 1.09,
+   "speed": 1.05,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2019,
-   "speed": 1.18,
+   "speed": 1.16,
    "ace": 9.2,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2019,
-   "speed": 1.14,
-   "ace": 8.0,
+   "speed": 1,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2019,
-   "speed": 1.29,
+   "speed": 1.21,
    "ace": 10.8,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2019,
-   "speed": 1.53,
+   "speed": 1.49,
    "ace": 12.6,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2019,
-   "speed": 1.2,
+   "speed": 1.13,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2019,
-   "speed": 1.06,
+   "speed": 1.07,
    "ace": 9.6,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2019,
-   "speed": 1.31,
+   "speed": 1.26,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2019,
-   "speed": 1.16,
+   "speed": 1.14,
    "ace": 11.2,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2019,
-   "speed": 1.14,
+   "speed": 1.19,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2019,
-   "speed": 1.19,
+   "speed": 1.21,
    "ace": 10.4,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2019,
-   "speed": 1.41,
+   "speed": 1.39,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2020,
-   "speed": 0.93,
+   "speed": 1.08,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "adelaide",
    "s": 2020,
-   "speed": 1.08,
+   "speed": 1.09,
    "ace": 11.5,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2020,
-   "speed": 1.25,
+   "speed": 1.06,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2020,
-   "speed": 1.24,
-   "ace": 9.0,
+   "speed": 1.02,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2020,
-   "speed": 1.24,
+   "speed": 1.14,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2020,
-   "speed": 0.87,
+   "speed": 1.06,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2020,
-   "speed": 1.18,
+   "speed": 1.11,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2020,
-   "speed": 0.93,
+   "speed": 1,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2020,
-   "speed": 0.97,
+   "speed": 0.98,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2020,
-   "speed": 1.01,
+   "speed": 0.84,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2020,
-   "speed": 0.74,
+   "speed": 1.2,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2020,
-   "speed": 0.99,
+   "speed": 1.01,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2020,
-   "speed": 1.23,
+   "speed": 1.02,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2020,
-   "speed": 0.78,
+   "speed": 1.02,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2020,
-   "speed": 0.73,
+   "speed": 0.79,
    "ace": 5.5,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2020,
-   "speed": 0.57,
+   "speed": 0.56,
    "ace": 4.7,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2020,
-   "speed": 0.72,
+   "speed": 0.67,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2020,
-   "speed": 1.2,
+   "speed": 1.22,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2020,
-   "speed": 1.15,
+   "speed": 1.17,
    "ace": 9.9,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2020,
-   "speed": 1.19,
+   "speed": 0.96,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2021,
-   "speed": 0.72,
+   "speed": 0.78,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2021,
-   "speed": 1.27,
+   "speed": 1.16,
    "ace": 10.9,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2021,
-   "speed": 1.06,
-   "ace": 7.0,
+   "speed": 1.33,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2021,
-   "speed": 0.62,
+   "speed": 0.79,
    "ace": 4.5,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2021,
-   "speed": 0.78,
+   "speed": 0.88,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2021,
-   "speed": 1.31,
+   "speed": 1.12,
    "ace": 12.8,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2021,
-   "speed": 0.81,
+   "speed": 0.78,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2021,
-   "speed": 1.16,
-   "ace": 9.0,
+   "speed": 1.17,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2021,
-   "speed": 1.17,
+   "speed": 1.15,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2021,
-   "speed": 1.16,
+   "speed": 1.09,
    "ace": 8.2,
    "src": "computed"
   },
@@ -4692,35 +4692,35 @@
   {
    "t": "miami",
    "s": 2021,
-   "speed": 0.95,
+   "speed": 0.93,
    "ace": 7.5,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2021,
-   "speed": 0.76,
-   "ace": 6.0,
+   "speed": 0.73,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2021,
-   "speed": 0.89,
+   "speed": 0.86,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2021,
-   "speed": 0.48,
+   "speed": 0.55,
    "ace": 3.6,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2021,
-   "speed": 0.71,
+   "speed": 0.87,
    "ace": 4.6,
    "src": "computed"
   },
@@ -4734,308 +4734,308 @@
   {
    "t": "washington",
    "s": 2021,
-   "speed": 1.0,
+   "speed": 0.95,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2021,
-   "speed": 1.21,
+   "speed": 1.15,
    "ace": 10.8,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2021,
-   "speed": 1.33,
+   "speed": 1.25,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2021,
-   "speed": 0.62,
+   "speed": 0.69,
    "ace": 4.1,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2021,
-   "speed": 0.54,
+   "speed": 0.71,
    "ace": 3.2,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2021,
-   "speed": 1.09,
-   "ace": 8.0,
+   "speed": 1,
+   "ace": 8,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2021,
-   "speed": 1.24,
+   "speed": 1.3,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2021,
-   "speed": 0.87,
+   "speed": 0.96,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2021,
-   "speed": 1.27,
+   "speed": 1.13,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2021,
-   "speed": 0.55,
+   "speed": 0.94,
    "ace": 3.2,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2021,
-   "speed": 1.78,
+   "speed": 1.43,
    "ace": 13.1,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2021,
-   "speed": 1.04,
+   "speed": 1,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2021,
-   "speed": 0.73,
-   "ace": 6.0,
+   "speed": 0.72,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2021,
-   "speed": 0.82,
+   "speed": 0.83,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2021,
-   "speed": 0.93,
+   "speed": 0.8,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2021,
-   "speed": 1.31,
+   "speed": 1.04,
    "ace": 8.5,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2021,
-   "speed": 1.49,
-   "ace": 10.0,
+   "speed": 1.23,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2021,
-   "speed": 1.34,
+   "speed": 1.11,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2021,
-   "speed": 1.2,
+   "speed": 1.29,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2021,
-   "speed": 0.67,
-   "ace": 5.0,
+   "speed": 0.69,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2021,
-   "speed": 0.99,
+   "speed": 0.86,
    "ace": 10.4,
    "src": "computed"
   },
   {
    "t": "lyon",
    "s": 2021,
-   "speed": 0.82,
+   "speed": 0.91,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "mallorca",
    "s": 2021,
-   "speed": 1.32,
+   "speed": 1.39,
    "ace": 11.3,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2021,
-   "speed": 1.05,
+   "speed": 1.5,
    "ace": 6.6,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2022,
-   "speed": 1.37,
+   "speed": 1.15,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2022,
-   "speed": 1.1,
+   "speed": 1.31,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2022,
-   "speed": 0.57,
+   "speed": 0.8,
    "ace": 3.2,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2022,
-   "speed": 1.03,
+   "speed": 0.97,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "dallas",
    "s": 2022,
-   "speed": 1.33,
+   "speed": 1.15,
    "ace": 14.1,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2022,
-   "speed": 0.77,
+   "speed": 0.7,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2022,
-   "speed": 1.09,
+   "speed": 1.04,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2022,
-   "speed": 0.63,
+   "speed": 1.14,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2022,
-   "speed": 0.91,
+   "speed": 0.88,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2022,
-   "speed": 1.35,
+   "speed": 1.28,
    "ace": 10.2,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2022,
-   "speed": 0.68,
+   "speed": 1.11,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2022,
-   "speed": 0.94,
+   "speed": 0.88,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2022,
-   "speed": 0.98,
+   "speed": 1,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2022,
-   "speed": 0.96,
+   "speed": 0.8,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2022,
-   "speed": 0.62,
+   "speed": 0.83,
    "ace": 3.8,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2022,
-   "speed": 0.65,
+   "speed": 0.64,
    "ace": 4.1,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2022,
-   "speed": 0.59,
-   "ace": 4.0,
+   "speed": 0.78,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2022,
-   "speed": 0.7,
+   "speed": 0.8,
    "ace": 4.4,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2022,
-   "speed": 0.67,
+   "speed": 0.65,
    "ace": 4.3,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2022,
-   "speed": 0.97,
+   "speed": 0.99,
    "ace": 7.1,
    "src": "computed"
   },
@@ -5056,154 +5056,154 @@
   {
    "t": "lyon",
    "s": 2022,
-   "speed": 0.78,
+   "speed": 0.9,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2022,
-   "speed": 0.86,
+   "speed": 0.74,
    "ace": 5.3,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2022,
-   "speed": 1.04,
+   "speed": 0.94,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2022,
-   "speed": 1.46,
+   "speed": 1.15,
    "ace": 12.2,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2022,
-   "speed": 1.27,
+   "speed": 1.05,
    "ace": 11.3,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2022,
-   "speed": 1.17,
+   "speed": 1.15,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "mallorca",
    "s": 2022,
-   "speed": 1.25,
+   "speed": 1.29,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2022,
-   "speed": 0.98,
+   "speed": 0.9,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2022,
-   "speed": 1.33,
+   "speed": 1.08,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2022,
-   "speed": 0.67,
+   "speed": 0.82,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2022,
-   "speed": 0.69,
-   "ace": 4.0,
+   "speed": 0.86,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2022,
-   "speed": 0.96,
+   "speed": 1.13,
    "ace": 7.4,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2022,
-   "speed": 0.92,
+   "speed": 1.24,
    "ace": 5.2,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2022,
-   "speed": 0.54,
+   "speed": 0.82,
    "ace": 3.2,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2022,
-   "speed": 0.97,
+   "speed": 0.87,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2022,
-   "speed": 1.15,
+   "speed": 1.03,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2022,
-   "speed": 1.04,
+   "speed": 0.99,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2022,
-   "speed": 1.25,
+   "speed": 1.15,
    "ace": 9.2,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2022,
-   "speed": 1.13,
+   "speed": 1.02,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2022,
-   "speed": 1.37,
+   "speed": 1.07,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2022,
-   "speed": 0.91,
+   "speed": 0.99,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2022,
-   "speed": 1.21,
+   "speed": 1.11,
    "ace": 8.9,
    "src": "computed"
   },
@@ -5217,490 +5217,490 @@
   {
    "t": "vienna",
    "s": 2022,
-   "speed": 1.33,
+   "speed": 1.27,
    "ace": 10.6,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2022,
-   "speed": 1.15,
+   "speed": 1.17,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2022,
-   "speed": 1.91,
+   "speed": 1.55,
    "ace": 13.1,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2023,
-   "speed": 1.2,
+   "speed": 1.18,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2023,
-   "speed": 1.26,
+   "speed": 1.05,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "dallas",
    "s": 2023,
-   "speed": 1.44,
+   "speed": 1.35,
    "ace": 12.9,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2023,
-   "speed": 1.0,
+   "speed": 0.92,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2023,
-   "speed": 0.94,
+   "speed": 1.01,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2023,
-   "speed": 0.58,
+   "speed": 0.84,
    "ace": 3.4,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2023,
-   "speed": 1.01,
-   "ace": 9.0,
+   "speed": 0.93,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2023,
-   "speed": 1.03,
+   "speed": 1.04,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2023,
-   "speed": 0.72,
-   "ace": 6.0,
+   "speed": 0.76,
+   "ace": 6,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2023,
-   "speed": 1.22,
+   "speed": 1.21,
    "ace": 10.1,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2023,
-   "speed": 0.9,
+   "speed": 1.04,
    "ace": 5.6,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2023,
-   "speed": 0.84,
-   "ace": 7.0,
+   "speed": 0.9,
+   "ace": 7,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2023,
-   "speed": 1.14,
+   "speed": 1.24,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "estoril",
    "s": 2023,
-   "speed": 0.63,
+   "speed": 0.86,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2023,
-   "speed": 1.03,
+   "speed": 0.97,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2023,
-   "speed": 0.67,
+   "speed": 0.76,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2023,
-   "speed": 0.63,
+   "speed": 0.64,
    "ace": 5.1,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2023,
-   "speed": 0.51,
+   "speed": 0.61,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2023,
-   "speed": 0.73,
+   "speed": 0.68,
    "ace": 5.2,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2023,
-   "speed": 0.95,
+   "speed": 0.98,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2023,
-   "speed": 0.68,
-   "ace": 5.0,
+   "speed": 0.74,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2023,
-   "speed": 0.9,
+   "speed": 0.96,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "lyon",
    "s": 2023,
-   "speed": 0.69,
+   "speed": 0.73,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2023,
-   "speed": 0.78,
+   "speed": 0.71,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2023,
-   "speed": 1.26,
+   "speed": 1.14,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2023,
-   "speed": 1.54,
+   "speed": 1.41,
    "ace": 13.3,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2023,
-   "speed": 1.36,
-   "ace": 11.0,
+   "speed": 1.23,
+   "ace": 11,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2023,
-   "speed": 1.05,
+   "speed": 1.11,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "mallorca",
    "s": 2023,
-   "speed": 1.05,
+   "speed": 1.12,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2023,
-   "speed": 1.08,
+   "speed": 1.14,
    "ace": 7.4,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2023,
-   "speed": 1.3,
+   "speed": 1.1,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2023,
-   "speed": 0.85,
+   "speed": 0.82,
    "ace": 6.2,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2023,
-   "speed": 0.8,
+   "speed": 1.02,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2023,
-   "speed": 0.76,
+   "speed": 0.82,
    "ace": 5.2,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2023,
-   "speed": 0.6,
-   "ace": 4.0,
+   "speed": 0.73,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2023,
-   "speed": 0.98,
+   "speed": 1.04,
    "ace": 6.8,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2023,
-   "speed": 0.79,
+   "speed": 0.82,
    "ace": 7.4,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2023,
-   "speed": 1.05,
+   "speed": 0.96,
    "ace": 8.7,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2023,
-   "speed": 1.1,
+   "speed": 1.08,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2023,
-   "speed": 0.85,
+   "speed": 0.83,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2023,
-   "speed": 1.13,
+   "speed": 1.11,
    "ace": 8.1,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2023,
-   "speed": 1.18,
+   "speed": 1.01,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2023,
-   "speed": 1.12,
+   "speed": 1.05,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2023,
-   "speed": 0.96,
+   "speed": 0.95,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2023,
-   "speed": 1.06,
+   "speed": 1.08,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2023,
-   "speed": 1.12,
+   "speed": 1.08,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2023,
-   "speed": 1.23,
+   "speed": 1.13,
    "ace": 9.3,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2023,
-   "speed": 1.22,
+   "speed": 1.17,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2023,
-   "speed": 1.21,
+   "speed": 1.11,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2023,
-   "speed": 1.14,
+   "speed": 1.15,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2023,
-   "speed": 1.71,
+   "speed": 1.68,
    "ace": 12.5,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2024,
-   "speed": 1.33,
-   "ace": 10.0,
+   "speed": 1.26,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "hongkong",
    "s": 2024,
-   "speed": 0.97,
+   "speed": 1.01,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "adelaide",
    "s": 2024,
-   "speed": 1.04,
+   "speed": 1.07,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2024,
-   "speed": 1.04,
+   "speed": 1.06,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2024,
-   "speed": 1.34,
+   "speed": 1.14,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2024,
-   "speed": 1.06,
+   "speed": 0.97,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "dallas",
    "s": 2024,
-   "speed": 1.09,
+   "speed": 1.08,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2024,
-   "speed": 1.03,
+   "speed": 0.98,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2024,
-   "speed": 0.53,
+   "speed": 0.78,
    "ace": 3.7,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2024,
-   "speed": 1.33,
+   "speed": 1.18,
    "ace": 11.1,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2024,
-   "speed": 0.78,
+   "speed": 0.73,
    "ace": 7.1,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2024,
-   "speed": 0.76,
+   "speed": 0.8,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2024,
-   "speed": 0.91,
+   "speed": 0.9,
    "ace": 7.1,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2024,
-   "speed": 1.13,
+   "speed": 1.09,
    "ace": 10.3,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2024,
-   "speed": 0.9,
+   "speed": 1.25,
    "ace": 5.1,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2024,
-   "speed": 0.83,
+   "speed": 0.84,
    "ace": 6.6,
    "src": "computed"
   },
@@ -5714,49 +5714,49 @@
   {
    "t": "estoril",
    "s": 2024,
-   "speed": 0.57,
+   "speed": 0.66,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2024,
-   "speed": 0.99,
+   "speed": 0.89,
    "ace": 7.9,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2024,
-   "speed": 0.72,
+   "speed": 1.02,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2024,
-   "speed": 0.6,
+   "speed": 0.62,
    "ace": 4.9,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2024,
-   "speed": 0.57,
-   "ace": 4.0,
+   "speed": 0.7,
+   "ace": 4,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2024,
-   "speed": 0.8,
+   "speed": 0.79,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "bucharest",
    "s": 2024,
-   "speed": 0.56,
+   "speed": 0.63,
    "ace": 3.6,
    "src": "computed"
   },
@@ -5770,602 +5770,602 @@
   {
    "t": "rome",
    "s": 2024,
-   "speed": 0.73,
+   "speed": 0.75,
    "ace": 5.7,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2024,
-   "speed": 0.74,
+   "speed": 0.7,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "lyon",
    "s": 2024,
-   "speed": 0.81,
+   "speed": 0.85,
    "ace": 6.4,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2024,
-   "speed": 0.8,
+   "speed": 0.73,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2024,
-   "speed": 0.95,
+   "speed": 0.92,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2024,
-   "speed": 1.48,
+   "speed": 1.29,
    "ace": 13.7,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2024,
-   "speed": 1.49,
+   "speed": 1.32,
    "ace": 13.2,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2024,
-   "speed": 1.22,
+   "speed": 1.23,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "mallorca",
    "s": 2024,
-   "speed": 1.21,
+   "speed": 1.25,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2024,
-   "speed": 1.18,
+   "speed": 1.16,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2024,
-   "speed": 1.38,
+   "speed": 1.19,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2024,
-   "speed": 1.0,
+   "speed": 0.9,
    "ace": 7.8,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2024,
-   "speed": 0.85,
+   "speed": 0.96,
    "ace": 5.9,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2024,
-   "speed": 0.67,
+   "speed": 0.88,
    "ace": 4.5,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2024,
-   "speed": 0.8,
+   "speed": 1.03,
    "ace": 5.3,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2024,
-   "speed": 0.54,
+   "speed": 0.57,
    "ace": 3.9,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2024,
-   "speed": 1.28,
+   "speed": 1.15,
    "ace": 11.4,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2024,
-   "speed": 0.9,
+   "speed": 0.81,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2024,
-   "speed": 1.17,
+   "speed": 1.09,
    "ace": 9.7,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2024,
-   "speed": 0.88,
+   "speed": 1.01,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2024,
-   "speed": 1.19,
+   "speed": 1.05,
    "ace": 8.4,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2024,
-   "speed": 1.33,
+   "speed": 1.3,
    "ace": 11.4,
    "src": "computed"
   },
   {
    "t": "hangzhou",
    "s": 2024,
-   "speed": 1.03,
+   "speed": 1.1,
    "ace": 10.4,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2024,
-   "speed": 1.16,
+   "speed": 1.11,
    "ace": 9.2,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2024,
-   "speed": 0.87,
+   "speed": 0.85,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2024,
-   "speed": 1.14,
+   "speed": 1.1,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "almaty",
    "s": 2024,
-   "speed": 1.04,
+   "speed": 1.06,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2024,
-   "speed": 1.48,
+   "speed": 1.45,
    "ace": 12.7,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2024,
-   "speed": 1.16,
+   "speed": 1.13,
    "ace": 9.2,
    "src": "computed"
   },
   {
    "t": "paris",
    "s": 2024,
-   "speed": 1.31,
+   "speed": 1.25,
    "ace": 10.2,
    "src": "computed"
   },
   {
    "t": "metz",
    "s": 2024,
-   "speed": 1.09,
+   "speed": 1.16,
    "ace": 8.2,
    "src": "computed"
   },
   {
    "t": "atpfinals",
    "s": 2024,
-   "speed": 1.38,
+   "speed": 1.34,
    "ace": 11.2,
    "src": "computed"
   },
   {
    "t": "brisbane",
    "s": 2025,
-   "speed": 1.2,
-   "ace": 13.0,
+   "speed": 1.16,
+   "ace": 13,
    "src": "computed"
   },
   {
    "t": "hongkong",
    "s": 2025,
-   "speed": 1.16,
+   "speed": 1.37,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "adelaide",
    "s": 2025,
-   "speed": 1.07,
+   "speed": 1.03,
    "ace": 10.2,
    "src": "computed"
   },
   {
    "t": "auckland",
    "s": 2025,
-   "speed": 0.84,
+   "speed": 0.95,
    "ace": 6.5,
    "src": "computed"
   },
   {
    "t": "ausopen",
    "s": 2025,
-   "speed": 1.24,
-   "ace": 9.0,
+   "speed": 1.06,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "montpellier",
    "s": 2025,
-   "speed": 1.22,
+   "speed": 1.1,
    "ace": 11.4,
    "src": "computed"
   },
   {
    "t": "dallas",
    "s": 2025,
-   "speed": 1.14,
+   "speed": 1.12,
    "ace": 9.2,
    "src": "computed"
   },
   {
    "t": "rotterdam",
    "s": 2025,
-   "speed": 0.82,
+   "speed": 0.76,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "buenosaires",
    "s": 2025,
-   "speed": 0.75,
+   "speed": 0.92,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "delraybeach",
    "s": 2025,
-   "speed": 1.09,
+   "speed": 1.02,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "doha",
    "s": 2025,
-   "speed": 1.1,
+   "speed": 1.07,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "rio",
    "s": 2025,
-   "speed": 0.79,
+   "speed": 1.07,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "acapulco",
    "s": 2025,
-   "speed": 0.82,
+   "speed": 0.79,
    "ace": 6.9,
    "src": "computed"
   },
   {
    "t": "dubai",
    "s": 2025,
-   "speed": 0.95,
+   "speed": 0.9,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "santiago",
    "s": 2025,
-   "speed": 0.83,
+   "speed": 0.87,
    "ace": 5.5,
    "src": "computed"
   },
   {
    "t": "indianwells",
    "s": 2025,
-   "speed": 0.69,
+   "speed": 0.72,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "miami",
    "s": 2025,
-   "speed": 1.21,
+   "speed": 1.11,
    "ace": 10.2,
    "src": "computed"
   },
   {
    "t": "bucharest",
    "s": 2025,
-   "speed": 0.37,
+   "speed": 0.47,
    "ace": 2.4,
    "src": "computed"
   },
   {
    "t": "houston",
    "s": 2025,
-   "speed": 0.79,
+   "speed": 0.82,
    "ace": 5.4,
    "src": "computed"
   },
   {
    "t": "marrakech",
    "s": 2025,
-   "speed": 0.82,
+   "speed": 0.88,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "montecarlo",
    "s": 2025,
-   "speed": 0.54,
+   "speed": 0.56,
    "ace": 4.2,
    "src": "computed"
   },
   {
    "t": "barcelona",
    "s": 2025,
-   "speed": 0.46,
+   "speed": 0.59,
    "ace": 3.8,
    "src": "computed"
   },
   {
    "t": "munich",
    "s": 2025,
-   "speed": 0.7,
+   "speed": 0.68,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "madrid",
    "s": 2025,
-   "speed": 0.8,
+   "speed": 0.76,
    "ace": 6.7,
    "src": "computed"
   },
   {
    "t": "rome",
    "s": 2025,
-   "speed": 0.58,
+   "speed": 0.63,
    "ace": 4.8,
    "src": "computed"
   },
   {
    "t": "geneva",
    "s": 2025,
-   "speed": 0.78,
+   "speed": 0.72,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "hamburg",
    "s": 2025,
-   "speed": 0.6,
-   "ace": 5.0,
+   "speed": 0.57,
+   "ace": 5,
    "src": "computed"
   },
   {
    "t": "rolandgarros",
    "s": 2025,
-   "speed": 0.81,
+   "speed": 0.69,
    "ace": 5.8,
    "src": "computed"
   },
   {
    "t": "shertogenbosch",
    "s": 2025,
-   "speed": 1.11,
+   "speed": 0.95,
    "ace": 8.9,
    "src": "computed"
   },
   {
    "t": "stuttgart",
    "s": 2025,
-   "speed": 1.41,
+   "speed": 1.35,
    "ace": 12.2,
    "src": "computed"
   },
   {
    "t": "halle",
    "s": 2025,
-   "speed": 1.31,
+   "speed": 1.22,
    "ace": 10.5,
    "src": "computed"
   },
   {
    "t": "queens",
    "s": 2025,
-   "speed": 1.36,
+   "speed": 1.29,
    "ace": 11.6,
    "src": "computed"
   },
   {
    "t": "mallorca",
    "s": 2025,
-   "speed": 1.08,
+   "speed": 1.13,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "eastbourne",
    "s": 2025,
-   "speed": 0.79,
+   "speed": 0.81,
    "ace": 7.2,
    "src": "computed"
   },
   {
    "t": "wimbledon",
    "s": 2025,
-   "speed": 1.24,
+   "speed": 1.07,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "bastad",
    "s": 2025,
-   "speed": 0.73,
+   "speed": 0.86,
    "ace": 5.3,
    "src": "computed"
   },
   {
    "t": "gstaad",
    "s": 2025,
-   "speed": 1.09,
+   "speed": 1.13,
    "ace": 8.3,
    "src": "computed"
   },
   {
    "t": "losCabos",
    "s": 2025,
-   "speed": 0.83,
+   "speed": 0.81,
    "ace": 7.3,
    "src": "computed"
   },
   {
    "t": "umag",
    "s": 2025,
-   "speed": 0.75,
+   "speed": 0.98,
    "ace": 4.6,
    "src": "computed"
   },
   {
    "t": "kitzbuhel",
    "s": 2025,
-   "speed": 0.91,
+   "speed": 0.83,
    "ace": 7.7,
    "src": "computed"
   },
   {
    "t": "washington",
    "s": 2025,
-   "speed": 1.08,
+   "speed": 1.09,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "canada",
    "s": 2025,
-   "speed": 1.07,
+   "speed": 1,
    "ace": 8.8,
    "src": "computed"
   },
   {
    "t": "cincinnati",
    "s": 2025,
-   "speed": 1.14,
+   "speed": 1.18,
    "ace": 9.8,
    "src": "computed"
   },
   {
    "t": "winstonsalem",
    "s": 2025,
-   "speed": 1.02,
+   "speed": 1.1,
    "ace": 9.1,
    "src": "computed"
   },
   {
    "t": "usopen",
    "s": 2025,
-   "speed": 1.08,
+   "speed": 0.94,
    "ace": 8.6,
    "src": "computed"
   },
   {
    "t": "chengdu",
    "s": 2025,
-   "speed": 1.32,
+   "speed": 1.16,
    "ace": 11.1,
    "src": "computed"
   },
   {
    "t": "hangzhou",
    "s": 2025,
-   "speed": 1.08,
-   "ace": 10.0,
+   "speed": 1.27,
+   "ace": 10,
    "src": "computed"
   },
   {
    "t": "tokyo",
    "s": 2025,
-   "speed": 1.16,
+   "speed": 1.13,
    "ace": 9.4,
    "src": "computed"
   },
   {
    "t": "beijing",
    "s": 2025,
-   "speed": 0.95,
+   "speed": 1.02,
    "ace": 7.6,
    "src": "computed"
   },
   {
    "t": "shanghai",
    "s": 2025,
-   "speed": 1.11,
+   "speed": 1.09,
    "ace": 9.5,
    "src": "computed"
   },
   {
    "t": "almaty",
    "s": 2025,
-   "speed": 1.09,
-   "ace": 9.0,
+   "speed": 1.15,
+   "ace": 9,
    "src": "computed"
   },
   {
    "t": "brussels",
    "s": 2025,
-   "speed": 1.32,
+   "speed": 1.29,
    "ace": 11.9,
    "src": "computed"
   },
   {
    "t": "basel",
    "s": 2025,
-   "speed": 1.35,
+   "speed": 1.4,
    "ace": 12.1,
    "src": "computed"
   },
   {
    "t": "vienna",
    "s": 2025,
-   "speed": 1.21,
+   "speed": 1.26,
    "ace": 9.8,
    "src": "computed"
   }
@@ -6387,8 +6387,8 @@
  "speedBaseline": {
   "season": 2026,
   "profileSeason": 2026,
-  "normalisation": 7.84621359132434,
-  "generated": "2026-11-06T20:30:12.349937+00:00",
+  "normalisation": 0.9901688355480535,
+  "generated": "2026-11-07T06:00:00.000Z",
   "profiles": [
    {
     "name": "Rei Sakamoto",
@@ -6519,7 +6519,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 40,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6530,7 +6530,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 45,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6552,7 +6552,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 5,
     "serveRateSampleServicePoints": 415,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6585,7 +6585,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 56,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6596,18 +6596,18 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 5,
     "serveRateSampleServicePoints": 241,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
     "name": "Luis Guto Miguel",
     "serveRate": 0.04575050853126302,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2026,
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 84,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6618,7 +6618,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 179,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6640,7 +6640,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 46,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6651,7 +6651,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 103,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6723,7 +6723,7 @@
    {
     "name": "Chun Hsin Tseng",
     "serveRate": 0.05088765708234734,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2025,
     "serveRateSource": "prior-season-qualified",
     "serveRateSampleMatches": 16,
@@ -6761,7 +6761,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -6838,7 +6838,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 78,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7135,7 +7135,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 105,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7179,7 +7179,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 4,
     "serveRateSampleServicePoints": 326,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7267,7 +7267,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 92,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7300,7 +7300,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 86,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7311,7 +7311,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7322,7 +7322,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 102,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7333,7 +7333,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 101,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7388,7 +7388,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 66,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7454,7 +7454,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 20,
     "serveRateSampleServicePoints": 1690,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7542,7 +7542,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7608,7 +7608,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 124,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7625,12 +7625,12 @@
    {
     "name": "Filip Cristian Jianu",
     "serveRate": 0.03935438307839667,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2026,
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 121,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7707,7 +7707,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 79,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7729,7 +7729,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 10,
     "serveRateSampleServicePoints": 902,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7916,7 +7916,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 174,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7949,7 +7949,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 79,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -7971,7 +7971,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 197,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8015,7 +8015,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 69,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8059,7 +8059,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 68,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8103,7 +8103,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8169,7 +8169,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 269,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8180,7 +8180,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 112,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8257,7 +8257,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8312,7 +8312,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 122,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8422,7 +8422,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 76,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8510,7 +8510,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 234,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8554,7 +8554,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 145,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8565,7 +8565,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 204,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8708,7 +8708,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 144,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8730,7 +8730,7 @@
     "serveRateSource": "current-season-shrunk",
     "serveRateSampleMatches": 6,
     "serveRateSampleServicePoints": 508,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2026
    },
    {
@@ -8774,7 +8774,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 81,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -8785,7 +8785,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -8796,7 +8796,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 82,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -8851,7 +8851,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 96,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -8884,7 +8884,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 53,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -8895,7 +8895,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 179,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -8983,7 +8983,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9005,7 +9005,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 64,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9038,7 +9038,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 75,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9049,7 +9049,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 109,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9115,7 +9115,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 45,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9126,7 +9126,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 155,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9148,7 +9148,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 74,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9170,7 +9170,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 121,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9192,7 +9192,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 120,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9214,7 +9214,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 116,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9225,18 +9225,18 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 78,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
     "name": "Alvaro Guillen Meza",
     "serveRate": 0.048535467381304515,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2025,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 43,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9258,7 +9258,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 66,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9313,7 +9313,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 147,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9324,7 +9324,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 6,
     "serveRateSampleServicePoints": 425,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9368,7 +9368,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 5,
     "serveRateSampleServicePoints": 388,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9412,7 +9412,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 100,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9423,7 +9423,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 81,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9434,7 +9434,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 69,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9456,7 +9456,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 51,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9489,7 +9489,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9511,7 +9511,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 63,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9533,7 +9533,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9566,7 +9566,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 75,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9577,7 +9577,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 58,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9588,7 +9588,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 210,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9599,7 +9599,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 38,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9610,7 +9610,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 103,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9643,7 +9643,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 57,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9665,7 +9665,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 104,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9676,7 +9676,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9698,7 +9698,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 131,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9720,7 +9720,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 169,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9731,7 +9731,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 167,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9764,7 +9764,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 88,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9775,7 +9775,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 105,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9797,7 +9797,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 154,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9814,7 +9814,7 @@
    {
     "name": "Radu Albot",
     "serveRate": 0.02825187150867675,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2023,
     "serveRateSource": "prior-season-qualified",
     "serveRateSampleMatches": 19,
@@ -9830,7 +9830,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 55,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9852,7 +9852,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 52,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9863,7 +9863,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 155,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9896,7 +9896,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 53,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2025
    },
    {
@@ -9918,7 +9918,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 139,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -9940,7 +9940,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 8,
     "serveRateSampleServicePoints": 522,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -9951,7 +9951,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -9973,7 +9973,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 55,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10034,12 +10034,12 @@
    {
     "name": "Daniel Rincon",
     "serveRate": 0.05353225636463014,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2024,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 51,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10072,7 +10072,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 124,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10138,7 +10138,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 81,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10149,7 +10149,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10182,7 +10182,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 72,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10204,7 +10204,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 183,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10226,7 +10226,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 35,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10259,7 +10259,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 135,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10303,7 +10303,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 58,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10314,7 +10314,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10336,7 +10336,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 112,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10347,7 +10347,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 165,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10358,7 +10358,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 183,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10380,7 +10380,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 87,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10413,7 +10413,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 53,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10457,7 +10457,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 4,
     "serveRateSampleServicePoints": 387,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10468,7 +10468,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 111,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10490,7 +10490,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 260,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10501,7 +10501,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 71,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10523,7 +10523,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 80,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10540,12 +10540,12 @@
    {
     "name": "Sebastian Fanselow",
     "serveRate": 0.04810837244694893,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2024,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 49,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10562,7 +10562,7 @@
    {
     "name": "Tim Van Rijthoven",
     "serveRate": 0.16591928251121077,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2023,
     "serveRateSource": "prior-season-qualified",
     "serveRateSampleMatches": 3,
@@ -10573,12 +10573,12 @@
    {
     "name": "Antoine Escoffier",
     "serveRate": 0.09511656511522096,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2024,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 73,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10589,7 +10589,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2024
    },
    {
@@ -10622,7 +10622,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 68,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10633,7 +10633,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 74,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10655,7 +10655,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 349,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10666,7 +10666,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 46,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10688,7 +10688,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10754,7 +10754,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 104,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10765,7 +10765,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10776,7 +10776,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 63,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10842,7 +10842,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 83,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10853,7 +10853,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10864,7 +10864,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 74,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10886,7 +10886,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 80,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10897,7 +10897,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 91,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10952,7 +10952,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 204,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10963,7 +10963,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 103,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -10974,7 +10974,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 56,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11007,7 +11007,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 111,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11062,7 +11062,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 111,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11106,7 +11106,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 105,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11150,7 +11150,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 74,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11178,12 +11178,12 @@
    {
     "name": "Tao Mu",
     "serveRate": 0.07827659520067971,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2023,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 46,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11205,7 +11205,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 42,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11238,18 +11238,18 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 79,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
     "name": "Eduardo Nava",
     "serveRate": 0.04807843849599545,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2023,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 109,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11260,7 +11260,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 85,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11271,7 +11271,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 77,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11293,7 +11293,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 75,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11304,7 +11304,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 78,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11337,7 +11337,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 62,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11381,7 +11381,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 146,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11436,7 +11436,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 57,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11458,7 +11458,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 52,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2023
    },
    {
@@ -11491,7 +11491,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 69,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11546,7 +11546,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 42,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11579,7 +11579,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 395,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11590,7 +11590,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 108,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11601,7 +11601,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 49,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11612,7 +11612,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 158,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11645,7 +11645,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 41,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11678,7 +11678,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 227,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11689,7 +11689,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11733,7 +11733,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 138,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11744,7 +11744,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 109,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11755,7 +11755,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 80,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11766,7 +11766,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 214,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11777,7 +11777,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 205,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11832,7 +11832,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 52,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11854,7 +11854,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 52,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11898,7 +11898,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 38,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11920,7 +11920,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 163,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11931,7 +11931,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 72,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11942,7 +11942,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 143,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -11992,12 +11992,12 @@
    {
     "name": "Facundo Mena",
     "serveRate": 0.0771481155381922,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2022,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 71,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12019,7 +12019,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 58,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12030,7 +12030,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 108,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12074,7 +12074,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 42,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12085,7 +12085,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12107,7 +12107,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 131,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12118,7 +12118,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 58,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12162,7 +12162,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 95,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12173,7 +12173,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 179,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2022
    },
    {
@@ -12184,7 +12184,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12195,7 +12195,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 89,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12234,12 +12234,12 @@
    {
     "name": "Kevin King",
     "serveRate": 0.08123412090864965,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2021,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 49,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12250,7 +12250,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 47,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12261,7 +12261,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 49,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12278,12 +12278,12 @@
    {
     "name": "Joao Menezes",
     "serveRate": 0.05403701004517606,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2021,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 53,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12316,7 +12316,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 139,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12327,7 +12327,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 170,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12410,12 +12410,12 @@
    {
     "name": "Michael Vrbensky",
     "serveRate": 0.0853580691216853,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2021,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 79,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12426,7 +12426,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 39,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12448,7 +12448,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 66,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12459,7 +12459,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 49,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12470,7 +12470,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 122,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12492,7 +12492,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 63,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12503,7 +12503,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 133,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12520,7 +12520,7 @@
    {
     "name": "Filip Horansky",
     "serveRate": 0.03902439024390244,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2020,
     "serveRateSource": "prior-season-qualified",
     "serveRateSampleMatches": 3,
@@ -12558,7 +12558,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12591,7 +12591,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 97,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12624,7 +12624,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 157,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12635,7 +12635,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 96,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12646,7 +12646,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 151,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12690,7 +12690,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 133,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12701,7 +12701,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 7,
     "serveRateSampleServicePoints": 524,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12723,18 +12723,18 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 200,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
     "name": "Marsel Ilhan",
     "serveRate": 0.07704424844258796,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2021,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 55,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2021
    },
    {
@@ -12789,7 +12789,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 90,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2020
    },
    {
@@ -12800,7 +12800,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2020
    },
    {
@@ -12822,7 +12822,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 119,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2020
    },
    {
@@ -12844,7 +12844,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 159,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2020
    },
    {
@@ -12855,7 +12855,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 68,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2020
    },
    {
@@ -12883,12 +12883,12 @@
    {
     "name": "Martin Cuevas",
     "serveRate": 0.08513963886447896,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2020,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2020
    },
    {
@@ -12927,12 +12927,12 @@
    {
     "name": "Facundo Arguello",
     "serveRate": 0.047161922125498856,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2019,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 40,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -12943,7 +12943,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 41,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -12998,7 +12998,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 109,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13009,7 +13009,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 62,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13031,7 +13031,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 4,
     "serveRateSampleServicePoints": 274,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13053,7 +13053,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 83,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13064,7 +13064,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 139,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13075,7 +13075,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 156,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13086,7 +13086,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13119,7 +13119,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 69,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13141,7 +13141,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 125,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13163,7 +13163,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13185,7 +13185,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 4,
     "serveRateSampleServicePoints": 276,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13196,7 +13196,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 108,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13207,7 +13207,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 113,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13218,7 +13218,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13240,7 +13240,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 135,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13262,7 +13262,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 158,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13273,7 +13273,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 55,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13284,7 +13284,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 175,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13295,7 +13295,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 38,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13317,7 +13317,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 92,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13350,7 +13350,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 38,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13372,7 +13372,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 154,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13383,7 +13383,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 69,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13405,7 +13405,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 68,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2019
    },
    {
@@ -13438,7 +13438,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 146,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13449,7 +13449,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 85,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13460,7 +13460,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 61,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13504,7 +13504,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 93,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13526,7 +13526,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 10,
     "serveRateSampleServicePoints": 690,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13548,7 +13548,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 67,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13603,7 +13603,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 11,
     "serveRateSampleServicePoints": 1035,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13625,7 +13625,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 53,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13647,7 +13647,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 76,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13658,7 +13658,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13669,7 +13669,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 110,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13702,7 +13702,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 58,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13713,7 +13713,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13735,7 +13735,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 192,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13746,7 +13746,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 50,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13768,7 +13768,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 119,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13779,7 +13779,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 202,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2018
    },
    {
@@ -13790,7 +13790,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 103,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13812,7 +13812,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 6,
     "serveRateSampleServicePoints": 445,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13823,7 +13823,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 5,
     "serveRateSampleServicePoints": 464,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13834,7 +13834,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 103,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13856,7 +13856,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 67,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13878,7 +13878,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 65,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13889,7 +13889,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 87,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13900,7 +13900,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13933,7 +13933,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 43,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13944,7 +13944,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 163,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13966,7 +13966,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 75,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13977,7 +13977,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13988,7 +13988,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 137,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -13999,7 +13999,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14021,7 +14021,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 56,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14032,7 +14032,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 70,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14054,7 +14054,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 52,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14065,7 +14065,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 4,
     "serveRateSampleServicePoints": 304,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14093,12 +14093,12 @@
    {
     "name": "Mate Pavic",
     "serveRate": 0.0867280967498954,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2017,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 17,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14131,7 +14131,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 131,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14142,7 +14142,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 94,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14153,7 +14153,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 7,
     "serveRateSampleServicePoints": 441,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14164,7 +14164,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 174,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14186,7 +14186,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 55,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14208,7 +14208,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 13,
     "serveRateSampleServicePoints": 1005,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14219,7 +14219,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 75,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14241,7 +14241,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 66,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14263,7 +14263,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 57,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14274,7 +14274,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 95,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14285,7 +14285,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 99,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14307,7 +14307,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 56,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14340,7 +14340,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 6,
     "serveRateSampleServicePoints": 499,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2017
    },
    {
@@ -14351,7 +14351,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 149,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14362,7 +14362,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 80,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14373,7 +14373,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 5,
     "serveRateSampleServicePoints": 449,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14384,7 +14384,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 52,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14395,7 +14395,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 101,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14406,7 +14406,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 168,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14417,7 +14417,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 107,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14428,7 +14428,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 59,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14439,7 +14439,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 134,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14450,7 +14450,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 102,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14472,7 +14472,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 286,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14483,7 +14483,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 3,
     "serveRateSampleServicePoints": 340,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14494,7 +14494,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 53,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14516,7 +14516,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 46,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14527,7 +14527,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 108,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14538,7 +14538,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 144,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14549,7 +14549,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14560,7 +14560,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 79,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14571,7 +14571,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 60,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14582,7 +14582,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 139,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14593,7 +14593,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 92,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14604,7 +14604,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 87,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14615,7 +14615,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 48,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14626,7 +14626,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 218,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14637,7 +14637,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 121,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14648,7 +14648,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 154,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14659,18 +14659,18 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 62,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
     "name": "Andre Ghem",
     "serveRate": 0.041200443688931554,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2016,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 119,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14692,7 +14692,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 12,
     "serveRateSampleServicePoints": 1109,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14703,7 +14703,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 54,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14714,7 +14714,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 179,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14725,29 +14725,29 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 177,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
     "name": "Somdev Devvarman",
     "serveRate": 0.0869299336650083,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2016,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 84,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
     "name": "Enrique Lopez Perez",
     "serveRate": 0.06629231121765662,
-    "concedeRate": 0.0,
+    "concedeRate": 0,
     "serveRateSeason": 2016,
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 66,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14758,7 +14758,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 95,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14769,7 +14769,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 89,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14780,7 +14780,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 49,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14791,7 +14791,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 201,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14802,7 +14802,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 2,
     "serveRateSampleServicePoints": 221,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    },
    {
@@ -14824,7 +14824,7 @@
     "serveRateSource": "prior-season-shrunk",
     "serveRateSampleMatches": 1,
     "serveRateSampleServicePoints": 106,
-    "serveRatePriorServicePoints": 300.0,
+    "serveRatePriorServicePoints": 300,
     "concedeRateSeason": 2016
    }
   ],
@@ -14838,6 +14838,7 @@
    "withoutServeRate": 0,
    "withoutConcedeRate": 0
   },
-  "ratedEvents": 27
+  "ratedEvents": 27,
+  "tourAceRate": 0.08282760294831619
  }
 }
