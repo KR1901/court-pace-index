@@ -27,9 +27,9 @@ to a mean of 1.00 on exactly the same common events within each season. Pearson 
 rho, mean absolute difference, and signed bias are reported with paired bootstrap 95% intervals.
 Paired differences against a baseline use identical event resamples.
 
-Run (needs the match CSVs; they are downloaded to .cache/ on first use, as compute_speed does):
+Run (downloads/caches ATP match CSVs and annual Tennis Abstract tables):
     python3 tools/compare_speed_variants.py
-    python3 tools/compare_speed_variants.py --seasons 2025 2026 --boot 5000 --baseline drop
+    python3 tools/compare_speed_variants.py --seasons 2012 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 --boot 5000
 """
 import argparse
 import json
@@ -289,11 +289,9 @@ def tournament_key(name):
         "atpfinals": "tourfinals",
         "nittoatpfinals": "tourfinals",
         "nextgenfinals": "nextgenfinals",
-        "nextgenfinals": "nextgenfinals",
         "rio": "riodejaneiro",
         "riodejaneiro": "riodejaneiro",
         "shertogenbosch": "shertogenbosch",
-        "sherogenbosch": "shertogenbosch",
     }
     return aliases.get(key, key)
 
@@ -337,10 +335,12 @@ def parse_tennis_abstract_page(html):
     parser.feed(html)
     readings = {}
     for cells in parser.rows:
-        if len(cells) < 4:
-            continue
         # The current TA table is Date | Tournament | Surface | Ace% | Surface Speed.
         if len(cells) < 5:
+            continue
+        if cells[2].strip().casefold() not in ("hard", "clay", "grass", "carpet"):
+            continue
+        if not cells[3].strip().endswith("%"):
             continue
         event_name = cells[1]
         try:
@@ -409,10 +409,15 @@ def published_speeds(dataset_path, seasons):
     ta = [r for r in readings if r.get("src") == "tennisabstract"]
     if not ta:
         raise ValueError("dataset contains no published Tennis Abstract readings")
+    names_by_id = {
+        tournament["id"]: tournament["name"]
+        for tournament in dataset.get("tournaments", [])
+    }
     by_season = defaultdict(dict)
-    for r in ta:
-        if seasons is None or r["s"] in seasons:
-            by_season[r["s"]][r["t"]] = r["speed"]
+    for reading in ta:
+        if seasons is None or reading["s"] in seasons:
+            event_name = names_by_id.get(reading["t"], reading["t"])
+            by_season[reading["s"]][tournament_key(event_name)] = reading["speed"]
     return by_season
 
 
@@ -482,8 +487,8 @@ def main():
         index = {k: p for k, p in zip(keys[v], pairs[v])}
         table[v] = [index[k] for k in shared]
 
-    # Two-stage paired bootstrap: resample calendar seasons, then events within each
-    # selected season. Each variant uses the identical sampled event indices.
+    # Season-stratified paired bootstrap: preserve each season's event count and resample
+    # events within that season. All variants use identical sampled event indices.
     by_season = defaultdict(list)
     for index, (season, _event_id) in enumerate(shared):
         by_season[season].append(index)
@@ -491,16 +496,15 @@ def main():
     rng = random.Random(args.seed)
     draws = []
     for _ in range(args.boot):
-        selected_seasons = [rng.choice(available_seasons) for _ in available_seasons]
         sampled_indices = []
-        for season in selected_seasons:
+        for season in available_seasons:
             event_indices = by_season[season]
             sampled_indices.extend(rng.choice(event_indices) for _ in event_indices)
         draws.append(sampled_indices)
     boot = {v: [metrics([table[v][i] for i in d]) for d in draws] for v in VARIANTS}
 
     print(f"\nScored on {len(shared)} events across {len(available_seasons)} seasons, rated by every variant "
-          f"and matched to Tennis Abstract; {args.boot} two-stage paired bootstrap resamples\n")
+          f"and matched to Tennis Abstract; {args.boot} season-stratified paired bootstrap resamples\n")
     metric_labels = (
         ("r", "Pearson r"),
         ("rho", "Spearman rho"),
@@ -544,7 +548,7 @@ def main():
         "\nInterpretation: higher r/rho and lower MAE are closer to the published reference. "
         "Bias near zero indicates less systematic over/under-rating. Agreement with Tennis "
         "Abstract is a reference comparison, not proof of a better physical court-speed measure. "
-        "Bootstrap resampling is clustered by season, then by event within season."
+        "Bootstrap resampling is stratified by season to preserve the observed season composition."
     )
 
 
