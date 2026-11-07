@@ -53,6 +53,19 @@ class MetricTests(unittest.TestCase):
 
 
 
+class ReferenceNormalisationTests(unittest.TestCase):
+    def test_published_reference_is_recentered_on_common_events(self):
+        published = {"a": 0.8, "b": 1.2, "not_common": 4.0}
+        normalised = comparison.normalise_reference_on_common_events(published, ["a", "b"])
+        self.assertEqual(set(normalised), {"a", "b"})
+        self.assertAlmostEqual(sum(normalised.values()) / 2, 1.0)
+        self.assertAlmostEqual(normalised["a"], 0.8)
+        self.assertAlmostEqual(normalised["b"], 1.2)
+
+    def test_empty_common_reference_returns_empty(self):
+        self.assertEqual(comparison.normalise_reference_on_common_events({"a": 1.0}, []), {})
+
+
 class TennisAbstractReferenceParsingTests(unittest.TestCase):
     def test_parses_annual_table_rows_with_nested_tournament_links(self):
         html = """
