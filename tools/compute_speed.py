@@ -61,6 +61,7 @@ def load(year):
 
     # The Sackmann mirror's 2026 snapshot stops in May. TML publishes a current-year
     # ATP match table through the end of the season; refresh it on every pipeline run.
+    # Only the current year's archive uses TML; historical rows remain reproducible from Sackmann.
     if year == date.today().year:
         tml_path = os.path.join(CACHE, f"tml_atp_matches_{year}.csv")
         request = urllib.request.Request(
