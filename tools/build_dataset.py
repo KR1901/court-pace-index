@@ -246,7 +246,7 @@ doc = {
                 "id": "tennisabstract",
                 "name": "Tennis Abstract ATP Surface Speed Ratings",
                 "metric": "Speed",
-                "detail": "Ace rate per event adjusted for the servers and returners in each match, "
+                "detail": "Ace rate per event adjusted with a season-calibrated server/returner odds ratio, "
                           "centred on 1.00 for a tour-average surface. Last update 2026-11-02.",
                 "url": "https://tennisabstract.com/reports/atp_surface_speed.html",
             },
