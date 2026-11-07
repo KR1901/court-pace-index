@@ -108,12 +108,16 @@ def player_rates(usable):
     for p in set(clay_sv) | set(hg_sv):
         c = clay_ace[p] / clay_sv[p] if clay_sv[p] > 0 else None
         h = hg_ace[p] / hg_sv[p] if hg_sv[p] > 0 else None
-        if c is not None and h is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE \
-                and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
+        clay_qualified = c is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE
+        hard_grass_qualified = h is not None and hg_n[p] >= MIN_MATCHES_PER_SURFACE
+
+        # Match the production rule: qualify each surface independently so a small
+        # secondary-surface sample cannot discard a qualified primary-surface profile.
+        if clay_qualified and hard_grass_qualified:
             serve[p] = (1 / 3) * c + (2 / 3) * h
-        elif c is not None and h is None and clay_n[p] >= MIN_MATCHES_PER_SURFACE:
+        elif clay_qualified:
             serve[p] = c
-        elif h is not None and c is None and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
+        elif hard_grass_qualified:
             serve[p] = h
     concede = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
     tour_rate = tour_aces / tour_points if tour_points > 0 else None
@@ -152,6 +156,7 @@ def season_variants(rows):
         "uncal_le_floor": 0,
         "cal_sides": 0,
         "cal_le_floor": 0,
+        "event_surfaces": {},
     }
 
     for r in usable:
@@ -159,6 +164,7 @@ def season_variants(rows):
         if not raw_name:
             continue
         tid = tournament_key(raw_name)
+        diag["event_surfaces"].setdefault(tid, (r["surface"] or "Unknown").strip() or "Unknown")
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
         w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
         wid, lid = r["winner_id"], r["loser_id"]
@@ -273,6 +279,20 @@ def metrics(pairs):
         "rho": spearman(xs, ys),
         "mae": sum(abs(x - y) for x, y in pairs) / len(pairs),
         "bias": sum(x - y for x, y in pairs) / len(pairs),
+    }
+
+
+def surface_metrics(pairs, surfaces):
+    """Return reference-agreement metrics grouped by court surface."""
+    if len(pairs) != len(surfaces):
+        raise ValueError("pairs and surfaces must have the same length")
+    grouped = defaultdict(list)
+    for pair, surface in zip(pairs, surfaces):
+        grouped[surface or "Unknown"].append(pair)
+    return {
+        surface: {"n": len(values), **metrics(values)}
+        for surface, values in sorted(grouped.items())
+        if len(values) >= 2
     }
 
 
@@ -503,6 +523,7 @@ def main():
 
     pairs = {v: [] for v in VARIANTS}       # (ours, published) pooled across seasons
     keys = {v: [] for v in VARIANTS}        # (season, tournament) in the same order
+    surface_by_key = {}                     # same event key -> court surface
     totals = {"sides": 0, "uncal_le_floor": 0, "cal_sides": 0, "cal_le_floor": 0}
     print("season  TA events  archive rows  stats matches  matched  common  sides  uncal<=0.5  cal<=0.5")
     for season in sorted(published):
@@ -525,6 +546,10 @@ def main():
         )
         if not common:
             continue
+        for tournament_id in common:
+            surface_by_key[(season, tournament_id)] = diag["event_surfaces"].get(
+                tournament_id, "Unknown"
+            )
         # Every variant has mean 1.00 on this exact event set for this season.
         for variant in VARIANTS:
             for tournament_id in common:
@@ -594,7 +619,18 @@ def main():
             f"rho={point['rho']:.3f} [{rho_low:.3f},{rho_high:.3f}] "
             f"MAE={point['mae']:.3f} [{mae_low:.3f},{mae_high:.3f}]"
         )
-    print("Completed-season paired differences: calibrated minus floor")
+    print("\nCOMPLETED-SEASON SURFACE-STRATIFIED REFERENCE AGREEMENT")
+    complete_surfaces = [surface_by_key.get(key, "Unknown") for key in complete_keys]
+    for variant in VARIANTS:
+        grouped = surface_metrics(complete_table[variant], complete_surfaces)
+        print(f"  {variant}:")
+        for surface, result in grouped.items():
+            print(
+                f"    {surface:8s} n={result['n']:4d} "
+                f"r={result['r']:.3f} rho={result['rho']:.3f} "
+                f"MAE={result['mae']:.3f} bias={result['bias']:+.3f}"
+            )
+    print("\nCompleted-season paired differences: calibrated minus floor")
     for metric in ("r", "rho", "mae"):
         differences = [
             complete_boot["calibrated"][i][metric] - complete_boot["floor"][i][metric]
