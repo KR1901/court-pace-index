@@ -31,6 +31,7 @@ class CommonEventNormalisationTests(unittest.TestCase):
             "floor": {"a": 1.0, "b": 3.0, "not_common": 200.0},
             "calibrated": {"a": 4.0, "b": 2.0, "not_common": 300.0},
             "surface_returner": {"a": 3.0, "b": 3.0, "not_common": 350.0},
+            "ratio_of_sums": {"a": 5.0, "b": 5.0, "not_common": 375.0},
             "pooled": {"a": 10.0, "b": 10.0, "not_common": 400.0},
         }
         normalised, common = comparison.normalise_on_common_events(raw, {"a", "b", "unrated"})
