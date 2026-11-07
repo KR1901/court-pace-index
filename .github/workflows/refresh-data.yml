@@ -5,11 +5,12 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison]
     paths:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
       - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/DatasetTest.kt'
       - 'tools/build_dataset.py'
       - '.github/workflows/refresh-data.yml'
   schedule:
@@ -65,6 +66,10 @@ jobs:
           assert baseline.get("profileSeason") in (season, season - 1), "unexpected player-profile season"
           normalisation = baseline.get("normalisation")
           assert isinstance(normalisation, (int, float)) and math.isfinite(normalisation) and normalisation > 0
+          tour_rate = baseline.get("tourAceRate")
+          assert isinstance(tour_rate, (int, float)) and math.isfinite(tour_rate) and 0 < tour_rate < 1, (
+              "the calibrated live baseline must include a valid season tour-average ace rate"
+          )
           assert baseline.get("ratedEvents", 0) >= 5, "too few rated events to establish a stable normaliser"
           profiles = baseline.get("profiles")
           assert isinstance(profiles, list) and len(profiles) >= 20, "too few player profiles were generated"
@@ -120,6 +125,7 @@ jobs:
               assert dataset["meta"]["season"] == baseline["season"]
               assert embedded["season"] == baseline["season"]
               assert embedded["generated"] == baseline["generated"]
+              assert embedded["tourAceRate"] == baseline["tourAceRate"]
               assert len(embedded["profiles"]) == len(baseline["profiles"])
           print("Bundled and downloadable datasets contain the validated current-season baseline.")
           PY

@@ -113,8 +113,10 @@ data class PaceReading(
     val live: Boolean = false,
     /** When the live figure was computed, for the "as of" line. */
     val asOf: String? = null,
-    /** Matches behind a live figure. Null when unknown. */
+    /** Matches behind a live figure or archive-calculated result. Null when unknown. */
     val matches: Int? = null,
+    /** Original published Tennis Abstract rating when a calibrated calculation also exists. */
+    val publishedSpeed: Double? = null,
 ) {
     fun value(metric: Metric): Double? = when (metric) {
         Metric.CPI -> cpi
@@ -162,6 +164,8 @@ data class LiveSpeedBaseline(
     val generated: String = "",
     /** Season used to estimate player tendencies; can be the prior year during a cold start. */
     val profileSeason: Int = season,
+    /** Season-wide ace probability per service point used to calibrate player odds. */
+    val tourAceRate: Double? = null,
 )
 
 @Serializable

@@ -57,21 +57,36 @@ class PaceData(val dataset: PaceDataset) {
      * ace-based speed come from different sources - so a lookup has to say which metric it
      * wants rather than just which season.
      */
-    fun reading(id: String, season: Int, metric: Metric): PaceReading? =
-        byTournament[id]?.firstOrNull {
-            it.s == season && it.src == "live" && it.value(metric) != null
-        } ?: byTournament[id]?.firstOrNull {
-            it.s == season && it.value(metric) != null
+    fun reading(id: String, season: Int, metric: Metric): PaceReading? {
+        val rows = byTournament[id].orEmpty()
+            .filter { it.s == season && it.value(metric) != null }
+        return when (metric) {
+            Metric.CPI -> rows.firstOrNull()
+            Metric.SPEED -> rows.firstOrNull { it.src == "live" }
+                ?: rows.firstOrNull { it.src == "computed" }
+                ?: rows.firstOrNull()
         }
+    }
 
     /** A live-only reading; historical published values must not masquerade as a live result. */
     fun liveReading(id: String, season: Int): PaceReading? =
         dataset.readings.lastOrNull { it.t == id && it.s == season && it.src == "live" }
 
+    /** Original published Tennis Abstract value, including when retained on a CALC record. */
+    fun publishedSpeed(id: String, season: Int): Double? {
+        val rows = byTournament[id].orEmpty().filter { it.s == season }
+        return rows.firstNotNullOfOrNull { it.publishedSpeed }
+            ?: rows.firstOrNull { it.src == "tennisabstract" && it.speed != null }?.speed
+    }
+
+    /** Primary Speed source: live, computed, or tennisabstract fallback. */
+    fun speedSource(id: String, season: Int): String? =
+        reading(id, season, Metric.SPEED)?.src
+
     /** The stored reading behind a figure, so callers can say how many matches it rests on. */
     fun reading(id: String, season: Int): ink.courtpace.index.core.model.PaceReading? =
-        dataset.readings.firstOrNull { it.t == id && it.s == season && it.src == "live" }
-            ?: dataset.readings.firstOrNull { it.t == id && it.s == season }
+        reading(id, season, Metric.SPEED)
+            ?: byTournament[id]?.firstOrNull { it.s == season }
 
     fun value(id: String, season: Int, metric: Metric): Double? =
         reading(id, season, metric)?.value(metric)
@@ -82,20 +97,27 @@ class PaceData(val dataset: PaceDataset) {
         val cpi: Double?,
         val speed: Double?,
         val ace: Double?,
-        /** "computed" when the speed figure was recomputed from the match archive. */
+        /** live, computed, or tennisabstract; identifies the primary Speed value. */
         val speedSource: String? = null,
+        /** Original published Tennis Abstract value, where one is available. */
+        val publishedSpeed: Double? = null,
     )
 
     fun seasonRows(id: String): List<SeasonRow> =
         readingsFor(id)
             .groupBy { it.s }
             .map { (season, rows) ->
+                val speedReading = rows.firstOrNull { it.src == "live" && it.speed != null }
+                    ?: rows.firstOrNull { it.src == "computed" && it.speed != null }
+                    ?: rows.firstOrNull { it.speed != null }
                 SeasonRow(
                     season = season,
                     cpi = rows.firstNotNullOfOrNull { it.cpi },
-                    speed = rows.firstNotNullOfOrNull { it.speed },
-                    ace = rows.firstNotNullOfOrNull { it.ace },
-                    speedSource = rows.firstOrNull { it.speed != null }?.src,
+                    speed = speedReading?.speed,
+                    ace = speedReading?.ace,
+                    speedSource = speedReading?.src,
+                    publishedSpeed = rows.firstNotNullOfOrNull { it.publishedSpeed }
+                        ?: rows.firstOrNull { it.src == "tennisabstract" && it.speed != null }?.speed,
                 )
             }
             .sortedByDescending { it.season }

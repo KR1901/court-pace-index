@@ -14,7 +14,7 @@ publishes — nothing is sent anywhere.
 | Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21, Compose BOM 2026.09.00 |
 | SDK | compileSdk 37, targetSdk 37, minSdk 26 |
 | UI | Liquid Glass — translucent layered surfaces, specular rims, spring motion, drifting mesh |
-| Data | 63 events, 106 CPI readings (2012–2026), 497 ace-based speed readings (2012–2026), bundled offline |
+| Data | 63 events, 106 CPI readings (2012–2026), 716 ace-based speed readings (2012–2026), bundled offline |
 | Permissions | Internet, used only by the optional "check for updates" action |
 
 ## The two metrics
@@ -33,15 +33,17 @@ rubber wears the grit off the surface.
 
 **Surface speed** — a behavioural reading. Count the aces at an event, adjust for the servers
 and returners who were actually on court, and compare with what those same players would have
-produced on a tour-average surface. 1.00 is average; the usual range across ATP events is
-0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
+produced on a tour-average surface. Expected-ace odds are calculated as server odds × returner
+ace-concession odds ÷ tour-average ace odds. 1.00 is average; the usual range across ATP events
+is 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
 
 The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
 
-The 2025–26 readings are the published Tennis Abstract figures. Earlier seasons are recomputed
-by this project from the public ATP match archive using the same method; the recomputation
-reproduces the published 2026 values with r = 0.93 and a mean absolute difference of 0.10. The
-app labels and dims the computed seasons wherever it shows them.
+The calibrated server/returner odds-ratio method is recomputed from the public ATP match archive
+where match data is available. When a calculated event-season overlaps a published Tennis Abstract
+figure, the calibrated value drives the ranking and the original TA number remains visible beside it.
+Where no calculation is available, the published figure is retained as a clearly labelled TA fallback.
+The 1991–2026 formula comparison is documented separately in PR #2.
 
 ## What the app does with them
 
@@ -63,10 +65,11 @@ app labels and dims the computed seasons wherever it shows them.
 1. **courtspeed.com** — Court Pace Index database 2012–2026 for the Grand Slams, Masters
    1000s and ATP Finals, compiled from ATP / Tennis TV broadcast data.
 2. **Tennis Abstract** — ATP Surface Speed Ratings, ace rate adjusted for the field, last
-   updated 2026-11-02, used for the 2025–26 readings.
+   updated 2026-11-02. Its published values are retained as side-by-side references wherever
+   the calibrated archive calculation overlaps, and as labelled fallbacks otherwise.
 3. **ATP match archive compiled by Jeff Sackmann** (CC BY-NC-SA 4.0) — every tour-level match
-   with serve stats, used by `tools/compute_speed.py` to recompute the speed series back to
-   2012. This is the only derived series in the app.
+   with serve stats, used by `tools/compute_speed.py` to calculate the primary speed series
+   back to 2012 wherever the archive has sufficient event coverage.
 
 ### Live Surface Speed coverage
 
@@ -75,9 +78,9 @@ The live ATP result row shows two separate coverage fractions:
 - `matches / discoveredMatches`: completed eligible singles matches with usable Infosys statistics, divided by completed eligible singles matches discovered from ATP.
 - `adjustedServerSides / totalServerSides`: server-side observations that entered the opponent-adjusted mean, divided by `2 × discoveredMatches`. The denominator grows as more completed matches are discovered; it is not a fixed tournament constant.
 
-Each completed match contributes two possible server-side observations. A side is included when the server has a usable serve-rate profile, the returner has a usable ace-concession profile, the service statistics are valid, and expected aces are positive. Expected-ace values below 0.5 are floored to 0.5 when calculating the actual/expected ratio; they are **not** discarded from coverage. Therefore, when all 49 completed matches have usable Stats Plus statistics and both players have valid profiles, the expected coverage is 98/98. Lower coverage must be accounted for by missing match-stat payloads and/or visible per-side exclusion diagnostics; it must not result from a 0.5-ace cutoff.
+Each completed match contributes two possible server-side observations. A side is included when the server has a usable serve-rate profile, the returner has a usable ace-concession profile, service statistics are valid, and the calibrated expected-ace value is positive. Calibration uses the season's overall ace/service-point rate as its neutral odds anchor. Expected-ace values below 0.5 are floored to 0.5 when calculating the actual/expected ratio; they are **not** discarded from coverage. Therefore, when all 49 completed matches have usable Stats Plus statistics and both players have valid profiles, the expected coverage is 98/98. Lower coverage must be accounted for by missing match-stat payloads and/or visible per-side exclusion diagnostics; it must not result from the floor.
 
-The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. Each profile records its source season and sample size. Historical ranked calculations and the season normaliser are unchanged.
+The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. It also carries the tour-average ace rate used to calibrate expected-ace odds. Each profile records its source season and sample size. Historical and live ratings use the same calibrated formula.
 
 ### Refreshing
 
@@ -87,9 +90,10 @@ plus a fresh `latest.json` when anything changed. The app fetches it over HTTPS,
 with `DatasetPolicy` (shape, ranges, no orphan readings, never smaller than what is installed)
 and caches it locally; a bad or truncated download is discarded and the installed data stays.
 
-Every number on screen carries its source. The dataset is guarded by unit tests: unique ids,
-no orphan readings, values inside plausible ranges, no duplicate readings per event and
-season, and the expected coverage counts.
+Every Speed value carries its source: LIVE, CALC, or TA. Where both estimates exist, CALC is
+primary and TA is shown alongside; TA-only rows are labelled fallbacks. The dataset is guarded
+by unit tests for unique ids, no orphan readings, plausible values, duplicate keys, preserved
+published comparisons, and expected coverage.
 
 The ATP publishes no downloadable court pace feed. Both series are reproductions of published
 measurements, not new measurements. See [docs/DATA.md](docs/DATA.md).

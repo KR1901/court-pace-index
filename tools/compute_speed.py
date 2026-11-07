@@ -6,21 +6,23 @@ actually hit with the aces the same server would have been expected to hit again
 returner on a neutral surface, then average the ratios across the event and normalise so a
 tour-average event for the season reads 1.00.
 
-Data: the public ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), fetched from
-the public archive mirror. Only tour-level main-draw matches with serve stats are used.
+Data: Jeff Sackmann ATP archive for historical seasons; TennisMyLife ATP database for the
+current season. Only tour-level main-draw matches with serve stats are used.
 
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, json, os, sys, urllib.request, unicodedata
+import csv, json, math, os, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timezone
 from urllib.error import HTTPError
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
+TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
 YEARS = range(2012, date.today().year + 1)
-LEVELS = {"G", "M", "A", "F"}          # Slams, Masters, ATP 250/500, Finals
+LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Finals
+SOURCE_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 
 # CSV event name -> tournament id used by the app
@@ -32,7 +34,10 @@ NAMES = {
     "Rome Masters": "rome", "Canada Masters": "canada",
     "Cincinnati Masters": "cincinnati", "Shanghai Masters": "shanghai",
     "Paris Masters": "paris", "Tour Finals": "atpfinals",
-    "Brisbane": "brisbane", "Hong Kong": "hongkong", "Auckland": "auckland",
+    "Brisbane": "brisbane", "Hong Kong": "hongkong", "United Cup": "unitedcup", "Laver Cup": "lavercup", "Auckland": "auckland",
+    # TennisMyLife uses these shorter/alternate event labels in its ATP CSV.
+    "Monte Carlo": "montecarlo", "Cincinnati": "cincinnati", "Shanghai": "shanghai",
+    "'s-Hertogenbosch": "shertogenbosch", "’s-Hertogenbosch": "shertogenbosch",
     "Adelaide": "adelaide", "Montpellier": "montpellier", "Dallas": "dallas",
     "Rotterdam": "rotterdam", "Delray Beach": "delraybeach",
     "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Doha": "doha",
@@ -53,10 +58,47 @@ NAMES = {
 
 def load(year):
     os.makedirs(CACHE, exist_ok=True)
+
+    # The Sackmann mirror's 2026 snapshot stops in May. TML publishes a current-year
+    # ATP match table through the end of the season; refresh it on every pipeline run.
+    # Only the current year's archive uses TML; historical rows remain reproducible from Sackmann.
+    if year == date.today().year:
+        tml_path = os.path.join(CACHE, f"tml_atp_matches_{year}.csv")
+        request = urllib.request.Request(
+            TML_CURRENT_URL.format(year),
+            headers={"User-Agent": "CourtPaceIndex/1.0", "Accept": "text/csv"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                payload = response.read()
+            if not payload.startswith(b"tourney_id,") or b"w_svpt" not in payload[:4096]:
+                raise ValueError("TennisMyLife returned an unexpected ATP CSV schema")
+            with open(tml_path, "wb") as f:
+                f.write(payload)
+            SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database"
+        except (HTTPError, urllib.error.URLError, TimeoutError, ValueError) as error:
+            if os.path.exists(tml_path):
+                print(f"warning: TML refresh failed ({error}); using cached TML current-season data")
+                SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database (cached)"
+            else:
+                print(f"warning: TML unavailable ({error}); falling back to Sackmann current-year archive")
+                path = os.path.join(CACHE, f"atp_matches_{year}.csv")
+                if not os.path.exists(path):
+                    with urllib.request.urlopen(MIRROR.format(year), timeout=90) as response:
+                        with open(path, "wb") as f:
+                            f.write(response.read())
+                SOURCE_BY_YEAR[year] = "Jeff Sackmann ATP archive (current-year fallback)"
+                with open(path, newline="") as f:
+                    return list(csv.DictReader(f))
+        with open(tml_path, newline="") as f:
+            return list(csv.DictReader(f))
+
     path = os.path.join(CACHE, f"atp_matches_{year}.csv")
     if not os.path.exists(path):
-        with urllib.request.urlopen(MIRROR.format(year), timeout=90) as r:
-            open(path, "wb").write(r.read())
+        with urllib.request.urlopen(MIRROR.format(year), timeout=90) as response:
+            with open(path, "wb") as f:
+                f.write(response.read())
+    SOURCE_BY_YEAR[year] = "Jeff Sackmann ATP archive"
     with open(path, newline="") as f:
         return list(csv.DictReader(f))
 
@@ -90,12 +132,15 @@ def player_rates(usable):
 
     serve_rate: clay ace rate blended 1/3 with hard/grass ace rate blended 2/3,
     requiring at least three matches in each available surface bucket.
-    concede_rate: aces conceded while returning / opponents' service points,
-    pooled across surfaces.
+    concede_rate: returner ace-concession rate built with the same surface weighting
+    and per-surface three-match qualification. If neither surface qualifies, use the
+    pooled concession rate as a coverage-preserving fallback.
     """
     clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
     hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
     ret_ace = defaultdict(float); ret_pts = defaultdict(float)
+    ret_clay_ace = defaultdict(float); ret_clay_pts = defaultdict(float); ret_clay_n = defaultdict(int)
+    ret_hg_ace = defaultdict(float); ret_hg_pts = defaultdict(float); ret_hg_n = defaultdict(int)
     names = {}
 
     for r in usable:
@@ -109,9 +154,13 @@ def player_rates(usable):
         if surface == "Clay":
             clay_ace[wid] += w_ac; clay_sv[wid] += w_sv; clay_n[wid] += 1
             clay_ace[lid] += l_ac; clay_sv[lid] += l_sv; clay_n[lid] += 1
+            ret_clay_ace[wid] += l_ac; ret_clay_pts[wid] += l_sv; ret_clay_n[wid] += 1
+            ret_clay_ace[lid] += w_ac; ret_clay_pts[lid] += w_sv; ret_clay_n[lid] += 1
         elif surface in ("Hard", "Grass"):
             hg_ace[wid] += w_ac; hg_sv[wid] += w_sv; hg_n[wid] += 1
             hg_ace[lid] += l_ac; hg_sv[lid] += l_sv; hg_n[lid] += 1
+            ret_hg_ace[wid] += l_ac; ret_hg_pts[wid] += l_sv; ret_hg_n[wid] += 1
+            ret_hg_ace[lid] += w_ac; ret_hg_pts[lid] += w_sv; ret_hg_n[lid] += 1
 
         # The winner is returning against the loser's serve, and vice versa.
         ret_ace[wid] += l_ac; ret_pts[wid] += l_sv
@@ -122,26 +171,88 @@ def player_rates(usable):
     for p in set(clay_sv) | set(hg_sv):
         c = clay_ace[p] / clay_sv[p] if clay_sv[p] > 0 else None
         h = hg_ace[p] / hg_sv[p] if hg_sv[p] > 0 else None
-        if c is not None and h is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
+        clay_qualified = c is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE
+        hard_grass_qualified = h is not None and hg_n[p] >= MIN_MATCHES_PER_SURFACE
+
+        # Qualification is surface-specific. One or two matches on the other surface
+        # must not invalidate a player's adequately sampled surface profile.
+        if clay_qualified and hard_grass_qualified:
             serve_rate[p] = (1 / 3) * c + (2 / 3) * h
-        elif c is not None and h is None and clay_n[p] >= MIN_MATCHES_PER_SURFACE:
+        elif clay_qualified:
             serve_rate[p] = c
-        elif h is not None and c is None and hg_n[p] >= MIN_MATCHES_PER_SURFACE:
+        elif hard_grass_qualified:
             serve_rate[p] = h
+
         if p in serve_rate:
+            use_clay = clay_qualified
+            use_hard_grass = hard_grass_qualified
             serve_samples[p] = {
-                "clayMatches": clay_n[p],
-                "hardGrassMatches": hg_n[p],
+                "clayMatches": clay_n[p] if use_clay else 0,
+                "hardGrassMatches": hg_n[p] if use_hard_grass else 0,
+                "servicePoints": (
+                    (clay_sv[p] if use_clay else 0.0)
+                    + (hg_sv[p] if use_hard_grass else 0.0)
+                ),
             }
 
-    concede_rate = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
+    pooled_concede_rate = {
+        p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0
+    }
+    concede_rate = {}
+    concede_samples = {}
+    for p in ret_pts:
+        c = ret_clay_ace[p] / ret_clay_pts[p] if ret_clay_pts[p] > 0 else None
+        h = ret_hg_ace[p] / ret_hg_pts[p] if ret_hg_pts[p] > 0 else None
+        clay_qualified = c is not None and ret_clay_n[p] >= MIN_MATCHES_PER_SURFACE
+        hard_grass_qualified = h is not None and ret_hg_n[p] >= MIN_MATCHES_PER_SURFACE
+
+        # Keep the returner adjustment symmetric with the server profile. A player
+        # qualified on one surface is still usable; a small secondary-surface sample
+        # cannot pull the rate toward an unstable blend.
+        if clay_qualified and hard_grass_qualified:
+            concede_rate[p] = (1 / 3) * c + (2 / 3) * h
+        elif clay_qualified:
+            concede_rate[p] = c
+        elif hard_grass_qualified:
+            concede_rate[p] = h
+        elif p in pooled_concede_rate:
+            concede_rate[p] = pooled_concede_rate[p]
+
+        use_clay = clay_qualified
+        use_hard_grass = hard_grass_qualified
+        concede_samples[p] = {
+            "clayMatches": ret_clay_n[p] if use_clay else 0,
+            "hardGrassMatches": ret_hg_n[p] if use_hard_grass else 0,
+            "servicePoints": (
+                (ret_clay_pts[p] if use_clay else 0.0)
+                + (ret_hg_pts[p] if use_hard_grass else 0.0)
+            ),
+        }
+
     return {
         p: {
             "id": p,
             "name": names.get(p, ""),
             "serve_rate": serve_rate.get(p),
             "concede_rate": concede_rate.get(p),
-            "serve_matches": sum(serve_samples.get(p, {}).values()),
+            "pooled_concede_rate": pooled_concede_rate.get(p),
+            "concede_rate_source": (
+                "surface-qualified"
+                if p in concede_samples and (
+                    concede_samples[p]["clayMatches"] + concede_samples[p]["hardGrassMatches"]
+                ) > 0
+                else "pooled-fallback"
+            ),
+            "concede_matches": (
+                concede_samples.get(p, {}).get("clayMatches", 0)
+                + concede_samples.get(p, {}).get("hardGrassMatches", 0)
+            ),
+            "concede_service_points": concede_samples.get(p, {}).get("servicePoints", 0.0),
+            "serve_matches": (
+                serve_samples.get(p, {}).get("clayMatches", 0)
+                + serve_samples.get(p, {}).get("hardGrassMatches", 0)
+            ),
+            "serve_service_points": serve_samples.get(p, {}).get("servicePoints", 0.0),
             "clay_matches": clay_n[p],
             "hard_grass_matches": hg_n[p],
             "return_points": ret_pts.get(p, 0.0),
@@ -201,9 +312,9 @@ def build_live_profiles(profile_year, current_profiles):
     Build a broad but auditable live player baseline.
 
     Profiles are the union of players seen in the baseline season and the preceding three
-    ATP seasons. A player's rate comes from the most recent season with a qualified profile.
-    If no season meets the historical three-match surface threshold, a low-sample estimate
-    is shrunk toward that season's surface average using a 300-service-point prior.
+    ATP seasons. Serve rates prefer the most recent qualified profile, then a shrunk estimate.
+    Returner rates prefer surface-qualified concession profiles over pooled fallbacks, even
+    when the qualified profile comes from a prior season.
 
     This changes only the *live baseline's player coverage*. Historical season_ratings()
     continues to use player_rates() unchanged, and the expected-aces formula plus season
@@ -221,11 +332,16 @@ def build_live_profiles(profile_year, current_profiles):
         )
         profile["serve_rate_sample_matches"] = profile["serve_matches"]
         profile["serve_rate_sample_points"] = (
-            profile["clay_service_points"] + profile["hard_grass_service_points"]
+            profile.get("serve_service_points")
+            if profile["serve_rate"] is not None and profile.get("serve_service_points") is not None
+            else profile["clay_service_points"] + profile["hard_grass_service_points"]
         )
         profile["concede_rate_season"] = (
             profile_year if profile["concede_rate"] is not None else None
         )
+        profile["concede_rate_source"] = profile.get("concede_rate_source")
+        profile["concede_matches"] = profile.get("concede_matches", 0)
+        profile["concede_service_points"] = profile.get("concede_service_points", 0.0)
 
     # Union the recent seasons by stable Sackmann player ID. The newest available profile
     # supplies the display name and, when needed, the raw observations for shrinkage.
@@ -252,7 +368,8 @@ def build_live_profiles(profile_year, current_profiles):
                     previous["serve_matches"] if previous["serve_rate"] is not None else 0
                 )
                 live[player_id]["serve_rate_sample_points"] = (
-                    previous["clay_service_points"] + previous["hard_grass_service_points"]
+                    previous.get("serve_service_points",
+                                 previous["clay_service_points"] + previous["hard_grass_service_points"])
                     if previous["serve_rate"] is not None else 0.0
                 )
                 live[player_id]["concede_rate_season"] = (
@@ -266,12 +383,25 @@ def build_live_profiles(profile_year, current_profiles):
                 profile["serve_rate_season"] = historical_year
                 profile["serve_rate_source"] = "prior-season-qualified"
                 profile["serve_rate_sample_matches"] = previous["serve_matches"]
-                profile["serve_rate_sample_points"] = (
-                    previous["clay_service_points"] + previous["hard_grass_service_points"]
+                profile["serve_rate_sample_points"] = previous.get(
+                    "serve_service_points",
+                    previous["clay_service_points"] + previous["hard_grass_service_points"],
                 )
-            if profile["concede_rate"] is None and previous["concede_rate"] is not None:
+            previous_concede_source = previous.get("concede_rate_source")
+            current_concede_source = profile.get("concede_rate_source")
+            prefer_previous_concede = (
+                profile["concede_rate"] is None
+                or (
+                    current_concede_source != "surface-qualified"
+                    and previous_concede_source == "surface-qualified"
+                )
+            )
+            if prefer_previous_concede and previous["concede_rate"] is not None:
                 profile["concede_rate"] = previous["concede_rate"]
                 profile["concede_rate_season"] = historical_year
+                profile["concede_rate_source"] = previous_concede_source
+                profile["concede_matches"] = previous.get("concede_matches", 0)
+                profile["concede_service_points"] = previous.get("concede_service_points", 0.0)
 
     # Players without any qualified profile still get a player-specific, explicitly
     # low-sample estimate when the archive contains their own service-point observations.
@@ -319,7 +449,8 @@ def dedupe_live_profiles(profiles):
     This is important because the Android profile index is name-keyed. Prefer a qualified
     current-season serve rate, then a qualified recent-season rate, then a shrunk estimate.
     Within a source tier, prefer the newest season and larger player-specific sample. Retain
-    the most recent available return-concession rate independently.
+    the best available return-concession rate independently: a surface-qualified profile
+    takes precedence over a pooled fallback, then the newest season wins.
     """
     source_priority = {
         "current-season-qualified": 4,
@@ -342,23 +473,45 @@ def dedupe_live_profiles(profiles):
             profile.get("serve_rate_sample_matches") or 0,
         )
         existing = chosen.get(key)
-        if existing is None or rank > existing["_serve_rank"]:
+        if existing is None:
             candidate = dict(profile)
             candidate["_serve_rank"] = rank
             chosen[key] = candidate
+            continue
 
-        # If duplicate IDs exist for one name, use the newest return-concession profile.
-        candidate = chosen[key]
-        if (
-            profile.get("concede_rate") is not None and
-            (
-                candidate.get("concede_rate") is None or
-                (profile.get("concede_rate_season") or 0) >
-                (candidate.get("concede_rate_season") or 0)
-            )
-        ):
+        # Select serve and returner tendencies independently. The best serve record
+        # must not erase a better surface-qualified returner record from another ID.
+        candidate = existing
+        concede_priority = {"surface-qualified": 2, "pooled-fallback": 1}
+        candidate_concede_rank = (
+            concede_priority.get(candidate.get("concede_rate_source"), 0),
+            candidate.get("concede_rate_season") or 0,
+            candidate.get("concede_service_points") or 0,
+        )
+        profile_concede_rank = (
+            concede_priority.get(profile.get("concede_rate_source"), 0),
+            profile.get("concede_rate_season") or 0,
+            profile.get("concede_service_points") or 0,
+        )
+        if profile.get("concede_rate") is not None and profile_concede_rank > candidate_concede_rank:
             candidate["concede_rate"] = profile["concede_rate"]
             candidate["concede_rate_season"] = profile.get("concede_rate_season")
+            candidate["concede_rate_source"] = profile.get("concede_rate_source")
+            candidate["concede_matches"] = profile.get("concede_matches", 0)
+            candidate["concede_service_points"] = profile.get("concede_service_points", 0.0)
+
+        if rank > candidate["_serve_rank"]:
+            best_concede = {
+                field: candidate.get(field)
+                for field in (
+                    "concede_rate", "concede_rate_season", "concede_rate_source",
+                    "concede_matches", "concede_service_points",
+                )
+            }
+            replacement = dict(profile)
+            replacement["_serve_rank"] = rank
+            replacement.update(best_concede)
+            chosen[key] = replacement
 
     result = []
     for profile in chosen.values():
@@ -367,15 +520,40 @@ def dedupe_live_profiles(profiles):
     return result
 
 
-def event_raw_scores(usable, profiles, exclude_event_ids=None):
-    """
-    Apply the historical match-level expected-aces formula to each event.
+def tour_average_ace_rate(usable):
+    """Season-wide ace probability per service point across usable tour-level matches."""
+    total_aces = sum(num(r["w_ace"]) + num(r["l_ace"]) for r in usable)
+    total_points = sum(num(r["w_svpt"]) + num(r["l_svpt"]) for r in usable)
+    return total_aces / total_points if total_points > 0 else None
 
-    Returns raw event means before the season-wide normalisation. The caller can
-    exclude an event (e.g. a tournament still in progress) without changing the
-    player-profile calculation.
+
+def expected_calibrated_aces(serve_rate, concede_rate, tour_rate, service_points):
+    """Log5/odds-ratio expected aces calibrated to the season tour-average ace rate."""
+    if not all(0.0 < rate < 1.0 for rate in (serve_rate, concede_rate, tour_rate)):
+        return 0.0
+    server_odds = serve_rate / (1.0 - serve_rate)
+    returner_odds = concede_rate / (1.0 - concede_rate)
+    tour_odds = tour_rate / (1.0 - tour_rate)
+    matchup_odds = (server_odds * returner_odds) / tour_odds
+    if not math.isfinite(matchup_odds) or matchup_odds <= 0.0:
+        return 0.0
+    expected_ace_rate = matchup_odds / (1.0 + matchup_odds)
+    return expected_ace_rate * service_points
+
+
+def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
+    """
+    Apply the calibrated match-level expected-aces formula to each event.
+
+    Expected ace odds multiply the server's odds by the returner's concession odds and
+    divide by the season tour-average ace odds. Returns raw event means before the
+    season-wide normalisation.
     """
     excluded = exclude_event_ids or set()
+    if tour_rate is None:
+        tour_rate = tour_average_ace_rate(usable)
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        return {}, defaultdict(float), defaultdict(float), defaultdict(int)
     per_event = defaultdict(list)
     event_aces = defaultdict(float); event_sv = defaultdict(float)
     event_matches = defaultdict(int)
@@ -396,13 +574,9 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None):
             qr = profiles.get(returner, {}).get("concede_rate")
             if ps is None or qr is None:
                 continue
-            denom = ps * qr + (1 - ps) * (1 - qr)
-            if denom <= 0:
-                continue
-            expected = ((ps * qr) / denom) * sv
-            # Keep every mathematically valid player-server side. A 0.5-ace floor is
-            # applied to the expected count (rather than dropping the side) so tiny
-            # expectations cannot dominate the event mean. Android uses the same rule.
+            expected = expected_calibrated_aces(ps, qr, tour_rate, sv)
+            # Keep every mathematically valid player-server side. Calibrated expected-ace
+            # counts below 0.5 are floored at 0.5 rather than dropping valid observations.
             if expected <= MIN_EXPECTED_ACES:
                 continue
             expected = max(expected, EXPECTED_ACES_FLOOR)
@@ -416,7 +590,10 @@ def season_ratings(year, rows):
     """Returns {tournament_id: {'speed': r, 'ace': pct, 'matches': n}} for one season."""
     usable = valid_rows(rows)
     profiles = player_rates(usable)
-    raw, event_aces, event_sv, event_matches = event_raw_scores(usable, profiles)
+    tour_rate = tour_average_ace_rate(usable)
+    raw, event_aces, event_sv, event_matches = event_raw_scores(
+        usable, profiles, tour_rate=tour_rate
+    )
     if not raw:
         return {}
     season_mean = sum(raw.values()) / len(raw)
@@ -438,6 +615,7 @@ def main():
                        if r.get("speed") is not None and r["s"] == 2026}
 
     history = {}
+    season_sources = {}
     for year in YEARS:
         try:
             rows = load(year)
@@ -448,6 +626,7 @@ def main():
             raise
         ratings = season_ratings(year, rows)
         history[year] = ratings
+        season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
 
     ours = history.get(2026, {})
@@ -475,12 +654,18 @@ def main():
         except HTTPError:
             profile_rows = []
         profiles = player_rates(profile_rows)
-        raw_events, _, _, _ = event_raw_scores(profile_rows, profiles)
+        tour_rate = tour_average_ace_rate(profile_rows)
+        raw_events, _, _, _ = event_raw_scores(
+            profile_rows, profiles, tour_rate=tour_rate
+        )
         if len(raw_events) < 5:
             profile_year = current_year - 1
             profile_rows = valid_rows(load(profile_year))
             profiles = player_rates(profile_rows)
-            raw_events, _, _, _ = event_raw_scores(profile_rows, profiles)
+            tour_rate = tour_average_ace_rate(profile_rows)
+            raw_events, _, _, _ = event_raw_scores(
+                profile_rows, profiles, tour_rate=tour_rate
+            )
         if not raw_events:
             raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events in current or previous season")
         normalisation = sum(raw_events.values()) / len(raw_events)
@@ -525,9 +710,12 @@ def main():
             "withoutServeRate": sum(p["serveRate"] is None for p in live_profile_rows),
             "withoutConcedeRate": sum(p["concedeRate"] is None for p in live_profile_rows),
         }
+        if tour_rate is None or not 0.0 < tour_rate < 1.0:
+            raise RuntimeError(f"cannot build calibrated live baseline for {current_year}: invalid tour-average ace rate")
         baseline = {
             "season": current_year,
             "profileSeason": profile_year,
+            "tourAceRate": tour_rate,
             "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
             "profiles": live_profile_rows,
@@ -553,10 +741,10 @@ def main():
         out_path = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
-            "generated": "2026-11-04",
-            "method": "ace rate adjusted for the servers and returners in each match; positive expected-ace "
-                      "values are floored at 0.5 to retain valid low-ace sides, normalised so a tour-average event of the season reads 1.00",
-            "source": "ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0)",
+            "generated": date.today().isoformat(),
+            "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; both player profiles use qualified clay (1/3) and hard/grass (2/3) rates, with pooled returner fallback when neither surface qualifies; positive expected-ace values are floored at 0.5 and season-normalised",
+            "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
+            "season_sources": {str(y): source for y, source in season_sources.items()},
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
                         for y, ratings in history.items()},

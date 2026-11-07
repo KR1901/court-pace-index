@@ -152,8 +152,8 @@ SPEED = [
 ]
 
 # Historical ace-based ratings computed from the public match archive
-# (tools/compute_speed.py). Published readings win one by one, not season by season: the
-# published table is a rolling 52-week window that straddles two calendar years.
+# (tools/compute_speed.py). On overlaps, the calibrated value is primary and the original
+# Tennis Abstract value is retained as a published comparison. TA-only values remain fallbacks.
 COMPUTED = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
 
 # Events in progress. Carried in the bundled asset so the app shows them without a refresh.
@@ -183,10 +183,34 @@ for tid, date, speed, ace in SPEED:
                      "date": date, "src": "tennisabstract"})
 
 computed_n = 0
+published_overlap_n = 0
 if os.path.exists(COMPUTED):
     hist = json.load(open(COMPUTED))
     published_keys = {(r["t"], r["s"]) for r in readings
                       if "speed" in r and r["src"] == "tennisabstract"}
+    computed_by_key = {
+        (tid, int(season)): values
+        for season, events in hist["seasons"].items()
+        for tid, values in events.items()
+        if tid in known
+    }
+
+    # Upgrade the primary value on every overlap while preserving the published figure.
+    for reading in readings:
+        if reading.get("src") != "tennisabstract" or reading.get("speed") is None:
+            continue
+        values = computed_by_key.get((reading["t"], reading["s"]))
+        if values is None:
+            continue
+        reading["publishedSpeed"] = reading["speed"]
+        reading["speed"] = round(values["speed"], 2)
+        reading["ace"] = round(values["ace"], 1)
+        reading["matches"] = values.get("matches")
+        reading["src"] = "computed"
+        computed_n += 1
+        published_overlap_n += 1
+
+    # Add archive calculations where the published table has no event-season value.
     for season, events in hist["seasons"].items():
         year = int(season)
         for tid, values in events.items():
@@ -196,6 +220,7 @@ if os.path.exists(COMPUTED):
                 "t": tid, "s": year,
                 "speed": round(values["speed"], 2),
                 "ace": round(values["ace"], 1),
+                "matches": values.get("matches"),
                 "src": "computed",
             })
             computed_n += 1
@@ -246,19 +271,20 @@ doc = {
                 "id": "tennisabstract",
                 "name": "Tennis Abstract ATP Surface Speed Ratings",
                 "metric": "Speed",
-                "detail": "Ace rate per event adjusted for the servers and returners in each match, "
-                          "centred on 1.00 for a tour-average surface. Last update 2026-11-02.",
+                "detail": "Published ATP Surface Speed ratings and ace rates as reported by Tennis Abstract. "
+                          "The figures are reproduced as published, not recomputed by this project.",
                 "url": "https://tennisabstract.com/reports/atp_surface_speed.html",
             },
             {
                 "id": "computed",
-                "name": "Computed history - from Jeff Sackmann's ATP archive",
+                "name": "Computed history - ATP match archives",
                 "metric": "Speed",
-                "detail": "Seasons before 2026 are recomputed here from the public ATP match archive "
-                          "compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the published method: ace "
-                          "rate adjusted for the server and returner in every match, normalised so a "
-                          "tour-average event reads 1.00. Reproduces the published 2026 figures with "
-                          "r = 0.93 and a mean absolute difference of 0.10. Non-commercial use only.",
+                "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); "
+                          "the current season prefers the TennisMyLife ATP Match Database. Both use "
+                          "surface-consistent server and returner profiles (clay 1/3, hard/grass 2/3; "
+                          "pooled returner fallback without a qualified surface sample), the "
+                          "season-calibrated odds-ratio method, 0.5 expected-ace floor and season "
+                          "normalisation. TML data use is non-commercial only.",
                 "url": "https://github.com/Aneeshers/tennis-sackmann-archive",
             },
         ],
@@ -281,7 +307,8 @@ with open(out, "w") as f:
 
 cpi_n = len([r for r in readings if "cpi" in r])
 speed_n = len([r for r in readings if "speed" in r])
-print(f"{len(tournaments)} tournaments, {cpi_n} CPI readings, {speed_n} speed readings, {computed_n} computed")
+print(f"{len(tournaments)} tournaments, {cpi_n} CPI readings, {speed_n} primary speed readings, "
+      f"{computed_n} calibrated calculations ({published_overlap_n} with TA comparisons)")
 print("seasons with CPI:", sorted({r['s'] for r in readings if 'cpi' in r}))
 both = {r['t'] for r in readings if 'cpi' in r and r['s'] == 2026} & {r['t'] for r in readings if 'speed' in r}
 print("2026 events with both metrics:", len(both), sorted(both))

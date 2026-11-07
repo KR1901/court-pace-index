@@ -58,10 +58,14 @@ object PaceAnalytics {
         metric: Metric,
         surfaces: Set<Surface> = emptySet(),
         levels: Set<Level> = emptySet(),
+        speedSources: Set<String>? = null,
     ): List<Ranked> {
         val rows = data.entries(season, metric)
             .filter { surfaces.isEmpty() || it.first.surface in surfaces }
             .filter { levels.isEmpty() || it.first.level in levels }
+            .filter {
+                speedSources == null || data.speedSource(it.first.id, season) in speedSources
+            }
             .sortedByDescending { it.second }
 
         return rows.mapIndexed { index, (tournament, value) ->
@@ -76,24 +80,68 @@ object PaceAnalytics {
         }
     }
 
-    /** Value from the most recent season before [season] that has one. */
+    /** Value from the most recent earlier season with a like-for-like source. */
     fun previousValue(data: PaceData, id: String, season: Int, metric: Metric): Double? =
-        data.readingsFor(id).lastOrNull { it.s < season && it.value(metric) != null }?.value(metric)
+        comparableEarlierSeasons(data, id, season, metric).firstNotNullOfOrNull { (_, value) -> value }
 
     fun previousSeason(data: PaceData, id: String, season: Int, metric: Metric): Int? =
-        data.readingsFor(id).lastOrNull { it.s < season && it.value(metric) != null }?.s
+        comparableEarlierSeasons(data, id, season, metric).firstOrNull()?.first
 
-    /** Simple mean of the seasons present in the last three years up to [season]. */
+    /** Simple mean of like-for-like readings inside the last three seasons. */
     fun threeYearAverage(data: PaceData, id: String, season: Int, metric: Metric): Double? {
-        val values = data.readingsFor(id)
-            .filter { it.s <= season && it.s >= season - 2 }
-            .mapNotNull { it.value(metric) }
+        val source = data.speedSource(id, season)
+        val values = (season - 2..season).mapNotNull { year ->
+            comparableValue(data, id, year, source, metric)
+        }
         return if (values.isEmpty()) null else values.average()
     }
 
-    fun average(data: PaceData, season: Int, metric: Metric, surface: Surface? = null): Double? {
+    private fun comparableEarlierSeasons(
+        data: PaceData,
+        id: String,
+        season: Int,
+        metric: Metric,
+    ): List<Pair<Int, Double>> {
+        val source = data.speedSource(id, season)
+        return data.readingsFor(id).asSequence()
+            .map { it.s }
+            .filter { it < season }
+            .distinct()
+            .sortedDescending()
+            .mapNotNull { year -> comparableValue(data, id, year, source, metric)?.let { year to it } }
+            .toList()
+    }
+
+    private fun comparableValue(
+        data: PaceData,
+        id: String,
+        year: Int,
+        currentSource: String?,
+        metric: Metric,
+    ): Double? = when (metric) {
+        Metric.CPI -> data.value(id, year, metric)
+        Metric.SPEED -> when (currentSource) {
+            "tennisabstract" -> data.publishedSpeed(id, year)
+            "computed", "live" -> data.value(id, year, metric)
+                ?.takeIf { data.speedSource(id, year) in setOf("computed", "live") }
+            else -> null
+        }
+    }
+
+    fun average(
+        data: PaceData,
+        season: Int,
+        metric: Metric,
+        surface: Surface? = null,
+        speedSources: Set<String>? = null,
+        surfaces: Set<Surface> = emptySet(),
+    ): Double? {
         val values = data.entries(season, metric)
             .filter { surface == null || it.first.surface == surface }
+            .filter { surfaces.isEmpty() || it.first.surface in surfaces }
+            .filter {
+                speedSources == null || data.speedSource(it.first.id, season) in speedSources
+            }
             .map { it.second }
         return if (values.isEmpty()) null else values.average()
     }

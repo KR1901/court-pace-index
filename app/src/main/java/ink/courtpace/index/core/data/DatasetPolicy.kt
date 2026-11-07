@@ -60,6 +60,7 @@ object DatasetPolicy {
         return dataset.readings.all { reading ->
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
                 (reading.speed == null || reading.speed in 0.30..2.0) &&
+                (reading.publishedSpeed == null || reading.publishedSpeed in 0.30..2.0) &&
                 reading.s in 1990..2100
         }
     }
@@ -72,6 +73,13 @@ object DatasetPolicy {
         if (remote == null) return bundled
         if (!isAcceptable(remote)) return bundled
         if (remote.readings.size < bundled.readings.size) return bundled
+        // An older cache can have the same row count but lack the new published TA values.
+        // Do not allow it to erase richer side-by-side source data from the bundled dataset.
+        val bundledComparisons = bundled.readings.filter { it.publishedSpeed != null }
+            .map { it.t to it.s }.toSet()
+        val remoteComparisons = remote.readings.filter { it.publishedSpeed != null }
+            .map { it.t to it.s }.toSet()
+        if (!remoteComparisons.containsAll(bundledComparisons)) return bundled
         // A published dataset built before the live feed existed carries no live array; taking
         // it wholesale would erase the event in progress from the screen.
         val chosen = if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {

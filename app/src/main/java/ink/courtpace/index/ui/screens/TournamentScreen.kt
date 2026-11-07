@@ -60,6 +60,8 @@ fun TournamentScreen(
     val colors = PaceTheme.colors
     val cpi = data.value(tournament.id, season, Metric.CPI)
     val speed = data.value(tournament.id, season, Metric.SPEED)
+    val speedSource = data.speedSource(tournament.id, season)
+    val publishedSpeed = data.publishedSpeed(tournament.id, season)
     val latestCpiSeason = data.latestSeason(tournament.id, Metric.CPI)
     val shownCpi = cpi ?: latestCpiSeason?.let { data.value(tournament.id, it, Metric.CPI) }
     val shownCpiSeason = if (cpi != null) season else latestCpiSeason
@@ -154,8 +156,21 @@ fun TournamentScreen(
                         StatTile(
                             label = "Speed $season",
                             value = PaceAnalytics.format(speed, Metric.SPEED),
-                            caption = PaceAnalytics.speedBand(speed).label,
+                            caption = when (speedSource) {
+                                "live" -> "Live · calibrated"
+                                "computed" -> "Calibrated"
+                                else -> "Tennis Abstract"
+                            },
                             color = accentForValue(speed, Metric.SPEED),
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    if (publishedSpeed != null && speedSource != "tennisabstract") {
+                        StatTile(
+                            label = "TA $season",
+                            value = PaceAnalytics.format(publishedSpeed, Metric.SPEED),
+                            caption = "Published reference",
+                            color = colors.textDim,
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -238,11 +253,7 @@ fun TournamentScreen(
                                         ?: reading.speed?.let { PaceAnalytics.format(it, Metric.SPEED) }
                                         ?: "–",
                                     style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
-                                    color = if (reading.cpi == null && reading.speedSource == "computed") {
-                                        colors.textDim
-                                    } else {
-                                        colors.text
-                                    },
+                                    color = colors.text,
                                 )
                                 Spacer(Modifier.width(5.dp))
                                 // CPI and speed are different scales; never let the reader
@@ -259,6 +270,19 @@ fun TournamentScreen(
                                     reading.speed?.let {
                                         if (isNotEmpty()) append(" · ")
                                         append("speed ${PaceAnalytics.speedBand(it).label.lowercase()}")
+                                        append(
+                                            when (reading.speedSource) {
+                                                "live" -> " · LIVE"
+                                                "computed" -> " · CALC"
+                                                else -> " · TA"
+                                            },
+                                        )
+                                        if (reading.speedSource != "tennisabstract") {
+                                            reading.publishedSpeed?.let { published ->
+                                                append(" · TA ")
+                                                append(PaceAnalytics.format(published, Metric.SPEED))
+                                            }
+                                        }
                                     }
                                 },
                                 style = TextStyle(fontSize = 11.5.sp),
@@ -275,11 +299,11 @@ fun TournamentScreen(
                         }
                         if (index < readings.lastIndex) HairLine()
                     }
-                    if (readings.any { it.speedSource == "computed" }) {
+                    if (readings.any { it.speedSource == "computed" || it.publishedSpeed != null }) {
                         Spacer(Modifier.height(12.dp))
                         SourceLine(
-                            "Dimmed seasons are ace-based figures recomputed by this project from the " +
-                                "public match archive; 2025-26 are the published Tennis Abstract readings.",
+                            "CALC is the calibrated archive calculation. TA is the original published Tennis Abstract value, " +
+                                "shown alongside CALC where both exist; TA-labelled rows are published-only fallbacks.",
                         )
                     }
                 }
@@ -316,7 +340,7 @@ fun TournamentScreen(
             Spacer(Modifier.height(16.dp))
             SourceLine(
                 "CPI: courtspeed.com, centre-court readings from ATP / Tennis TV broadcast data. " +
-                    "Speed: Tennis Abstract surface speed ratings, ace rate adjusted for the field.",
+                    "Speed: calibrated server/returner-adjusted calculation where available, with published Tennis Abstract values retained as references or labelled fallbacks.",
             )
             Spacer(Modifier.height(LocalTabBarInset.current))
         }
