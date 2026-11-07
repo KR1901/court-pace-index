@@ -14,7 +14,7 @@ publishes — nothing is sent anywhere.
 | Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21, Compose BOM 2026.09.00 |
 | SDK | compileSdk 37, targetSdk 37, minSdk 26 |
 | UI | Liquid Glass — translucent layered surfaces, specular rims, spring motion, drifting mesh |
-| Data | 63 events, 106 CPI readings (2012–2026), 497 ace-based speed readings (2012–2026), bundled offline |
+| Data | 63 events, 106 CPI readings (2012–2026), 716 ace-based speed readings (2012–2026), bundled offline |
 | Permissions | Internet, used only by the optional "check for updates" action |
 
 ## The two metrics
@@ -39,10 +39,11 @@ is 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altit
 
 The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
 
-The 2025–26 published readings are from Tennis Abstract. Earlier seasons are recomputed by this
-project from the public ATP match archive using the calibrated server/returner odds-ratio method.
-The 1991–2026 formula comparison is maintained separately in PR #2; the app labels and dims
-computed seasons wherever it shows them.
+The calibrated server/returner odds-ratio method is recomputed from the public ATP match archive
+where match data is available. When a calculated event-season overlaps a published Tennis Abstract
+figure, the calibrated value drives the ranking and the original TA number remains visible beside it.
+Where no calculation is available, the published figure is retained as a clearly labelled TA fallback.
+The 1991–2026 formula comparison is documented separately in PR #2.
 
 ## What the app does with them
 
@@ -64,10 +65,11 @@ computed seasons wherever it shows them.
 1. **courtspeed.com** — Court Pace Index database 2012–2026 for the Grand Slams, Masters
    1000s and ATP Finals, compiled from ATP / Tennis TV broadcast data.
 2. **Tennis Abstract** — ATP Surface Speed Ratings, ace rate adjusted for the field, last
-   updated 2026-11-02, used for the 2025–26 readings.
+   updated 2026-11-02. Its published values are retained as side-by-side references wherever
+   the calibrated archive calculation overlaps, and as labelled fallbacks otherwise.
 3. **ATP match archive compiled by Jeff Sackmann** (CC BY-NC-SA 4.0) — every tour-level match
-   with serve stats, used by `tools/compute_speed.py` to recompute the speed series back to
-   2012. This is the only derived series in the app.
+   with serve stats, used by `tools/compute_speed.py` to calculate the primary speed series
+   back to 2012 wherever the archive has sufficient event coverage.
 
 ### Live Surface Speed coverage
 
@@ -88,9 +90,10 @@ plus a fresh `latest.json` when anything changed. The app fetches it over HTTPS,
 with `DatasetPolicy` (shape, ranges, no orphan readings, never smaller than what is installed)
 and caches it locally; a bad or truncated download is discarded and the installed data stays.
 
-Every number on screen carries its source. The dataset is guarded by unit tests: unique ids,
-no orphan readings, values inside plausible ranges, no duplicate readings per event and
-season, and the expected coverage counts.
+Every Speed value carries its source: LIVE, CALC, or TA. Where both estimates exist, CALC is
+primary and TA is shown alongside; TA-only rows are labelled fallbacks. The dataset is guarded
+by unit tests for unique ids, no orphan readings, plausible values, duplicate keys, preserved
+published comparisons, and expected coverage.
 
 The ATP publishes no downloadable court pace feed. Both series are reproductions of published
 measurements, not new measurements. See [docs/DATA.md](docs/DATA.md).

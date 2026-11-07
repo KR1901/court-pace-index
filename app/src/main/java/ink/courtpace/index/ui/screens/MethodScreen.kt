@@ -270,13 +270,13 @@ fun MethodScreen(data: PaceData) {
 
         Spacer(Modifier.height(16.dp))
         GlassNote(
-            "Speed figures for 2012-2025 are recomputed by this project from the public ATP match " +
-                "archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the server/returner-adjusted " +
-                "method, a 0.5 expected-ace floor for positive low expectations, and season normalisation. " +
-                "2025-26 readings published by Tennis Abstract take precedence where they exist. The " +
-                "recomputed 2026 event ratings compare with the published reference at correlation 0.962 " +
-                "and mean absolute difference 0.090; they are not the same series, and the app dims the " +
-                "computed seasons wherever it shows them.",
+            "CALC ratings are recomputed from the public ATP match archive compiled by Jeff Sackmann " +
+                "(CC BY-NC-SA 4.0), using the calibrated server/returner odds-ratio method and season " +
+                "normalisation. Where a matching Tennis Abstract rating exists, CALC is the primary " +
+                "ranking value and the original TA figure is retained as a side-by-side reference. Where " +
+                "the archive has no calculation, the published TA value remains as a clearly labelled " +
+                "fallback. The two estimates are different methods, so the app identifies them instead " +
+                "of silently mixing their sources.",
         )
         Spacer(Modifier.height(12.dp))
         GlassNote(

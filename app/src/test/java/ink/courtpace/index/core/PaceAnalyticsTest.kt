@@ -71,6 +71,26 @@ class PaceAnalyticsTest {
     }
 
     @Test
+    fun `speed deltas do not mix calibrated and Tennis Abstract methods`() {
+        val tournament = data.tournaments.first { it.id == "montpellier" }
+        val sample = PaceData(
+            data.dataset.copy(
+                tournaments = listOf(tournament),
+                readings = listOf(
+                    PaceReading(t = "montpellier", s = 2024, speed = 0.82, src = "computed"),
+                    PaceReading(t = "montpellier", s = 2025, speed = 1.70, src = "tennisabstract"),
+                    PaceReading(
+                        t = "montpellier", s = 2026, speed = 1.26,
+                        publishedSpeed = 1.49, src = "computed",
+                    ),
+                ),
+            ),
+        )
+        assertEquals(0.82, PaceAnalytics.previousValue(sample, "montpellier", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals(2024, PaceAnalytics.previousSeason(sample, "montpellier", 2026, Metric.SPEED))
+    }
+
+    @Test
     fun `three year average stays inside the window`() {
         val average = PaceAnalytics.threeYearAverage(data, "miami", 2026, Metric.CPI)
         assertNotNull(average)

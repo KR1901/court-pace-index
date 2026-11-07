@@ -81,6 +81,15 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a cache without published comparisons cannot replace the richer bundled dataset`() {
+        val stale = data.dataset.copy(
+            readings = data.dataset.readings.map { it.copy(publishedSpeed = null) },
+        )
+        assertTrue(data.dataset.readings.any { it.publishedSpeed != null })
+        assertEquals(data.dataset, DatasetPolicy.choose(data.dataset, stale))
+    }
+
+    @Test
     fun `a dataset without a live feed still parses`() {
         val withoutLive = data.dataset.copy(live = emptyList())
         assertTrue(PaceData(withoutLive).liveWithoutRating(2026, Metric.SPEED).isEmpty())

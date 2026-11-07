@@ -152,8 +152,8 @@ SPEED = [
 ]
 
 # Historical ace-based ratings computed from the public match archive
-# (tools/compute_speed.py). Published readings win one by one, not season by season: the
-# published table is a rolling 52-week window that straddles two calendar years.
+# (tools/compute_speed.py). On overlaps, the calibrated value is primary and the original
+# Tennis Abstract value is retained as a published comparison. TA-only values remain fallbacks.
 COMPUTED = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
 
 # Events in progress. Carried in the bundled asset so the app shows them without a refresh.
@@ -183,10 +183,34 @@ for tid, date, speed, ace in SPEED:
                      "date": date, "src": "tennisabstract"})
 
 computed_n = 0
+published_overlap_n = 0
 if os.path.exists(COMPUTED):
     hist = json.load(open(COMPUTED))
     published_keys = {(r["t"], r["s"]) for r in readings
                       if "speed" in r and r["src"] == "tennisabstract"}
+    computed_by_key = {
+        (tid, int(season)): values
+        for season, events in hist["seasons"].items()
+        for tid, values in events.items()
+        if tid in known
+    }
+
+    # Upgrade the primary value on every overlap while preserving the published figure.
+    for reading in readings:
+        if reading.get("src") != "tennisabstract" or reading.get("speed") is None:
+            continue
+        values = computed_by_key.get((reading["t"], reading["s"]))
+        if values is None:
+            continue
+        reading["publishedSpeed"] = reading["speed"]
+        reading["speed"] = round(values["speed"], 2)
+        reading["ace"] = round(values["ace"], 1)
+        reading["matches"] = values.get("matches")
+        reading["src"] = "computed"
+        computed_n += 1
+        published_overlap_n += 1
+
+    # Add archive calculations where the published table has no event-season value.
     for season, events in hist["seasons"].items():
         year = int(season)
         for tid, values in events.items():
@@ -196,6 +220,7 @@ if os.path.exists(COMPUTED):
                 "t": tid, "s": year,
                 "speed": round(values["speed"], 2),
                 "ace": round(values["ace"], 1),
+                "matches": values.get("matches"),
                 "src": "computed",
             })
             computed_n += 1
@@ -280,7 +305,8 @@ with open(out, "w") as f:
 
 cpi_n = len([r for r in readings if "cpi" in r])
 speed_n = len([r for r in readings if "speed" in r])
-print(f"{len(tournaments)} tournaments, {cpi_n} CPI readings, {speed_n} speed readings, {computed_n} computed")
+print(f"{len(tournaments)} tournaments, {cpi_n} CPI readings, {speed_n} primary speed readings, "
+      f"{computed_n} calibrated calculations ({published_overlap_n} with TA comparisons)")
 print("seasons with CPI:", sorted({r['s'] for r in readings if 'cpi' in r}))
 both = {r['t'] for r in readings if 'cpi' in r and r['s'] == 2026} & {r['t'] for r in readings if 'speed' in r}
 print("2026 events with both metrics:", len(both), sorted(both))

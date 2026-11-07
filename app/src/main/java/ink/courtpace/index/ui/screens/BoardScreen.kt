@@ -138,7 +138,7 @@ fun BoardScreen(
                 Metric.CPI ->
                     "Physical bounce readings from Hawk-Eye, ${ranking.size} events in $season."
                 Metric.SPEED ->
-                    "Ace rate against a tour-average surface, ${ranking.size} events in $season."
+                    "Calibrated ace rate, with Tennis Abstract references where available, ${ranking.size} events in $season."
             },
             style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
             color = colors.textDim,
@@ -250,7 +250,9 @@ fun BoardScreen(
                     metric = metric,
                     min = min,
                     max = max,
-                    live = data.isLive(row.tournament.id),
+                    live = metric == Metric.SPEED && data.speedSource(row.tournament.id, season) == "live",
+                    speedSource = if (metric == Metric.SPEED) data.speedSource(row.tournament.id, season) else null,
+                    publishedSpeed = if (metric == Metric.SPEED) data.publishedSpeed(row.tournament.id, season) else null,
                     onClick = { onOpen(row.tournament) },
                 )
                 Spacer(Modifier.height(8.dp))
@@ -267,8 +269,9 @@ fun BoardScreen(
             text = when (metric) {
                 Metric.CPI -> "Court Pace Index from the courtspeed.com database, compiled from ATP and " +
                     "Tennis TV broadcast data. Centre-court readings."
-                Metric.SPEED -> "Published ratings adjust for the servers and returners. Live ratings use " +
-                    "completed-match ace rate against the 7.83% tour baseline; 1.00 = average."
+                Metric.SPEED -> "CALC is the calibrated server/returner-adjusted rating from archive or live matches; " +
+                    "TA is the published Tennis Abstract figure. CALC ranks wherever available, with TA shown " +
+                    "beside it as a reference; TA-only rows are labelled fallbacks. 1.00 = tour average."
             },
         )
         Spacer(Modifier.height(LocalTabBarInset.current))
@@ -530,6 +533,8 @@ private fun RankRow(
     min: Double,
     max: Double,
     live: Boolean,
+    speedSource: String?,
+    publishedSpeed: Double?,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -595,15 +600,47 @@ private fun RankRow(
             }
             Spacer(Modifier.width(12.dp))
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = PaceAnalytics.format(row.value, metric),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.8).sp,
-                    ),
-                    color = colors.text,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = PaceAnalytics.format(row.value, metric),
+                            style = TextStyle(
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.8).sp,
+                            ),
+                            color = colors.text,
+                        )
+                        if (metric == Metric.SPEED && speedSource != null) {
+                            Text(
+                                text = when (speedSource) {
+                                    "live" -> "LIVE"
+                                    "computed" -> "CALC"
+                                    else -> "TA"
+                                },
+                                style = TextStyle(fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                                color = colors.textFaint,
+                            )
+                        }
+                    }
+                    if (metric == Metric.SPEED && publishedSpeed != null && speedSource != "tennisabstract") {
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = PaceAnalytics.format(publishedSpeed, metric),
+                                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                color = colors.textDim,
+                            )
+                            Text(
+                                text = "TA",
+                                style = TextStyle(fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                                color = colors.textFaint,
+                            )
+                        }
+                    }
+                }
                 Spacer(Modifier.height(4.dp))
                 ValueBadge(text = PaceAnalytics.label(row.value, metric), color = accent)
             }

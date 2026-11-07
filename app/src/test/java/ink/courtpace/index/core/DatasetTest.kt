@@ -68,23 +68,32 @@ class DatasetTest {
         val cpi = data.dataset.readings.count { it.cpi != null }
         val speed = data.dataset.readings.count { it.speed != null }
         assertTrue("CPI coverage dropped below its 106-reading baseline: $cpi", cpi >= 106)
-        assertTrue("Speed coverage dropped below its 497-reading baseline: $speed", speed >= 497)
+        assertTrue("Speed coverage dropped below its 716-reading baseline: $speed", speed >= 716)
         assertEquals(2012, data.seasons.first())
         assertEquals(2026, data.seasons.last())
     }
 
     @Test
-    fun `speed history is split cleanly between published and computed`() {
-        val published = data.dataset.readings.filter { it.speed != null && it.src == "tennisabstract" }
+    fun `calibrated readings lead and published values remain available as comparisons`() {
+        val published = data.dataset.readings.filter {
+            it.speed != null && (it.src == "tennisabstract" || it.publishedSpeed != null)
+        }
         val computed = data.dataset.readings.filter { it.speed != null && it.src == "computed" }
         assertTrue("published coverage unexpectedly shrank: ${published.size}", published.size >= 62)
-        assertTrue("computed coverage unexpectedly shrank: ${computed.size}", computed.size >= 435)
-        // The published table is a rolling 52-week window, so it straddles two seasons.
+        assertTrue("calculated coverage unexpectedly shrank: ${computed.size}", computed.size >= 685)
         assertEquals(setOf(2025, 2026), published.map { it.s }.toSet())
-        assertTrue(computed.all { it.s in 2012..2025 })
-        // No season is claimed twice for the same event.
-        val publishedKeys = published.map { it.t to it.s }.toSet()
-        assertTrue(computed.none { (it.t to it.s) in publishedKeys })
+        assertTrue(computed.all { it.s in 2012..2026 })
+        val comparisons = computed.filter { it.publishedSpeed != null }
+        assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
+        assertEquals(1.26, data.value("montpellier", 2026, Metric.SPEED)!!, 0.001)
+        assertEquals(1.49, data.publishedSpeed("montpellier", 2026)!!, 0.001)
+        assertEquals("computed", data.speedSource("montpellier", 2026))
+        val taOnly = data.dataset.readings.first {
+            it.s == 2026 && it.src == "tennisabstract" && it.speed != null
+        }
+        assertEquals("tennisabstract", data.speedSource(taOnly.t, taOnly.s))
+        assertEquals(taOnly.speed, data.value(taOnly.t, taOnly.s, Metric.SPEED))
+        assertEquals(taOnly.speed, data.publishedSpeed(taOnly.t, taOnly.s))
     }
 
     @Test

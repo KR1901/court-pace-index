@@ -1298,18 +1298,22 @@
   {
    "t": "montpellier",
    "s": 2026,
-   "speed": 1.49,
-   "ace": 19.8,
+   "speed": 1.26,
+   "ace": 14.2,
    "date": "2026-02-02",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.49,
+   "matches": 27
   },
   {
    "t": "dallas",
    "s": 2026,
-   "speed": 1.45,
-   "ace": 16.5,
+   "speed": 1.23,
+   "ace": 13.7,
    "date": "2026-02-09",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.45,
+   "matches": 31
   },
   {
    "t": "chengdu",
@@ -1322,10 +1326,12 @@
   {
    "t": "atpfinals",
    "s": 2025,
-   "speed": 1.44,
-   "ace": 11.7,
+   "speed": 1.36,
+   "ace": 9.8,
    "date": "2025-11-09",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.44,
+   "matches": 15
   },
   {
    "t": "hangzhou",
@@ -1338,26 +1344,32 @@
   {
    "t": "athens",
    "s": 2025,
-   "speed": 1.34,
-   "ace": 14.5,
+   "speed": 1.45,
+   "ace": 11.9,
    "date": "2025-11-02",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.34,
+   "matches": 27
   },
   {
    "t": "delraybeach",
    "s": 2026,
-   "speed": 1.31,
-   "ace": 13.6,
+   "speed": 1.14,
+   "ace": 11.6,
    "date": "2026-02-16",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.31,
+   "matches": 27
   },
   {
    "t": "metz",
    "s": 2025,
-   "speed": 1.31,
-   "ace": 12.6,
+   "speed": 1.29,
+   "ace": 9.4,
    "date": "2025-11-02",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.31,
+   "matches": 27
   },
   {
    "t": "shanghai",
@@ -1378,10 +1390,12 @@
   {
    "t": "dubai",
    "s": 2026,
-   "speed": 1.29,
-   "ace": 15.9,
+   "speed": 1.3,
+   "ace": 13.2,
    "date": "2026-02-23",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.29,
+   "matches": 30
   },
   {
    "t": "nextgen",
@@ -1410,10 +1424,12 @@
   {
    "t": "miami",
    "s": 2026,
-   "speed": 1.19,
-   "ace": 12.3,
+   "speed": 1.22,
+   "ace": 10.6,
    "date": "2026-03-18",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.19,
+   "matches": 95
   },
   {
    "t": "halle",
@@ -1434,10 +1450,12 @@
   {
    "t": "brisbane",
    "s": 2026,
-   "speed": 1.17,
-   "ace": 14.6,
+   "speed": 1.16,
+   "ace": 13.3,
    "date": "2026-01-04",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.17,
+   "matches": 31
   },
   {
    "t": "eastbourne",
@@ -1450,10 +1468,12 @@
   {
    "t": "indianwells",
    "s": 2026,
-   "speed": 1.16,
-   "ace": 11.4,
+   "speed": 1.13,
+   "ace": 9,
    "date": "2026-03-04",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.16,
+   "matches": 94
   },
   {
    "t": "brussels",
@@ -1482,10 +1502,12 @@
   {
    "t": "ausopen",
    "s": 2026,
-   "speed": 1.12,
-   "ace": 11.9,
+   "speed": 1.17,
+   "ace": 9.5,
    "date": "2026-01-19",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.12,
+   "matches": 126
   },
   {
    "t": "almaty",
@@ -1506,18 +1528,22 @@
   {
    "t": "acapulco",
    "s": 2026,
-   "speed": 1.1,
-   "ace": 12.2,
+   "speed": 1.07,
+   "ace": 10.1,
    "date": "2026-02-23",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.1,
+   "matches": 31
   },
   {
    "t": "auckland",
    "s": 2026,
-   "speed": 1.1,
-   "ace": 11.8,
+   "speed": 1.16,
+   "ace": 9.5,
    "date": "2026-01-12",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.1,
+   "matches": 27
   },
   {
    "t": "wimbledon",
@@ -1546,10 +1572,12 @@
   {
    "t": "hongkong",
    "s": 2026,
-   "speed": 1.06,
-   "ace": 11.4,
+   "speed": 1.15,
+   "ace": 9.1,
    "date": "2026-01-05",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.06,
+   "matches": 27
   },
   {
    "t": "winstonsalem",
@@ -1562,10 +1590,12 @@
   {
    "t": "adelaide",
    "s": 2026,
-   "speed": 1.05,
-   "ace": 9.8,
+   "speed": 1.13,
+   "ace": 9.7,
    "date": "2026-01-12",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 1.05,
+   "matches": 26
   },
   {
    "t": "queens",
@@ -1578,10 +1608,12 @@
   {
    "t": "rio",
    "s": 2026,
-   "speed": 0.97,
-   "ace": 8.2,
+   "speed": 1.23,
+   "ace": 6.4,
    "date": "2026-02-16",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.97,
+   "matches": 31
   },
   {
    "t": "usopen",
@@ -1602,10 +1634,12 @@
   {
    "t": "paris",
    "s": 2025,
-   "speed": 0.94,
-   "ace": 10.2,
+   "speed": 0.97,
+   "ace": 8.4,
    "date": "2025-10-27",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.94,
+   "matches": 54
   },
   {
    "t": "tokyo",
@@ -1618,10 +1652,12 @@
   {
    "t": "marrakech",
    "s": 2026,
-   "speed": 0.93,
-   "ace": 8,
+   "speed": 1.39,
+   "ace": 6.4,
    "date": "2026-03-30",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.93,
+   "matches": 26
   },
   {
    "t": "gstaad",
@@ -1634,18 +1670,22 @@
   {
    "t": "doha",
    "s": 2026,
-   "speed": 0.89,
-   "ace": 9.1,
+   "speed": 0.91,
+   "ace": 7.3,
    "date": "2026-02-16",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.89,
+   "matches": 31
   },
   {
    "t": "rotterdam",
    "s": 2026,
-   "speed": 0.89,
-   "ace": 11.1,
+   "speed": 0.92,
+   "ace": 8.6,
    "date": "2026-02-09",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.89,
+   "matches": 31
   },
   {
    "t": "canada",
@@ -1658,18 +1698,22 @@
   {
    "t": "madrid",
    "s": 2026,
-   "speed": 0.86,
-   "ace": 8.7,
+   "speed": 0.98,
+   "ace": 7.2,
    "date": "2026-04-22",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.86,
+   "matches": 94
   },
   {
    "t": "santiago",
    "s": 2026,
-   "speed": 0.81,
-   "ace": 7.7,
+   "speed": 1.16,
+   "ace": 5.3,
    "date": "2026-02-23",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.81,
+   "matches": 27
   },
   {
    "t": "kitzbuhel",
@@ -1690,10 +1734,12 @@
   {
    "t": "munich",
    "s": 2026,
-   "speed": 0.7,
-   "ace": 7.2,
+   "speed": 0.81,
+   "ace": 5.3,
    "date": "2026-04-13",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.7,
+   "matches": 31
   },
   {
    "t": "bastad",
@@ -1706,42 +1752,52 @@
   {
    "t": "houston",
    "s": 2026,
-   "speed": 0.67,
-   "ace": 9,
+   "speed": 0.68,
+   "ace": 6.9,
    "date": "2026-03-30",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.67,
+   "matches": 27
   },
   {
    "t": "rome",
    "s": 2026,
-   "speed": 0.66,
-   "ace": 6.8,
+   "speed": 0.75,
+   "ace": 5.4,
    "date": "2026-05-06",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.66,
+   "matches": 94
   },
   {
    "t": "geneva",
    "s": 2026,
-   "speed": 0.65,
-   "ace": 7,
+   "speed": 0.7,
+   "ace": 6.1,
    "date": "2026-05-17",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.65,
+   "matches": 27
   },
   {
    "t": "montecarlo",
    "s": 2026,
-   "speed": 0.57,
-   "ace": 5.9,
+   "speed": 0.59,
+   "ace": 4.6,
    "date": "2026-04-05",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.57,
+   "matches": 55
   },
   {
    "t": "bucharest",
    "s": 2026,
-   "speed": 0.55,
-   "ace": 4.4,
+   "speed": 0.71,
+   "ace": 2.9,
    "date": "2026-03-30",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.55,
+   "matches": 27
   },
   {
    "t": "estoril",
@@ -1762,26 +1818,32 @@
   {
    "t": "barcelona",
    "s": 2026,
-   "speed": 0.53,
-   "ace": 5.1,
+   "speed": 0.6,
+   "ace": 4.3,
    "date": "2026-04-13",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.53,
+   "matches": 30
   },
   {
    "t": "buenosaires",
    "s": 2026,
-   "speed": 0.52,
-   "ace": 4.6,
+   "speed": 0.91,
+   "ace": 4.1,
    "date": "2026-02-09",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.52,
+   "matches": 27
   },
   {
    "t": "hamburg",
    "s": 2026,
-   "speed": 0.51,
-   "ace": 5.1,
+   "speed": 0.56,
+   "ace": 4.2,
    "date": "2026-05-17",
-   "src": "tennisabstract"
+   "src": "computed",
+   "publishedSpeed": 0.51,
+   "matches": 31
   },
   {
    "t": "lavercup",
