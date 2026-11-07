@@ -223,6 +223,32 @@ class ExpectedAceCalibrationTests(unittest.TestCase):
 
 
 class EventRawScoresCoverageTests(unittest.TestCase):
+    def test_united_cup_is_mapped_and_eligible_archive_matches_are_rated(self):
+        rows = [
+            {
+                "tourney_name": "United Cup",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "w_svpt": 80,
+                "l_svpt": 82,
+                "w_ace": 6,
+                "l_ace": 6,
+                "surface": "Hard",
+            }
+            for _ in range(10)
+        ]
+        profiles = {
+            "p1": {"serve_rate": 0.08, "concede_rate": 0.08},
+            "p2": {"serve_rate": 0.08, "concede_rate": 0.08},
+        }
+
+        raw, _, _, matches = compute_speed.event_raw_scores(
+            rows, profiles, tour_rate=0.08
+        )
+
+        self.assertIn("unitedcup", raw)
+        self.assertEqual(10, matches["unitedcup"])
+
     def test_includes_valid_positive_expected_aces_below_the_old_half_ace_floor(self):
         # Ten matches produce twenty server sides. Against an 8% tour baseline, each
         # side expects far fewer than half an ace, but the expected value is positive.
