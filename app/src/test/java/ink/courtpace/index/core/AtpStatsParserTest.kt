@@ -120,7 +120,7 @@ class AtpStatsParserTest {
     private val baseline = LiveSpeedBaseline(
         season = 2026,
         normalisation = 1.0,
-            tourAceRate = 0.08,
+        tourAceRate = 0.08,
         profiles = listOf(
             LiveSpeedPlayerProfile("A. Server", serveRate = 0.15, concedeRate = 0.10),
             LiveSpeedPlayerProfile("B. Returner", serveRate = 0.25, concedeRate = 0.20),
