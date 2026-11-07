@@ -106,12 +106,14 @@ fun BoardScreen(
     val top = ranking.firstOrNull()
     val bottom = ranking.lastOrNull()
     val average = PaceAnalytics.average(
-        data, season, metric, speedSources = comparableSpeedSources,
+        data, season, metric, speedSources = comparableSpeedSources, surfaces = surfaces,
     )
     val speedSourceCounts = if (metric == Metric.SPEED) {
-        data.entries(season, metric).groupingBy { (tournament, _) ->
-            data.speedSource(tournament.id, season)
-        }.eachCount()
+        data.entries(season, metric)
+            .filter { surfaces.isEmpty() || it.first.surface in surfaces }
+            .groupingBy { (tournament, _) ->
+                data.speedSource(tournament.id, season)
+            }.eachCount()
     } else {
         emptyMap()
     }
