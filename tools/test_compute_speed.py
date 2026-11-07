@@ -190,10 +190,35 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual(list(range(2025, 2015, -1)), visited)
 
 
+class ExpectedAceCalibrationTests(unittest.TestCase):
+    def test_average_server_and_returner_expect_tour_average_ace_rate(self):
+        expected = compute_speed.expected_calibrated_aces(
+            serve_rate=0.08,
+            concede_rate=0.08,
+            tour_rate=0.08,
+            service_points=75,
+        )
+        self.assertAlmostEqual(6.0, expected, places=12)
+
+    def test_calibration_accounts_for_server_returner_and_tour_tendencies(self):
+        average = compute_speed.expected_calibrated_aces(0.08, 0.08, 0.08, 75)
+        stronger_server = compute_speed.expected_calibrated_aces(0.15, 0.08, 0.08, 75)
+        stronger_returner = compute_speed.expected_calibrated_aces(0.08, 0.15, 0.08, 75)
+        faster_tour = compute_speed.expected_calibrated_aces(0.08, 0.08, 0.12, 75)
+
+        self.assertGreater(stronger_server, average)
+        self.assertGreater(stronger_returner, average)
+        self.assertLess(faster_tour, average)
+
+    def test_invalid_endpoint_rates_are_not_calibrated(self):
+        self.assertEqual(0.0, compute_speed.expected_calibrated_aces(0.0, 0.08, 0.08, 75))
+        self.assertEqual(0.0, compute_speed.expected_calibrated_aces(0.08, 0.08, 1.0, 75))
+
+
 class EventRawScoresCoverageTests(unittest.TestCase):
     def test_includes_valid_positive_expected_aces_below_the_old_half_ace_floor(self):
-        # Ten matches produce twenty server sides. Each side expects far fewer than
-        # half an ace, but the expected value is positive and the observation is valid.
+        # Ten matches produce twenty server sides. Against an 8% tour baseline, each
+        # side expects far fewer than half an ace, but the expected value is positive.
         rows = [
             {
                 "tourney_name": "Paris Masters",
@@ -212,10 +237,9 @@ class EventRawScoresCoverageTests(unittest.TestCase):
             "p2": {"serve_rate": 0.01, "concede_rate": 0.01},
         }
 
-        raw, _, _, matches = compute_speed.event_raw_scores(rows, profiles)
+        raw, _, _, matches = compute_speed.event_raw_scores(rows, profiles, tour_rate=0.08)
 
-        joint = 0.01 * 0.01
-        expected = joint / (joint + (1 - 0.01) * (1 - 0.01)) * 80
+        expected = compute_speed.expected_calibrated_aces(0.01, 0.01, 0.08, 80)
         self.assertGreater(expected, 0.0)
         self.assertLess(expected, 0.5)
         self.assertIn("paris", raw)
