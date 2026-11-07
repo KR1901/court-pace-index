@@ -89,7 +89,7 @@ class DatasetTest {
             it.t == "montpellier" && it.s == 2026
         }
         assertEquals(montpellier.speed, data.value("montpellier", 2026, Metric.SPEED))
-        assertEquals(montpellier.publishedSpeed, data.publishedSpeed("montpellier", 2026)!!, 0.001)
+        assertEquals(montpellier.publishedSpeed!!, data.publishedSpeed("montpellier", 2026)!!, 0.001)
         assertEquals(1.49, montpellier.publishedSpeed!!, 0.001)
         assertEquals("computed", data.speedSource("montpellier", 2026))
         val taOnly = data.dataset.readings.first {
