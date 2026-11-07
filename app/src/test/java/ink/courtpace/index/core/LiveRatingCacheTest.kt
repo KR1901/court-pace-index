@@ -177,7 +177,7 @@ class LiveRatingCacheTest {
             matches = 49,
             aceRate = 0.10,
             asOf = "2026-11-07T00:00:00Z",
-            methodVersion = 4,
+            methodVersion = 5,
             baselineGenerated = "2026-11-06T19:25:21Z",
             discoveredMatches = 49,
             adjustedServerSides = 94,
@@ -186,8 +186,8 @@ class LiveRatingCacheTest {
 
         val restored = CachedLiveRating.fromJson(previous.toJson())!!
 
-        assertEquals(4, restored.methodVersion)
-        assertEquals(5, CachedLiveRating.CURRENT_METHOD_VERSION)
+        assertEquals(5, restored.methodVersion)
+        assertEquals(6, CachedLiveRating.CURRENT_METHOD_VERSION)
         assertTrue(restored.methodVersion != CachedLiveRating.CURRENT_METHOD_VERSION)
         assertNull(restored.toAceRatingResultOrNull())
     }
