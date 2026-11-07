@@ -143,7 +143,7 @@ class PlayerRateEligibilityTests(unittest.TestCase):
                     "l_ace": 8,
                 })
 
-        serve, _concede, _tour = comparison.player_rates(rows)
+        serve, _concede, _surface_concede, _tour = comparison.player_rates(rows)
 
         self.assertAlmostEqual(0.10, serve["player"])
 
