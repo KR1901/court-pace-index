@@ -35,6 +35,8 @@ jobs:
           key: tennis-history-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py', 'tools/compare_speed_variants.py') }}
           restore-keys: |
             tennis-history-${{ runner.os }}-
+      - name: Test production expected-aces calculation
+        run: python3 -m unittest discover -s tools -p "test_compute_speed.py" -v
       - name: Test comparison methodology
         run: python3 -m unittest discover -s tools -p "test_compare_speed_variants.py" -v
       - name: Compare all archive seasons (1991-current) against annual Tennis Abstract tables
