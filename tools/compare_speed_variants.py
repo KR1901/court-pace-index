@@ -37,16 +37,30 @@ import math
 import os
 import random
 import sys
+import time
+import unicodedata
+from datetime import date
 from collections import defaultdict
+from html.parser import HTMLParser
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from compute_speed import LEVELS, MIN_MATCHES_PER_SURFACE, NAMES, load, num  # noqa: E402
+from compute_speed import LEVELS, MIN_MATCHES_PER_SURFACE, load, num  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DATASET = os.path.join(ROOT, "app", "src", "main", "assets", "pace_dataset.json")
 VARIANTS = ("drop", "floor", "calibrated", "pooled")
 FLOOR = 0.5
 MIN_SIDES = 20
+FIRST_ARCHIVE_SEASON = 2012
+TA_URL = "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year={year}"
+TA_CACHE = os.path.join(ROOT, ".cache", "tennisabstract")
+TA_REQUEST_DELAY_SECONDS = 1.0
+
+
+def datetime_now_year():
+    return date.today().year
 
 
 # ---------------------------------------------------------------- player profiles
@@ -134,9 +148,10 @@ def season_variants(rows):
     diag = {"sides": 0, "uncal_le_floor": 0, "cal_sides": 0, "cal_le_floor": 0}
 
     for r in usable:
-        tid = NAMES.get((r["tourney_name"] or "").strip())
-        if tid is None:
+        raw_name = (r["tourney_name"] or "").strip()
+        if not raw_name:
             continue
+        tid = tournament_key(raw_name)
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
         w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
         wid, lid = r["winner_id"], r["loser_id"]
@@ -257,6 +272,134 @@ def interval(values):
     return percentile(clean, 0.025), percentile(clean, 0.975)
 
 
+# ---------------------------------------------------------------- Tennis Abstract references
+
+def tournament_key(name):
+    """Create a source-independent event key from an event's displayed name."""
+    decomposed = unicodedata.normalize("NFKD", name).casefold()
+    key = "".join(char for char in decomposed if char.isalnum())
+    aliases = {
+        "indianwellstournament": "indianwells",
+        "indianwellsmaster": "indianwells",
+        "indianwellsmasterstournament": "indianwells",
+        "usopen": "usopen",
+        "unitedstatesopen": "usopen",
+        "frenchopen": "rolandgarros",
+        "rolandgarros": "rolandgarros",
+        "atpfinals": "tourfinals",
+        "nittoatpfinals": "tourfinals",
+        "nextgenfinals": "nextgenfinals",
+        "nextgenfinals": "nextgenfinals",
+        "rio": "riodejaneiro",
+        "riodejaneiro": "riodejaneiro",
+        "shertogenbosch": "shertogenbosch",
+        "sherogenbosch": "shertogenbosch",
+    }
+    return aliases.get(key, key)
+
+
+class SurfaceSpeedHtmlParser(HTMLParser):
+    """Extract table rows without depending on pandas or a third-party HTML package."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.rows = []
+        self._row = None
+        self._cell = None
+        self._cell_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag == "tr":
+            self._row = []
+        elif tag in ("td", "th") and self._row is not None and self._cell is None:
+            self._cell = []
+
+    def handle_data(self, data):
+        if self._cell is not None:
+            self._cell.append(data)
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag in ("td", "th") and self._cell is not None:
+            self._row.append(" ".join(" ".join(self._cell).split()))
+            self._cell = None
+        elif tag == "tr" and self._row is not None:
+            if self._row:
+                self.rows.append(self._row)
+            self._row = None
+            self._cell = None
+
+
+def parse_tennis_abstract_page(html):
+    """Parse {normalised tournament key: published speed} from one annual TA page."""
+    parser = SurfaceSpeedHtmlParser()
+    parser.feed(html)
+    readings = {}
+    for cells in parser.rows:
+        if len(cells) < 4:
+            continue
+        # The current TA table is Date | Tournament | Surface | Ace% | Surface Speed.
+        if len(cells) < 5:
+            continue
+        event_name = cells[1]
+        try:
+            speed = float(cells[-1].strip().replace(",", ""))
+        except ValueError:
+            continue
+        if not event_name or not math.isfinite(speed) or not 0.0 < speed < 3.0:
+            continue
+        readings[tournament_key(event_name)] = speed
+    return readings
+
+
+def fetch_tennis_abstract_season(year, cache_dir=TA_CACHE):
+    """Fetch and cache the official annual reference table, with gentle retry on rate limits."""
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_path = os.path.join(cache_dir, f"surface-speed-{year}.html")
+    html = None
+    if os.path.exists(cache_path):
+        with open(cache_path, encoding="utf-8", errors="replace") as source:
+            html = source.read()
+
+    if html is None or not parse_tennis_abstract_page(html):
+        request = Request(
+            TA_URL.format(year=year),
+            headers={"User-Agent": "CourtPaceIndex-formula-analysis/1.0 (research; contact via GitHub)"},
+        )
+        last_error = None
+        for attempt in range(4):
+            try:
+                with urlopen(request, timeout=45) as response:
+                    html = response.read().decode("utf-8", errors="replace")
+                break
+            except (HTTPError, URLError, TimeoutError) as error:
+                last_error = error
+                if isinstance(error, HTTPError) and error.code not in (429, 500, 502, 503, 504):
+                    raise
+                time.sleep(2 ** attempt)
+        else:
+            raise RuntimeError(f"could not fetch Tennis Abstract {year}: {last_error}")
+        if not parse_tennis_abstract_page(html):
+            raise ValueError(f"could not parse Tennis Abstract annual table for {year}")
+        with open(cache_path, "w", encoding="utf-8") as destination:
+            destination.write(html)
+        time.sleep(TA_REQUEST_DELAY_SECONDS)
+
+    return parse_tennis_abstract_page(html)
+
+
+def fetch_tennis_abstract_speeds(seasons, cache_dir=TA_CACHE):
+    """Fetch annual published readings for the requested seasons (same calendar-year keys)."""
+    result = {}
+    for season in seasons:
+        readings = fetch_tennis_abstract_season(season, cache_dir)
+        if readings:
+            result[season] = readings
+        print(f"Tennis Abstract {season}: {len(readings)} published event readings")
+    return result
+
+
 # ---------------------------------------------------------------- main
 
 def published_speeds(dataset_path, seasons):
@@ -276,8 +419,12 @@ def published_speeds(dataset_path, seasons):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dataset", default=DEFAULT_DATASET)
+    ap.add_argument("--reference-source", choices=("tennisabstract", "dataset"),
+                    default="tennisabstract",
+                    help="fetch annual Tennis Abstract tables, or use bundled dataset references")
+    ap.add_argument("--ta-cache-dir", default=TA_CACHE)
     ap.add_argument("--seasons", type=int, nargs="*", default=None,
-                    help="seasons to score (default: every season with published readings)")
+                    help=f"seasons to score (default: {FIRST_ARCHIVE_SEASON} through current year)")
     ap.add_argument("--boot", type=int, default=2000, help="bootstrap resamples")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--baseline", choices=VARIANTS, default="drop",
@@ -286,13 +433,17 @@ def main():
     if args.boot < 1:
         ap.error("--boot must be at least 1")
 
-    published = published_speeds(args.dataset, set(args.seasons) if args.seasons else None)
+    seasons = args.seasons if args.seasons else list(range(FIRST_ARCHIVE_SEASON, datetime_now_year() + 1))
+    if args.reference_source == "tennisabstract":
+        published = fetch_tennis_abstract_speeds(seasons, args.ta_cache_dir)
+    else:
+        published = published_speeds(args.dataset, set(seasons))
     if not published:
         sys.exit("no published Tennis Abstract readings found to score against")
 
     pairs = {v: [] for v in VARIANTS}       # (ours, published) pooled across seasons
     keys = {v: [] for v in VARIANTS}        # (season, tournament) in the same order
-    print("season  TA events  common  sides  uncal<=0.5  cal<=0.5")
+    print("season  TA events  matched  common  sides  uncal<=0.5  cal<=0.5")
     for season in sorted(published):
         try:
             rows = load(season)
@@ -300,12 +451,13 @@ def main():
             print(f"{season}: could not load match data ({error})")
             continue
         raw_variants, diag = season_variants(rows)
+        published_matches = set(published[season]) & set(raw_variants["floor"])
         normalised, common = normalise_on_common_events(raw_variants, published[season])
         share_un = diag["uncal_le_floor"] / diag["sides"] if diag["sides"] else float("nan")
         share_cal = diag["cal_le_floor"] / diag["cal_sides"] if diag["cal_sides"] else float("nan")
         print(
-            f"{season}   {len(published[season]):9d}  {len(common):6d}  "
-            f"{diag['sides']:5d}   {share_un:8.1%}  {share_cal:8.1%}"
+            f"{season}   {len(published[season]):9d}  {len(published_matches):7d}  "
+            f"{len(common):6d}  {diag['sides']:5d}   {share_un:8.1%}  {share_cal:8.1%}"
         )
         if not common:
             continue
@@ -330,12 +482,25 @@ def main():
         index = {k: p for k, p in zip(keys[v], pairs[v])}
         table[v] = [index[k] for k in shared]
 
+    # Two-stage paired bootstrap: resample calendar seasons, then events within each
+    # selected season. Each variant uses the identical sampled event indices.
+    by_season = defaultdict(list)
+    for index, (season, _event_id) in enumerate(shared):
+        by_season[season].append(index)
+    available_seasons = sorted(by_season)
     rng = random.Random(args.seed)
-    draws = [[rng.randrange(len(shared)) for _ in shared] for _ in range(args.boot)]
+    draws = []
+    for _ in range(args.boot):
+        selected_seasons = [rng.choice(available_seasons) for _ in available_seasons]
+        sampled_indices = []
+        for season in selected_seasons:
+            event_indices = by_season[season]
+            sampled_indices.extend(rng.choice(event_indices) for _ in event_indices)
+        draws.append(sampled_indices)
     boot = {v: [metrics([table[v][i] for i in d]) for d in draws] for v in VARIANTS}
 
-    print(f"\nScored on {len(shared)} events rated by every variant and matched to Tennis Abstract; "
-          f"{args.boot} paired bootstrap resamples\n")
+    print(f"\nScored on {len(shared)} events across {len(available_seasons)} seasons, rated by every variant "
+          f"and matched to Tennis Abstract; {args.boot} two-stage paired bootstrap resamples\n")
     metric_labels = (
         ("r", "Pearson r"),
         ("rho", "Spearman rho"),
@@ -378,7 +543,8 @@ def main():
     print(
         "\nInterpretation: higher r/rho and lower MAE are closer to the published reference. "
         "Bias near zero indicates less systematic over/under-rating. Agreement with Tennis "
-        "Abstract is a reference comparison, not proof of a better physical court-speed measure."
+        "Abstract is a reference comparison, not proof of a better physical court-speed measure. "
+        "Bootstrap resampling is clustered by season, then by event within season."
     )
 
 
