@@ -281,8 +281,10 @@ doc = {
                 "metric": "Speed",
                 "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); "
                           "the current season prefers the TennisMyLife ATP Match Database. Both use "
-                          "the season-calibrated server/returner odds-ratio method, 0.5 expected-ace "
-                          "floor and season normalisation. TML data use is non-commercial only.",
+                          "surface-consistent server and returner profiles (clay 1/3, hard/grass 2/3; "
+                          "pooled returner fallback without a qualified surface sample), the "
+                          "season-calibrated odds-ratio method, 0.5 expected-ace floor and season "
+                          "normalisation. TML data use is non-commercial only.",
                 "url": "https://github.com/Aneeshers/tennis-sackmann-archive",
             },
         ],
