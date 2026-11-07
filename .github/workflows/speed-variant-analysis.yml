@@ -9,6 +9,7 @@ on:
       - "tools/compute_speed.py"
       - "tools/compare_speed_variants.py"
       - "tools/test_compare_speed_variants.py"
+      - "tools/test_compute_speed.py"
       - "app/src/main/assets/pace_dataset.json"
   workflow_dispatch:
 
@@ -42,7 +43,7 @@ jobs:
       - name: Compare all archive seasons (1991-current) against annual Tennis Abstract tables
         run: |
           set -euo pipefail
-          python3 tools/compare_speed_variants.py --seasons $(seq 1991 "$(date +%Y)") --reference-source tennisabstract --boot 5000 --baseline drop | tee formula-comparison.txt
+          python3 tools/compare_speed_variants.py --seasons $(seq 1991 "$(date +%Y)") --reference-source tennisabstract --boot 5000 --baseline surface_returner | tee formula-comparison.txt
           cat formula-comparison.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Upload comparison output
         uses: actions/upload-artifact@v4
