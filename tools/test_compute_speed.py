@@ -382,3 +382,57 @@ class CurrentSeasonSourceTests(unittest.TestCase):
         self.assertEqual("shanghai", compute_speed.NAMES["Shanghai"])
         self.assertEqual("shertogenbosch", compute_speed.NAMES["'s-Hertogenbosch"])
         self.assertEqual("lavercup", compute_speed.NAMES["Laver Cup"])
+
+
+class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
+    @staticmethod
+    def rows(surface_counts):
+        rows = []
+        index = 0
+        for surface, match_count, opponent_ace_rate in surface_counts:
+            for _ in range(match_count):
+                index += 1
+                rows.append({
+                    "tourney_name": "Returner Profile Test",
+                    "surface": surface,
+                    "winner_id": "returner",
+                    "winner_name": "Returner",
+                    "loser_id": f"server-{index}",
+                    "loser_name": f"Server {index}",
+                    "w_svpt": 100,
+                    "l_svpt": 100,
+                    "w_ace": 8,
+                    "l_ace": int(opponent_ace_rate * 100),
+                })
+        return rows
+
+    def test_returner_profile_uses_same_clay_hard_grass_weighting_as_server(self):
+        rows = self.rows([("Clay", 3, 0.10), ("Hard", 3, 0.20)])
+        player = compute_speed.player_rates(rows)["returner"]
+
+        self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, player["concede_rate"])
+        self.assertAlmostEqual(0.15, player["pooled_concede_rate"])
+        self.assertEqual("surface-qualified", player["concede_rate_source"])
+        self.assertEqual(6, player["concede_matches"])
+        self.assertEqual(600.0, player["concede_service_points"])
+
+    def test_qualified_returner_surface_survives_small_secondary_surface_sample(self):
+        rows = self.rows([("Clay", 3, 0.10), ("Hard", 2, 0.20)])
+        player = compute_speed.player_rates(rows)["returner"]
+
+        self.assertAlmostEqual(0.10, player["concede_rate"])
+        self.assertAlmostEqual(0.14, player["pooled_concede_rate"])
+        self.assertEqual("surface-qualified", player["concede_rate_source"])
+        self.assertEqual(3, player["concede_matches"])
+        self.assertEqual(300.0, player["concede_service_points"])
+
+    def test_returner_profile_falls_back_to_pooled_rate_if_no_surface_qualifies(self):
+        rows = self.rows([("Clay", 2, 0.10), ("Hard", 2, 0.20)])
+        player = compute_speed.player_rates(rows)["returner"]
+
+        self.assertAlmostEqual(0.15, player["concede_rate"])
+        self.assertAlmostEqual(0.15, player["pooled_concede_rate"])
+        self.assertEqual("pooled-fallback", player["concede_rate_source"])
+        self.assertEqual(0, player["concede_matches"])
+
+
