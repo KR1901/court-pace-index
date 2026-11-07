@@ -473,14 +473,15 @@ def dedupe_live_profiles(profiles):
             profile.get("serve_rate_sample_matches") or 0,
         )
         existing = chosen.get(key)
-        if existing is None or rank > existing["_serve_rank"]:
+        if existing is None:
             candidate = dict(profile)
             candidate["_serve_rank"] = rank
             chosen[key] = candidate
+            continue
 
-        # If duplicate IDs exist for one name, prefer a surface-qualified returner
-        # profile, then the newest season and largest qualified surface sample.
-        candidate = chosen[key]
+        # Select serve and returner tendencies independently. The best serve record
+        # must not erase a better surface-qualified returner record from another ID.
+        candidate = existing
         concede_priority = {"surface-qualified": 2, "pooled-fallback": 1}
         candidate_concede_rank = (
             concede_priority.get(candidate.get("concede_rate_source"), 0),
@@ -498,6 +499,19 @@ def dedupe_live_profiles(profiles):
             candidate["concede_rate_source"] = profile.get("concede_rate_source")
             candidate["concede_matches"] = profile.get("concede_matches", 0)
             candidate["concede_service_points"] = profile.get("concede_service_points", 0.0)
+
+        if rank > candidate["_serve_rank"]:
+            best_concede = {
+                field: candidate.get(field)
+                for field in (
+                    "concede_rate", "concede_rate_season", "concede_rate_source",
+                    "concede_matches", "concede_service_points",
+                )
+            }
+            replacement = dict(profile)
+            replacement["_serve_rank"] = rank
+            replacement.update(best_concede)
+            chosen[key] = replacement
 
     result = []
     for profile in chosen.values():
