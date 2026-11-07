@@ -10,6 +10,7 @@ on:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
       - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/DatasetTest.kt'
       - 'tools/build_dataset.py'
       - '.github/workflows/refresh-data.yml'
   schedule:
