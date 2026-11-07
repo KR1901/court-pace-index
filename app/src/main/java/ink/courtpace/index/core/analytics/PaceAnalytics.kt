@@ -134,9 +134,11 @@ object PaceAnalytics {
         metric: Metric,
         surface: Surface? = null,
         speedSources: Set<String>? = null,
+        surfaces: Set<Surface> = emptySet(),
     ): Double? {
         val values = data.entries(season, metric)
             .filter { surface == null || it.first.surface == surface }
+            .filter { surfaces.isEmpty() || it.first.surface in surfaces }
             .filter {
                 speedSources == null || data.speedSource(it.first.id, season) in speedSources
             }
