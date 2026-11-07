@@ -367,15 +367,40 @@ def dedupe_live_profiles(profiles):
     return result
 
 
-def event_raw_scores(usable, profiles, exclude_event_ids=None):
-    """
-    Apply the historical match-level expected-aces formula to each event.
+def tour_average_ace_rate(usable):
+    """Season-wide ace probability per service point across usable tour-level matches."""
+    total_aces = sum(num(r["w_ace"]) + num(r["l_ace"]) for r in usable)
+    total_points = sum(num(r["w_svpt"]) + num(r["l_svpt"]) for r in usable)
+    return total_aces / total_points if total_points > 0 else None
 
-    Returns raw event means before the season-wide normalisation. The caller can
-    exclude an event (e.g. a tournament still in progress) without changing the
-    player-profile calculation.
+
+def expected_calibrated_aces(serve_rate, concede_rate, tour_rate, service_points):
+    """Log5/odds-ratio expected aces calibrated to the season tour-average ace rate."""
+    if not all(0.0 < rate < 1.0 for rate in (serve_rate, concede_rate, tour_rate)):
+        return 0.0
+    server_odds = serve_rate / (1.0 - serve_rate)
+    returner_odds = concede_rate / (1.0 - concede_rate)
+    tour_odds = tour_rate / (1.0 - tour_rate)
+    matchup_odds = (server_odds * returner_odds) / tour_odds
+    if not math.isfinite(matchup_odds) or matchup_odds <= 0.0:
+        return 0.0
+    expected_ace_rate = matchup_odds / (1.0 + matchup_odds)
+    return expected_ace_rate * service_points
+
+
+def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
+    """
+    Apply the calibrated match-level expected-aces formula to each event.
+
+    Expected ace odds multiply the server's odds by the returner's concession odds and
+    divide by the season tour-average ace odds. Returns raw event means before the
+    season-wide normalisation.
     """
     excluded = exclude_event_ids or set()
+    if tour_rate is None:
+        tour_rate = tour_average_ace_rate(usable)
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        return {}, defaultdict(float), defaultdict(float), defaultdict(int)
     per_event = defaultdict(list)
     event_aces = defaultdict(float); event_sv = defaultdict(float)
     event_matches = defaultdict(int)
@@ -396,13 +421,9 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None):
             qr = profiles.get(returner, {}).get("concede_rate")
             if ps is None or qr is None:
                 continue
-            denom = ps * qr + (1 - ps) * (1 - qr)
-            if denom <= 0:
-                continue
-            expected = ((ps * qr) / denom) * sv
-            # Keep every mathematically valid player-server side. A 0.5-ace floor is
-            # applied to the expected count (rather than dropping the side) so tiny
-            # expectations cannot dominate the event mean. Android uses the same rule.
+            expected = expected_calibrated_aces(ps, qr, tour_rate, sv)
+            # Keep every mathematically valid player-server side. Calibrated expected-ace
+            # counts below 0.5 are floored at 0.5 rather than dropping valid observations.
             if expected <= MIN_EXPECTED_ACES:
                 continue
             expected = max(expected, EXPECTED_ACES_FLOOR)
@@ -416,7 +437,10 @@ def season_ratings(year, rows):
     """Returns {tournament_id: {'speed': r, 'ace': pct, 'matches': n}} for one season."""
     usable = valid_rows(rows)
     profiles = player_rates(usable)
-    raw, event_aces, event_sv, event_matches = event_raw_scores(usable, profiles)
+    tour_rate = tour_average_ace_rate(usable)
+    raw, event_aces, event_sv, event_matches = event_raw_scores(
+        usable, profiles, tour_rate=tour_rate
+    )
     if not raw:
         return {}
     season_mean = sum(raw.values()) / len(raw)
@@ -475,12 +499,18 @@ def main():
         except HTTPError:
             profile_rows = []
         profiles = player_rates(profile_rows)
-        raw_events, _, _, _ = event_raw_scores(profile_rows, profiles)
+        tour_rate = tour_average_ace_rate(profile_rows)
+        raw_events, _, _, _ = event_raw_scores(
+            profile_rows, profiles, tour_rate=tour_rate
+        )
         if len(raw_events) < 5:
             profile_year = current_year - 1
             profile_rows = valid_rows(load(profile_year))
             profiles = player_rates(profile_rows)
-            raw_events, _, _, _ = event_raw_scores(profile_rows, profiles)
+            tour_rate = tour_average_ace_rate(profile_rows)
+            raw_events, _, _, _ = event_raw_scores(
+                profile_rows, profiles, tour_rate=tour_rate
+            )
         if not raw_events:
             raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events in current or previous season")
         normalisation = sum(raw_events.values()) / len(raw_events)
@@ -525,9 +555,12 @@ def main():
             "withoutServeRate": sum(p["serveRate"] is None for p in live_profile_rows),
             "withoutConcedeRate": sum(p["concedeRate"] is None for p in live_profile_rows),
         }
+        if tour_rate is None or not 0.0 < tour_rate < 1.0:
+            raise RuntimeError(f"cannot build calibrated live baseline for {current_year}: invalid tour-average ace rate")
         baseline = {
             "season": current_year,
             "profileSeason": profile_year,
+            "tourAceRate": tour_rate,
             "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
             "profiles": live_profile_rows,
@@ -553,9 +586,9 @@ def main():
         out_path = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.json")
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
-            "generated": "2026-11-04",
-            "method": "ace rate adjusted for the servers and returners in each match; positive expected-ace "
-                      "values are floored at 0.5 to retain valid low-ace sides, normalised so a tour-average event of the season reads 1.00",
+            "generated": date.today().isoformat(),
+            "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; positive "
+                      "expected-ace values are floored at 0.5, normalised so a tour-average event reads 1.00",
             "source": "ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0)",
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
