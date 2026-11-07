@@ -121,11 +121,12 @@ fun MethodScreen(data: PaceData) {
                 text = "Player tendencies come from the baseline's profile season or the most recent " +
                     "qualified profile in the ten seasons before it. Where a player has no qualified profile, " +
                     "their own available surface-specific serve sample is shrunk toward that season's " +
-                    "surface average using a 300-service-point prior. For each server side, expected aces " +
-                    "are calculated from the server's serve rate and the returner's ace-concession rate. " +
-                    "Positive expected-ace counts below 0.5 are floored at 0.5 rather than dropping that " +
-                    "side or letting a tiny denominator dominate. Historical and live ratings use this " +
-                    "same rule; low-sample estimates are labelled in the baseline.",
+                    "surface average using a 300-service-point prior. Expected-ace odds are calculated as " +
+                    "the server's serve odds multiplied by the returner's ace-concession odds and divided " +
+                    "by the season tour-average ace odds, then multiplied by service points. Positive " +
+                    "expected-ace counts below 0.5 are floored at 0.5 rather than dropping that side. " +
+                    "Historical and live ratings use this same calibrated rule; low-sample estimates are " +
+                    "labelled in the baseline.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
