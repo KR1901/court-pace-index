@@ -53,7 +53,7 @@ DEFAULT_DATASET = os.path.join(ROOT, "app", "src", "main", "assets", "pace_datas
 VARIANTS = ("drop", "floor", "calibrated", "pooled")
 FLOOR = 0.5
 MIN_SIDES = 20
-FIRST_ARCHIVE_SEASON = 2012
+FIRST_ARCHIVE_SEASON = 1991
 TA_URL = "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year={year}"
 TA_CACHE = os.path.join(ROOT, ".cache", "tennisabstract")
 TA_REQUEST_DELAY_SECONDS = 4.0
@@ -145,7 +145,14 @@ def season_variants(rows):
 
     ratios = {v: defaultdict(list) for v in ("drop", "floor", "calibrated")}
     event_aces = defaultdict(float); event_sv = defaultdict(float)
-    diag = {"sides": 0, "uncal_le_floor": 0, "cal_sides": 0, "cal_le_floor": 0}
+    diag = {
+        "archive_rows": len(rows),
+        "usable_matches": len(usable),
+        "sides": 0,
+        "uncal_le_floor": 0,
+        "cal_sides": 0,
+        "cal_le_floor": 0,
+    }
 
     for r in usable:
         raw_name = (r["tourney_name"] or "").strip()
@@ -497,13 +504,12 @@ def main():
     pairs = {v: [] for v in VARIANTS}       # (ours, published) pooled across seasons
     keys = {v: [] for v in VARIANTS}        # (season, tournament) in the same order
     totals = {"sides": 0, "uncal_le_floor": 0, "cal_sides": 0, "cal_le_floor": 0}
-    print("season  TA events  matched  common  sides  uncal<=0.5  cal<=0.5")
+    print("season  TA events  archive rows  stats matches  matched  common  sides  uncal<=0.5  cal<=0.5")
     for season in sorted(published):
         try:
             rows = load(season)
-        except Exception as error:  # noqa: BLE001 - report and carry on with other seasons
-            print(f"{season}: could not load match data ({error})")
-            continue
+        except Exception as error:  # noqa: BLE001 - a missing season invalidates the requested sweep
+            raise RuntimeError(f"{season}: could not load required ATP match archive") from error
         raw_variants, diag = season_variants(rows)
         published_matches = set(published[season]) & set(raw_variants["floor"])
         normalised, common = normalise_on_common_events(raw_variants, published[season])
@@ -513,7 +519,8 @@ def main():
         share_un = diag["uncal_le_floor"] / diag["sides"] if diag["sides"] else float("nan")
         share_cal = diag["cal_le_floor"] / diag["cal_sides"] if diag["cal_sides"] else float("nan")
         print(
-            f"{season}   {len(published[season]):9d}  {len(published_matches):7d}  "
+            f"{season}   {len(published[season]):9d}  {diag['archive_rows']:12d}  "
+            f"{diag['usable_matches']:13d}  {len(published_matches):7d}  "
             f"{len(common):6d}  {diag['sides']:5d}   {share_un:8.1%}  {share_cal:8.1%}"
         )
         if not common:
