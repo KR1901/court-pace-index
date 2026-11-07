@@ -54,6 +54,17 @@ While the app is open, the ATP current-scores hub is re-read every five minutes.
 
 ### 3. Calibrated speed calculations (2012–2026)
 
+For the current season, the pipeline prefers TennisMyLife's current-year ATP CSV because the
+Sackmann mirror can lag the live season. Historical seasons continue to use Sackmann. ATP 250/500
+numeric tourney levels in the TML CSV are treated as eligible main-tour events; Davis Cup (D) is
+not included. The current-year source is refreshed on each pipeline run, and a clearly logged
+Sackmann fallback is used only if TML is unreachable and no cached TML file exists.
+
+TennisMyLife's published terms limit its data to personal, educational and non-commercial research;
+the project stores derived event ratings and player-profile summaries, not the raw TML match CSV.
+No commercial use or raw-data redistribution is authorized by those public terms. Confirm current
+terms and obtain written permission before any commercial use or raw-data republication.
+
 | | |
 |---|---|
 | Source | ATP match archive compiled by Jeff Sackmann, CC BY-NC-SA 4.0 |
