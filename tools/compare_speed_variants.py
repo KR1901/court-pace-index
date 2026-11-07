@@ -689,7 +689,7 @@ def main():
         )
         print(f"  {metric}: {point_difference:+.3f} [{low:+.3f},{high:+.3f}]")
 
-    print("\\nCompleted-season paired differences: surface_returner (candidate production) minus calibrated (pooled returner)")
+    print("\nCompleted-season paired differences: surface_returner (candidate production) minus calibrated (pooled returner)")
     for metric in ("r", "rho", "mae"):
         differences = [
             complete_boot["surface_returner"][i][metric] - complete_boot["calibrated"][i][metric]
