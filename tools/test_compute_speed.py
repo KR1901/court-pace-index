@@ -280,5 +280,55 @@ class EventRawScoresCoverageTests(unittest.TestCase):
         self.assertAlmostEqual(1.0, raw["paris"], places=12)
 
 
+
+class PlayerRateEligibilityTests(unittest.TestCase):
+    @staticmethod
+    def rows(surface_counts):
+        rows = []
+        index = 0
+        for surface, match_count, aces_per_match in surface_counts:
+            for _ in range(match_count):
+                index += 1
+                rows.append({
+                    "tourney_name": "Sample Event",
+                    "surface": surface,
+                    "winner_id": "player",
+                    "winner_name": "Sample Player",
+                    "loser_id": f"opponent-{index}",
+                    "loser_name": f"Opponent {index}",
+                    "w_svpt": 100,
+                    "l_svpt": 100,
+                    "w_ace": aces_per_match,
+                    "l_ace": 8,
+                })
+        return rows
+
+    def test_qualified_clay_profile_survives_one_or_two_hard_grass_matches(self):
+        rows = self.rows([("Clay", 3, 10), ("Hard", 2, 30)])
+        player = compute_speed.player_rates(rows)["player"]
+
+        self.assertAlmostEqual(0.10, player["serve_rate"])
+        self.assertEqual(3, player["serve_matches"])
+        self.assertEqual(300.0, player["serve_service_points"])
+        self.assertEqual(3, player["clay_matches"])
+        self.assertEqual(2, player["hard_grass_matches"])
+
+    def test_qualified_hard_grass_profile_survives_one_or_two_clay_matches(self):
+        rows = self.rows([("Clay", 2, 30), ("Hard", 3, 20)])
+        player = compute_speed.player_rates(rows)["player"]
+
+        self.assertAlmostEqual(0.20, player["serve_rate"])
+        self.assertEqual(3, player["serve_matches"])
+        self.assertEqual(300.0, player["serve_service_points"])
+
+    def test_both_qualified_surfaces_keep_the_historical_weighted_blend(self):
+        rows = self.rows([("Clay", 3, 10), ("Hard", 3, 20)])
+        player = compute_speed.player_rates(rows)["player"]
+
+        self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, player["serve_rate"])
+        self.assertEqual(6, player["serve_matches"])
+        self.assertEqual(600.0, player["serve_service_points"])
+
+
 if __name__ == "__main__":
     unittest.main()
