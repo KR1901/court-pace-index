@@ -58,10 +58,14 @@ object PaceAnalytics {
         metric: Metric,
         surfaces: Set<Surface> = emptySet(),
         levels: Set<Level> = emptySet(),
+        speedSources: Set<String>? = null,
     ): List<Ranked> {
         val rows = data.entries(season, metric)
             .filter { surfaces.isEmpty() || it.first.surface in surfaces }
             .filter { levels.isEmpty() || it.first.level in levels }
+            .filter {
+                speedSources == null || data.speedSource(it.first.id, season) in speedSources
+            }
             .sortedByDescending { it.second }
 
         return rows.mapIndexed { index, (tournament, value) ->
@@ -124,9 +128,18 @@ object PaceAnalytics {
         }
     }
 
-    fun average(data: PaceData, season: Int, metric: Metric, surface: Surface? = null): Double? {
+    fun average(
+        data: PaceData,
+        season: Int,
+        metric: Metric,
+        surface: Surface? = null,
+        speedSources: Set<String>? = null,
+    ): Double? {
         val values = data.entries(season, metric)
             .filter { surface == null || it.first.surface == surface }
+            .filter {
+                speedSources == null || data.speedSource(it.first.id, season) in speedSources
+            }
             .map { it.second }
         return if (values.isEmpty()) null else values.average()
     }
