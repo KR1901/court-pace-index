@@ -50,7 +50,7 @@ from compute_speed import LEVELS, MIN_MATCHES_PER_SURFACE, load, num  # noqa: E4
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DATASET = os.path.join(ROOT, "app", "src", "main", "assets", "pace_dataset.json")
-VARIANTS = ("drop", "floor", "calibrated", "pooled")
+VARIANTS = ("drop", "floor", "calibrated", "surface_returner", "pooled")
 FLOOR = 0.5
 MIN_SIDES = 20
 FIRST_ARCHIVE_SEASON = 1991
@@ -86,6 +86,8 @@ def player_rates(usable):
     clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
     hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
     ret_ace = defaultdict(float); ret_pts = defaultdict(float)
+    clay_ret_ace = defaultdict(float); clay_ret_pts = defaultdict(float); clay_ret_n = defaultdict(int)
+    hg_ret_ace = defaultdict(float); hg_ret_pts = defaultdict(float); hg_ret_n = defaultdict(int)
     tour_aces = tour_points = 0.0
 
     for r in usable:
@@ -103,6 +105,12 @@ def player_rates(usable):
             hg_ace[lid] += l_ac; hg_sv[lid] += l_sv; hg_n[lid] += 1
         ret_ace[wid] += l_ac; ret_pts[wid] += l_sv
         ret_ace[lid] += w_ac; ret_pts[lid] += w_sv
+        if surface == "Clay":
+            clay_ret_ace[wid] += l_ac; clay_ret_pts[wid] += l_sv; clay_ret_n[wid] += 1
+            clay_ret_ace[lid] += w_ac; clay_ret_pts[lid] += w_sv; clay_ret_n[lid] += 1
+        elif surface in ("Hard", "Grass"):
+            hg_ret_ace[wid] += l_ac; hg_ret_pts[wid] += l_sv; hg_ret_n[wid] += 1
+            hg_ret_ace[lid] += w_ac; hg_ret_pts[lid] += w_sv; hg_ret_n[lid] += 1
 
     serve = {}
     for p in set(clay_sv) | set(hg_sv):
@@ -120,8 +128,20 @@ def player_rates(usable):
         elif hard_grass_qualified:
             serve[p] = h
     concede = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
+    surface_concede = {}
+    for p in set(clay_ret_pts) | set(hg_ret_pts):
+        c = clay_ret_ace[p] / clay_ret_pts[p] if clay_ret_pts[p] > 0 else None
+        h = hg_ret_ace[p] / hg_ret_pts[p] if hg_ret_pts[p] > 0 else None
+        clay_qualified = c is not None and clay_ret_n[p] >= MIN_MATCHES_PER_SURFACE
+        hard_grass_qualified = h is not None and hg_ret_n[p] >= MIN_MATCHES_PER_SURFACE
+        if clay_qualified and hard_grass_qualified:
+            surface_concede[p] = (1 / 3) * c + (2 / 3) * h
+        elif clay_qualified:
+            surface_concede[p] = c
+        elif hard_grass_qualified:
+            surface_concede[p] = h
     tour_rate = tour_aces / tour_points if tour_points > 0 else None
-    return serve, concede, tour_rate
+    return serve, concede, surface_concede, tour_rate
 
 
 # ---------------------------------------------------------------- expectations
@@ -145,9 +165,9 @@ def expected_calibrated(ps, qr, sv, tour):
 def season_variants(rows):
     """Returns ({variant: {tournament_id: rating}}, diagnostics) for one season."""
     usable = valid_rows(rows)
-    serve, concede, tour = player_rates(usable)
+    serve, concede, surface_concede, tour = player_rates(usable)
 
-    ratios = {v: defaultdict(list) for v in ("drop", "floor", "calibrated")}
+    ratios = {v: defaultdict(list) for v in ("drop", "floor", "calibrated", "surface_returner")}
     event_aces = defaultdict(float); event_sv = defaultdict(float)
     diag = {
         "archive_rows": len(rows),
@@ -156,6 +176,7 @@ def season_variants(rows):
         "uncal_le_floor": 0,
         "cal_sides": 0,
         "cal_le_floor": 0,
+        "surface_returner_sides": 0,
         "event_surfaces": {},
     }
 
@@ -191,6 +212,15 @@ def season_variants(rows):
                 if e_cal <= FLOOR:
                     diag["cal_le_floor"] += 1
                 ratios["calibrated"][tid].append(ac / max(e_cal, FLOOR))
+
+            # Candidate symmetry test: construct the returner concession profile with the
+            # same clay / hard-grass weighting and per-surface qualification as the server.
+            # If no qualified surface profile exists, retain the production pooled rate.
+            qr_surface = surface_concede.get(returner, qr)
+            e_surface = expected_calibrated(ps, qr_surface, sv, tour) if tour else 0.0
+            if e_surface > 0:
+                diag["surface_returner_sides"] += 1
+                ratios["surface_returner"][tid].append(ac / max(e_surface, FLOOR))
 
     out = {}
     for variant, per_event in ratios.items():
