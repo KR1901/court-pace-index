@@ -16,8 +16,9 @@ Variants
 --------
   drop        uncalibrated formula, sides with expected <= 0.5 are skipped  (pipeline before)
   floor       uncalibrated formula, expected is floored at 0.5               (pipeline now)
-  calibrated  odds-ratio form WITH the season tour-average ace rate, same 0.5 floor
-              (the floor then rarely binds - the share that does is printed)
+  calibrated  production odds-ratio form with the pooled returner concession rate
+  surface_returner  same calibrated formula, but returner concession uses the same
+              clay / hard-grass weighting and qualification as the server profile
   pooled      event ace rate / season ace rate, no player adjustment at all (reference point)
 
 Scoring
