@@ -120,6 +120,7 @@ class AtpStatsParserTest {
     private val baseline = LiveSpeedBaseline(
         season = 2026,
         normalisation = 1.0,
+            tourAceRate = 0.08,
         profiles = listOf(
             LiveSpeedPlayerProfile("A. Server", serveRate = 0.15, concedeRate = 0.10),
             LiveSpeedPlayerProfile("B. Returner", serveRate = 0.25, concedeRate = 0.20),
@@ -164,6 +165,41 @@ class AtpStatsParserTest {
     }
 
     @Test
+    fun `average server and returner profiles map to the season tour-average rate`() {
+        val averageBaseline = baseline.copy(
+            tourAceRate = 0.08,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("A. Average", serveRate = 0.08, concedeRate = 0.08),
+                LiveSpeedPlayerProfile("B. Average", serveRate = 0.08, concedeRate = 0.08),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("A. Average", "B. Average", 6, 40, 6, 40, true)
+        }
+
+        val result = AceRating.rate(matches, averageBaseline)!!
+
+        // With average server and returner odds, calibrated expectation is the tour rate:
+        // 0.08 × 40 = 3.2 expected aces; six actual aces gives 6 / 3.2 per side.
+        assertEquals(6.0 / 3.2, result.rating, 1e-9)
+        assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
+    fun `calibrated expected aces use tour-average odds as the neutral anchor`() {
+        val expected = AceRating.rate(sampleMatches(), baseline)!!
+        val alternativeTour = AceRating.rate(
+            sampleMatches(),
+            baseline.copy(tourAceRate = 0.12),
+        )!!
+
+        assertTrue(
+            "raising the tour-average ace rate should lower expected aces for fixed player profiles",
+            alternativeTour.rating > expected.rating,
+        )
+    }
+
+    @Test
     fun `rating uses server and returner tendencies rather than pooled ace rate`() {
         val ordinary = AceRating.rate(sampleMatches(), baseline)!!
         val strongerReturner = AceRating.rate(
@@ -195,6 +231,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
                 LiveSpeedPlayerProfile("Andrey Rublev", serveRate = 0.14, concedeRate = 0.08),
@@ -219,6 +256,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Juan Manuel Cerundolo", serveRate = 0.11, concedeRate = 0.09),
                 LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
@@ -238,6 +276,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Juan Manuel Cerundolo", serveRate = 0.11, concedeRate = 0.09),
                 LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
@@ -275,6 +314,7 @@ class AtpStatsParserTest {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Tommy Paul", serveRate = 0.10, concedeRate = 0.08),
                 LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
@@ -296,6 +336,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Adolfo Daniel Vallejo", serveRate = 0.10, concedeRate = 0.08),
                 LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
@@ -362,6 +403,7 @@ class AtpStatsParserTest {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Alex Smith", serveRate = 0.12, concedeRate = 0.10),
                 LiveSpeedPlayerProfile("Andrew Smith", serveRate = 0.14, concedeRate = 0.08),
@@ -394,6 +436,7 @@ class AtpStatsParserTest {
         val lowAceBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("A. Low", serveRate = 0.01, concedeRate = 0.01),
                 LiveSpeedPlayerProfile("B. Low", serveRate = 0.01, concedeRate = 0.01),
@@ -427,6 +470,7 @@ class AtpStatsParserTest {
         val zeroBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("A. Zero", serveRate = 0.10, concedeRate = 0.0),
                 LiveSpeedPlayerProfile("B. Zero", serveRate = 0.10, concedeRate = 0.0),
