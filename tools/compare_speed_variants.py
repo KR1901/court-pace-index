@@ -16,9 +16,9 @@ Variants
 --------
   drop        uncalibrated formula, sides with expected <= 0.5 are skipped  (pipeline before)
   floor       uncalibrated formula, expected is floored at 0.5               (pipeline now)
-  calibrated  production odds-ratio form with the pooled returner concession rate
-  surface_returner  same calibrated formula, but returner concession uses the same
-              clay / hard-grass weighting and qualification as the server profile
+  calibrated  calibrated odds-ratio form with the legacy pooled returner concession rate
+  surface_returner  production candidate: same formula, with returner concession using
+              the same clay / hard-grass weighting and qualification as the server profile
   ratio_of_sums  sum of eligible observed aces / sum of the same eligible expected aces
   pooled      event ace rate / season ace rate, no player adjustment at all (reference point)
 
@@ -84,7 +84,7 @@ def valid_rows(rows):
 
 
 def player_rates(usable):
-    """Same construction as compute_speed.py: clay 1/3 + hard/grass 2/3 serve rate, pooled concede rate."""
+    """Build server and returner profiles, retaining pooled and surface-weighted return rates."""
     clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
     hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
     ret_ace = defaultdict(float); ret_pts = defaultdict(float)
@@ -553,8 +553,8 @@ def main():
                     help=f"seasons to score (default: {FIRST_ARCHIVE_SEASON} through current year)")
     ap.add_argument("--boot", type=int, default=2000, help="bootstrap resamples")
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--baseline", choices=VARIANTS, default="drop",
-                    help="variant the paired differences are measured against")
+    ap.add_argument("--baseline", choices=VARIANTS, default="surface_returner",
+                    help="variant the paired differences are measured against (production default: surface_returner)")
     args = ap.parse_args()
     if args.boot < 1:
         ap.error("--boot must be at least 1")
@@ -676,7 +676,7 @@ def main():
                 f"r={result['r']:.3f} rho={result['rho']:.3f} "
                 f"MAE={result['mae']:.3f} bias={result['bias']:+.3f}"
             )
-    print("\nCompleted-season paired differences: calibrated minus floor")
+    print("\nCompleted-season paired differences: calibrated (pooled returner) minus floor")
     for metric in ("r", "rho", "mae"):
         differences = [
             complete_boot["calibrated"][i][metric] - complete_boot["floor"][i][metric]
