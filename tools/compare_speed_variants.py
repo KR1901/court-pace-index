@@ -301,6 +301,9 @@ def tournament_key(name):
         "nextgenfinals": "nextgenfinals",
         "rio": "riodejaneiro",
         "riodejaneiro": "riodejaneiro",
+        "atpriodejaneiro": "riodejaneiro",
+        "parisbercy": "parismasters",
+        "parismasters": "parismasters",
         "shertogenbosch": "shertogenbosch",
     }
     return aliases.get(key, key)
