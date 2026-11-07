@@ -190,6 +190,13 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual(list(range(2025, 2015, -1)), visited)
 
 
+    def test_tour_average_rate_is_computed_from_all_usable_service_points(self):
+        rows = [
+            {"w_ace": 6, "l_ace": 6, "w_svpt": 80, "l_svpt": 80},
+            {"w_ace": 3, "l_ace": 3, "w_svpt": 40, "l_svpt": 40},
+        ]
+        self.assertAlmostEqual(18 / 240, compute_speed.tour_average_ace_rate(rows), places=12)
+
 class ExpectedAceCalibrationTests(unittest.TestCase):
     def test_average_server_and_returner_expect_tour_average_ace_rate(self):
         expected = compute_speed.expected_calibrated_aces(
@@ -245,6 +252,32 @@ class EventRawScoresCoverageTests(unittest.TestCase):
         self.assertIn("paris", raw)
         self.assertEqual(10, matches["paris"])
         self.assertAlmostEqual(1.0 / compute_speed.EXPECTED_ACES_FLOOR, raw["paris"], places=9)
+
+
+    def test_event_raw_scores_defaults_to_the_actual_season_tour_rate(self):
+        rows = [
+            {
+                "tourney_name": "Paris Masters",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "w_svpt": 80,
+                "l_svpt": 80,
+                "w_ace": 6,
+                "l_ace": 6,
+                "surface": "Hard",
+            }
+            for _ in range(10)
+        ]
+        profiles = {
+            "p1": {"serve_rate": 0.075, "concede_rate": 0.075},
+            "p2": {"serve_rate": 0.075, "concede_rate": 0.075},
+        }
+
+        raw, _, _, _ = compute_speed.event_raw_scores(rows, profiles)
+
+        # 12 aces / 160 points = 7.5%; an average pair therefore expects 6 aces
+        # from 80 service points, making the actual/expected event mean exactly 1.00.
+        self.assertAlmostEqual(1.0, raw["paris"], places=12)
 
 
 if __name__ == "__main__":
