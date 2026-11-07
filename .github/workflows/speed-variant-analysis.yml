@@ -39,6 +39,7 @@ jobs:
         run: python3 -m unittest discover -s tools -p "test_compare_speed_variants.py" -v
       - name: Compare all archive seasons (2012-current) against annual Tennis Abstract tables
         run: |
+          set -euo pipefail
           python3 tools/compare_speed_variants.py --seasons $(seq 2012 "$(date +%Y)") --reference-source tennisabstract --boot 5000 --baseline drop | tee formula-comparison.txt
           cat formula-comparison.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Upload comparison output
