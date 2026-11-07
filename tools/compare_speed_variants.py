@@ -19,6 +19,7 @@ Variants
   calibrated  production odds-ratio form with the pooled returner concession rate
   surface_returner  same calibrated formula, but returner concession uses the same
               clay / hard-grass weighting and qualification as the server profile
+  ratio_of_sums  sum of eligible observed aces / sum of the same eligible expected aces
   pooled      event ace rate / season ace rate, no player adjustment at all (reference point)
 
 Scoring
@@ -51,7 +52,7 @@ from compute_speed import LEVELS, MIN_MATCHES_PER_SURFACE, load, num  # noqa: E4
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DATASET = os.path.join(ROOT, "app", "src", "main", "assets", "pace_dataset.json")
-VARIANTS = ("drop", "floor", "calibrated", "surface_returner", "pooled")
+VARIANTS = ("drop", "floor", "calibrated", "surface_returner", "ratio_of_sums", "pooled")
 FLOOR = 0.5
 MIN_SIDES = 20
 FIRST_ARCHIVE_SEASON = 1991
@@ -170,6 +171,8 @@ def season_variants(rows):
 
     ratios = {v: defaultdict(list) for v in ("drop", "floor", "calibrated", "surface_returner")}
     event_aces = defaultdict(float); event_sv = defaultdict(float)
+    calibrated_actual = defaultdict(float); calibrated_expected = defaultdict(float)
+    calibrated_sides = defaultdict(int)
     diag = {
         "archive_rows": len(rows),
         "usable_matches": len(usable),
@@ -212,7 +215,11 @@ def season_variants(rows):
                 diag["cal_sides"] += 1
                 if e_cal <= FLOOR:
                     diag["cal_le_floor"] += 1
-                ratios["calibrated"][tid].append(ac / max(e_cal, FLOOR))
+                expected_used = max(e_cal, FLOOR)
+                ratios["calibrated"][tid].append(ac / expected_used)
+                calibrated_actual[tid] += ac
+                calibrated_expected[tid] += expected_used
+                calibrated_sides[tid] += 1
 
             # Candidate symmetry test: construct the returner concession profile with the
             # same clay / hard-grass weighting and per-surface qualification as the server.
@@ -230,6 +237,14 @@ def season_variants(rows):
             for tournament_id, values in per_event.items()
             if len(values) >= MIN_SIDES
         }
+
+    # Ratio-of-sums uses exactly the same eligible server sides and expected-ace floor as
+    # production, but weights each side by its expected-ace volume rather than equally.
+    out["ratio_of_sums"] = {
+        tournament_id: calibrated_actual[tournament_id] / calibrated_expected[tournament_id]
+        for tournament_id in calibrated_expected
+        if calibrated_sides[tournament_id] >= MIN_SIDES and calibrated_expected[tournament_id] > 0
+    }
 
     # Pooled ace rate is an unadjusted reference. Its broader eligibility is intersected
     # with all adjusted variants before scoring.
