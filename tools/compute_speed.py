@@ -32,7 +32,7 @@ NAMES = {
     "Rome Masters": "rome", "Canada Masters": "canada",
     "Cincinnati Masters": "cincinnati", "Shanghai Masters": "shanghai",
     "Paris Masters": "paris", "Tour Finals": "atpfinals",
-    "Brisbane": "brisbane", "Hong Kong": "hongkong", "Auckland": "auckland",
+    "Brisbane": "brisbane", "Hong Kong": "hongkong", "United Cup": "unitedcup", "Auckland": "auckland",
     "Adelaide": "adelaide", "Montpellier": "montpellier", "Dallas": "dallas",
     "Rotterdam": "rotterdam", "Delray Beach": "delraybeach",
     "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Doha": "doha",
