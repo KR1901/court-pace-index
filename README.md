@@ -39,10 +39,10 @@ is 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altit
 
 The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
 
-The 2025–26 readings are the published Tennis Abstract figures. Earlier seasons are recomputed
-by this project from the public ATP match archive using the same method; the recomputation
-reproduces the published 2026 values with r = 0.93 and a mean absolute difference of 0.10. The
-app labels and dims the computed seasons wherever it shows them.
+The 2025–26 published readings are from Tennis Abstract. Earlier seasons are recomputed by this
+project from the public ATP match archive using the calibrated server/returner odds-ratio method.
+The 1991–2026 formula comparison is maintained separately in PR #2; the app labels and dims
+computed seasons wherever it shows them.
 
 ## What the app does with them
 
