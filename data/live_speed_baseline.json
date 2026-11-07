@@ -1,8 +1,8 @@
 {
  "season": 2026,
  "profileSeason": 2026,
- "normalisation": 7.84621359132434,
- "generated": "2026-11-06T20:30:12.349937+00:00",
+ "normalisation": 0.9901688355480535,
+ "generated": "2026-11-07T06:00:00.000Z",
  "profiles": [
   {
    "name": "Rei Sakamoto",
@@ -133,7 +133,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 40,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -144,7 +144,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 45,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -166,7 +166,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 5,
    "serveRateSampleServicePoints": 415,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -199,7 +199,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 56,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -210,18 +210,18 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 5,
    "serveRateSampleServicePoints": 241,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
    "name": "Luis Guto Miguel",
    "serveRate": 0.04575050853126302,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2026,
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 84,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -232,7 +232,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 179,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -254,7 +254,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 46,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -265,7 +265,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 103,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -337,7 +337,7 @@
   {
    "name": "Chun Hsin Tseng",
    "serveRate": 0.05088765708234734,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2025,
    "serveRateSource": "prior-season-qualified",
    "serveRateSampleMatches": 16,
@@ -375,7 +375,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -452,7 +452,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 78,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -749,7 +749,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 105,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -793,7 +793,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 4,
    "serveRateSampleServicePoints": 326,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -881,7 +881,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 92,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -914,7 +914,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 86,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -925,7 +925,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -936,7 +936,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 102,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -947,7 +947,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 101,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1002,7 +1002,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 66,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1068,7 +1068,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 20,
    "serveRateSampleServicePoints": 1690,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1156,7 +1156,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1222,7 +1222,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 124,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1239,12 +1239,12 @@
   {
    "name": "Filip Cristian Jianu",
    "serveRate": 0.03935438307839667,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2026,
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 121,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1321,7 +1321,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 79,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1343,7 +1343,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 10,
    "serveRateSampleServicePoints": 902,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1530,7 +1530,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 174,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1563,7 +1563,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 79,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1585,7 +1585,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 197,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1629,7 +1629,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 69,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1673,7 +1673,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 68,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1717,7 +1717,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1783,7 +1783,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 269,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1794,7 +1794,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 112,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1871,7 +1871,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -1926,7 +1926,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 122,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2036,7 +2036,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 76,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2124,7 +2124,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 234,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2168,7 +2168,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 145,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2179,7 +2179,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 204,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2322,7 +2322,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 144,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2344,7 +2344,7 @@
    "serveRateSource": "current-season-shrunk",
    "serveRateSampleMatches": 6,
    "serveRateSampleServicePoints": 508,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2026
   },
   {
@@ -2388,7 +2388,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 81,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2399,7 +2399,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2410,7 +2410,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 82,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2465,7 +2465,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 96,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2498,7 +2498,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 53,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2509,7 +2509,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 179,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2597,7 +2597,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2619,7 +2619,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 64,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2652,7 +2652,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 75,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2663,7 +2663,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 109,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2729,7 +2729,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 45,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2740,7 +2740,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 155,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2762,7 +2762,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 74,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2784,7 +2784,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 121,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2806,7 +2806,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 120,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2828,7 +2828,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 116,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2839,18 +2839,18 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 78,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
    "name": "Alvaro Guillen Meza",
    "serveRate": 0.048535467381304515,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2025,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 43,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2872,7 +2872,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 66,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2927,7 +2927,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 147,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2938,7 +2938,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 6,
    "serveRateSampleServicePoints": 425,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -2982,7 +2982,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 5,
    "serveRateSampleServicePoints": 388,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3026,7 +3026,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 100,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3037,7 +3037,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 81,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3048,7 +3048,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 69,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3070,7 +3070,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 51,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3103,7 +3103,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3125,7 +3125,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 63,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3147,7 +3147,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3180,7 +3180,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 75,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3191,7 +3191,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 58,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3202,7 +3202,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 210,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3213,7 +3213,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 38,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3224,7 +3224,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 103,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3257,7 +3257,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 57,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3279,7 +3279,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 104,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3290,7 +3290,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3312,7 +3312,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 131,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3334,7 +3334,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 169,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3345,7 +3345,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 167,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3378,7 +3378,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 88,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3389,7 +3389,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 105,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3411,7 +3411,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 154,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3428,7 +3428,7 @@
   {
    "name": "Radu Albot",
    "serveRate": 0.02825187150867675,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2023,
    "serveRateSource": "prior-season-qualified",
    "serveRateSampleMatches": 19,
@@ -3444,7 +3444,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 55,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3466,7 +3466,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 52,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3477,7 +3477,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 155,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3510,7 +3510,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 53,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2025
   },
   {
@@ -3532,7 +3532,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 139,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3554,7 +3554,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 8,
    "serveRateSampleServicePoints": 522,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3565,7 +3565,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3587,7 +3587,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 55,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3648,12 +3648,12 @@
   {
    "name": "Daniel Rincon",
    "serveRate": 0.05353225636463014,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2024,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 51,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3686,7 +3686,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 124,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3752,7 +3752,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 81,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3763,7 +3763,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3796,7 +3796,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 72,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3818,7 +3818,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 183,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3840,7 +3840,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 35,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3873,7 +3873,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 135,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3917,7 +3917,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 58,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3928,7 +3928,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3950,7 +3950,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 112,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3961,7 +3961,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 165,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3972,7 +3972,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 183,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -3994,7 +3994,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 87,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4027,7 +4027,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 53,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4071,7 +4071,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 4,
    "serveRateSampleServicePoints": 387,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4082,7 +4082,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 111,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4104,7 +4104,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 260,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4115,7 +4115,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 71,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4137,7 +4137,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 80,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4154,12 +4154,12 @@
   {
    "name": "Sebastian Fanselow",
    "serveRate": 0.04810837244694893,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2024,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 49,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4176,7 +4176,7 @@
   {
    "name": "Tim Van Rijthoven",
    "serveRate": 0.16591928251121077,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2023,
    "serveRateSource": "prior-season-qualified",
    "serveRateSampleMatches": 3,
@@ -4187,12 +4187,12 @@
   {
    "name": "Antoine Escoffier",
    "serveRate": 0.09511656511522096,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2024,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 73,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4203,7 +4203,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2024
   },
   {
@@ -4236,7 +4236,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 68,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4247,7 +4247,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 74,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4269,7 +4269,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 349,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4280,7 +4280,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 46,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4302,7 +4302,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4368,7 +4368,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 104,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4379,7 +4379,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4390,7 +4390,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 63,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4456,7 +4456,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 83,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4467,7 +4467,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4478,7 +4478,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 74,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4500,7 +4500,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 80,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4511,7 +4511,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 91,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4566,7 +4566,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 204,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4577,7 +4577,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 103,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4588,7 +4588,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 56,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4621,7 +4621,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 111,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4676,7 +4676,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 111,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4720,7 +4720,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 105,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4764,7 +4764,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 74,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4792,12 +4792,12 @@
   {
    "name": "Tao Mu",
    "serveRate": 0.07827659520067971,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2023,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 46,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4819,7 +4819,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 42,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4852,18 +4852,18 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 79,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
    "name": "Eduardo Nava",
    "serveRate": 0.04807843849599545,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2023,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 109,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4874,7 +4874,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 85,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4885,7 +4885,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 77,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4907,7 +4907,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 75,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4918,7 +4918,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 78,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4951,7 +4951,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 62,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -4995,7 +4995,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 146,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -5050,7 +5050,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 57,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -5072,7 +5072,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 52,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2023
   },
   {
@@ -5105,7 +5105,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 69,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5160,7 +5160,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 42,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5193,7 +5193,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 395,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5204,7 +5204,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 108,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5215,7 +5215,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 49,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5226,7 +5226,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 158,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5259,7 +5259,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 41,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5292,7 +5292,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 227,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5303,7 +5303,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5347,7 +5347,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 138,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5358,7 +5358,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 109,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5369,7 +5369,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 80,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5380,7 +5380,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 214,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5391,7 +5391,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 205,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5446,7 +5446,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 52,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5468,7 +5468,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 52,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5512,7 +5512,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 38,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5534,7 +5534,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 163,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5545,7 +5545,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 72,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5556,7 +5556,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 143,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5606,12 +5606,12 @@
   {
    "name": "Facundo Mena",
    "serveRate": 0.0771481155381922,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2022,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 71,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5633,7 +5633,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 58,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5644,7 +5644,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 108,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5688,7 +5688,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 42,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5699,7 +5699,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5721,7 +5721,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 131,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5732,7 +5732,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 58,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5776,7 +5776,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 95,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5787,7 +5787,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 179,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2022
   },
   {
@@ -5798,7 +5798,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5809,7 +5809,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 89,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5848,12 +5848,12 @@
   {
    "name": "Kevin King",
    "serveRate": 0.08123412090864965,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2021,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 49,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5864,7 +5864,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 47,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5875,7 +5875,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 49,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5892,12 +5892,12 @@
   {
    "name": "Joao Menezes",
    "serveRate": 0.05403701004517606,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2021,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 53,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5930,7 +5930,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 139,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -5941,7 +5941,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 170,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6024,12 +6024,12 @@
   {
    "name": "Michael Vrbensky",
    "serveRate": 0.0853580691216853,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2021,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 79,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6040,7 +6040,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 39,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6062,7 +6062,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 66,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6073,7 +6073,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 49,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6084,7 +6084,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 122,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6106,7 +6106,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 63,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6117,7 +6117,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 133,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6134,7 +6134,7 @@
   {
    "name": "Filip Horansky",
    "serveRate": 0.03902439024390244,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2020,
    "serveRateSource": "prior-season-qualified",
    "serveRateSampleMatches": 3,
@@ -6172,7 +6172,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6205,7 +6205,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 97,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6238,7 +6238,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 157,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6249,7 +6249,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 96,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6260,7 +6260,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 151,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6304,7 +6304,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 133,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6315,7 +6315,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 7,
    "serveRateSampleServicePoints": 524,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6337,18 +6337,18 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 200,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
    "name": "Marsel Ilhan",
    "serveRate": 0.07704424844258796,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2021,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 55,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2021
   },
   {
@@ -6403,7 +6403,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 90,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2020
   },
   {
@@ -6414,7 +6414,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2020
   },
   {
@@ -6436,7 +6436,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 119,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2020
   },
   {
@@ -6458,7 +6458,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 159,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2020
   },
   {
@@ -6469,7 +6469,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 68,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2020
   },
   {
@@ -6497,12 +6497,12 @@
   {
    "name": "Martin Cuevas",
    "serveRate": 0.08513963886447896,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2020,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2020
   },
   {
@@ -6541,12 +6541,12 @@
   {
    "name": "Facundo Arguello",
    "serveRate": 0.047161922125498856,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2019,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 40,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6557,7 +6557,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 41,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6612,7 +6612,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 109,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6623,7 +6623,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 62,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6645,7 +6645,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 4,
    "serveRateSampleServicePoints": 274,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6667,7 +6667,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 83,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6678,7 +6678,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 139,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6689,7 +6689,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 156,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6700,7 +6700,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6733,7 +6733,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 69,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6755,7 +6755,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 125,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6777,7 +6777,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6799,7 +6799,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 4,
    "serveRateSampleServicePoints": 276,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6810,7 +6810,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 108,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6821,7 +6821,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 113,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6832,7 +6832,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6854,7 +6854,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 135,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6876,7 +6876,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 158,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6887,7 +6887,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 55,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6898,7 +6898,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 175,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6909,7 +6909,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 38,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6931,7 +6931,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 92,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6964,7 +6964,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 38,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6986,7 +6986,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 154,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -6997,7 +6997,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 69,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -7019,7 +7019,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 68,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2019
   },
   {
@@ -7052,7 +7052,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 146,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7063,7 +7063,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 85,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7074,7 +7074,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 61,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7118,7 +7118,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 93,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7140,7 +7140,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 10,
    "serveRateSampleServicePoints": 690,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7162,7 +7162,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 67,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7217,7 +7217,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 11,
    "serveRateSampleServicePoints": 1035,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7239,7 +7239,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 53,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7261,7 +7261,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 76,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7272,7 +7272,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7283,7 +7283,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 110,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7316,7 +7316,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 58,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7327,7 +7327,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7349,7 +7349,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 192,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7360,7 +7360,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 50,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7382,7 +7382,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 119,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7393,7 +7393,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 202,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2018
   },
   {
@@ -7404,7 +7404,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 103,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7426,7 +7426,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 6,
    "serveRateSampleServicePoints": 445,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7437,7 +7437,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 5,
    "serveRateSampleServicePoints": 464,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7448,7 +7448,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 103,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7470,7 +7470,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 67,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7492,7 +7492,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 65,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7503,7 +7503,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 87,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7514,7 +7514,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7547,7 +7547,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 43,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7558,7 +7558,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 163,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7580,7 +7580,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 75,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7591,7 +7591,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7602,7 +7602,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 137,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7613,7 +7613,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7635,7 +7635,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 56,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7646,7 +7646,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 70,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7668,7 +7668,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 52,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7679,7 +7679,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 4,
    "serveRateSampleServicePoints": 304,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7707,12 +7707,12 @@
   {
    "name": "Mate Pavic",
    "serveRate": 0.0867280967498954,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2017,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 17,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7745,7 +7745,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 131,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7756,7 +7756,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 94,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7767,7 +7767,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 7,
    "serveRateSampleServicePoints": 441,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7778,7 +7778,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 174,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7800,7 +7800,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 55,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7822,7 +7822,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 13,
    "serveRateSampleServicePoints": 1005,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7833,7 +7833,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 75,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7855,7 +7855,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 66,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7877,7 +7877,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 57,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7888,7 +7888,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 95,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7899,7 +7899,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 99,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7921,7 +7921,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 56,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7954,7 +7954,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 6,
    "serveRateSampleServicePoints": 499,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2017
   },
   {
@@ -7965,7 +7965,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 149,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -7976,7 +7976,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 80,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -7987,7 +7987,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 5,
    "serveRateSampleServicePoints": 449,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -7998,7 +7998,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 52,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8009,7 +8009,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 101,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8020,7 +8020,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 168,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8031,7 +8031,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 107,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8042,7 +8042,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 59,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8053,7 +8053,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 134,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8064,7 +8064,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 102,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8086,7 +8086,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 286,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8097,7 +8097,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 3,
    "serveRateSampleServicePoints": 340,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8108,7 +8108,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 53,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8130,7 +8130,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 46,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8141,7 +8141,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 108,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8152,7 +8152,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 144,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8163,7 +8163,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8174,7 +8174,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 79,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8185,7 +8185,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 60,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8196,7 +8196,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 139,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8207,7 +8207,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 92,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8218,7 +8218,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 87,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8229,7 +8229,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 48,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8240,7 +8240,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 218,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8251,7 +8251,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 121,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8262,7 +8262,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 154,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8273,18 +8273,18 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 62,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
    "name": "Andre Ghem",
    "serveRate": 0.041200443688931554,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2016,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 119,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8306,7 +8306,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 12,
    "serveRateSampleServicePoints": 1109,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8317,7 +8317,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 54,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8328,7 +8328,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 179,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8339,29 +8339,29 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 177,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
    "name": "Somdev Devvarman",
    "serveRate": 0.0869299336650083,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2016,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 84,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
    "name": "Enrique Lopez Perez",
    "serveRate": 0.06629231121765662,
-   "concedeRate": 0.0,
+   "concedeRate": 0,
    "serveRateSeason": 2016,
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 66,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8372,7 +8372,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 95,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8383,7 +8383,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 89,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8394,7 +8394,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 49,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8405,7 +8405,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 201,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8416,7 +8416,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 2,
    "serveRateSampleServicePoints": 221,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   },
   {
@@ -8438,7 +8438,7 @@
    "serveRateSource": "prior-season-shrunk",
    "serveRateSampleMatches": 1,
    "serveRateSampleServicePoints": 106,
-   "serveRatePriorServicePoints": 300.0,
+   "serveRatePriorServicePoints": 300,
    "concedeRateSeason": 2016
   }
  ],
@@ -8452,5 +8452,6 @@
   "withoutServeRate": 0,
   "withoutConcedeRate": 0
  },
- "ratedEvents": 27
+ "ratedEvents": 27,
+ "tourAceRate": 0.08282760294831619
 }
