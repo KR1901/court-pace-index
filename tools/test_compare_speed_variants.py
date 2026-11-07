@@ -8,6 +8,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import compare_speed_variants as comparison
 
 
+class ArchiveRangeTests(unittest.TestCase):
+    def test_comparison_starts_with_first_available_match_stats_season(self):
+        self.assertEqual(comparison.FIRST_ARCHIVE_SEASON, 1991)
+
 class ExpectedAceFormulaTests(unittest.TestCase):
     def test_calibrated_average_pair_returns_tour_average_ace_rate(self):
         service_points = 75
