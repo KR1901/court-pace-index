@@ -198,7 +198,7 @@ def season_variants(rows):
 
 
 def normalise_on_common_events(raw_variants, published_event_ids):
-    """Normalise every variant on exactly the same published event set."""
+    """Normalise every formula on exactly the same published event set."""
     common = set(published_event_ids)
     for variant in VARIANTS:
         common.intersection_update(raw_variants.get(variant, {}))
@@ -216,6 +216,16 @@ def normalise_on_common_events(raw_variants, published_event_ids):
             for event_id in common
         }
     return normalised, common
+
+
+def normalise_reference_on_common_events(published, common):
+    """Re-centre Tennis Abstract on the same matched event subset for fair MAE/bias."""
+    if not common:
+        return {}
+    mean = sum(published[event_id] for event_id in common) / len(common)
+    if not math.isfinite(mean) or mean <= 0:
+        return {}
+    return {event_id: published[event_id] / mean for event_id in common}
 
 
 # ---------------------------------------------------------------- statistics
@@ -466,6 +476,7 @@ def main():
 
     pairs = {v: [] for v in VARIANTS}       # (ours, published) pooled across seasons
     keys = {v: [] for v in VARIANTS}        # (season, tournament) in the same order
+    totals = {"sides": 0, "uncal_le_floor": 0, "cal_sides": 0, "cal_le_floor": 0}
     print("season  TA events  matched  common  sides  uncal<=0.5  cal<=0.5")
     for season in sorted(published):
         try:
@@ -476,6 +487,9 @@ def main():
         raw_variants, diag = season_variants(rows)
         published_matches = set(published[season]) & set(raw_variants["floor"])
         normalised, common = normalise_on_common_events(raw_variants, published[season])
+        reference_normalised = normalise_reference_on_common_events(published[season], common)
+        for key in totals:
+            totals[key] += diag[key]
         share_un = diag["uncal_le_floor"] / diag["sides"] if diag["sides"] else float("nan")
         share_cal = diag["cal_le_floor"] / diag["cal_sides"] if diag["cal_sides"] else float("nan")
         print(
@@ -489,9 +503,16 @@ def main():
             for tournament_id in common:
                 pairs[variant].append((
                     normalised[variant][tournament_id],
-                    published[season][tournament_id],
+                    reference_normalised[tournament_id],
                 ))
                 keys[variant].append((season, tournament_id))
+
+    print(
+        f"\nArchive-wide side coverage: {totals['sides']:,} valid sides; "
+        f"uncalibrated floor binds on {totals['uncal_le_floor'] / totals['sides']:.1%}; "
+        f"calibrated floor binds on {totals['cal_le_floor'] / totals['cal_sides']:.1%} "
+        f"of {totals['cal_sides']:,} calibrated sides."
+    )
 
     # Score every variant on the events ALL variants rated, so the comparison is like for like.
     shared = set(keys[VARIANTS[0]])
@@ -523,6 +544,7 @@ def main():
 
     print(f"\nScored on {len(shared)} events across {len(available_seasons)} seasons, rated by every variant "
           f"and matched to Tennis Abstract; {args.boot} season-stratified paired bootstrap resamples\n")
+    print("Each season's Tennis Abstract reference is re-centred on that same common event subset.")
     metric_labels = (
         ("r", "Pearson r"),
         ("rho", "Spearman rho"),
@@ -537,6 +559,18 @@ def main():
             low, high = interval([sample[metric] for sample in boot[variant]])
             cells.append(f"{point[metric]:7.3f} [{low:6.3f},{high:6.3f}]")
         print(f"{variant:11s} " + " ".join(f"{cell:>23s}" for cell in cells))
+
+    # Per-season results show whether the pooled comparison hides period-specific reversals.
+    print("\nPer-season Pearson r / Spearman rho / MAE (common events only)")
+    print(f"{'season':>6s} {'variant':11s} {'events':>6s} {'r':>7s} {'rho':>7s} {'MAE':>7s}")
+    for season in available_seasons:
+        season_indices = [i for i, key in enumerate(shared) if key[0] == season]
+        for variant in VARIANTS:
+            season_metrics = metrics([table[variant][i] for i in season_indices])
+            print(
+                f"{season:6d} {variant:11s} {len(season_indices):6d} "
+                f"{season_metrics['r']:7.3f} {season_metrics['rho']:7.3f} {season_metrics['mae']:7.3f}"
+            )
 
     baseline = args.baseline
     print(
@@ -564,8 +598,9 @@ def main():
 
     print(
         "\nInterpretation: higher r/rho and lower MAE are closer to the published reference. "
-        "Bias near zero indicates less systematic over/under-rating. Agreement with Tennis "
-        "Abstract is a reference comparison, not proof of a better physical court-speed measure. "
+        "Bias near zero indicates less systematic over/under-rating. Each season's published "
+        "reference and all four variants are centred on the exact same event subset. Agreement "
+        "with Tennis Abstract is a reference comparison, not proof of a better physical court-speed measure. "
         "Bootstrap resampling is stratified by season to preserve the observed season composition."
     )
 
