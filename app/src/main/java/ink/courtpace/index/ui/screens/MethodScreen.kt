@@ -118,15 +118,19 @@ fun MethodScreen(data: PaceData) {
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "Player tendencies come from the baseline's profile season or the most recent " +
-                    "qualified profile in the ten seasons before it. Where a player has no qualified profile, " +
-                    "their own available surface-specific serve sample is shrunk toward that season's " +
-                    "surface average using a 300-service-point prior. Expected-ace odds are calculated as " +
-                    "the server's serve odds multiplied by the returner's ace-concession odds and divided " +
-                    "by the season tour-average ace odds, then multiplied by service points. Positive " +
-                    "expected-ace counts below 0.5 are floored at 0.5 rather than dropping that side. " +
-                    "Historical and live ratings use this same calibrated rule; low-sample estimates are " +
-                    "labelled in the baseline.",
+                text = "Server and returner tendencies use qualified surface-specific rates: clay and " +
+                    "hard/grass, with clay weighted one third and hard/grass two thirds when both qualify " +
+                    "(at least three matches in each surface bucket). If only one surface qualifies, that " +
+                    "rate is used. A returner without a qualified surface profile falls back to their pooled " +
+                    "ace-concession rate. Player profiles come from the baseline's profile season or the " +
+                    "most recent eligible profile in the ten seasons before it. Where a server has no " +
+                    "qualified profile, their available surface-specific serve sample is shrunk toward the " +
+                    "season surface average using a 300-service-point prior. Expected-ace odds are the " +
+                    "server's serve odds multiplied by the returner's concession odds and divided by the " +
+                    "season tour-average ace odds, then multiplied by service points. Positive expected-ace " +
+                    "counts below 0.5 are floored at 0.5 rather than dropping that side. Historical and live " +
+                    "ratings use the same calibrated rule; profile sources and low-sample estimates are " +
+                    "tracked in the baseline.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
