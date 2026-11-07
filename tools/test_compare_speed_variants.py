@@ -125,5 +125,47 @@ class TennisAbstractReferenceParsingTests(unittest.TestCase):
         self.assertEqual(comparison.parse_tennis_abstract_page(html), {})
 
 
+
+class PlayerRateEligibilityTests(unittest.TestCase):
+    def test_qualified_surface_is_not_discarded_by_a_small_other_surface_sample(self):
+        rows = []
+        index = 0
+        for surface, count, aces in (("Clay", 3, 10), ("Hard", 2, 30)):
+            for _ in range(count):
+                index += 1
+                rows.append({
+                    "surface": surface,
+                    "winner_id": "player",
+                    "loser_id": f"opponent-{index}",
+                    "w_svpt": 100,
+                    "l_svpt": 100,
+                    "w_ace": aces,
+                    "l_ace": 8,
+                })
+
+        serve, _concede, _tour = comparison.player_rates(rows)
+
+        self.assertAlmostEqual(0.10, serve["player"])
+
+
+class SurfaceStratifiedMetricsTests(unittest.TestCase):
+    def test_reports_reference_error_separately_by_surface(self):
+        pairs = [(1.1, 1.0), (0.9, 1.0), (1.2, 1.1), (0.8, 1.0)]
+        surfaces = ["Clay", "Clay", "Hard", "Hard"]
+
+        result = comparison.surface_metrics(pairs, surfaces)
+
+        self.assertEqual(2, result["Clay"]["n"])
+        self.assertAlmostEqual(0.0, result["Clay"]["bias"])
+        self.assertAlmostEqual(0.10, result["Clay"]["mae"])
+        self.assertEqual(2, result["Hard"]["n"])
+        self.assertAlmostEqual(-0.05, result["Hard"]["bias"])
+        self.assertAlmostEqual(0.15, result["Hard"]["mae"])
+
+    def test_rejects_mismatched_pair_and_surface_counts(self):
+        with self.assertRaises(ValueError):
+            comparison.surface_metrics([(1.0, 1.0)], ["Clay", "Hard"])
+
+
 if __name__ == "__main__":
     unittest.main()
