@@ -5,7 +5,7 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison]
     paths:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
