@@ -277,12 +277,12 @@ doc = {
             },
             {
                 "id": "computed",
-                "name": "Computed history - from Jeff Sackmann's ATP archive",
+                "name": "Computed history - ATP match archives",
                 "metric": "Speed",
-                "detail": "Historical seasons are recomputed from the public ATP match archive compiled "
-                          "by Jeff Sackmann (CC BY-NC-SA 4.0), using a season-calibrated server/returner "
-                          "odds-ratio expectation, a 0.5 expected-ace floor, and season normalisation. "
-                          "Non-commercial use only.",
+                "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); "
+                          "the current season prefers the TennisMyLife ATP Match Database. Both use "
+                          "the season-calibrated server/returner odds-ratio method, 0.5 expected-ace "
+                          "floor and season normalisation. TML data use is non-commercial only.",
                 "url": "https://github.com/Aneeshers/tennis-sackmann-archive",
             },
         ],
