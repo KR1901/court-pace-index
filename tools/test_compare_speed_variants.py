@@ -52,5 +52,40 @@ class MetricTests(unittest.TestCase):
         self.assertEqual(comparison.ranks([1.0, 1.0, 2.0]), [1.5, 1.5, 3.0])
 
 
+
+class TennisAbstractReferenceParsingTests(unittest.TestCase):
+    def test_parses_annual_table_rows_with_nested_tournament_links(self):
+        html = """
+        <table>
+          <tr><th>Date</th><th>Tournament</th><th>Surface</th><th>Ace%</th><th>Surface Speed</th></tr>
+          <tr><td>20-Feb-2012</td><td><a href="/event">Marseille</a></td>
+              <td>Hard</td><td>14.9%</td><td>1.57</td></tr>
+          <tr><td>27-May-2012</td><td>Roland Garros</td>
+              <td>Clay</td><td>7.1%</td><td>0.80</td></tr>
+        </table>
+        """
+        result = comparison.parse_tennis_abstract_page(html)
+        self.assertEqual(result["marseille"], 1.57)
+        self.assertEqual(result["rolandgarros"], 0.80)
+
+    def test_event_name_aliases_collapse_common_source_variants(self):
+        self.assertEqual(comparison.tournament_key("US Open"), comparison.tournament_key("Us Open"))
+        self.assertEqual(comparison.tournament_key("Rio"), comparison.tournament_key("Rio de Janeiro"))
+        self.assertEqual(
+            comparison.tournament_key("ATP Finals"),
+            comparison.tournament_key("Tour Finals"),
+        )
+
+    def test_rejects_non_table_and_out_of_range_rows(self):
+        html = """
+        <table>
+          <tr><td>Date</td><td>Tournament</td><td>Surface</td><td>Ace%</td><td>Surface Speed</td></tr>
+          <tr><td>01-Jan-2012</td><td>Broken Event</td><td>Hard</td><td>10%</td><td>not-a-number</td></tr>
+          <tr><td>02-Jan-2012</td><td>Bad Event</td><td>Hard</td><td>10%</td><td>8.0</td></tr>
+        </table>
+        """
+        self.assertEqual(comparison.parse_tennis_abstract_page(html), {})
+
+
 if __name__ == "__main__":
     unittest.main()
