@@ -345,6 +345,25 @@ class UncertaintyTests(unittest.TestCase):
         self.assertLessEqual(one["low"], one["high"])
         self.assertEqual(500, one["iterations"])
 
+    def test_full_pipeline_bootstrap_refits_profiles_matches_and_normaliser(self):
+        rows = (
+            [match("Paris Masters", 8, 8, surface="Hard") for _ in range(10)]
+            + [match("Rome Masters", 8, 8, surface="Hard") for _ in range(10)]
+        )
+        config = audit.config_grid()["shrink_150_min3"]
+        one = audit.full_pipeline_bootstrap_interval(
+            "parismasters", rows, config, iterations=12, seed=91
+        )
+        two = audit.full_pipeline_bootstrap_interval(
+            "parismasters", rows, config, iterations=12, seed=91
+        )
+        self.assertEqual(one, two)
+        self.assertEqual(12, one["iterations"])
+        self.assertEqual(12, one["successful"])
+        self.assertAlmostEqual(1.0, one["low"], places=10)
+        self.assertAlmostEqual(1.0, one["high"], places=10)
+        self.assertIn("recomputed", one["normaliser"])
+
     def test_configuration_grid_contains_weights_shrinkage_and_carpet_test(self):
         configs = audit.config_grid()
         self.assertIn("loeo_current_1_3", configs)
