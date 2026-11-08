@@ -217,6 +217,7 @@ def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
     ret_ace = defaultdict(float); ret_pts = defaultdict(float); ret_n = defaultdict(int)
     ret_clay_ace = defaultdict(float); ret_clay_pts = defaultdict(float); ret_clay_n = defaultdict(int)
     ret_hg_ace = defaultdict(float); ret_hg_pts = defaultdict(float); ret_hg_n = defaultdict(int)
+    all_serve_ace = defaultdict(float); all_serve_sv = defaultdict(float); all_serve_n = defaultdict(int)
     names = {}
     tour_aces = tour_points = clay_tour_aces = clay_tour_points = hg_tour_aces = hg_tour_points = 0.0
 
@@ -226,6 +227,8 @@ def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
         wid, lid = r["winner_id"], r["loser_id"]
         names[wid] = r.get("winner_name") or ""
         names[lid] = r.get("loser_name") or ""
+        all_serve_ace[wid] += w_ac; all_serve_sv[wid] += w_sv; all_serve_n[wid] += 1
+        all_serve_ace[lid] += l_ac; all_serve_sv[lid] += l_sv; all_serve_n[lid] += 1
         surface = (r.get("surface") or "").strip()
         tour_aces += w_ac + l_ac
         tour_points += w_sv + l_sv
@@ -314,6 +317,9 @@ def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
             "concede_rate_prior_points": prior_points if concede_rate.get(p) is not None else 0.0,
             "clay_matches": clay_n[p], "hard_grass_matches": hg_n[p],
             "return_points": ret_pts.get(p, 0.0),
+            "pooled_serve_aces": all_serve_ace.get(p, 0.0),
+            "pooled_serve_points": all_serve_sv.get(p, 0.0),
+            "pooled_serve_matches": all_serve_n.get(p, 0),
             "pooled_return_aces": ret_ace.get(p, 0.0),
             "pooled_return_points": ret_pts.get(p, 0.0),
             "pooled_return_matches": ret_n.get(p, 0),
