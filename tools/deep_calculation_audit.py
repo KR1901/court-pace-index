@@ -665,6 +665,63 @@ def profile_and_match_bootstrap_interval(tid, target_rows, event_surface, all_ev
     }
 
 
+def full_pipeline_bootstrap_interval(tid, all_rows, config, iterations=250, seed=1):
+    """
+    Full-pipeline bootstrap for one event.
+
+    Resample matches within each tournament, rebuild every player profile and each event's
+    leave-one-event-out tour anchor, then recompute the season normaliser on every draw.
+    Unlike the conditional and profile-only intervals, this propagates normaliser uncertainty.
+    """
+    if not all_rows or iterations < 1:
+        return None
+    grouped = defaultdict(list)
+    for row in all_rows:
+        key = event_id(row.get("tourney_name")) or "__unmapped__"
+        grouped[key].append(row)
+    if tid not in grouped:
+        return None
+
+    rng = random.Random(seed)
+    samples = []
+    for _ in range(iterations):
+        sampled_rows = []
+        for matches in grouped.values():
+            sampled_rows.extend(rng.choices(matches, k=len(matches)))
+        (_usable, event_rows, event_surfaces, players, event_players,
+         global_stats, event_stats) = aggregate_season(sampled_rows)
+
+        raw_by_event = {}
+        for event_id_key, matches in event_rows.items():
+            surface = event_surfaces.get(event_id_key, "Unknown")
+            profiles, prior_players = build_event_profiles(
+                event_id_key, surface, players, event_players,
+                global_stats, event_stats, config,
+            )
+            ratios, _clusters = score_event(
+                event_id_key, matches, surface, profiles,
+                global_stats, event_stats, prior_players,
+            )
+            if len(ratios) >= MIN_SIDES:
+                raw_by_event[event_id_key] = statistics.fmean(ratios)
+
+        normaliser = statistics.fmean(raw_by_event.values()) if raw_by_event else None
+        target_raw = raw_by_event.get(tid)
+        if normaliser is not None and normaliser > 0 and target_raw is not None:
+            samples.append(target_raw / normaliser)
+
+    if not samples:
+        return None
+    low, high = mean_ci(samples)
+    return {
+        "low": low,
+        "high": high,
+        "iterations": iterations,
+        "successful": len(samples),
+        "normaliser": "recomputed from all LOEO event scores on every bootstrap draw",
+    }
+
+
 def physical_cpi_diagnostics(dataset_path):
     if not dataset_path.exists():
         return {"status": "dataset not found"}
@@ -732,10 +789,12 @@ def run_audit(seasons, boot, detail_ids):
     raw_by_season = {}
     detail_by_season = {}
     event_rows_by_season = {}
+    rows_by_season = {}
 
     print("season  usable matches  events  TA references  common LOEO events")
     for year in sorted(published):
         rows = compute_speed.load(year)
+        rows_by_season[year] = rows
         raw, normalisers, details, usable_count, event_count, event_surfaces, event_rows = score_season(
             rows, configs, detail_ids
         )
@@ -856,21 +915,24 @@ def run_audit(seasons, boot, detail_ids):
                 print(f"    {surface:8s} n={len(selected):4d} "
                       f"rho={m['rho']:.3f} MAE={m['mae']:.3f} bias={m['bias']:+.3f}")
 
-    print("\nEVENT-LEVEL MATCH-CLUSTER BOOTSTRAP INTERVALS (2026; conditional on profiles)")
-    for variant, events in detail_by_season.get(max(detail_by_season), ({}, {}))[0].items():
-        for tid, item in events.items():
-            if tid not in detail_ids:
-                continue
-            normaliser = detail_by_season[max(detail_by_season)][1].get(variant)
-            interval = cluster_bootstrap_interval(
-                item["clusters"], normaliser, max(500, boot // 2),
-                1000 + sum(ord(c) for c in tid) + sum(ord(c) for c in variant),
-            )
-            if interval:
-                status = "standard" if item["ordinaryRatingEligible"] else "provisional (below 20 sides)"
-                print(f"  {variant} {tid}: {status}, LOEO={item['raw'] / normaliser:.3f}, "
-                      f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
-                      f"{item['matches']} matches/{item['sides']} sides")
+    detail_years = sorted(rows_by_season)[-2:]
+    print(f"\nEVENT-LEVEL MATCH-CLUSTER BOOTSTRAP INTERVALS ({detail_years}; conditional on profiles)")
+    for year in detail_years:
+        year_details, year_normalisers = detail_by_season[year]
+        for variant, events in year_details.items():
+            for tid, item in events.items():
+                if tid not in detail_ids:
+                    continue
+                normaliser = year_normalisers.get(variant)
+                interval = cluster_bootstrap_interval(
+                    item["clusters"], normaliser, max(500, boot // 2),
+                    1000 + year + sum(ord(c) for c in tid) + sum(ord(c) for c in variant),
+                )
+                if interval:
+                    status = "standard" if item["ordinaryRatingEligible"] else "provisional (below 20 sides)"
+                    print(f"  {year} {variant} {tid}: {status}, LOEO={item['raw'] / normaliser:.3f}, "
+                          f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
+                          f"{item['matches']} matches/{item['sides']} sides")
 
     # This second interval re-fits the player profiles in every draw. The season
     # normaliser is intentionally held fixed to isolate profile + match sampling variance.
@@ -901,6 +963,29 @@ def run_audit(seasons, boot, detail_ids):
                       f"{interval['successful']}/{interval['iterations']} successful resamples "
                       f"({item['matches']} matches/{item['sides']} sides)")
 
+    # Recompute the season normaliser on every resample for the two most recent seasons.
+    # This is the full uncertainty propagation requested by the audit council.
+    print("\nFULL-PIPELINE EVENT BOOTSTRAP (profile + target matches + LOEO normaliser refit)")
+    production_config = configs["shrink_150_min3"]
+    for year in detail_years:
+        year_details, year_normalisers = detail_by_season[year]
+        for tid in sorted(detail_ids):
+            item = year_details.get("shrink_150_min3", {}).get(tid)
+            if not item:
+                continue
+            interval = full_pipeline_bootstrap_interval(
+                tid, rows_by_season[year], production_config,
+                iterations=250,
+                seed=30000 + year + sum(ord(char) for char in tid),
+            )
+            if interval:
+                normaliser = year_normalisers["shrink_150_min3"]
+                status = "standard" if item["ordinaryRatingEligible"] else "provisional (below 20 sides)"
+                print(f"  {year} {tid}: {status}, LOEO={item['raw'] / normaliser:.3f}, "
+                      f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
+                      f"{interval['successful']}/{interval['iterations']} successful resamples; "
+                      f"normaliser refit each draw ({item['matches']} matches/{item['sides']} sides)")
+
     print("\nPHYSICAL CPI CROSS-CHECK")
     print(json.dumps(physical_cpi_diagnostics(DATASET), indent=2, sort_keys=True))
     print("\nInterpretation: TA agreement is a behavioural reference comparison, not physical "
@@ -920,7 +1005,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seasons", type=int, nargs="*", default=None)
     parser.add_argument("--boot", type=int, default=2000)
-    parser.add_argument("--detail", default="marrakech,lavercup",
+    parser.add_argument("--detail", default="marrakech,lavercup,montpellier,paris",
                         help="comma-separated event ids for conditional match-cluster intervals")
     args = parser.parse_args()
     if args.boot < 100:
