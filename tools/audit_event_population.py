@@ -101,6 +101,11 @@ def main():
         description="Reconcile a tournament's match rows against the calculation pipeline's eligibility rules."
     )
     parser.add_argument("--event", default="Montpellier")
+    parser.add_argument(
+        "--all-events",
+        action="store_true",
+        help="Audit profile coverage for every mapped ATP event in the loaded season source.",
+    )
     parser.add_argument("--season", type=int, default=datetime.now().year)
     parser.add_argument("--out", default="build/event-population-audit")
     parser.add_argument(
@@ -116,6 +121,121 @@ def main():
             f"Required source {args.require_source!r}, but compute_speed.load({args.season}) "
             f"selected {source_label!r}. No population reconciliation was produced."
         )
+
+    if args.all_events:
+        mapped_event_ids = sorted({
+            event_id
+            for row in rows
+            if (event_id := compute_speed.NAMES.get((row.get("tourney_name") or "").strip()))
+        })
+        if not mapped_event_ids:
+            raise SystemExit(f"No mapped ATP events found in the {args.season} source.")
+
+        usable_rows = compute_speed.valid_rows(rows)
+        coverage_records = []
+        totals = Counter()
+        event_names_by_id = {}
+        raw_rows_by_id = Counter()
+        for row in rows:
+            event_id = compute_speed.NAMES.get((row.get("tourney_name") or "").strip())
+            if event_id:
+                raw_rows_by_id[event_id] += 1
+                event_names_by_id.setdefault(event_id, set()).add(row.get("tourney_name") or "")
+
+        for event_id in mapped_event_ids:
+            raw_event_rows = [
+                row for row in rows
+                if compute_speed.NAMES.get((row.get("tourney_name") or "").strip()) == event_id
+            ]
+            eligible_rows = [
+                row for row in usable_rows
+                if compute_speed.NAMES.get((row.get("tourney_name") or "").strip()) == event_id
+            ]
+            eligible_sides = len(eligible_rows) * 2
+            coverage = model_profile_coverage(rows, event_id, args.season)
+            rateable_sides = int(coverage.get("rateable_server_sides") or 0)
+            aces = sum(number(row, "w_ace") + number(row, "l_ace") for row in eligible_rows)
+            points = sum(number(row, "w_svpt") + number(row, "l_svpt") for row in eligible_rows)
+            gap_sides = max(0, eligible_sides - rateable_sides)
+            labels = sorted(name for name in event_names_by_id.get(event_id, set()) if name)
+            record = {
+                "season": args.season,
+                "event_id": event_id,
+                "event_names": "; ".join(labels),
+                "raw_event_rows": len(raw_event_rows),
+                "eligible_matches": len(eligible_rows),
+                "eligible_server_sides": eligible_sides,
+                "rateable_server_sides": rateable_sides,
+                "unrateable_server_sides": gap_sides,
+                "tour_prior_sides": int(coverage.get("tour_prior_sides") or 0),
+                "tour_prior_server_profiles": int(coverage.get("tour_prior_server_profiles") or 0),
+                "tour_prior_returner_profiles": int(coverage.get("tour_prior_returner_profiles") or 0),
+                "missing_server_profiles_before_fallback": int(
+                    coverage.get("missing_server_profile_before_fallback") or 0
+                ),
+                "missing_returner_profiles_before_fallback": int(
+                    coverage.get("missing_returner_profile_before_fallback") or 0
+                ),
+                "missing_both_profiles_before_fallback": int(
+                    coverage.get("missing_both_profiles_before_fallback") or 0
+                ),
+                "career_history_server_sides": int(coverage.get("career_history_server_sides") or 0),
+                "career_history_returner_sides": int(coverage.get("career_history_returner_sides") or 0),
+                "profile_database_players": int(coverage.get("profile_database_players") or 0),
+                "total_aces": aces,
+                "total_service_points": points,
+                "ace_rate_pct": round(100 * aces / points, 4) if points else None,
+            }
+            coverage_records.append(record)
+            totals["events"] += 1
+            totals["raw_event_rows"] += len(raw_event_rows)
+            totals["eligible_matches"] += len(eligible_rows)
+            totals["eligible_server_sides"] += eligible_sides
+            totals["rateable_server_sides"] += rateable_sides
+            totals["unrateable_server_sides"] += gap_sides
+            totals["tour_prior_sides"] += record["tour_prior_sides"]
+            totals["events_with_unrateable_sides"] += gap_sides > 0
+            totals["events_with_tour_prior_sides"] += record["tour_prior_sides"] > 0
+
+        metadata = compute_speed.SOURCE_METADATA_BY_YEAR.get(args.season, {})
+        summary = {
+            "generated_utc": datetime.now(timezone.utc).isoformat(),
+            "season": args.season,
+            "source": source_label,
+            "source_metadata": {
+                key: metadata.get(key)
+                for key in ("url", "fetchedAtUtc", "latestMatchDate", "matchRows", "bytes", "sha256")
+            },
+            "scope": "all mapped ATP tour events in the selected season source",
+            "event_count": int(totals["events"]),
+            "raw_event_rows": int(totals["raw_event_rows"]),
+            "eligible_matches": int(totals["eligible_matches"]),
+            "eligible_server_sides": int(totals["eligible_server_sides"]),
+            "rateable_server_sides": int(totals["rateable_server_sides"]),
+            "unrateable_server_sides": int(totals["unrateable_server_sides"]),
+            "events_with_unrateable_sides": int(totals["events_with_unrateable_sides"]),
+            "tour_prior_sides": int(totals["tour_prior_sides"]),
+            "events_with_tour_prior_sides": int(totals["events_with_tour_prior_sides"]),
+            "profile_history_start_year": compute_speed.PROFILE_HISTORY_START_YEAR,
+            "profile_history_window_years": compute_speed.LIVE_PROFILE_FALLBACK_SEASONS,
+            "profile_history_decay": compute_speed.LIVE_PROFILE_HISTORY_DECAY,
+            "id_crosswalk": "unique normalized full name only; ambiguous names not merged",
+            "events": coverage_records,
+            "raw_source_csv_included": False,
+        }
+        output = ROOT / args.out
+        output.mkdir(parents=True, exist_ok=True)
+        with (output / "event-profile-coverage.csv").open(
+            "w", newline="", encoding="utf-8"
+        ) as file:
+            writer = csv.DictWriter(file, fieldnames=list(coverage_records[0]))
+            writer.writeheader()
+            writer.writerows(coverage_records)
+        (output / "summary.json").write_text(
+            json.dumps(summary, indent=2) + "\\n", encoding="utf-8"
+        )
+        print(json.dumps(summary, indent=2))
+        return
 
     event_rows = [
         row for row in rows
