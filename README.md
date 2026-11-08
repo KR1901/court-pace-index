@@ -57,7 +57,11 @@ The live pipeline excludes walkovers, confirmed no-play records, doubles and in-
 
 The latest completed formula comparison covered 1,289 common event-seasons across 36 seasons (1991–2026), with 5,000 season-stratified paired bootstrap resamples. The calibrated surface-returner variant had the strongest overall rank agreement and mean absolute error among the tested candidates (Pearson 0.925, Spearman 0.926, MAE 0.052) against the Tennis Abstract reference series.
 
-That result measures agreement with a published behavioural reference, **not physical accuracy**. The deep audit also tested shrinkage, surface weighting, uncertainty and a limited CPI cross-check. The production formulation is retained; exact Montpellier match-population reconciliation and broader independent physical validation remain explicit research tasks.
+That result measures agreement with a published behavioural reference, **not physical accuracy**. The 1991–2026 profile audit covered 1,533 mapped event-seasons, 71,150 matches and 142,300 eligible server sides; all sides were rateable, with explicit neutral tour-average priors on 1,584 sides (1.11%). The ambiguity-aware audit found zero ambiguous normalized-name collisions and zero existing profiles with unusable role rates.
+
+The current 2026 production full-history ratings are Montpellier **1.664** (54/54 sides; rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]) and Marrakech **0.999** (52/52 sides; rank 34/57; interval [0.828, 1.182]). The separate same-season sensitivity audit produces different figures and must not be confused with the production long-history calculation. Montpellier's 54-side source/profile gap is resolved, but its TML ace rate (14.2%) still differs from Tennis Abstract's published 19.8%; TA's exact population/statistic definition remains unresolved. The deep audit tested shrinkage, surface weighting, uncertainty and a limited CPI cross-check. Physical validation remains limited and does not justify a clay-specific correction.
+
+The checked-in app asset still needs a verified refresh from the latest \`data/speed_history.json\`. The refresh workflow now checks exact CALC reading parity before publishing, but the latest-head workflow checks were marked \`action_required\` before jobs started, so do not assume the updated Montpellier/Marrakech values have reached the bundled asset yet.
 
 - [PR #1 — live ATP discovery, parsing and coverage](docs/PR1.md)
 - [PR #2 — formulation, statistical audit and diagnostics](docs/PR2.md)
