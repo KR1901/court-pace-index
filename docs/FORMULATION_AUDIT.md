@@ -86,3 +86,9 @@ The 2026 production asset at the pre-fix audit baseline contained 57 CALC / 1 TA
 - Live low-sample shrinkage now uses the same 150-service-point prior as historical ratings; the previous 300-point live fallback was inconsistent.
 - The Method screen no longer asserts a typical hard range of 0.50–1.50 and clarifies that CALC is a relative behavioural measure, not absolute physical court speed.
 - Regression tests cover fresh/current event filtering, stale-manifest rejection and removal of active-event rows from baseline training.
+
+
+## Production uncertainty and low-sample reporting
+- Every standard historical CALC reading now carries a 95% match-cluster interval. The bootstrap samples whole matches so both server sides remain together; fitted LOEO profiles and the season normaliser are held fixed. This interval is explicitly conditional and does not represent total parameter or physical-measurement uncertainty.
+- Events with 10–19 eligible adjusted server sides carry a separate provisional CALC estimate and conditional interval. They have no primary speed value and therefore cannot enter ranking, comparison or season normalisation. Events below 10 sides remain unrated.
+- The app displays the conditional interval for standard CALC readings and labels provisional values separately with their match and server-side counts.
