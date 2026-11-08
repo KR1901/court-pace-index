@@ -26,6 +26,7 @@ COUNT_FIELDS = (
 )
 FALLBACK_FIELDS = (
     "profile_exists_without_rate_occurrences",
+    "ambiguous_name_match_occurrences",
     "no_player_profile_in_history_occurrences",
     "server_role_fallback_occurrences",
     "returner_role_fallback_occurrences",
@@ -191,6 +192,7 @@ def render_markdown(report):
         "| Diagnostic | Count |",
         "|---|---:|",
         f"| Missing role estimate although a player profile record exists | {fallback['profile_exists_without_rate_occurrences']:,} |",
+        f"| Ambiguous normalized-name candidates (not crosswalked) | {fallback['ambiguous_name_match_occurrences']:,} |",
         f"| No player profile found in the history window | {fallback['no_player_profile_in_history_occurrences']:,} |",
         f"| Server-role fallback occurrences | {fallback['server_role_fallback_occurrences']:,} |",
         f"| Returner-role fallback occurrences | {fallback['returner_role_fallback_occurrences']:,} |",
