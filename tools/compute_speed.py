@@ -620,6 +620,77 @@ def _normalise_profile_name(name):
     )
 
 
+def ensure_event_profiles(event_rows, profiles, tour_rate):
+    """Resolve cross-source IDs by unique player name and supply explicit tour-prior fallbacks.
+
+    The fallback does not pretend to be a player-specific estimate. It gives a debutant
+    or otherwise unseen player the neutral season prior so a valid match side is not silently
+    dropped, while recording the number of neutral-prior assignments for auditability.
+    """
+    candidates = defaultdict(list)
+    for profile in profiles.values():
+        key = _normalise_profile_name(profile.get("name") or "")
+        if key:
+            candidates[key].append(profile)
+    unique_by_name = {
+        key: values[0] for key, values in candidates.items() if len(values) == 1
+    }
+
+    coverage = {
+        "tour_prior_server_profiles": 0,
+        "tour_prior_returner_profiles": 0,
+        "career_history_server_profiles": 0,
+        "career_history_returner_profiles": 0,
+        "tour_prior_sides": 0,
+    }
+    for row in event_rows:
+        side_used_tour_prior = False
+        for player_id_key, player_name_key, role in (
+            ("winner_id", "winner_name", "server"),
+            ("loser_id", "loser_name", "returner"),
+        ):
+            player_id = row.get(player_id_key)
+            player_name = row.get(player_name_key) or ""
+            profile = profiles.get(player_id)
+            if profile is None:
+                candidate = unique_by_name.get(_normalise_profile_name(player_name))
+                if candidate is not None:
+                    profile = dict(candidate)
+                    profile["id"] = player_id
+                    profile["name"] = player_name or profile.get("name", "")
+                    profiles[player_id] = profile
+
+            if profile is None:
+                profile = {
+                    "id": player_id,
+                    "name": player_name,
+                    "serve_rate": None,
+                    "concede_rate": None,
+                    "serve_rate_source": None,
+                    "concede_rate_source": None,
+                    "serve_matches": 0,
+                    "concede_matches": 0,
+                    "serve_service_points": 0.0,
+                    "concede_service_points": 0.0,
+                }
+                profiles[player_id] = profile
+
+            rate_key = "serve_rate" if role == "server" else "concede_rate"
+            source_key = "serve_rate_source" if role == "server" else "concede_rate_source"
+            if profile.get(rate_key) is None:
+                profile[rate_key] = tour_rate
+                profile[source_key] = "tour-average-prior-only"
+                coverage[f"tour_prior_{role}_profiles"] += 1
+                side_used_tour_prior = True
+            elif str(profile.get(source_key) or "").startswith("career-history"):
+                coverage[f"career_history_{role}_profiles"] += 1
+
+        if side_used_tour_prior:
+            coverage["tour_prior_sides"] += 1
+
+    return coverage
+
+
 def dedupe_live_profiles_with_diagnostics(profiles):
     """
     Build the name-keyed Android index without silently merging conflicting same-name players.
@@ -805,7 +876,7 @@ def bootstrap_event_interval(clusters, normaliser, iterations=EVENT_CI_BOOTSTRAP
 
 
 def season_ratings(year, rows):
-    """LOEO tournament ratings with conditional match-cluster intervals and provisional low-sample values."""
+    """LOEO tournament ratings with a long-history, recency-weighted player-profile backfill."""
     usable = valid_rows(rows)
     rows_by_event = defaultdict(list)
     mapped_rows = []
@@ -820,10 +891,18 @@ def season_ratings(year, rows):
         training_rows = [row for mapped_id, row in mapped_rows if mapped_id != tid]
         if not training_rows:
             continue
-        profiles = player_rates(training_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        current_profiles = player_rates(
+            training_rows,
+            prior_points=PROFILE_PRIOR_SERVICE_POINTS,
+        )
+        # Backfill from every available prior ATP season (stats archive begins in 1991).
+        # build_live_profiles crosswalks current TML alphanumeric IDs to historical archive
+        # IDs by unique normalised full name and aggregates weighted career samples.
+        profiles = build_live_profiles(year, current_profiles)
         tour_rate = tour_average_ace_rate(training_rows)
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
             continue
+        profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
         clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
         ratios = [ratio for cluster in clusters for ratio in cluster]
         sides = len(ratios)
@@ -832,8 +911,12 @@ def season_ratings(year, rows):
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
         details[tid] = {
-            "raw": sum(ratios) / sides, "clusters": clusters, "sides": sides,
-            "matches": len(event_rows), "ace": 100.0 * aces / points if points else None,
+            "raw": sum(ratios) / sides,
+            "clusters": clusters,
+            "sides": sides,
+            "matches": len(event_rows),
+            "ace": 100.0 * aces / points if points else None,
+            "profile_coverage": profile_coverage,
         }
 
     standard = {tid: item for tid, item in details.items() if item["sides"] >= MIN_EVENT_SERVER_SIDES}
@@ -848,19 +931,30 @@ def season_ratings(year, rows):
             "low": round(interval["low"], 3), "high": round(interval["high"], 3),
             "method": "match-cluster-conditional-v1",
         } if interval else {}
-        common = {"ace": round(item["ace"], 1) if item["ace"] is not None else None,
-                  "matches": item["matches"]}
+        common = {
+            "ace": round(item["ace"], 1) if item["ace"] is not None else None,
+            "matches": item["matches"],
+            "tourPriorSides": item["profile_coverage"]["tour_prior_sides"],
+            "careerHistoryServerProfiles": item["profile_coverage"]["career_history_server_profiles"],
+            "careerHistoryReturnerProfiles": item["profile_coverage"]["career_history_returner_profiles"],
+        }
         if item["sides"] >= MIN_EVENT_SERVER_SIDES:
             output[tid] = {
-                **common, "speed": item["raw"] / mean_raw, "adjustedServerSides": item["sides"],
-                "speedCiLow": ci.get("low"), "speedCiHigh": ci.get("high"),
+                **common,
+                "speed": item["raw"] / mean_raw,
+                "adjustedServerSides": item["sides"],
+                "speedCiLow": ci.get("low"),
+                "speedCiHigh": ci.get("high"),
                 "speedCiMethod": ci.get("method"),
             }
         else:
             output[tid] = {
-                **common, "provisionalSpeed": item["raw"] / mean_raw,
-                "provisionalServerSides": item["sides"], "provisionalMatches": item["matches"],
-                "provisionalCiLow": ci.get("low"), "provisionalCiHigh": ci.get("high"),
+                **common,
+                "provisionalSpeed": item["raw"] / mean_raw,
+                "provisionalServerSides": item["sides"],
+                "provisionalMatches": item["matches"],
+                "provisionalCiLow": ci.get("low"),
+                "provisionalCiHigh": ci.get("high"),
                 "provisionalCiMethod": ci.get("method"),
             }
     return output
