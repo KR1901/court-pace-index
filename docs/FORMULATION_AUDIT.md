@@ -6,7 +6,7 @@
 
 ## Executive finding
 
-Retain the calibrated server/returner expected-aces formulation, equal-weight mean of valid server-side actual/expected ratios, 150-service-point profile shrinkage and three-match surface-qualification threshold. Across the current 1991–2026 comparison set, the calibrated surface-returner variant has the best combined historical rank agreement and mean absolute error among tested variants. The reference comparison is against Tennis Abstract, not a measurement of physical court speed.
+Retain the calibrated server/returner expected-aces formulation and equal-weight mean of valid server-side actual/expected ratios. Player profiles now use up to 35 prior ATP seasons beginning in 1991, 0.90 per-year recency decay, a 150-service-point shrinkage prior, three-match surface qualification and safe TML/Sackmann name crosswalking. A tour-average prior completes a side only when no defensible personal rate exists, and is explicitly counted. Across the current 1991–2026 reference comparison, the calibrated surface-returner variant has the best combined rank agreement and mean absolute error among tested variants. Tennis Abstract is a behavioural reference, not a physical measurement.
 
 No clay-specific correction is justified by the limited physical CPI cross-check. The data are sparse and selected, and the negative clay-only association is a warning to improve validation rather than proof that the formulation is physically biased.
 
@@ -121,6 +121,28 @@ The clay result merits investigation but is not a sufficient basis for a clay-sp
 Montpellier's CALC rating is 1.60 versus TA's 1.49. TA is within the full-pipeline CALC interval. The source audit explains the difference between 54 complete statistics sides and 47 model-rateable sides, but not the 14.2% versus 19.8% ace-rate difference with TA. TA's exact population and statistic definitions remain unverified.
 
 Marrakech 2026 CALC is 1.049 with a full-pipeline interval [0.866, 1.304]. Its ordinal placement alone is not evidence of a formula defect. Do not infer physical speed or a systematic clay adjustment from that one rating.
+
+## Expanded player database and 2026 all-event coverage
+
+The profile database is constructed from match-level serve and return observations, not from biographical player records. The TML ATP player directory contains identity/biography fields, but not the service-point/ace observations required by this formulation. The calculation instead uses historical ATP match archives from 1991 onward and the current-season match file.
+
+For each target event, all of that event's current-season matches are excluded from its training set. Player rates are aggregated across up to 35 prior ATP seasons, with a 0.90 multiplicative decay per year of age. TML's current alphanumeric player IDs are crosswalked to numeric archive IDs only when the normalised full name is unique in the historical profile pool. Ambiguous collisions are not merged. Surface rates require at least three observations in the surface bucket and are shrunk with the 150-service-point prior; pooled career estimates are the next fallback. If no individual estimate can be formed, the calculation uses the season tour-average rate as an explicitly labelled neutral prior.
+
+The source-required 2026 audit swept all mapped ATP tournaments in the TML current-season file:
+
+| Measure | Result |
+|---|---:|
+| Mapped events | 58 |
+| Eligible matches | 2,519 |
+| Statistically eligible server sides | 5,038 |
+| Rateable server sides | 5,038 |
+| Unrateable sides | 0 |
+| Sides using at least one neutral tour-average prior | 70 |
+| Events with at least one neutral-prior side | 25 |
+
+Thus 4,968 server sides used player-specific serve/return profile estimates; the remaining 70 used an explicitly identified tour-average rate for at least one missing role. The method does not assign an arbitrary player's profile to a name collision and does not drop a valid side simply because the player is new to the database. This is profile coverage, not proof that every rate is equally precise: prior-only estimates are less player-specific and must remain observable in the UI/data diagnostics.
+
+Montpellier is 54/54 rateable after expansion, with zero tour-prior assignments. The source ace rate (14.1964%) remains different from TA's published 19.8%; the profile expansion does not resolve TA's match-population/stat-definition discrepancy. [All-event workflow run #42473954065](https://github.com/KR1901/court-pace-index/actions/runs/42473954065).
 
 ## Live baseline and coverage controls
 
