@@ -73,17 +73,37 @@ TennisMyLife's [published repository terms](https://github.com/Tennismylife/TML-
 
 The latest completed formula comparison covered 1,289 common event-seasons across 36 seasons (1991–2026), using 5,000 season-stratified paired bootstrap resamples. The calibrated surface-returner variant scored Pearson 0.925, Spearman 0.926 and MAE 0.052 against the Tennis Abstract reference. This is evidence of agreement with that reference, not physical validation.
 
-The latest deep audit found that the 150-point shrinkage configuration improves historical out-of-sample reference agreement over the unshrunk configuration. Its full-pipeline event bootstrap intervals include profile and target-event uncertainty and are wider than conditional match-only intervals.
+The 150-service-point shrinkage configuration improved historical out-of-sample reference agreement over the unshrunk configuration. Full-pipeline event bootstrap intervals include player-profile, target-event and season-normaliser uncertainty and are wider than conditional match-only intervals.
 
-Montpellier 2026 has CALC 1.60 versus TA 1.49, with CALC ace rate 14.2% versus TA's published 19.8%. The source-required workflow loaded the TennisMyLife ATP Match Database and reconciled 27 event rows. The audit used the 2026 TML CSV at `https://stats.tennismylife.org/data/2026.csv`, fetched on 8 November 2026 at 10:02:19 UTC. The snapshot reported a latest match date of 1 November 2026, 2,719 total rows and SHA-256 `4219d664cb7f4989b2529791ed60cbc6276b0b621708016799064163bda9efe8`. The raw CSV is not committed or published.  all 27 met the source-stat eligibility rules (54 statistically complete server sides), totalling 545 aces over 3,839 service points (14.1964%). The production leave-one-event-out player profiles could rate 47 of those 54 sides; seven were not rateable because five lacked a server profile, one lacked a returner profile and one lacked both profiles. No side failed the expected-aces calculation after profiles were available. This explains the 54-versus-47 difference in CALC coverage, but it does **not** explain TA's higher 19.8% ace rate or establish which matches TA included. Do not attribute that remaining discrepancy to qualifying scope without evidence. A local event audit is available:
+The full all-event profile-coverage audit swept 1991–2026:
 
-```bash
+| Measure | Result |
+|---|---:|
+| Seasons | 36 |
+| Mapped event-seasons | 1,533 |
+| Eligible matches | 71,150 |
+| Eligible server sides | 142,300 |
+| Rateable server sides | 142,300 |
+| Unrateable server sides | 0 |
+| Sides using at least one neutral tour-average prior | 1,584 (1.113%) |
+
+All sides received finite calculation inputs, but a neutral prior is not the same thing as an individual player's serve/return history. The audit found 1,610 missing role-estimate occurrences: 805 server-role and 805 returner-role uses, all classified as no profile record in the selected history window. No fallback was classified as an existing profile record without a usable role rate. Role occurrences exceed the number of affected sides because a small number of sides needed priors for both roles. The reports omit names and IDs.
+
+Montpellier 2026 has CALC 1.60 versus TA 1.49, with CALC ace rate 14.2% versus TA's published 19.8%. The source-required workflow loaded the TennisMyLife ATP Match Database and reconciled 27 event rows. The 2026 TML CSV was fetched 8 November 2026; its snapshot reported a latest match date of 1 November 2026, 2,719 total rows and SHA-256 \`4219d664cb7f4989b2529791ed60cbc6276b0b621708016799064163bda9efe8\`. The raw CSV is not committed or published. All 27 rows met source-stat eligibility rules (54 statistically complete server sides), totalling 545 aces over 3,839 service points (14.1964%). After multi-season profile expansion, all 54 sides are rateable, with no neutral tour-prior assignment for Montpellier. This resolves the earlier 54-versus-47 profile-coverage discrepancy, but does **not** explain TA's higher 19.8% ace rate or establish which matches TA included. Do not attribute that remaining discrepancy to qualifying scope without evidence.
+
+A promising research-only source for reducing residual profile gaps is Sackmann's separate qualifying/Challenger archive. Its upstream documentation says serve statistics are generally available from 2008 for Challenger matches and 2011 for tour-level qualifying. Those competition levels are not interchangeable with ATP main draw; any backfill must be tested with unique identities, event exclusion, competition-level shrinkage and held-out validation before affecting production rates. The archive is CC BY-NC-SA 4.0. [Upstream archive documentation](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/atp/UPSTREAM_README.md) · [Archive licence](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE).
+
+The consolidated all-season report is attached to [Event population audit run #42479832106](https://github.com/KR1901/court-pace-index/actions/runs/42479832106) as \`all-event-profile-coverage-1991-2026\`. It contains \`summary.json\`, \`coverage-by-season.csv\`, \`coverage-by-event.csv\` and \`README.md\`; no raw source CSV, player names or player IDs are included. The artifact is retained for 90 days.
+
+Reproduce locally:
+
+\`\`\`bash
 python3 tools/audit_event_population.py --event Montpellier --season 2026 --require-source "TennisMyLife ATP Match Database"
 python3 tools/audit_event_population.py --all-events --season 2026 --require-source "TennisMyLife ATP Match Database"
-```
+\`\`\`
 
-The single-event mode writes `match-population.csv`; all-event mode writes `event-profile-coverage.csv`; both write `summary.json` under `build/event-population-audit/`. Add `--require-source "TennisMyLife ATP Match Database"` to fail closed if the loader selects any fallback. Reports contain derived statistics and profile coverage only, not the source CSV. They describe only the source loaded by `compute_speed.py` and cannot establish TA's population. The Montpellier reconciliation and 2026 sweep passed in [workflow run #42473954065](https://github.com/KR1901/court-pace-index/actions/runs/42473954065).
-
+Single-event mode writes \`match-population.csv\`; all-event mode writes \`event-profile-coverage.csv\` and \`summary.json\`. Add \`--require-source\` to fail closed if the loader selects any fallback. Outputs contain derived statistics and profile coverage only, not the raw source CSV. They describe only the source loaded by \`compute_speed.py\` and cannot establish Tennis Abstract's population.
+ 
 ## Independent physical validation
 
 The ace-based metric is behavioural. Independent validation should use ITF Court Pace Rating (CPR) or properly sourced CPI readings, with event/season/court identity, measurement date, source, surface construction, temperature, humidity, altitude and ball model where available.
