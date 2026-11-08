@@ -80,7 +80,7 @@ The 2026 production asset at the pre-fix audit baseline contained 57 CALC / 1 TA
 
 
 ## Live-baseline leakage and prior consistency hardening
-- Active tournament IDs are read from data/live.json only when its timestamp is within seven days and the event date window includes the current date.
+- Active tournament IDs are read from data/live.json only when its timestamp is within 24 hours and the event date window includes the current date.
 - With a fresh manifest, active-event match rows are excluded from current-season player profiles, the tour-average ace-rate anchor and live baseline normaliser. Excluded event IDs and row counts are recorded in data/live_speed_baseline.json.
 - With a stale or missing manifest, the live baseline falls back to the previous completed season; it does not assume a stale event list is complete.
 - Live low-sample shrinkage now uses the same 150-service-point prior as historical ratings; the previous 300-point live fallback was inconsistent.
