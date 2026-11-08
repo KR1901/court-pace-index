@@ -180,7 +180,7 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertLessEqual(live["p3"]["serve_rate"], 1.0)
         self.assertEqual("current-season-shrunk", live["p3"]["serve_rate_source"])
         self.assertEqual(2026, live["p3"]["serve_rate_season"])
-        self.assertEqual(300.0, live["p3"]["serve_rate_prior_points"])
+        self.assertEqual(150.0, live["p3"]["serve_rate_prior_points"])
 
         self.assertEqual(0.10, live["p5"]["serve_rate"])
         self.assertEqual("prior-season-qualified", live["p5"]["serve_rate_source"])
@@ -598,6 +598,33 @@ class SameSeasonIdentityCollisionTests(unittest.TestCase):
         deduped, diagnostics = compute_speed.dedupe_live_profiles_with_diagnostics(profiles)
         self.assertEqual([], deduped)
         self.assertEqual(1, diagnostics["ambiguousNameCollisionsExcluded"])
+
+
+class LiveEventExclusionTests(unittest.TestCase):
+    def test_fresh_manifest_excludes_active_current_season_events(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "live.json"
+            manifest.write_text(json.dumps({"generated": "2026-11-07T23:00:00Z", "events": [
+                {"t": "paris", "s": 2026, "status": "in_progress", "start": "2026-11-02", "end": "2026-11-08"},
+                {"t": "vienna", "s": 2026, "status": "in_progress", "start": "2026-10-26", "end": "2026-11-01"},
+            ]}), encoding="utf-8")
+            result = compute_speed.live_event_exclusion(live_path=manifest, today=date(2026, 11, 8),
+                now=datetime(2026, 11, 8, 5, 30, tzinfo=timezone.utc))
+            self.assertTrue(result["fresh"])
+            self.assertEqual(["paris"], result["eventIds"])
+
+    def test_stale_manifest_is_not_trusted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "live.json"
+            manifest.write_text(json.dumps({"generated": "2026-10-20T00:00:00Z", "events": []}), encoding="utf-8")
+            result = compute_speed.live_event_exclusion(live_path=manifest, today=date(2026, 11, 8),
+                now=datetime(2026, 11, 8, 5, 30, tzinfo=timezone.utc))
+            self.assertFalse(result["fresh"])
+
+    def test_active_event_rows_are_removed_from_baseline_training(self):
+        rows = [{"tourney_name": "Paris Masters"}, {"tourney_name": "Rome Masters"}]
+        filtered = compute_speed.exclude_live_event_rows(rows, {"paris"})
+        self.assertEqual(["Rome Masters"], [row["tourney_name"] for row in filtered])
 
 
 if __name__ == "__main__":
