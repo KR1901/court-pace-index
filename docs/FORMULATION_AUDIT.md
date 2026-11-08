@@ -20,21 +20,12 @@ For a server side, let:
 
 The calibrated odds ratio is:
 
-[
-O = rac{\left(\frac{p_s}{1-p_s}\right)\left(\frac{p_r}{1-p_r}\right)}
-{\frac{p_t}{1-p_t}}
-]
-
-[
-p_{expected} = \frac{O}{1+O}, \qquad
-E[aces] = servicePoints \times p_{expected}
-]
-
-The valid server-side contribution is:
-
-[
-ratio = \frac{actualAces}{\max(E[aces],0.5)}
-]
+```
+O = ((p_s / (1 - p_s)) × (p_r / (1 - p_r))) / (p_t / (1 - p_t))
+p_expected = O / (1 + O)
+expectedAces = servicePoints × p_expected
+sideRatio = actualAces / max(expectedAces, 0.5)
+```
 
 The event raw rating is the arithmetic mean of valid server-side ratios. The season normaliser is the mean raw score across eligible standard events; the published CALC value is the event raw score divided by that normaliser. The 0.5 expected-aces floor protects the denominator and is not an eligibility filter.
 
