@@ -807,7 +807,7 @@ def main():
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
 
     ours = history.get(2026, {})
-    common = sorted(set(ours) & set(published_speed))
+    common = sorted(t for t in set(ours) & set(published_speed) if ours[t].get("speed") is not None)
     if len(common) >= 5:
         pairs = [(ours[t]["speed"], published_speed[t]) for t in common]
         n = len(pairs)
