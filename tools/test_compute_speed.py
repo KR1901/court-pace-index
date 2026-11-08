@@ -27,6 +27,12 @@ def profile(
     hard_grass_points=0.0,
     hard_grass_matches=0,
     serve_matches=0,
+    clay_return_aces=0.0,
+    clay_return_points=0.0,
+    clay_return_matches=0,
+    hard_grass_return_aces=0.0,
+    hard_grass_return_points=0.0,
+    hard_grass_return_matches=0,
     pooled_serve_aces=None,
     pooled_serve_points=None,
     pooled_serve_matches=None,
@@ -71,12 +77,12 @@ def profile(
             concede_matches
             if pooled_return_matches is None else pooled_return_matches
         ),
-        "clay_return_aces": 0.0,
-        "clay_return_points": 0.0,
-        "clay_return_matches": 0,
-        "hard_grass_return_aces": 0.0,
-        "hard_grass_return_points": 0.0,
-        "hard_grass_return_matches": 0,
+        "clay_return_aces": clay_return_aces,
+        "clay_return_points": clay_return_points,
+        "clay_return_matches": clay_return_matches,
+        "hard_grass_return_aces": hard_grass_return_aces,
+        "hard_grass_return_points": hard_grass_return_points,
+        "hard_grass_return_matches": hard_grass_return_matches,
     }
 
 
@@ -597,15 +603,17 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
             "player": profile(
                 "player", "Player", serve_rate=0.10, concede_rate=0.07,
                 concede_rate_source="pooled-fallback",
-                clay_aces=12, clay_points=150, clay_matches=2,
+                clay_aces=15, clay_points=150, clay_matches=3, serve_matches=3,
+                concede_matches=2, concede_service_points=200,
             )
         }
         prior = {
             "player": profile(
                 "player", "Player", serve_rate=0.09, concede_rate=0.14,
                 concede_rate_source="surface-qualified",
-                concede_matches=6, concede_service_points=600,
+                concede_matches=4, concede_service_points=200,
                 clay_aces=20, clay_points=200, clay_matches=4,
+                clay_return_aces=28, clay_return_points=200, clay_return_matches=4,
             )
         }
 
@@ -616,9 +624,9 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
 
         self.assertAlmostEqual(0.10, live["player"]["serve_rate"])
         self.assertAlmostEqual(0.14, live["player"]["concede_rate"])
-        self.assertEqual("surface-qualified", live["player"]["concede_rate_source"])
-        self.assertEqual(2025, live["player"]["concede_rate_season"])
-        self.assertEqual(6, live["player"]["concede_matches"])
+        self.assertEqual("career-history-surface-shrunk", live["player"]["concede_rate_source"])
+        self.assertEqual(2026, live["player"]["concede_rate_season"])
+        self.assertEqual(4, live["player"]["concede_matches"])
 
 
 class ReturnerProfileDedupeTests(unittest.TestCase):
