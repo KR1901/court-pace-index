@@ -178,7 +178,7 @@ fun TournamentScreen(
                         )
                     }
                 }
-                if (liveAceRating != null && season == liveAceRating.let { season }) {
+                if (liveAceRating != null) {
                     Spacer(Modifier.height(14.dp))
                     SectionLabel("Live calculation diagnostics")
                     Spacer(Modifier.height(8.dp))
