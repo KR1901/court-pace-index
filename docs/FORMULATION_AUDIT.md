@@ -35,6 +35,7 @@ The surface-matched returner variant improves aggregate Spearman agreement and M
 - Retain calibrated odds-ratio expected aces as the production foundation; the existing 35-season benchmark materially improves on the uncalibrated method.
 - Do not replace equal-weight event means with ratio-of-sums; its historical reference agreement is weaker.
 - Do not promote surface-matched returner profiles universally until leave-one-out and carpet-specific results support it.
+- A carpet-specific profile is only used when the player has at least three carpet matches; otherwise the neutral surface profile is retained. This is an experiment, not a production change.
 - Select weights on training seasons only and report held-out seasons separately.
 - Match-cluster intervals condition on fitted player profiles and the season normaliser; full profile-estimation uncertainty remains a follow-up.
 - CPI association is diagnostic, not proof of physical validity. Independent court-level and conditions data are needed for physical or causal claims.

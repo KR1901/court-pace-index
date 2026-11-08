@@ -66,6 +66,53 @@ class SufficientStatisticsTests(unittest.TestCase):
         )
         self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, result)
 
+    def test_carpet_specific_profile_uses_carpet_sample_when_qualified(self):
+        rows = (
+            [match("Carpet target", 5, 3, surface="Carpet")]
+            + [match("Carpet training", 20, 10, surface="Carpet") for _ in range(3)]
+        )
+        (
+            _usable, _event_rows, event_surfaces, players, by_event_players,
+            global_stats, event_stats,
+        ) = audit.aggregate_season(rows)
+        target = audit.event_id("Carpet target")
+        config = {
+            "clay_weight": 1 / 3,
+            "prior_points": 0.0,
+            "min_matches": 3,
+            "pooled_return_fallback": True,
+            "pooled_return_min_matches": 1,
+            "carpet_specific": True,
+        }
+        profiles, _ = audit.build_event_profiles(
+            target, event_surfaces[target], players, by_event_players,
+            global_stats, event_stats, config,
+        )
+        self.assertAlmostEqual(0.20, profiles["p1"]["serve_rate"])
+
+    def test_carpet_specific_profile_falls_back_to_neutral_when_under_sampled(self):
+        rows = [match("Carpet target", 5, 3, surface="Carpet")] + [
+            match("Hard training", 20, 10, surface="Hard") for _ in range(3)
+        ]
+        (
+            _usable, _event_rows, event_surfaces, players, by_event_players,
+            global_stats, event_stats,
+        ) = audit.aggregate_season(rows)
+        target = audit.event_id("Carpet target")
+        config = {
+            "clay_weight": 1 / 3,
+            "prior_points": 0.0,
+            "min_matches": 3,
+            "pooled_return_fallback": True,
+            "pooled_return_min_matches": 1,
+            "carpet_specific": True,
+        }
+        profiles, _ = audit.build_event_profiles(
+            target, event_surfaces[target], players, by_event_players,
+            global_stats, event_stats, config,
+        )
+        self.assertAlmostEqual(0.20, profiles["p1"]["serve_rate"])
+
     def test_pooled_returner_fallback_keeps_production_one_match_eligibility(self):
         player = {
             "serve": {
@@ -97,7 +144,7 @@ class SufficientStatisticsTests(unittest.TestCase):
         self.assertEqual("hard_grass", audit.surface_bucket("Grass"))
         self.assertEqual("hard_grass", audit.surface_bucket("Hard"))
         self.assertEqual("clay", audit.surface_bucket("Clay"))
-        self.assertIsNone(audit.surface_bucket("Carpet"))
+        self.assertEqual("carpet", audit.surface_bucket("Carpet"))
 
 
 class LeaveOneEventOutTests(unittest.TestCase):
@@ -176,6 +223,7 @@ class UncertaintyTests(unittest.TestCase):
         configs = audit.config_grid()
         self.assertIn("loeo_current_1_3", configs)
         self.assertIn("loeo_carpet_pooled", configs)
+        self.assertIn("loeo_carpet_specific", configs)
         self.assertIn("shrink_150", configs)
         self.assertIn("shrink_300", configs)
         self.assertIn("weight_clay_0_500", configs)

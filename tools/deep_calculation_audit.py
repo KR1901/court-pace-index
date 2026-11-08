@@ -67,7 +67,7 @@ def event_id(name):
 def ensure_player(container, player_id):
     if player_id not in container:
         container[player_id] = {
-            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "pooled")}
+            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
             for role in ("serve", "return")
         }
     return container[player_id]
@@ -82,7 +82,7 @@ def ensure_event_player(container, tournament_id, player_id):
 def ensure_event_stats(container, tournament_id):
     if tournament_id not in container:
         container[tournament_id] = {
-            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "pooled")}
+            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
             for role in ("serve", "return")
         }
     return container[tournament_id]
@@ -94,6 +94,8 @@ def surface_bucket(surface):
         return "clay"
     if surface in ("hard", "grass"):
         return "hard_grass"
+    if surface == "carpet":
+        return "carpet"
     return None
 
 
@@ -103,7 +105,7 @@ def aggregate_season(rows):
     players = {}
     by_event_players = {}
     global_stats = {
-        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "pooled")}
+        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
         for role in ("serve", "return")
     }
     event_stats = {}
@@ -200,19 +202,23 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
     """Build profiles from the season after subtracting every target-event observation."""
     excluded_players = event_players.get(tid, {})
     excluded_totals = event_stats.get(tid, {
-        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "pooled")}
+        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
         for role in ("serve", "return")
     })
     prior_players = {
         role: {
             bucket: subtract_stats(global_stats[role][bucket], excluded_totals[role][bucket])
-            for bucket in ("clay", "hard_grass", "pooled")
+            for bucket in ("clay", "hard_grass", "carpet", "pooled")
         }
         for role in ("serve", "return")
     }
     profiles = {}
     carpet_pooled = (
         config.get("carpet_pooled")
+        and (event_surface or "").strip().casefold() == "carpet"
+    )
+    carpet_specific = (
+        config.get("carpet_specific")
         and (event_surface or "").strip().casefold() == "carpet"
     )
 
@@ -224,7 +230,7 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
                     total_player[role][bucket],
                     event_player.get(role, {}).get(bucket),
                 )
-                for bucket in ("clay", "hard_grass", "pooled")
+                for bucket in ("clay", "hard_grass", "carpet", "pooled")
             }
             for role in ("serve", "return")
         }
@@ -238,6 +244,29 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
                 training_player["return"]["pooled"], prior_players["return"]["pooled"],
                 config["prior_points"], config["min_matches"],
             )
+        elif carpet_specific:
+            serve_rate = posterior_rate(
+                training_player["serve"]["carpet"], prior_players["serve"]["carpet"],
+                config["prior_points"], config["min_matches"],
+            )
+            concede_rate = posterior_rate(
+                training_player["return"]["carpet"], prior_players["return"]["carpet"],
+                config["prior_points"], config["min_matches"],
+            )
+            # A player without three eligible carpet matches retains the usual neutral profile.
+            if serve_rate is None:
+                serve_rate = weighted_profile(
+                    training_player, "serve", prior_players,
+                    config["clay_weight"], config["prior_points"], config["min_matches"],
+                    config.get("pooled_serve_fallback", False),
+                )
+            if concede_rate is None:
+                concede_rate = weighted_profile(
+                    training_player, "return", prior_players,
+                    config["clay_weight"], config["prior_points"], config["min_matches"],
+                    config.get("pooled_return_fallback", True),
+                    config.get("pooled_return_min_matches", 1),
+                )
         else:
             serve_rate = weighted_profile(
                 training_player, "serve", prior_players,
@@ -261,7 +290,7 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
 def tour_rate_excluding_event(tid, global_stats, event_stats):
     """Season ace probability after subtracting all matches from the target event."""
     excluded = event_stats.get(tid, {
-        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "pooled")}
+        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
         for role in ("serve", "return")
     })
     tour = subtract_stats(
@@ -311,7 +340,13 @@ def config_grid():
         },
         "loeo_carpet_pooled": {
             "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
-            "pooled_return_fallback": True, "carpet_pooled": True,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+            "carpet_pooled": True,
+        },
+        "loeo_carpet_specific": {
+            "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+            "carpet_specific": True,
         },
     }
     for weight in (0.0, 0.2, 0.5, 2.0 / 3.0, 0.8, 1.0):
@@ -506,6 +541,12 @@ def run_audit(seasons, boot, detail_ids):
     for variant in configs:
         index = {key: pair for key, pair in zip(keys[variant], pairs[variant])}
         tables[variant] = [index[key] for key in shared]
+
+    print("\nEVENT COVERAGE BY VARIANT (rated event-seasons before common-set intersection)")
+    for variant in configs:
+        total_rated = sum(len(season_raw.get(variant, {})) for season_raw in raw_by_season.values())
+        common_rated = len(keys[variant])
+        print(f"  {variant:30s} rated={total_rated:5d} common={common_rated:5d}")
 
     print(f"\nLEAVE-ONE-TOURNAMENT-OUT RESULTS: {len(shared)} event-seasons, "
           f"{len({year for year, _ in shared})} seasons")
