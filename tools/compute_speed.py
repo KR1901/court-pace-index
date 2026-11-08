@@ -623,11 +623,15 @@ def _normalise_profile_name(name):
 
 
 def ensure_event_profiles(event_rows, profiles, tour_rate):
-    """Crosswalk names and prevent valid event sides from being dropped for missing profiles.
+    """Crosswalk names and count every side that uses a neutral tour-average prior.
 
     A unique normalized full name may bridge TML alphanumeric IDs to Sackmann numeric IDs.
     If no trustworthy player-specific rate exists, use an explicit tour-average prior and
     count that use. Ambiguous identities are never assigned another player's profile.
+
+    Profile-assignment diagnostics are unique per player/role. Side-use diagnostics are
+    counted for every server side, including later matches by a player whose profile was
+    already assigned the neutral prior earlier in this event.
     """
     candidates = defaultdict(list)
     for profile in profiles.values():
@@ -641,6 +645,8 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
     coverage = {
         "tour_prior_server_profiles": 0,
         "tour_prior_returner_profiles": 0,
+        "tour_prior_server_side_uses": 0,
+        "tour_prior_returner_side_uses": 0,
         "career_history_server_sides": 0,
         "career_history_returner_sides": 0,
         "missing_server_profile_before_fallback": 0,
@@ -650,6 +656,34 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
         "rateable_server_sides": 0,
         "tour_prior_fallback_details": [],
     }
+    fallback_profile_roles = set()
+
+    def record_fallback(role, identity):
+        key = (str(identity.get("player_id") or ""), role)
+        if key in fallback_profile_roles:
+            return
+        fallback_profile_roles.add(key)
+        if role == "server":
+            coverage["missing_server_profile_before_fallback"] += 1
+            coverage["tour_prior_server_profiles"] += 1
+        else:
+            coverage["missing_returner_profile_before_fallback"] += 1
+            coverage["tour_prior_returner_profiles"] += 1
+        coverage["tour_prior_fallback_details"].append({
+            **identity,
+            "role": role,
+            "reason": (
+                "ambiguous_name_match"
+                if (
+                    not identity["had_exact_player_profile"]
+                    and identity["name_candidate_count"] > 1
+                )
+                else (
+                    "player_profile_exists_without_rate"
+                    if identity["had_player_profile"] else "no_player_profile_in_history"
+                )
+            ),
+        })
 
     for row in event_rows:
         profiles_by_role = {}
@@ -714,53 +748,27 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             returner_profile = profiles_by_role[returner_id_key]
             serve_rate = server_profile.get("serve_rate")
             concede_rate = returner_profile.get("concede_rate")
-            server_fallback = serve_rate is None
-            returner_fallback = concede_rate is None
+            server_fallback = (
+                serve_rate is None
+                or server_profile.get("serve_rate_source") == "tour-average-prior-only"
+            )
+            returner_fallback = (
+                concede_rate is None
+                or returner_profile.get("concede_rate_source") == "tour-average-prior-only"
+            )
 
             if server_fallback:
-                coverage["missing_server_profile_before_fallback"] += 1
+                coverage["tour_prior_server_side_uses"] += 1
+                record_fallback("server", profile_identity[server_id_key])
                 server_profile["serve_rate"] = tour_rate
                 server_profile["serve_rate_source"] = "tour-average-prior-only"
-                coverage["tour_prior_server_profiles"] += 1
-                identity = profile_identity[server_id_key]
-                coverage["tour_prior_fallback_details"].append({
-                    **identity,
-                    "role": "server",
-                    "reason": (
-                        "ambiguous_name_match"
-                        if (
-                            not identity["had_exact_player_profile"]
-                            and identity["name_candidate_count"] > 1
-                        )
-                        else (
-                            "player_profile_exists_without_rate"
-                            if identity["had_player_profile"] else "no_player_profile_in_history"
-                        )
-                    ),
-                })
                 serve_rate = tour_rate
 
             if returner_fallback:
-                coverage["missing_returner_profile_before_fallback"] += 1
+                coverage["tour_prior_returner_side_uses"] += 1
+                record_fallback("returner", profile_identity[returner_id_key])
                 returner_profile["concede_rate"] = tour_rate
                 returner_profile["concede_rate_source"] = "tour-average-prior-only"
-                coverage["tour_prior_returner_profiles"] += 1
-                identity = profile_identity[returner_id_key]
-                coverage["tour_prior_fallback_details"].append({
-                    **identity,
-                    "role": "returner",
-                    "reason": (
-                        "ambiguous_name_match"
-                        if (
-                            not identity["had_exact_player_profile"]
-                            and identity["name_candidate_count"] > 1
-                        )
-                        else (
-                            "player_profile_exists_without_rate"
-                            if identity["had_player_profile"] else "no_player_profile_in_history"
-                        )
-                    ),
-                })
                 concede_rate = tour_rate
 
             if server_fallback and returner_fallback:
