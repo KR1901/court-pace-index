@@ -440,13 +440,13 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
             qualifying_weight,
         )
     )
-    current_main = aggregate_2026_event_groups(
+    remapped_main = aggregate_2026_event_groups(
         remap_tml_rows_to_archive_ids(current_main_rows, tml_to_archive_id)
     )
-    current_challenger = aggregate_2026_event_groups(
+    remapped_challenger = aggregate_2026_event_groups(
         remap_tml_rows_to_archive_ids(current_challenger_rows, tml_to_archive_id)
     )
-    current_qualifying = aggregate_2026_event_groups(
+    remapped_qualifying = aggregate_2026_event_groups(
         remap_tml_rows_to_archive_ids(current_qualifying_rows, tml_to_archive_id)
     )
 
@@ -457,48 +457,70 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
             str(row.get("tourney_id") or row.get("tourney_name") or "unknown-event"),
         )].append(row)
 
+    # Maintain one rolling profile state per weight arm. Sorted target events only admit
+    # same-season source events once their week key is strictly earlier than the target.
+    training_players = {
+        player_id: json.loads(json.dumps(stats))
+        for player_id, stats in historical_players.items()
+    }
+    training_global = json.loads(json.dumps(historical_global))
+    main_index = 0
+    challenger_index = 0
+    qualifying_index = 0
+
     by_event = {}
     post_by_event = {}
     for (target_date, event_key), event_rows in sorted(target_groups.items()):
-        # Isolate each tournament's profile snapshot so it cannot use its own results.
-        training_players = {
-            player_id: json.loads(json.dumps(stats))
-            for player_id, stats in historical_players.items()
-        }
-        training_global = json.loads(json.dumps(historical_global))
+        while (
+            main_index < len(remapped_main)
+            and remapped_main[main_index]["date"]
+            and target_date
+            and remapped_main[main_index]["date"] < target_date
+        ):
+            source_event = remapped_main[main_index]
+            decay = event_recency_weight(source_event["date"], target_date)
+            backfill.merge_stats(
+                training_global, source_event["global_stats"], decay
+            )
+            merge_player_history(
+                training_players, source_event["players"], decay
+            )
+            main_index += 1
 
-        for source_event in current_main:
-            if source_event["date"] and target_date and source_event["date"] < target_date:
-                decay = event_recency_weight(source_event["date"], target_date)
-                backfill.merge_stats(
-                    training_global, source_event["global_stats"], decay
+        if challenger_weight > 0.0:
+            while (
+                challenger_index < len(remapped_challenger)
+                and remapped_challenger[challenger_index]["date"]
+                and target_date
+                and remapped_challenger[challenger_index]["date"] < target_date
+            ):
+                source_event = remapped_challenger[challenger_index]
+                decay = (
+                    event_recency_weight(source_event["date"], target_date)
+                    * challenger_weight
+                )
+                # Lower-tier observations never change ATP population priors.
+                merge_player_history(
+                    training_players, source_event["players"], decay
+                )
+                challenger_index += 1
+
+        if qualifying_weight > 0.0:
+            while (
+                qualifying_index < len(remapped_qualifying)
+                and remapped_qualifying[qualifying_index]["date"]
+                and target_date
+                and remapped_qualifying[qualifying_index]["date"] < target_date
+            ):
+                source_event = remapped_qualifying[qualifying_index]
+                decay = (
+                    event_recency_weight(source_event["date"], target_date)
+                    * qualifying_weight
                 )
                 merge_player_history(
                     training_players, source_event["players"], decay
                 )
-
-        if challenger_weight > 0.0:
-            for source_event in current_challenger:
-                if source_event["date"] and target_date and source_event["date"] < target_date:
-                    decay = (
-                        event_recency_weight(source_event["date"], target_date)
-                        * challenger_weight
-                    )
-                    # Lower-tier observations never change ATP population priors.
-                    merge_player_history(
-                        training_players, source_event["players"], decay
-                    )
-
-        if qualifying_weight > 0.0:
-            for source_event in current_qualifying:
-                if source_event["date"] and target_date and source_event["date"] < target_date:
-                    decay = (
-                        event_recency_weight(source_event["date"], target_date)
-                        * qualifying_weight
-                    )
-                    merge_player_history(
-                        training_players, source_event["players"], decay
-                    )
+                qualifying_index += 1
 
         target_player_ids = {
             tml_to_archive_id.get(str(player_id), str(player_id))
