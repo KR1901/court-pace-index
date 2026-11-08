@@ -49,6 +49,68 @@ def reason(row):
     return None
 
 
+def model_profile_coverage(all_rows, event_id):
+    """Measure source-stat sides that can receive a production LOEO profile adjustment."""
+    if not event_id:
+        return {"rateable_server_sides": None, "missing_server_profile": None,
+                "missing_returner_profile": None, "missing_both_profiles": None,
+                "invalid_expected_aces": None}
+
+    usable = compute_speed.valid_rows(all_rows)
+    target_rows = [
+        row for row in usable
+        if compute_speed.NAMES.get((row.get("tourney_name") or "").strip()) == event_id
+    ]
+    training_rows = [
+        row for row in usable
+        if compute_speed.NAMES.get((row.get("tourney_name") or "").strip()) != event_id
+    ]
+    profiles = compute_speed.player_rates(
+        training_rows,
+        prior_points=compute_speed.PROFILE_PRIOR_SERVICE_POINTS,
+    )
+    tour_rate = compute_speed.tour_average_ace_rate(training_rows)
+    counts = Counter()
+
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        return {"rateable_server_sides": 0, "missing_server_profile": None,
+                "missing_returner_profile": None, "missing_both_profiles": None,
+                "invalid_expected_aces": None, "reason": "invalid_leave_one_event_out_tour_rate"}
+
+    for row in target_rows:
+        for server, returner, service_points in (
+            (row["winner_id"], row["loser_id"], number(row, "w_svpt")),
+            (row["loser_id"], row["winner_id"], number(row, "l_svpt")),
+        ):
+            serve_rate = profiles.get(server, {}).get("serve_rate")
+            concede_rate = profiles.get(returner, {}).get("concede_rate")
+            if serve_rate is None and concede_rate is None:
+                counts["missing_both_profiles"] += 1
+                continue
+            if serve_rate is None:
+                counts["missing_server_profile"] += 1
+                continue
+            if concede_rate is None:
+                counts["missing_returner_profile"] += 1
+                continue
+            expected = compute_speed.expected_calibrated_aces(
+                serve_rate, concede_rate, tour_rate, service_points
+            )
+            if not math.isfinite(expected) or expected <= compute_speed.MIN_EXPECTED_ACES:
+                counts["invalid_expected_aces"] += 1
+                continue
+            counts["rateable_server_sides"] += 1
+
+    return {
+        "rateable_server_sides": int(counts["rateable_server_sides"]),
+        "missing_server_profile": int(counts["missing_server_profile"]),
+        "missing_returner_profile": int(counts["missing_returner_profile"]),
+        "missing_both_profiles": int(counts["missing_both_profiles"]),
+        "invalid_expected_aces": int(counts["invalid_expected_aces"]),
+        "reason": None,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Reconcile a tournament's match rows against the calculation pipeline's eligibility rules."
@@ -117,6 +179,8 @@ def main():
 
     aces = totals["winner_aces"] + totals["loser_aces"]
     points = totals["winner_service_points"] + totals["loser_service_points"]
+    event_id = compute_speed.NAMES.get((event_rows[0].get("tourney_name") or "").strip())
+    model_coverage = model_profile_coverage(rows, event_id)
     metadata = compute_speed.SOURCE_METADATA_BY_YEAR.get(args.season, {})
     summary = {
         "generated_utc": datetime.now(timezone.utc).isoformat(),
@@ -131,6 +195,7 @@ def main():
         "raw_event_rows": len(event_rows),
         "eligible_matches": int(totals["eligible_matches"]),
         "eligible_server_sides": int(totals["eligible_server_sides"]),
+        "model_profile_coverage": model_coverage,
         "excluded_rows": int(sum(excluded.values())),
         "total_aces": aces,
         "total_service_points": points,
