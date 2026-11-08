@@ -1,28 +1,48 @@
 # PR #1 — Live ATP match discovery, parsing and coverage
 
-**Scope:** PR #1 established the generic live-match ingestion pipeline. This document is maintained on PR #2's branch so repository documentation reflects current work without modifying PR #1.
+**Scope:** PR #1 contains the live ATP discovery, progressive result-page parsing, match-stat retrieval and coverage work. This document is maintained on PR #2's branch so repository documentation can describe PR #1 without changing PR #1's code branch.
 
-## Latest verified changes on the PR #1 branch
+## Pull request and current verification
 
-The latest source commit visible during this documentation refresh is `37cb815d10a3b66defefc7c4239b8dce8846786a` (6 November 2026). It addressed a progressively rendered ATP results page:
+- PR: https://github.com/KR1901/court-pace-index/pull/1
+- Base: `main`
+- Head branch: `fix/live-tournament-discovery-and-refresh`
+- Latest branch head observed for this review: `299e019f50a8b3233656a7d9542f76c44aa8e090` (6 November 2026; scheduled dataset refresh).
+- Android CI for that head passed in run [#42289096259](https://github.com/KR1901/court-pace-index/actions/runs/42289096259).
 
-- The reader waits for rendered text to stop growing for four consecutive polls, scrolling to trigger lazy-loaded sections, with a 45-second deadline.
-- The completed-match total is selected from the fuller independently observed count rather than preferring a larger percentage from a truncated sample.
-- Earlier fixes moved blocking HTTP reads to `Dispatchers.IO`, read match links from the rendered DOM, and removed unsafe assumptions about sequential match IDs and generic page titles.
-- The per-match walk retains already-collected results when its internal time budget expires.
-- WebView concurrency, per-page render timeouts and the overall walk budget were tuned after release comparisons showed that excessive parallel rendering and short timeouts reduced coverage.
+The branch includes the generic match-discovery and statistics pipeline and progressive rendering changes. A CI pass verifies build and test behaviour; ATP/Infosys CDN/WAF behaviour still requires real-device acceptance.
 
-## Match eligibility rules
+## Behaviour and eligibility
 
-- Completed singles matches with usable statistics are eligible.
-- Retirements are eligible when play occurred and valid service statistics are available.
-- Walkovers, confirmed no-play records, doubles and in-progress matches are excluded.
-- Full-match aggregate statistics are preferred; played-set statistics are summed only when the aggregate is absent or incomplete.
-- Invalid or incomplete statistics remain unresolved and visible. The app must not invent statistics to fill a coverage gap.
-- The current draw is authoritative for cache membership; stale cached match IDs must not contribute.
+- Active ATP 1000/500/250 tournaments are discovered from current ATP result pages; match IDs are read from the rendered results rather than inferred from sequential IDs.
+- The reader waits for progressive result-page rendering to settle, scrolls to trigger lazy-loaded sections and preserves results already collected if its internal time budget expires.
+- Completed singles matches with valid serving statistics are eligible.
+- Played retirements remain eligible when valid aggregate or played-set statistics exist.
+- Walkovers and confirmed no-play matches are excluded; doubles and in-progress matches are excluded.
+- Full-match aggregate stats are preferred. If those are absent or incomplete, valid played-set arrays are summed, including a partially played final set.
+- Invalid or incomplete stats stay unresolved and visible. The app must never invent values to fill coverage.
+- Cache membership is intersected with the current draw so obsolete match IDs do not contribute.
 
-## Operational limit
+## Paris Masters regression case
 
-ATP/Infosys access is device-sensitive. Server-side runners have received CDN/WAF denials, so a green CI build proves compilation and test behaviour, not successful live retrieval from a handset. Device acceptance requires refreshing a live event and reconciling discovered, played, rated, excluded and unresolved counts.
+The original failure exposed 48 outcomes, of which 47 had been played; Alcaraz–Berrettini was a walkover and must not be rated. The initial app result showed only 45 eligible ratings. The two missing played-retirement IDs were `ms043` (Arthur Rinderknech–Francisco Cerundolo) and `ms053` (Denis Shapovalov–Karen Khachanov).
 
-PR #1 remains a separate stacked change. This documentation update is committed only to PR #2's branch.
+The test suite retains these match-specific examples as regression fixtures, while production classification is generic and data-driven. CI fixtures do not prove that ATP/Infosys will serve the same payload to a physical handset.
+
+## Operational acceptance
+
+For each live-event acceptance check, compare:
+
+1. result-page outcomes discovered;
+2. played singles matches;
+3. walkovers/no-play/doubles/in-progress exclusions;
+4. valid statistics returned;
+5. rated server sides and unresolved IDs/reasons.
+
+A retirement should be counted only when play occurred and valid stats are present. A persistent 403/WAF denial must remain visible rather than being mistaken for a walkover or silently converted into data.
+
+## Relationship to PR #2
+
+PR #1 establishes live match ingestion and the app-facing live flow. PR #2 owns the calibrated expected-aces formulation, historical/live profile methodology, statistical audit, source-population tooling and related documentation. PR #2 is stacked on PR #1.
+
+This document, the refreshed root README and the data/licensing references are committed only to PR #2's branch. PR #1's code branch is not modified by those documentation commits.
