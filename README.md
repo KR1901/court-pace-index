@@ -40,7 +40,7 @@ sideRatio = actualAces / max(expectedAces, 0.5)
 
 The 0.5 expected-aces floor protects the denominator from very small expectations; it does not remove an otherwise valid server side from coverage.
 
-Historical ratings use leave-one-tournament-out player profiles and a season anchor. Live ratings use the same calibrated equation and season normalisation, with an explicitly documented profile-backfill policy. Because this is a behavioural metric, it also responds to balls, weather, altitude and player tactics. It is not a pure measurement of the physical surface.
+Historical and live ratings use leave-one-tournament-out training, but player tendencies are now built from up to 35 prior ATP seasons (1991 onward), plus the current eligible season. Historical samples receive a 0.90 per-year recency weight and a 150-service-point shrinkage prior; qualified surface rates retain the neutral clay/hard-grass blend, with pooled career estimates as the next fallback. TML alphanumeric IDs are joined to historical Sackmann IDs only through a unique normalised full-name match; ambiguous identities are not merged. If a genuinely unseen player still has no defensible personal rate, the season tour-average rate is used as an explicit neutral prior and separately counted. Because this is a behavioural metric, it also responds to balls, weather, altitude and player tactics. It is not a pure measurement of the physical surface.
 
 ## App features
 
@@ -90,10 +90,11 @@ See [DATA.md](docs/DATA.md) for provenance and [DATA-LICENSES.md](DATA-LICENSES.
 python3 -m unittest discover -s tools -p "test_*.py" -v
 python3 tools/compute_speed.py --write
 python3 tools/build_dataset.py
-python3 tools/audit_event_population.py --event Montpellier --season 2026
+python3 tools/audit_event_population.py --event Montpellier --season 2026 --require-source "TennisMyLife ATP Match Database"
+python3 tools/audit_event_population.py --all-events --season 2026 --require-source "TennisMyLife ATP Match Database"
 ```
 
-The event-population audit writes a local CSV and JSON summary under `build/event-population-audit/`. Use `--require-source "TennisMyLife ATP Match Database"` when the audit must fail rather than silently use a fallback source. The raw source CSV is not copied into the repository.
+The event-population audit writes local CSV and JSON reports under `build/event-population-audit/`. Use `--require-source` to fail rather than silently use a fallback source. `--all-events` audits each mapped tournament in the selected season and reports profile coverage, neutral-prior use and any remaining unrateable sides. The raw TML source CSV and player-level report are not copied into the repository.
 
 ## Limitations
 
