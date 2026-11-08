@@ -381,7 +381,7 @@ def remap_tml_rows_to_archive_ids(rows, tml_to_archive_id):
 
 
 def aggregate_2026_event_groups(rows):
-    """Aggregate match statistics by 2026 event-week, ready for chronological use."""
+    """Aggregate match statistics by 2026 match-day, ready for chronological use."""
     grouped = defaultdict(list)
     for row in rows:
         grouped[(
@@ -426,7 +426,7 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
                              challenger_weight, qualifying_weight):
     """Score each 2026 ATP event using only historical and strictly prior 2026 events.
 
-    The tournament-week date key is used as a conservative cutoff: a same-week or later
+    The tournament-week date key is used as a conservative cutoff: a same-day or later
     ATP, Challenger or qualifying event is excluded. Prior 2026 ATP main-draw matches may
     update both player profiles and the ATP-only population priors. Prior 2026 lower-tier
     matches update individual player profiles only.
@@ -593,9 +593,21 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
                     cluster["both_profile_sides"] += int(has_server and has_returner)
 
         if full_cluster["sides"]:
-            by_event[event_key] = full_cluster
+            if event_key not in by_event:
+                by_event[event_key] = full_cluster
+            else:
+                # A tournament spans many match dates. Accumulate each date's scored
+                # snapshot rather than overwriting the previous day's event statistics.
+                if by_event[event_key]["surface"] != full_cluster["surface"]:
+                    by_event[event_key]["surface"] = "mixed"
+                backfill.merge_cluster(by_event[event_key], full_cluster)
         if has_post_cutoff_rows and post_cluster["sides"]:
-            post_by_event[event_key] = post_cluster
+            if event_key not in post_by_event:
+                post_by_event[event_key] = post_cluster
+            else:
+                if post_by_event[event_key]["surface"] != post_cluster["surface"]:
+                    post_by_event[event_key]["surface"] = "mixed"
+                backfill.merge_cluster(post_by_event[event_key], post_cluster)
 
     return by_event, post_by_event
 
@@ -748,10 +760,10 @@ def render_markdown(report):
         "TennisMyLife 2026 ATP season CSV is used instead, supplemented by completed rows",
         "from the ongoing ATP feed. All 2026 Challenger and qualifying files are also fetched.",
         "For each ATP target event, current-season ATP, Challenger and qualifying matches are",
-        "admitted only if their event-week date key is strictly earlier than the target event.",
-        "Same-week and later events are excluded to prevent look-ahead.",
+        "admitted only if their match date is strictly earlier than the target event.",
+        "Same-day and later events are excluded to prevent look-ahead.",
         "",
-        "| Population | Valid rows in available-to-date 2026 snapshot | Tourney-date key on/after 18 May |",
+        "| Population | Valid rows in available-to-date 2026 snapshot | Match date on/after 18 May |",
         "|---|---:|---:|",
         f"| ATP main draw + ongoing ATP feed | {report['source_coverage']['atp_main_draw_2026']['deduplicated_combined_valid_rows']:,} | {report['source_coverage']['atp_main_draw_2026']['post_2026_05_17_valid_rows_in_combined']:,} |",
         f"| Challenger + ongoing Challenger feed | {report['source_coverage']['challenger_2026']['deduplicated_combined_valid_rows']:,} | {report['source_coverage']['challenger_2026']['post_2026_05_17_valid_rows_in_combined']:,} |",
@@ -783,7 +795,7 @@ def render_markdown(report):
         f"| Binomial log loss / service point | {full['atp_only']['binomial_log_loss_per_point']:.6f} | {full['surface_policy']['binomial_log_loss_per_point']:.6f} |",
         f"| Calibration bias | {full['atp_only']['calibration_bias']:+.6f} | {full['surface_policy']['calibration_bias']:+.6f} |",
         "",
-        "### Forward test — tournament-date keys on/after 18 May",
+        "### Forward test — match dates on/after 18 May",
         "",
         "| Metric | ATP-only | Surface-specific policy |",
         "|---|---:|---:|",
@@ -815,7 +827,7 @@ def render_markdown(report):
     ])
     for label, result in (
         ("All available 2026", full),
-        ("Tourney-date key on/after 18 May", late),
+        ("Match date on/after 18 May", late),
     ):
         lines.append(f"### {label}")
         for metric, name in (
@@ -842,7 +854,7 @@ def render_markdown(report):
         f"- TML IDs with no historical name match: {report['identity_crosswalk']['without_historical_name_match']:,}.",
         "- Crosswalk rule: exact Unicode-normalised full name; all aliases must resolve to one historical archive ID. No fuzzy matching.",
         "- The ATP population prior is built from ATP main-draw rows only. Challenger / qualifying affect only individual player-role estimates.",
-        "- Current-season 2026 rows are used only when their event-week date key is strictly earlier than the ATP target event. Same-week and future rows are excluded.",
+        "- Current-season 2026 rows are used only when their match date is strictly earlier than the ATP target event. Same-day and future rows are excluded.",
         "- The ATP population prior uses historical and earlier 2026 ATP main-draw rows only. Challenger / qualifying observations affect individual player-role profiles only.",
         "- All raw TML files are downloaded to an ephemeral temporary directory and deleted on exit. They are not committed, cached or uploaded.",
         "- Output artifacts contain aggregate metrics, source-file hashes and source metadata only; no match rows, player names or player IDs.",
@@ -922,13 +934,15 @@ def run_forward_test(archive_cache_dir, output_dir, bootstrap_iterations):
             "generated_utc": datetime.now(timezone.utc).isoformat(),
             "target_season": TARGET_SEASON,
             "target_data_cutoff": {
-                "static_atp_csv_latest_valid_tournament_date_key":
+                "static_atp_csv_latest_valid_match_date":
                     main_source["last_valid_tournament_date_key"],
-                "ongoing_atp_feed_latest_valid_tournament_date_key":
+                "ongoing_atp_feed_latest_valid_match_date":
                     main_source["ongoing_feed"]["last_valid_tournament_date_key"],
                 "interpretation": (
-                    "tourney_date is the event-week key, not necessarily the match-day; "
-                    "rows count only when both players and valid serve statistics are present"
+                    "The TML tourney_date field varies by match day within each tournament. "
+                    "Matches on the same date are evaluated together; only strictly earlier "
+                    "dates enter the target profile. Rows count only with valid player IDs "
+                    "and serve statistics."
                 ),
             },
             "archive": {
@@ -972,7 +986,7 @@ def run_forward_test(archive_cache_dir, output_dir, bootstrap_iterations):
             "controls": {
                 "same_season_rows_are_strictly_prior_event_only": True,
                 "lower_tier_2026_rows_used_for_2026_prediction": (
-                    "only when event-week date is strictly earlier than the ATP target event"
+                    "only when match-day date is strictly earlier than the ATP target event"
                 ),
                 "atp_main_draw_only_population_prior": True,
                 "surface_weights_selected_without_2026_holdout": True,
