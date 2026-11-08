@@ -39,17 +39,47 @@ object DatasetPolicy {
                     profile.name.isBlank() ||
                         (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
                         (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0)) ||
-                        (profile.serveRateSeason != null && profile.serveRateSeason !in 2012..baseline.season) ||
-                        (profile.concedeRateSeason != null && profile.concedeRateSeason !in 2012..baseline.season) ||
-                        (profile.serveRateSampleMatches != null && profile.serveRateSampleMatches < 1) ||
-                        (profile.serveRateSampleServicePoints != null && profile.serveRateSampleServicePoints < 1) ||
+                        (profile.serveRateSeason != null && profile.serveRateSeason !in 1991..baseline.season) ||
+                        (profile.concedeRateSeason != null && profile.concedeRateSeason !in 1991..baseline.season) ||
+                        (profile.serveRateSampleMatches != null &&
+                            (profile.serveRateSampleMatches < 0 ||
+                                (profile.serveRateSampleMatches == 0 &&
+                                    profile.serveRate != null &&
+                                    profile.serveRateSource != "tour-average-prior-only"))) ||
+                        (profile.serveRateSampleServicePoints != null &&
+                            (profile.serveRateSampleServicePoints < 0 ||
+                                (profile.serveRateSampleServicePoints == 0 &&
+                                    profile.serveRate != null &&
+                                    profile.serveRateSource != "tour-average-prior-only"))) ||
+                        (profile.concedeRateSampleMatches != null &&
+                            (profile.concedeRateSampleMatches < 0 ||
+                                (profile.concedeRateSampleMatches == 0 &&
+                                    profile.concedeRate != null &&
+                                    profile.concedeRateSource != "tour-average-prior-only"))) ||
+                        (profile.concedeRateSampleServicePoints != null &&
+                            (profile.concedeRateSampleServicePoints < 0 ||
+                                (profile.concedeRateSampleServicePoints == 0 &&
+                                    profile.concedeRate != null &&
+                                    profile.concedeRateSource != "tour-average-prior-only"))) ||
                         (profile.serveRatePriorServicePoints != null &&
                             (!profile.serveRatePriorServicePoints.isFinite() || profile.serveRatePriorServicePoints <= 0.0)) ||
+                        (profile.concedeRatePriorServicePoints != null &&
+                            (!profile.concedeRatePriorServicePoints.isFinite() || profile.concedeRatePriorServicePoints <= 0.0)) ||
                         (profile.serveRateSource != null && profile.serveRateSource !in setOf(
                             "current-season-qualified",
                             "prior-season-qualified",
                             "current-season-shrunk",
                             "prior-season-shrunk",
+                            "career-history-surface-shrunk",
+                            "career-history-pooled-shrunk",
+                            "tour-average-prior-only",
+                        )) ||
+                        (profile.concedeRateSource != null && profile.concedeRateSource !in setOf(
+                            "surface-qualified",
+                            "pooled-fallback",
+                            "career-history-surface-shrunk",
+                            "career-history-pooled-shrunk",
+                            "tour-average-prior-only",
                         ))
                 }) return false
             val usableProfiles = baseline.profiles.count { profile ->
