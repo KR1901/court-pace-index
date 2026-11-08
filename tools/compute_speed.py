@@ -336,174 +336,279 @@ def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
     }
 
 
-# A low-sample profile uses a prior equal to roughly three tour matches. This is only
-# used when no qualified player-specific rate is available in the baseline season or
-# any of the preceding ten seasons.
-LIVE_PROFILE_FALLBACK_SEASONS = 10
+# Live and historical profile coverage share one long-window, recency-weighted player history.
+PROFILE_HISTORY_START_YEAR = 1991
+LIVE_PROFILE_FALLBACK_SEASONS = 35
+LIVE_PROFILE_HISTORY_DECAY = 0.90
 LIVE_PROFILE_PRIOR_SERVICE_POINTS = 150.0
 MIN_EXPECTED_ACES = 0.0
 EXPECTED_ACES_FLOOR = 0.5
+_PROFILE_YEAR_CACHE = {}
 
 
 def _surface_priors(profiles):
-    clay_aces = sum(p["clay_aces"] for p in profiles.values())
-    clay_points = sum(p["clay_service_points"] for p in profiles.values())
-    hard_grass_aces = sum(p["hard_grass_aces"] for p in profiles.values())
-    hard_grass_points = sum(p["hard_grass_service_points"] for p in profiles.values())
+    clay_aces = sum(p.get("clay_aces", 0.0) for p in profiles.values())
+    clay_points = sum(p.get("clay_service_points", 0.0) for p in profiles.values())
+    hard_grass_aces = sum(p.get("hard_grass_aces", 0.0) for p in profiles.values())
+    hard_grass_points = sum(p.get("hard_grass_service_points", 0.0) for p in profiles.values())
+    pooled_aces = sum(p.get("pooled_serve_aces", 0.0) for p in profiles.values())
+    pooled_points = sum(p.get("pooled_serve_points", 0.0) for p in profiles.values())
     return {
         "clay": clay_aces / clay_points if clay_points > 0 else None,
         "hard_grass": hard_grass_aces / hard_grass_points if hard_grass_points > 0 else None,
+        "pooled": pooled_aces / pooled_points if pooled_points > 0 else None,
     }
 
 
 def _shrunk_serve_rate(profile, priors):
-    clay_points = profile["clay_service_points"]
-    hard_grass_points = profile["hard_grass_service_points"]
+    """Low-sample serve estimate; surface-qualified samples take precedence."""
+    clay_points = profile.get("clay_service_points", 0.0)
+    hard_grass_points = profile.get("hard_grass_service_points", 0.0)
     clay_estimate = None
     hard_grass_estimate = None
 
-    if clay_points > 0 and priors["clay"] is not None:
+    if profile.get("clay_matches", 0) >= MIN_MATCHES_PER_SURFACE and clay_points > 0 and priors["clay"] is not None:
         clay_estimate = (
             profile["clay_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * priors["clay"]
         ) / (clay_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
-    if hard_grass_points > 0 and priors["hard_grass"] is not None:
+    if profile.get("hard_grass_matches", 0) >= MIN_MATCHES_PER_SURFACE and hard_grass_points > 0 and priors["hard_grass"] is not None:
         hard_grass_estimate = (
             profile["hard_grass_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * priors["hard_grass"]
         ) / (hard_grass_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
 
     if clay_estimate is not None and hard_grass_estimate is not None:
         return (1 / 3) * clay_estimate + (2 / 3) * hard_grass_estimate
-    return clay_estimate if clay_estimate is not None else hard_grass_estimate
+    if clay_estimate is not None:
+        return clay_estimate
+    if hard_grass_estimate is not None:
+        return hard_grass_estimate
+
+    pooled_points = profile.get("pooled_serve_points", 0.0)
+    pooled_aces = profile.get("pooled_serve_aces", 0.0)
+    pooled_prior = priors.get("pooled")
+    if pooled_points > 0 and pooled_prior is not None:
+        return (
+            pooled_aces + LIVE_PROFILE_PRIOR_SERVICE_POINTS * pooled_prior
+        ) / (pooled_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
+    return None
+
+
+def _shrunk_return_rate(profile, priors):
+    """Returner concession estimate using the same long-window surface hierarchy."""
+    clay_points = profile.get("clay_return_points", 0.0)
+    hard_grass_points = profile.get("hard_grass_return_points", 0.0)
+    clay_estimate = None
+    hard_grass_estimate = None
+    if profile.get("clay_return_matches", 0) >= MIN_MATCHES_PER_SURFACE and clay_points > 0 and priors["clay"] is not None:
+        clay_estimate = (
+            profile["clay_return_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * priors["clay"]
+        ) / (clay_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
+    if profile.get("hard_grass_return_matches", 0) >= MIN_MATCHES_PER_SURFACE and hard_grass_points > 0 and priors["hard_grass"] is not None:
+        hard_grass_estimate = (
+            profile["hard_grass_return_aces"] + LIVE_PROFILE_PRIOR_SERVICE_POINTS * priors["hard_grass"]
+        ) / (hard_grass_points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
+
+    if clay_estimate is not None and hard_grass_estimate is not None:
+        return (1 / 3) * clay_estimate + (2 / 3) * hard_grass_estimate
+    if clay_estimate is not None:
+        return clay_estimate
+    if hard_grass_estimate is not None:
+        return hard_grass_estimate
+
+    points = profile.get("pooled_return_points", 0.0)
+    aces = profile.get("pooled_return_aces", 0.0)
+    pooled_prior = priors.get("pooled")
+    if points > 0 and pooled_prior is not None:
+        return (
+            aces + LIVE_PROFILE_PRIOR_SERVICE_POINTS * pooled_prior
+        ) / (points + LIVE_PROFILE_PRIOR_SERVICE_POINTS)
+    return None
+
+
+def _profile_year_rates(year):
+    """Cache source rows/profile estimates so a 35-year backfill is not re-parsed per event."""
+    if year not in _PROFILE_YEAR_CACHE:
+        _PROFILE_YEAR_CACHE[year] = player_rates(valid_rows(load(year)))
+    return _PROFILE_YEAR_CACHE[year]
 
 
 def build_live_profiles(profile_year, current_profiles):
     """
-    Build a broad but auditable live player baseline.
+    Build a broad live profile database from current-season plus prior ATP seasons.
 
-    Profiles are the union of players seen in the baseline season and the preceding ten
-    ATP seasons. Serve rates prefer the most recent qualified profile, then a shrunk estimate.
-    Returner rates prefer surface-qualified concession profiles over pooled fallbacks, even
-    when the qualified profile comes from a prior season.
+    Current-season TML IDs are alphanumeric, while older Sackmann IDs are numeric.
+    Cross-source backfill therefore uses a unique normalised full-name identity key,
+    not raw IDs. Ambiguous same-name collisions are never merged. Historical samples
+    are decayed by 0.90 per year and aggregated, rather than selecting a single prior
+    season. Surface-qualified estimates take precedence; sparse profiles are shrunk
+    toward the recency-weighted tour/surface prior. Each profile records its source,
+    sample and profile year.
 
-    This changes only the *live baseline's player coverage*. Historical season_ratings()
-    continues to use player_rates() unchanged, and the expected-aces formula plus season
-    normaliser are unchanged. Each profile records the year, source and sample behind its rate.
+    This policy is also reused by historical leave-one-tournament-out ratings.
     """
     live = {player_id: dict(profile) for player_id, profile in current_profiles.items()}
-    source_profile_by_id = {player_id: dict(profile) for player_id, profile in current_profiles.items()}
-    source_year_by_id = {player_id: profile_year for player_id in current_profiles}
-    season_profiles = {profile_year: current_profiles}
+    current_by_name = defaultdict(list)
+    raw_by_name = defaultdict(lambda: {
+        "clay_aces": 0.0, "clay_service_points": 0.0, "clay_matches": 0.0,
+        "hard_grass_aces": 0.0, "hard_grass_service_points": 0.0, "hard_grass_matches": 0.0,
+        "pooled_serve_aces": 0.0, "pooled_serve_points": 0.0, "pooled_serve_matches": 0.0,
+        "clay_return_aces": 0.0, "clay_return_points": 0.0, "clay_return_matches": 0.0,
+        "hard_grass_return_aces": 0.0, "hard_grass_return_points": 0.0, "hard_grass_return_matches": 0.0,
+        "pooled_return_aces": 0.0, "pooled_return_points": 0.0, "pooled_return_matches": 0.0,
+    })
+    most_recent_year_by_name = {}
+    most_recent_id_by_name = {}
+    names_by_year = {}
 
+    def name_key(profile):
+        return _normalise_profile_name(profile.get("name") or "")
+
+    def add_raw(target, source, weight):
+        for field in target:
+            if field.endswith("_matches"):
+                target[field] += float(source.get(field, 0) or 0) * weight
+            else:
+                target[field] += float(source.get(field, 0.0) or 0.0) * weight
+
+    # Current-season records are the freshest identity/name and sample layer.
     for player_id, profile in live.items():
-        profile["serve_rate_season"] = profile_year if profile["serve_rate"] is not None else None
+        key = name_key(profile)
+        if key:
+            current_by_name[key].append(player_id)
+            add_raw(raw_by_name[key], profile, 1.0)
+            most_recent_year_by_name[key] = profile_year
+            most_recent_id_by_name[key] = player_id
+        profile["serve_rate_season"] = profile_year if profile.get("serve_rate") is not None else None
         profile["serve_rate_source"] = (
-            "current-season-qualified" if profile["serve_rate"] is not None else None
+            "current-season-qualified" if profile.get("serve_rate") is not None else None
         )
-        profile["serve_rate_sample_matches"] = profile["serve_matches"]
-        profile["serve_rate_sample_points"] = (
-            profile.get("serve_service_points")
-            if profile["serve_rate"] is not None and profile.get("serve_service_points") is not None
-            else profile["clay_service_points"] + profile["hard_grass_service_points"]
+        profile["serve_rate_sample_matches"] = profile.get("serve_matches", 0)
+        profile["serve_rate_sample_points"] = profile.get(
+            "serve_service_points", profile.get("clay_service_points", 0.0)
+            + profile.get("hard_grass_service_points", 0.0)
         )
         profile["concede_rate_season"] = (
-            profile_year if profile["concede_rate"] is not None else None
+            profile_year if profile.get("concede_rate") is not None else None
         )
         profile["concede_rate_source"] = profile.get("concede_rate_source")
         profile["concede_matches"] = profile.get("concede_matches", 0)
         profile["concede_service_points"] = profile.get("concede_service_points", 0.0)
 
-    # Union the recent seasons by stable Sackmann player ID. The newest available profile
-    # supplies the display name and, when needed, the raw observations for shrinkage.
-    for historical_year in range(
-        profile_year - 1,
-        max(2011, profile_year - LIVE_PROFILE_FALLBACK_SEASONS - 1),
-        -1,
-    ):
-        historical = player_rates(valid_rows(load(historical_year)))
-        season_profiles[historical_year] = historical
-
-        for player_id, previous in historical.items():
-            if player_id not in live:
-                live[player_id] = dict(previous)
-                source_profile_by_id[player_id] = dict(previous)
-                source_year_by_id[player_id] = historical_year
-                live[player_id]["serve_rate_season"] = (
-                    historical_year if previous["serve_rate"] is not None else None
-                )
-                live[player_id]["serve_rate_source"] = (
-                    "prior-season-qualified" if previous["serve_rate"] is not None else None
-                )
-                live[player_id]["serve_rate_sample_matches"] = (
-                    previous["serve_matches"] if previous["serve_rate"] is not None else 0
-                )
-                live[player_id]["serve_rate_sample_points"] = (
-                    previous.get("serve_service_points",
-                                 previous["clay_service_points"] + previous["hard_grass_service_points"])
-                    if previous["serve_rate"] is not None else 0.0
-                )
-                live[player_id]["concede_rate_season"] = (
-                    historical_year if previous["concede_rate"] is not None else None
-                )
-
-            profile = live[player_id]
-            # Fill only missing values: a qualified newer-season estimate always wins.
-            if profile["serve_rate"] is None and previous["serve_rate"] is not None:
-                profile["serve_rate"] = previous["serve_rate"]
-                profile["serve_rate_season"] = historical_year
-                profile["serve_rate_source"] = "prior-season-qualified"
-                profile["serve_rate_sample_matches"] = previous["serve_matches"]
-                profile["serve_rate_sample_points"] = previous.get(
-                    "serve_service_points",
-                    previous["clay_service_points"] + previous["hard_grass_service_points"],
-                )
-                profile["serve_rate_prior_points"] = previous.get("serve_rate_prior_points", 0.0)
-            previous_concede_source = previous.get("concede_rate_source")
-            current_concede_source = profile.get("concede_rate_source")
-            prefer_previous_concede = (
-                profile["concede_rate"] is None
-                or (
-                    current_concede_source != "surface-qualified"
-                    and previous_concede_source == "surface-qualified"
-                )
-            )
-            if prefer_previous_concede and previous["concede_rate"] is not None:
-                profile["concede_rate"] = previous["concede_rate"]
-                profile["concede_rate_season"] = historical_year
-                profile["concede_rate_source"] = previous_concede_source
-                profile["concede_matches"] = previous.get("concede_matches", 0)
-                profile["concede_service_points"] = previous.get("concede_service_points", 0.0)
-                profile["concede_rate_prior_points"] = previous.get("concede_rate_prior_points", 0.0)
-
-    # Players without any qualified profile still get a player-specific, explicitly
-    # low-sample estimate when the archive contains their own service-point observations.
-    priors_by_year = {
-        year: _surface_priors(profiles)
-        for year, profiles in season_profiles.items()
+    # Detect duplicate full-name keys within the current source before crosswalking.
+    ambiguous_names = {
+        key for key, player_ids in current_by_name.items() if len(player_ids) != 1
     }
-    for player_id, profile in live.items():
-        if profile["serve_rate"] is not None:
-            continue
 
-        raw_profile = source_profile_by_id[player_id]
-        raw_year = source_year_by_id[player_id]
-        estimate = _shrunk_serve_rate(raw_profile, priors_by_year[raw_year])
-        if estimate is None:
-            continue
+    # Merge all available prior-year ATP tour histories using a stable name crosswalk.
+    lower_year = max(PROFILE_HISTORY_START_YEAR, profile_year - LIVE_PROFILE_FALLBACK_SEASONS)
+    historical_profiles_by_name = defaultdict(list)
+    for historical_year in range(profile_year - 1, lower_year - 1, -1):
+        historical = _profile_year_rates(historical_year)
+        by_name = defaultdict(list)
+        for player_id, previous in historical.items():
+            key = name_key(previous)
+            if key:
+                by_name[key].append((player_id, previous))
+        for key, candidates in by_name.items():
+            if len(candidates) != 1:
+                ambiguous_names.add(key)
+                continue
+            player_id, previous = candidates[0]
+            if key in ambiguous_names:
+                continue
 
-        profile["serve_rate"] = estimate
-        profile["serve_rate_season"] = raw_year
-        profile["serve_rate_source"] = (
-            "current-season-shrunk" if raw_year == profile_year else "prior-season-shrunk"
+            decay = LIVE_PROFILE_HISTORY_DECAY ** (profile_year - historical_year)
+            add_raw(raw_by_name[key], previous, decay)
+            historical_profiles_by_name[key].append((historical_year, player_id, previous))
+
+            # Attach the prior history to the current ATP ID if the unique name matches.
+            current_ids = current_by_name.get(key, [])
+            target_id = current_ids[0] if len(current_ids) == 1 else player_id
+            if target_id not in live:
+                live[target_id] = dict(previous)
+                live[target_id]["id"] = target_id
+                live[target_id]["serve_rate_season"] = None
+                live[target_id]["serve_rate_source"] = None
+                live[target_id]["serve_rate_sample_matches"] = 0
+                live[target_id]["serve_rate_sample_points"] = 0
+                live[target_id]["concede_rate_season"] = None
+            most_recent_year_by_name.setdefault(key, historical_year)
+            most_recent_id_by_name.setdefault(key, target_id)
+
+    # Recency-weighted population priors from the same profile evidence window.
+    prior_profiles = {
+        key: values for key, values in raw_by_name.items()
+        if key not in ambiguous_names
+    }
+    surface_priors = _surface_priors(prior_profiles)
+
+    # Fill sparse/current profiles from the multi-season player sample. A qualified
+    # current-season profile remains authoritative; otherwise use the weighted career
+    # window, with a low-sample pooled estimate as the final player-specific fallback.
+    for key, source in raw_by_name.items():
+        if not key or key in ambiguous_names:
+            continue
+        target_ids = current_by_name.get(key, [])
+        target_id = target_ids[0] if len(target_ids) == 1 else most_recent_id_by_name.get(key)
+        if target_id is None or target_id not in live:
+            continue
+        profile = live[target_id]
+        current_serve_qualified = (
+            profile_year == profile.get("serve_rate_season")
+            and profile.get("serve_rate") is not None
+            and profile.get("serve_matches", 0) >= MIN_MATCHES_PER_SURFACE
+            and (
+                profile.get("clay_matches", 0) >= MIN_MATCHES_PER_SURFACE
+                or profile.get("hard_grass_matches", 0) >= MIN_MATCHES_PER_SURFACE
+            )
         )
-        profile["serve_rate_sample_matches"] = (
-            raw_profile["clay_matches"] + raw_profile["hard_grass_matches"]
+        current_return_qualified = (
+            profile_year == profile.get("concede_rate_season")
+            and profile.get("concede_rate") is not None
+            and profile.get("concede_rate_source") == "surface-qualified"
         )
-        profile["serve_rate_sample_points"] = (
-            raw_profile["clay_service_points"] + raw_profile["hard_grass_service_points"]
-        )
-        profile["serve_rate_prior_points"] = LIVE_PROFILE_PRIOR_SERVICE_POINTS
+        serve_rate = _shrunk_serve_rate(source, surface_priors)
+        if not current_serve_qualified and serve_rate is not None:
+            profile["serve_rate"] = serve_rate
+            profile["serve_rate_season"] = profile_year
+            has_surface = (
+                source["clay_matches"] >= MIN_MATCHES_PER_SURFACE
+                or source["hard_grass_matches"] >= MIN_MATCHES_PER_SURFACE
+            )
+            profile["serve_rate_source"] = (
+                "career-history-surface-shrunk" if has_surface else "career-history-pooled-shrunk"
+            )
+            profile["serve_rate_sample_matches"] = int(
+                source["clay_matches"] + source["hard_grass_matches"]
+            )
+            profile["serve_rate_sample_points"] = int(round(
+                source["clay_service_points"] + source["hard_grass_service_points"]
+            ))
+            profile["serve_rate_prior_points"] = LIVE_PROFILE_PRIOR_SERVICE_POINTS
+
+        concede_rate = _shrunk_return_rate(source, surface_priors)
+        if not current_return_qualified and concede_rate is not None:
+            profile["concede_rate"] = concede_rate
+            profile["concede_rate_season"] = profile_year
+            has_surface = (
+                source["clay_return_matches"] >= MIN_MATCHES_PER_SURFACE
+                or source["hard_grass_return_matches"] >= MIN_MATCHES_PER_SURFACE
+            )
+            profile["concede_rate_source"] = (
+                "career-history-surface-shrunk" if has_surface else "career-history-pooled-shrunk"
+            )
+            profile["concede_matches"] = int(
+                source["clay_return_matches"] + source["hard_grass_return_matches"]
+                or source["pooled_return_matches"]
+            )
+            profile["concede_service_points"] = int(round(
+                source["clay_return_points"] + source["hard_grass_return_points"]
+                or source["pooled_return_points"]
+            ))
+            profile["concede_rate_prior_points"] = LIVE_PROFILE_PRIOR_SERVICE_POINTS
 
     return live
+
 
 
 def _normalise_profile_name(name):
