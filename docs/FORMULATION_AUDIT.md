@@ -39,10 +39,12 @@ The surface-matched returner variant improves aggregate Spearman agreement and M
 - A carpet-specific profile is only used when the player has at least three carpet matches; otherwise the neutral surface profile is retained. This is an experiment, not a production change.
 - Select weights on training seasons only and report held-out seasons separately.
 - Compare fixed service-point priors with empirical-Bayes shrinkage. Do not promote the estimated prior until its leave-one-event-out and held-out 2021–2025 metrics beat or match the fixed-prior benchmark without materially harming any surface.
+- Separate shrinkage from minimum-match coverage: compare one-match profiles and three-match profiles with the same prior strengths before changing the production qualification threshold.
 - Match-cluster intervals condition on fitted player profiles and the season normaliser; full profile-estimation uncertainty remains a follow-up.
 - CPI association is diagnostic, not proof of physical validity. Independent court-level and conditions data are needed for physical or causal claims.
 - Laver Cup remains below the ordinary 20-side threshold unless a multi-year or explicitly provisional method is independently validated.
 - TML public terms are non-commercial; obtain written permission before commercial use or redistribution. Raw TML match CSV files are not committed.
+- Marrakech source reconciliation (2026): TML main draw is 259 aces / 4,019 service points (6.44%); qualifying adds 100 / 1,559 (6.41%); combined 359 / 5,578 (6.44%). Tennis Abstract's 2 November 2026 table publishes 8.0% Ace% and 0.93 speed. The Ace% mismatch remains unexplained; it is recorded as a source-definition/coverage discrepancy and is not used as a formula-tuning target.
 
 ## Reproduction
 ```bash

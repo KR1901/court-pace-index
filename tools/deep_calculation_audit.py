@@ -438,6 +438,18 @@ def config_grid():
             "clay_weight": 1.0 / 3.0, "prior_points": prior, "min_matches": 1,
             "pooled_return_fallback": True, "pooled_return_min_matches": 1,
         }
+    # Isolate shrinkage from profile-coverage changes: same three-match qualification,
+    # with only the prior strength changed.
+    for prior in (100.0, 150.0, 300.0):
+        configs[f"shrink_{int(prior)}_min3"] = {
+            "clay_weight": 1.0 / 3.0, "prior_points": prior, "min_matches": 3,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+        }
+    configs["loeo_empirical_bayes_1_3_min3"] = {
+        "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
+        "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+        "empirical_bayes": True,
+    }
     # Test whether the best training-window weight and best shrinkage prior interact.
     configs["weight_050_shrink_150"] = {
         "clay_weight": 0.5, "prior_points": 150.0, "min_matches": 1,
@@ -675,6 +687,7 @@ def run_audit(seasons, boot, detail_ids):
         name for name in configs
         if name.startswith("weight_clay_") or name.startswith("shrink_")
         or name.startswith("weight_050_shrink_")
+        or name.startswith("loeo_empirical_bayes")
     ]
     for name in sensitivity_names:
         index = {key: pair for key, pair in zip(keys[name], pairs[name])}
