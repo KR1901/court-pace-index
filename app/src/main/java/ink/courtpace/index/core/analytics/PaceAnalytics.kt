@@ -149,10 +149,14 @@ object PaceAnalytics {
     fun count(data: PaceData, season: Int, metric: Metric, surface: Surface? = null): Int =
         data.entries(season, metric).count { surface == null || it.first.surface == surface }
 
-    /** Where a value sits in its season's field, 0..1. */
+    /** Where a value sits in its season's full single-metric field, 0..1. */
     fun percentile(data: PaceData, id: String, season: Int, metric: Metric): Double? {
         val value = data.value(id, season, metric) ?: return null
         val field = data.entries(season, metric).map { it.second }
+        return percentileWithinField(value, field)
+    }
+
+    private fun percentileWithinField(value: Double, field: List<Double>): Double? {
         if (field.size < 2) return null
         val below = field.count { it < value }
         return below.toDouble() / (field.size - 1).toDouble()
@@ -163,12 +167,21 @@ object PaceAnalytics {
      * aces the field actually hit — so where both exist the app says how far apart they are.
      * Percentiles are used because the scales are not comparable.
      */
-    fun divergences(data: PaceData, season: Int): List<Divergence> =
-        data.tournaments.mapNotNull { tournament ->
+    fun divergences(data: PaceData, season: Int): List<Divergence> {
+        // A percentile comparison must use the same event cohort for both metrics.
+        // Otherwise a CPI-only / Speed-only event shifts one metric's ranks even though
+        // it cannot appear in the paired divergence table.
+        val paired = data.tournaments.mapNotNull { tournament ->
             val cpi = data.value(tournament.id, season, Metric.CPI) ?: return@mapNotNull null
             val speed = data.value(tournament.id, season, Metric.SPEED) ?: return@mapNotNull null
-            val cpiPct = percentile(data, tournament.id, season, Metric.CPI) ?: return@mapNotNull null
-            val speedPct = percentile(data, tournament.id, season, Metric.SPEED) ?: return@mapNotNull null
+            Triple(tournament, cpi, speed)
+        }
+        if (paired.size < 2) return emptyList()
+        val cpiField = paired.map { it.second }
+        val speedField = paired.map { it.third }
+        return paired.mapNotNull { (tournament, cpi, speed) ->
+            val cpiPct = percentileWithinField(cpi, cpiField) ?: return@mapNotNull null
+            val speedPct = percentileWithinField(speed, speedField) ?: return@mapNotNull null
             Divergence(
                 tournament = tournament,
                 cpi = cpi,
@@ -178,6 +191,7 @@ object PaceAnalytics {
                 gap = cpiPct - speedPct,
             )
         }.sortedByDescending { abs(it.gap) }
+    }
 
     /** Mean CPI per season, for the tour-wide trend line. */
     fun seasonTrend(data: PaceData, metric: Metric, surface: Surface? = null): List<Pair<Int, Double>> =
