@@ -67,8 +67,12 @@ The checked-in bundled asset and downloadable `data/latest.json` have now been r
 - [PR #2 — formulation, statistical audit and diagnostics](docs/PR2.md)
 - [Data provenance and calculation details](docs/DATA.md)
 - [Physical validation protocol](docs/PHYSICAL_VALIDATION.md)
+- [Global Challenger / qualifying backfill audit](docs/LOWER_TIER_BACKFILL_AUDIT.md)
+- [Surface-specific lower-tier weights and 2026 forward test](docs/SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md)
 - [Recommended GitHub About description and Topics](docs/ABOUT.md)
 
+
+Lower-tier profile backfill is research-only and is not used in production. The first 2019–2025 holdout and the new partial-2026 forward test both showed coverage gains but inconclusive overall predictive-loss improvements, worsening calibration, and mixed surface effects. ATP-only profiles remain the production policy pending a stronger independent validation set and data-rights review.
 ## Data and provenance
 
 | Purpose | Source | Role |
