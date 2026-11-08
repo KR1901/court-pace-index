@@ -56,6 +56,24 @@ Unknown values must remain blank; never infer court-specific measurements or env
 
 The current repository CPI table provides a limited show-court cross-check. It must not be enlarged by copying generic surface categories, assigning a single court's value to every court at an event, or inferring missing values from surface type.
 
+## Secondary CPI source candidate: The Racquet ATP Court Speed Database
+
+A possible source for expanding the CPI comparison is [Court Speed / The Racquet ATP Court Speed Database](https://courtspeed.com/). Its public site reports CPI coverage for Grand Slams, Masters 1000s and ATP Finals from 2012–2026, transcribed from ATP/TennisTV CPI charts. It says values are usually centre/stadium-court readings, that source screenshots are linked where available, and that chart values can vary within a tournament as surface grit wears and weather changes. Its methodology uses tournament averages or averages across multiple day readings when charts disagree. The site also cautions that values from 2012–2015 are not widely available.
+
+This is a **candidate CPI dataset**, not an ITF-accredited CPR dataset. It may be useful for a larger show-court CPI comparison, but do not assume it is independent of existing repository CPI rows: first compare the 106 currently used overlaps by event, season, court, value, measurement timing and screenshot/provenance. Treat exact duplicates as the same observation, not new validation evidence. Do not fill missing values from generic event descriptions or treat a centre-court CPI reading as a measurement of every court at that tournament.
+
+Before integration, record:
+- source page and individual chart/screenshot URL;
+- event, season and actual court identity;
+- whether the value is a single-day reading or tournament average;
+- the exact displayed CPI and any discrepancy/averaging rule;
+- whether the row already exists in the repository CPI table;
+- source terms and permission/attribution requirements.
+
+The site also displays ace rates, rally lengths and air-density context, but these are separate behavioural or environmental predictors and must not be counted as independent physical measurements. In particular, ace rates from the same match population as the Surface Speed rating would be circular validation evidence.
+
+References: [Court Speed CPI database](https://courtspeed.com/) · [Method and notes](https://courtspeed.com/method-notes/) · [Disclaimer and provenance](https://courtspeed.com/disclaimer/).
+
 ## Validation protocol
 
 1. Freeze the model version, code commit and dataset snapshot before analysis.
