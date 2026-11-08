@@ -56,7 +56,7 @@ Because 2026 is a partial-season snapshot and may have relatively few grass even
 
 ## First completed 2026 forward test (8 November 2026)
 
-Run: https://github.com/KR1901/court-pace-index/actions/runs/42487321622. Unit tests, the full surface-weight selection, 2026 forward scoring and aggregate-only artifact upload all passed.
+Run: https://github.com/KR1901/court-pace-index/actions/runs/42487674176. Unit tests, the full surface-weight selection, 2026 forward scoring and aggregate-only artifact upload all passed.
 
 The 2012–2018 development window selected the combined Challenger + qualifying arm with:
 - Pooled lower-tier fallback weight: 0.25 for each tier.
