@@ -341,8 +341,12 @@ object AceRating {
 
             val server = profiles.resolve(serverName)
             val returner = profiles.resolve(returnerName)
-            val playerServeRate = server?.serveRate
-            val playerConcedeRate = returner?.concedeRate
+            val resolvedServeRate = server?.serveRate
+            val resolvedConcedeRate = returner?.concedeRate
+            // Profiles stored with tour-average-prior-only are explicit neutral fallbacks,
+            // not personalised profile matches; count them in the fallback columns below.
+            val playerServeRate = if (server?.serveRateSource == "tour-average-prior-only") null else resolvedServeRate
+            val playerConcedeRate = if (returner?.concedeRateSource == "tour-average-prior-only") null else resolvedConcedeRate
 
             if (playerServeRate != null) serverProfilesMatched++
             if (playerConcedeRate != null) returnerProfilesMatched++
