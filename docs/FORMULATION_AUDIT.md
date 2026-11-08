@@ -77,3 +77,12 @@ Conditional match-cluster intervals: Marrakech without shrinkage is 1.180 (26 ma
 The physical CPI overlap has 106 observations from a non-random set of show-court events: overall r=0.676, rho=0.702; within-surface centred r=0.395, rho=0.345. Clay alone is negatively associated in this small overlap (n=24, r=-0.387, rho=-0.429), while hard is positive (n=81, r=0.511, rho=0.506). This is diagnostic evidence that CALC is behavioural, not a physical court-speed substitute.
 
 The 2026 production asset at the pre-fix audit baseline contained 57 CALC / 1 TA-only, with Marrakech at 1.11. The production refresh after this audit change recalculates the event ratings using the LOEO/150-point estimator; the pre-fix 1.11 value should not be carried forward as the post-fix result.
+
+
+## Live-baseline leakage and prior consistency hardening
+- Active tournament IDs are read from data/live.json only when its timestamp is within seven days and the event date window includes the current date.
+- With a fresh manifest, active-event match rows are excluded from current-season player profiles, the tour-average ace-rate anchor and live baseline normaliser. Excluded event IDs and row counts are recorded in data/live_speed_baseline.json.
+- With a stale or missing manifest, the live baseline falls back to the previous completed season; it does not assume a stale event list is complete.
+- Live low-sample shrinkage now uses the same 150-service-point prior as historical ratings; the previous 300-point live fallback was inconsistent.
+- The Method screen no longer asserts a typical hard range of 0.50–1.50 and clarifies that CALC is a relative behavioural measure, not absolute physical court speed.
+- Regression tests cover fresh/current event filtering, stale-manifest rejection and removal of active-event rows from baseline training.
