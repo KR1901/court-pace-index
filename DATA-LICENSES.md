@@ -18,13 +18,14 @@ When reusing archive-derived material, attribute Jeff Sackmann, link to the upst
 
 ## 3. Current-season TennisMyLife data
 
-The current-season loader may use the [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database). Its published repository terms describe the datasets as intended for personal, educational and non-commercial research. The public terms do not authorise raw-database redistribution or resale, and require prior express written permission for commercial uses; they also warn that third-party rights may apply.
+The current-season loader may use the [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database). Its published repository terms describe the datasets as intended for personal, educational and non-commercial research. The public terms limit use to personal, educational and non-commercial research; free downloads do not grant commercial rights. They do not authorise raw-database redistribution or resale. The current terms additionally require prior express written permission for commercial services using the data, including model training/validation, statistical predictions and monetisation of derived predictions. They warn that third-party rights may apply.
 
 Accordingly:
 
 - Do not commit or redistribute the raw TennisMyLife CSV or raw database responses.
-- Do not treat TML-derived current-season data or models as commercially cleared by this repository.
-- Obtain written permission from TennisMyLife before commercial use or broader redistribution where required by its terms.
+- Do not treat TML-derived current-season values, profiles or models as commercially cleared by this repository.
+- The public terms do not clearly grant a right to sublicense or redistribute TML-derived match records/ratings in a public app. Treat the current-season TML-derived bundled output as **not cleared for onward distribution** until TennisMyLife confirms in writing that this specific use is permitted.
+- Obtain prior written permission for commercial use, training/validation of models for commercial services, monetised derived predictions, or broader redistribution where required by the current terms.
 - Review any third-party rights separately; TennisMyLife cannot grant rights it does not hold.
 
 The loader records the source URL, retrieval time, row count, byte count and SHA-256 for traceability. A local cache manifest is not a licence.
