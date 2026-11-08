@@ -176,9 +176,11 @@ class UncertaintyTests(unittest.TestCase):
         configs = audit.config_grid()
         self.assertIn("loeo_current_1_3", configs)
         self.assertIn("loeo_carpet_pooled", configs)
+        self.assertIn("shrink_150", configs)
         self.assertIn("shrink_300", configs)
         self.assertIn("weight_clay_0_500", configs)
         self.assertIn("weight_clay_0_667", configs)
+        self.assertIn("weight_050_shrink_150", configs)
 
 
 if __name__ == "__main__":

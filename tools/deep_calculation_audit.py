@@ -320,11 +320,20 @@ def config_grid():
             "clay_weight": weight, "prior_points": 0.0, "min_matches": 3,
             "pooled_return_fallback": True,
         }
-    for prior in (150.0, 300.0, 600.0, 1000.0):
+    for prior in (75.0, 100.0, 150.0, 200.0, 250.0, 300.0, 450.0, 600.0, 1000.0):
         configs[f"shrink_{int(prior)}"] = {
             "clay_weight": 1.0 / 3.0, "prior_points": prior, "min_matches": 1,
-            "pooled_return_fallback": True,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
         }
+    # Test whether the best training-window weight and best shrinkage prior interact.
+    configs["weight_050_shrink_150"] = {
+        "clay_weight": 0.5, "prior_points": 150.0, "min_matches": 1,
+        "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+    }
+    configs["weight_050_shrink_300"] = {
+        "clay_weight": 0.5, "prior_points": 300.0, "min_matches": 1,
+        "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+    }
     return configs
 
 
@@ -344,17 +353,18 @@ def score_season(rows, configs, detail_ids):
             ratios, clusters = score_event(
                 tid, matches, surface, profiles, global_stats, event_stats, prior_players
             )
-            if len(ratios) < MIN_SIDES:
-                continue
-            raw[name][tid] = statistics.fmean(ratios)
-            if tid in detail_ids:
+            if tid in detail_ids and ratios:
                 details[name][tid] = {
                     "surface": surface,
                     "matches": len(matches),
                     "sides": len(ratios),
                     "raw": statistics.fmean(ratios),
+                    "ordinaryRatingEligible": len(ratios) >= MIN_SIDES,
                     "clusters": clusters,
                 }
+            if len(ratios) < MIN_SIDES:
+                continue
+            raw[name][tid] = statistics.fmean(ratios)
 
     for name, ratings in raw.items():
         normalisers[name] = statistics.fmean(ratings.values()) if ratings else None
@@ -528,8 +538,12 @@ def run_audit(seasons, boot, detail_ids):
     holdout_keys = [key for key in shared if 2021 <= key[0] <= 2025]
     print("\nWEIGHT-SENSITIVITY: train 1991-2020; held-out 2021-2025")
     print("variant                         train MAE   holdout MAE   heldout rho")
-    weight_names = [name for name in configs if name.startswith("weight_clay_")]
-    for name in weight_names:
+    sensitivity_names = [
+        name for name in configs
+        if name.startswith("weight_clay_") or name.startswith("shrink_")
+        or name.startswith("weight_050_shrink_")
+    ]
+    for name in sensitivity_names:
         index = {key: pair for key, pair in zip(keys[name], pairs[name])}
         train = [index[key] for key in training_keys if key in index]
         test = [index[key] for key in holdout_keys if key in index]
@@ -562,7 +576,8 @@ def run_audit(seasons, boot, detail_ids):
                 1000 + sum(ord(c) for c in tid) + sum(ord(c) for c in variant),
             )
             if interval:
-                print(f"  {variant} {tid}: LOEO={item['raw'] / normaliser:.3f}, "
+                status = "standard" if item["ordinaryRatingEligible"] else "provisional (below 20 sides)"
+                print(f"  {variant} {tid}: {status}, LOEO={item['raw'] / normaliser:.3f}, "
                       f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
                       f"{item['matches']} matches/{item['sides']} sides")
 
