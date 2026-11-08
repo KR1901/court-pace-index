@@ -55,7 +55,7 @@ The experiment compares:
 
 The candidate is selected on the development window by binomial log loss per service point, with point-weighted ace-rate MAE as a tie-breaker. The selected weights are then evaluated on the later validation window. The validation window is not used to select the candidate.
 
-Metrics include personal-profile coverage by role, the percentage of sides with both player-role histories, point-weighted ace-rate MAE, side-level MAE, binomial log loss per service point and calibration bias. Paired uncertainty intervals resample complete event-season clusters within each validation season.
+Metrics include personal-profile coverage by role, the percentage of sides with both player-role histories, point-weighted ace-rate MAE, side-level MAE, binomial log loss per service point and calibration bias. Paired uncertainty intervals resample complete event-season clusters within each validation season. A descriptive holdout breakdown by clay, hard, grass and carpet is also reported; the candidate weights remain fixed from the development window and are not retuned by surface.
 
 A higher personal-profile coverage percentage alone is not sufficient. The candidate must also improve out-of-sample predictive scores; an interval spanning zero is inconclusive. If ATP-only is selected, that is a valid result and no backfill should be adopted.
 
