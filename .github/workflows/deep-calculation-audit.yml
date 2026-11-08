@@ -13,6 +13,9 @@ on:
       - "tools/test_compute_speed.py"
       - "tools/audit_event_population.py"
       - "tools/test_audit_event_population.py"
+      - "tools/build_dataset.py"
+      - "tools/test_physical_cpi_snapshot.py"
+      - "docs/PHYSICAL_VALIDATION.md"
       - "app/src/main/assets/pace_dataset.json"
   workflow_dispatch:
 
