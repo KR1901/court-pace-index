@@ -134,6 +134,10 @@ object AceRating {
         val totalServicePoints: Int = 0,
         val serverProfilesMatched: Int = 0,
         val returnerProfilesMatched: Int = 0,
+        /** Sides where the server rate was supplied by the tour-average prior. */
+        val serverProfilesFallback: Int = 0,
+        /** Sides where the returner's concession rate was supplied by the tour-average prior. */
+        val returnerProfilesFallback: Int = 0,
         /** Included server-side observations, one record per adjusted side. */
         val sideDiagnostics: List<SideDiagnostic> = emptyList(),
     )
@@ -148,6 +152,8 @@ object AceRating {
         val returnerConcedeRate: Double,
         val expectedAces: Double,
         val actualExpectedRatio: Double,
+        val serverProfileSource: String = "player-profile",
+        val returnerProfileSource: String = "player-profile",
     )
 
     /** Preserve the historical pipeline's minimum event sample: twenty server-side observations. */
@@ -296,6 +302,8 @@ object AceRating {
         val returnerProfilesMatched: Int,
         val adjustedServerSides: Int,
         val issues: List<AdjustmentIssue> = emptyList(),
+        val serverProfilesFallback: Int = 0,
+        val returnerProfilesFallback: Int = 0,
     )
 
     private data class Evaluation(
@@ -321,6 +329,8 @@ object AceRating {
         var totalPoints = 0
         var serverProfilesMatched = 0
         var returnerProfilesMatched = 0
+        var serverProfilesFallback = 0
+        var returnerProfilesFallback = 0
         val ratios = mutableListOf<Double>()
         val issues = mutableListOf<AdjustmentIssue>()
         val sideDiagnostics = mutableListOf<SideDiagnostic>()
@@ -331,11 +341,11 @@ object AceRating {
 
             val server = profiles.resolve(serverName)
             val returner = profiles.resolve(returnerName)
-            val serveRate = server?.serveRate
-            val concedeRate = returner?.concedeRate
+            val playerServeRate = server?.serveRate
+            val playerConcedeRate = returner?.concedeRate
 
-            if (serveRate != null) serverProfilesMatched++
-            if (concedeRate != null) returnerProfilesMatched++
+            if (playerServeRate != null) serverProfilesMatched++
+            if (playerConcedeRate != null) returnerProfilesMatched++
 
             fun exclude(reason: String) {
                 issues += AdjustmentIssue(
@@ -346,18 +356,6 @@ object AceRating {
                 )
             }
 
-            if (serveRate == null && concedeRate == null) {
-                exclude("no server serve profile or returner concession profile")
-                return
-            }
-            if (serveRate == null) {
-                exclude("no server serve profile")
-                return
-            }
-            if (concedeRate == null) {
-                exclude("no returner concession profile")
-                return
-            }
             if (servicePoints <= 0 || aces < 0 || aces > servicePoints) {
                 exclude("invalid ace/service-point statistics")
                 return
@@ -366,6 +364,16 @@ object AceRating {
                 exclude("season tour-average ace rate is unavailable or invalid")
                 return
             }
+
+            // A player with no usable match history receives an explicit neutral prior.
+            // This keeps the side rateable without pretending a personalised profile exists.
+            val serveRate = playerServeRate ?: tourAceRate.also { serverProfilesFallback++ }
+            val concedeRate = playerConcedeRate ?: tourAceRate.also { returnerProfilesFallback++ }
+            val serverProfileSource = server?.serveRateSource
+                ?: if (playerServeRate == null) "tour-average-prior-only" else "player-profile"
+            val returnerProfileSource = returner?.concedeRateSource
+                ?: if (playerConcedeRate == null) "tour-average-prior-only" else "player-profile"
+
             if (!serveRate.isFinite() || serveRate <= 0.0 || serveRate >= 1.0 ||
                 !concedeRate.isFinite() || concedeRate <= 0.0 || concedeRate >= 1.0
             ) {
@@ -402,6 +410,8 @@ object AceRating {
                 returnerConcedeRate = concedeRate,
                 expectedAces = adjustedExpected,
                 actualExpectedRatio = actualExpectedRatio,
+                serverProfileSource = serverProfileSource,
+                returnerProfileSource = returnerProfileSource,
             )
         }
 
@@ -420,6 +430,8 @@ object AceRating {
                 returnerProfilesMatched = returnerProfilesMatched,
                 adjustedServerSides = ratios.size,
                 issues = issues.toList(),
+                serverProfilesFallback = serverProfilesFallback,
+                returnerProfilesFallback = returnerProfilesFallback,
             ),
             sideDiagnostics = sideDiagnostics.toList(),
         )
@@ -466,6 +478,8 @@ object AceRating {
             totalServicePoints = evaluation.totalPoints,
             serverProfilesMatched = evaluation.coverage.serverProfilesMatched,
             returnerProfilesMatched = evaluation.coverage.returnerProfilesMatched,
+            serverProfilesFallback = evaluation.coverage.serverProfilesFallback,
+            returnerProfilesFallback = evaluation.coverage.returnerProfilesFallback,
             sideDiagnostics = evaluation.sideDiagnostics,
         )
     }
