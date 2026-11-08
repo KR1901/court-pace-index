@@ -648,6 +648,7 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
         "missing_both_profiles_before_fallback": 0,
         "tour_prior_sides": 0,
         "rateable_server_sides": 0,
+        "tour_prior_fallback_details": [],
     }
     for row in event_rows:
         profiles_by_role = {}
@@ -658,6 +659,7 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             player_id = row.get(player_id_key)
             player_name = row.get(player_name_key) or ""
             profile = profiles.get(player_id)
+            had_player_profile = profile is not None
             candidate = unique_by_name.get(_normalise_profile_name(player_name))
             if candidate is not None and profile is None:
                 profile = dict(candidate)
@@ -704,6 +706,15 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                 profile[rate_key] = tour_rate
                 profile[source_key] = "tour-average-prior-only"
                 coverage[f"tour_prior_{player_role}_profiles"] += 1
+                coverage["tour_prior_fallback_details"].append({
+                    "player_id": player_id,
+                    "player_name": player_name,
+                    "role": player_role,
+                    "reason": (
+                        "player_profile_exists_without_rate"
+                        if had_player_profile else "no_player_profile_in_history"
+                    ),
+                })
                 side_fallbacks.append((player_id_key, player_role))
             elif str(profile.get(source_key) or "").startswith("career-history"):
                 coverage[f"career_history_{player_role}_sides"] += 1
