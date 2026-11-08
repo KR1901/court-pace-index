@@ -623,7 +623,10 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
             live = compute_speed.build_live_profiles(2026, current)
 
         self.assertAlmostEqual(0.10, live["player"]["serve_rate"])
-        self.assertAlmostEqual(0.14, live["player"]["concede_rate"])
+        expected_history_return_rate = (
+            (28.0 * 0.9) + 150.0 * ((12.0 + 20.0 * 0.9) / (150.0 + 200.0 * 0.9))
+        ) / (200.0 * 0.9 + 150.0)
+        self.assertAlmostEqual(expected_history_return_rate, live["player"]["concede_rate"])
         self.assertEqual("career-history-surface-shrunk", live["player"]["concede_rate_source"])
         self.assertEqual(2026, live["player"]["concede_rate_season"])
         self.assertEqual(4, live["player"]["concede_matches"])
