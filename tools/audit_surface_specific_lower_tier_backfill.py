@@ -305,6 +305,31 @@ def paired_event_bootstrap(baseline, candidate, iterations, seed):
     return {"events": len(common), "successful": iterations, "intervals": intervals}
 
 
+def paired_surface_bootstrap(baseline, candidate, iterations, seed):
+    """Paired event-cluster uncertainty intervals within each target surface."""
+    surfaces = sorted({
+        cluster.get("surface", "unknown")
+        for cluster in list(baseline.values()) + list(candidate.values())
+    })
+    results = {}
+    for index, surface in enumerate(surfaces):
+        baseline_surface = {
+            key: value for key, value in baseline.items()
+            if value.get("surface", "unknown") == surface
+        }
+        candidate_surface = {
+            key: value for key, value in candidate.items()
+            if value.get("surface", "unknown") == surface
+        }
+        results[surface] = paired_event_bootstrap(
+            baseline_surface,
+            candidate_surface,
+            iterations,
+            seed + index * 1009,
+        )
+    return results
+
+
 def build_report_readme(report):
     validation = report["validation"]
     baseline = validation["atp_only"]
@@ -356,18 +381,29 @@ def build_report_readme(report):
         "",
         "## 2026 results by actual target surface",
         "",
-        "| Surface | Sides | ATP-only log loss | Selected log loss | ATP-only point MAE | Selected point MAE |",
-        "|---|---:|---:|---:|---:|---:|",
+        "| Surface | Sides | Events | ATP-only log loss | Selected log loss | Delta log loss 95% CI | ATP-only point MAE | Selected point MAE | Delta MAE 95% CI |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ])
     for surface, values in sorted(validation["by_surface"].items()):
         a = values["atp_only"]
         b = values[report["selected_arm"]]
+        interval = validation["bootstrap_by_surface"].get(surface, {})
+        logloss_ci = interval.get("intervals", {}).get("binomial_log_loss_per_point", {})
+        mae_ci = interval.get("intervals", {}).get("point_weighted_mae", {})
         if a["server_sides"]:
+            logloss_text = (
+                f"[{logloss_ci['low']:+.6f}, {logloss_ci['high']:+.6f}]"
+                if logloss_ci else "insufficient clusters"
+            )
+            mae_text = (
+                f"[{mae_ci['low']:+.6f}, {mae_ci['high']:+.6f}]"
+                if mae_ci else "insufficient clusters"
+            )
             lines.append(
-                f"| {surface} | {a['server_sides']:,} | "
+                f"| {surface} | {a['server_sides']:,} | {interval.get('events', 0)} | "
                 f"{a['binomial_log_loss_per_point']:.6f} | "
-                f"{b['binomial_log_loss_per_point']:.6f} | "
-                f"{a['point_weighted_mae']:.6f} | {b['point_weighted_mae']:.6f} |"
+                f"{b['binomial_log_loss_per_point']:.6f} | {logloss_text} | "
+                f"{a['point_weighted_mae']:.6f} | {b['point_weighted_mae']:.6f} | {mae_text} |"
             )
     lines.extend([
         "",
@@ -490,6 +526,12 @@ def run_experiment(validation_year, development_start, development_end,
         bootstrap,
         seed=20261108,
     )
+    bootstrap_by_surface = paired_surface_bootstrap(
+        validation_results["atp_only"],
+        validation_results[selected_arm],
+        bootstrap,
+        seed=20261109,
+    )
     selected_weights = {
         "challenger": selected["challenger"],
         "qualifying": selected["qualifying"],
@@ -541,6 +583,7 @@ def run_experiment(validation_year, development_start, development_end,
             "atp_only": baseline_metrics,
             selected_arm: selected_metrics,
             "bootstrap": bootstrap_result,
+            "bootstrap_by_surface": bootstrap_by_surface,
             "by_surface": by_surface,
         },
         "source_coverage": {
