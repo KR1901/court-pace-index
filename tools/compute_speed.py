@@ -749,8 +749,15 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                     **identity,
                     "role": "returner",
                     "reason": (
-                        "player_profile_exists_without_rate"
-                        if identity["had_player_profile"] else "no_player_profile_in_history"
+                        "ambiguous_name_match"
+                        if (
+                            not identity["had_exact_player_profile"]
+                            and identity["name_candidate_count"] > 1
+                        )
+                        else (
+                            "player_profile_exists_without_rate"
+                            if identity["had_player_profile"] else "no_player_profile_in_history"
+                        )
                     ),
                 })
                 concede_rate = tour_rate
