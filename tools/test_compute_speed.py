@@ -337,7 +337,7 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual(0.08, profiles["NEW1"]["concede_rate"])
         self.assertEqual("tour-average-prior-only", profiles["NEW1"]["concede_rate_source"])
         self.assertEqual(1, coverage["tour_prior_returner_profiles"])
-        self.assertEqual(1, coverage["tour_prior_sides"])
+        self.assertEqual(2, coverage["tour_prior_sides"])
 
     def test_tour_average_rate_is_computed_from_all_usable_service_points(self):
         rows = [
