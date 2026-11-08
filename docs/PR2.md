@@ -104,7 +104,7 @@ The neutral-prior side-use accounting correction and its regression test are on 
 - [Event population audit #122](https://github.com/KR1901/court-pace-index/actions/runs/42483108359): **passed**. Unit tests, CLI check, source-required Montpellier reconciliation, all 36 annual all-event sweeps (1991–2026), aggregate report generation and 90-day artifact upload completed. The corrected report records 1,930 prior-affected sides (1.356%), with 980 server-role and 980 returner-role uses; 2026 records 84 sides (1.667%), with 43 uses for each role.
 - [Expected-aces formula comparison #253](https://github.com/KR1901/court-pace-index/actions/runs/42483108399): **passed**.
 - [Android CI #627](https://github.com/KR1901/court-pace-index/actions/runs/42483108406): **passed**, including unit tests, debug APK assembly and artifact upload.
-- [Deep calculation audit #183](https://github.com/KR1901/court-pace-index/actions/runs/42483108360): still running at the time of this update. Its Python test suite passed; the leave-one-tournament-out, shrinkage, weighting and physical cross-check stage has not yet completed.
+- [Deep calculation audit #183](https://github.com/KR1901/court-pace-index/actions/runs/42483108360): **passed**, including the leave-one-tournament-out, shrinkage, weighting and physical cross-check audit, 250 successful bootstrap resamples per selected event and full-audit artifact upload.
 
 The Event population audit artifact is [all-event-profile-coverage-1991-2026](https://github.com/KR1901/court-pace-index/actions/runs/42483108359). The corrected audit reporting change does not alter expected-aces rates, tournament ratings or rankings; it fixes the accounting of repeated neutral-prior use.
 
