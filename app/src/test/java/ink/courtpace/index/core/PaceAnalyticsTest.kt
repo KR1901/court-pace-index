@@ -60,13 +60,13 @@ class PaceAnalyticsTest {
 
     @Test
     fun `delta compares against the previous season with data`() {
-        // Cincinnati has readings every season from 2016 apart from 2020, so 2026 is
-        // compared with 2025 rather than with the missing 2020.
+        // Court Speed's refreshed source lists Cincinnati at 40.4 in 2026 and
+        // 43.7 in 2025; the missing 2020 season is not used as the comparison.
         val ranking = PaceAnalytics.ranking(data, 2026, Metric.CPI)
         val cincinnati = ranking.first { it.tournament.id == "cincinnati" }
-        assertEquals(39.0, cincinnati.value, 1e-9)
-        assertEquals(43.0, cincinnati.previousValue!!, 1e-9)
-        assertEquals(-4.0, cincinnati.delta!!, 1e-9)
+        assertEquals(40.4, cincinnati.value, 1e-9)
+        assertEquals(43.7, cincinnati.previousValue!!, 1e-9)
+        assertEquals(-3.3, cincinnati.delta!!, 1e-9)
         assertTrue(PaceAnalytics.isMeaningful(cincinnati.delta!!, Metric.CPI))
     }
 
@@ -157,6 +157,37 @@ class PaceAnalyticsTest {
     }
 
     @Test
+    fun `divergence percentiles use only events with both metrics`() {
+        val tournaments = data.tournaments.take(3)
+        val first = tournaments[0]
+        val second = tournaments[1]
+        val cpiOnly = tournaments[2]
+        val sample = PaceData(
+            data.dataset.copy(
+                tournaments = tournaments,
+                readings = listOf(
+                    PaceReading(t = first.id, s = 2026, cpi = 10.0, src = "courtspeed"),
+                    PaceReading(t = second.id, s = 2026, cpi = 20.0, src = "courtspeed"),
+                    PaceReading(t = cpiOnly.id, s = 2026, cpi = 100.0, src = "courtspeed"),
+                    PaceReading(t = first.id, s = 2026, speed = 0.50, src = "computed"),
+                    PaceReading(t = second.id, s = 2026, speed = 1.50, src = "computed"),
+                ),
+            ),
+        )
+
+        val rows = PaceAnalytics.divergences(sample, 2026)
+
+        assertEquals(2, rows.size)
+        val low = rows.first { it.tournament.id == first.id }
+        val high = rows.first { it.tournament.id == second.id }
+        assertEquals(0.0, low.cpiPercentile, 1e-9)
+        assertEquals(0.0, low.speedPercentile, 1e-9)
+        assertEquals(1.0, high.cpiPercentile, 1e-9)
+        assertEquals(1.0, high.speedPercentile, 1e-9)
+        assertEquals(0.0, low.gap, 1e-9)
+        assertEquals(0.0, high.gap, 1e-9)
+    }
+    @Test
     fun `divergence sign follows the two percentiles`() {
         val rows = PaceAnalytics.divergences(data, 2026)
         rows.forEach { assertEquals(it.cpiPercentile - it.speedPercentile, it.gap, 1e-9) }
@@ -166,7 +197,7 @@ class PaceAnalyticsTest {
         val rome = rows.first { it.tournament.id == "rome" }
         assertTrue("expected a negative gap, was ${rome.gap}", rome.gap < 0)
         assertEquals("ace rate", rome.fasterBy)
-        // Shanghai 2026 has the highest CPI of the season.
+        // Shanghai 2026 has the highest CPI among events with both metrics.
         val shanghai = rows.first { it.tournament.id == "shanghai" }
         assertEquals(1.0, shanghai.cpiPercentile, 1e-9)
     }
