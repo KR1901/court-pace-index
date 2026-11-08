@@ -12,7 +12,7 @@ current season. Only tour-level main-draw matches with serve stats are used.
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, hashlib, json, math, os, sys, urllib.request, unicodedata
+import csv, hashlib, json, math, os, random, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
@@ -25,6 +25,9 @@ LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Fina
 SOURCE_BY_YEAR = {}
 SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
+MIN_EVENT_SERVER_SIDES = 20
+PROVISIONAL_EVENT_SERVER_SIDES = 10
+EVENT_CI_BOOTSTRAP_ITERATIONS = 300
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
 TML_CACHE_MAX_AGE_DAYS = 7
 LIVE_EVENT_FEED_MAX_AGE_DAYS = 1
@@ -634,8 +637,53 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
     return raw, event_aces, event_sv, event_matches
 
 
+def event_match_ratio_clusters(event_rows, profiles, tour_rate):
+    """Keep both server sides together as one independent match-level bootstrap cluster."""
+    clusters = []
+    for row in event_rows:
+        winner, loser = row["winner_id"], row["loser_id"]
+        sides = []
+        for server, returner, service_points, aces in (
+            (winner, loser, num(row["w_svpt"]), num(row["w_ace"])),
+            (loser, winner, num(row["l_svpt"]), num(row["l_ace"])),
+        ):
+            serve_rate = profiles.get(server, {}).get("serve_rate")
+            concede_rate = profiles.get(returner, {}).get("concede_rate")
+            if serve_rate is None or concede_rate is None:
+                continue
+            expected = expected_calibrated_aces(serve_rate, concede_rate, tour_rate, service_points)
+            if not math.isfinite(expected) or expected <= MIN_EXPECTED_ACES:
+                continue
+            sides.append(aces / max(expected, EXPECTED_ACES_FLOOR))
+        if sides:
+            clusters.append(sides)
+    return clusters
+
+
+def bootstrap_event_interval(clusters, normaliser, iterations=EVENT_CI_BOOTSTRAP_ITERATIONS, seed=1):
+    """Conditional 95% interval; resample whole matches, holding profiles and normaliser fixed."""
+    if not clusters or normaliser <= 0 or not math.isfinite(normaliser):
+        return None
+    rng = random.Random(seed)
+    values = []
+    for _ in range(iterations):
+        ratios = []
+        for _ in range(len(clusters)):
+            ratios.extend(rng.choice(clusters))
+        if ratios:
+            values.append((sum(ratios) / len(ratios)) / normaliser)
+    if len(values) < max(100, int(iterations * 0.9)):
+        return None
+    values.sort()
+    def percentile(q):
+        position = (len(values) - 1) * q
+        low, high = int(math.floor(position)), int(math.ceil(position))
+        return values[low] + (values[high] - values[low]) * (position - low)
+    return {"low": percentile(0.025), "high": percentile(0.975)}
+
+
 def season_ratings(year, rows):
-    """Calculate each event out of sample, excluding its matches from player profiles and tour anchor."""
+    """LOEO tournament ratings with conditional match-cluster intervals and provisional low-sample values."""
     usable = valid_rows(rows)
     rows_by_event = defaultdict(list)
     mapped_rows = []
@@ -645,35 +693,55 @@ def season_ratings(year, rows):
         if tid is not None:
             rows_by_event[tid].append(row)
 
-    raw_scores = {}
-    event_aces = defaultdict(float)
-    event_service_points = defaultdict(float)
-    event_matches = defaultdict(int)
+    details = {}
     for tid, event_rows in rows_by_event.items():
         training_rows = [row for mapped_id, row in mapped_rows if mapped_id != tid]
         if not training_rows:
             continue
         profiles = player_rates(training_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
         tour_rate = tour_average_ace_rate(training_rows)
-        raw, aces, points, matches = event_raw_scores(event_rows, profiles, tour_rate=tour_rate)
-        if tid not in raw:
+        if tour_rate is None or not 0.0 < tour_rate < 1.0:
             continue
-        raw_scores[tid] = raw[tid]
-        event_aces[tid] = aces[tid]
-        event_service_points[tid] = points[tid]
-        event_matches[tid] = matches[tid]
-
-    if not raw_scores:
-        return {}
-    mean_raw = sum(raw_scores.values()) / len(raw_scores)
-    return {
-        tid: {
-            "speed": value / mean_raw,
-            "ace": 100.0 * event_aces[tid] / event_service_points[tid],
-            "matches": event_matches[tid],
+        clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
+        ratios = [ratio for cluster in clusters for ratio in cluster]
+        sides = len(ratios)
+        if sides < PROVISIONAL_EVENT_SERVER_SIDES:
+            continue
+        aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
+        points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
+        details[tid] = {
+            "raw": sum(ratios) / sides, "clusters": clusters, "sides": sides,
+            "matches": len(event_rows), "ace": 100.0 * aces / points if points else None,
         }
-        for tid, value in raw_scores.items()
-    }
+
+    standard = {tid: item for tid, item in details.items() if item["sides"] >= MIN_EVENT_SERVER_SIDES}
+    if not standard:
+        return {}
+    mean_raw = sum(item["raw"] for item in standard.values()) / len(standard)
+    output = {}
+    for tid, item in details.items():
+        seed = int(hashlib.sha256(f"{year}:{tid}:match-cluster-ci-v1".encode()).hexdigest()[:8], 16)
+        interval = bootstrap_event_interval(item["clusters"], mean_raw, seed=seed)
+        ci = {
+            "low": round(interval["low"], 3), "high": round(interval["high"], 3),
+            "method": "match-cluster-conditional-v1",
+        } if interval else {}
+        common = {"ace": round(item["ace"], 1) if item["ace"] is not None else None,
+                  "matches": item["matches"]}
+        if item["sides"] >= MIN_EVENT_SERVER_SIDES:
+            output[tid] = {
+                **common, "speed": item["raw"] / mean_raw, "adjustedServerSides": item["sides"],
+                "speedCiLow": ci.get("low"), "speedCiHigh": ci.get("high"),
+                "speedCiMethod": ci.get("method"),
+            }
+        else:
+            output[tid] = {
+                **common, "provisionalSpeed": item["raw"] / mean_raw,
+                "provisionalServerSides": item["sides"], "provisionalMatches": item["matches"],
+                "provisionalCiLow": ci.get("low"), "provisionalCiHigh": ci.get("high"),
+                "provisionalCiMethod": ci.get("method"),
+            }
+    return output
 
 
 def live_event_exclusion(live_path=None, today=None, now=None):
