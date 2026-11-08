@@ -478,12 +478,13 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
             and remapped_main[main_index]["date"] < target_date
         ):
             source_event = remapped_main[main_index]
-            decay = event_recency_weight(source_event["date"], target_date)
+            # Current-season observations share the same 2026 season weight (1.0);
+            # only their strict event-date eligibility changes as the target moves forward.
             backfill.merge_stats(
-                training_global, source_event["global_stats"], decay
+                training_global, source_event["global_stats"], 1.0
             )
             merge_player_history(
-                training_players, source_event["players"], decay
+                training_players, source_event["players"], 1.0
             )
             main_index += 1
 
@@ -495,10 +496,7 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
                 and remapped_challenger[challenger_index]["date"] < target_date
             ):
                 source_event = remapped_challenger[challenger_index]
-                decay = (
-                    event_recency_weight(source_event["date"], target_date)
-                    * challenger_weight
-                )
+                decay = challenger_weight
                 # Lower-tier observations never change ATP population priors.
                 merge_player_history(
                     training_players, source_event["players"], decay
@@ -513,10 +511,7 @@ def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
                 and remapped_qualifying[qualifying_index]["date"] < target_date
             ):
                 source_event = remapped_qualifying[qualifying_index]
-                decay = (
-                    event_recency_weight(source_event["date"], target_date)
-                    * qualifying_weight
-                )
+                decay = qualifying_weight
                 merge_player_history(
                     training_players, source_event["players"], decay
                 )
