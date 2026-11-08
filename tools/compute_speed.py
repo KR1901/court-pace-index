@@ -661,8 +661,10 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             player_id = row.get(player_id_key)
             player_name = row.get(player_name_key) or ""
             profile = profiles.get(player_id)
-            candidate = unique_by_name.get(_normalise_profile_name(player_name))
-            had_player_profile = profile is not None or candidate is not None
+            normalized_name = _normalise_profile_name(player_name)
+            name_candidates = candidates.get(normalized_name, []) if normalized_name else []
+            candidate = unique_by_name.get(normalized_name)
+            had_player_profile = profile is not None or bool(name_candidates)
 
             # Crosswalk current TML IDs to historical archive IDs by unique full name.
             if candidate is not None and profile is None:
@@ -698,6 +700,8 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                 "player_id": player_id,
                 "player_name": player_name,
                 "had_player_profile": had_player_profile,
+                "had_exact_player_profile": profile is not None,
+                "name_candidate_count": len(name_candidates),
             }
 
         sides = (
@@ -722,8 +726,15 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                     **identity,
                     "role": "server",
                     "reason": (
-                        "player_profile_exists_without_rate"
-                        if identity["had_player_profile"] else "no_player_profile_in_history"
+                        "ambiguous_name_match"
+                        if (
+                            not identity["had_exact_player_profile"]
+                            and identity["name_candidate_count"] > 1
+                        )
+                        else (
+                            "player_profile_exists_without_rate"
+                            if identity["had_player_profile"] else "no_player_profile_in_history"
+                        )
                     ),
                 })
                 serve_rate = tour_rate
