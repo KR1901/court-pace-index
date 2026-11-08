@@ -12,6 +12,7 @@ def row(
     tournament_id="2026-001",
     tournament_name="Sample ATP",
     date="20260601",
+    match_num="1",
     level="250",
     round_name="R32",
     surface="Clay",
@@ -26,7 +27,7 @@ def row(
         "tourney_id": tournament_id,
         "tourney_name": tournament_name,
         "tourney_date": date,
-        "match_num": "1",
+        "match_num": str(match_num),
         "tourney_level": level,
         "round": round_name,
         "surface": surface,
@@ -64,7 +65,7 @@ class SourceMergeTests(unittest.TestCase):
             rows,
             {"name": "fixture", "downloaded_sha256": "abc"},
         )
-        self.assertEqual(3, summary["raw_rows"])
+        self.assertEqual(3, summary["valid_rows"])
         self.assertEqual(2, summary["post_2026_05_17_valid_rows"])
         self.assertEqual("20261107", summary["last_valid_tournament_date_key"])
 
