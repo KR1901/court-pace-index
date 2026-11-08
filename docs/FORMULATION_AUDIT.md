@@ -206,7 +206,7 @@ The ambiguity-aware profile and event-audit implementation passed the full valid
 - [Android CI #597](https://github.com/KR1901/court-pace-index/actions/runs/42480868071): passed.
 - [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): passed; 250 successful bootstrap draws per selected event and the full audit artifact was uploaded.
 
-The latest PR head inspected on 8 November 2026 had four checks marked `action_required` before jobs were created. The recent changes to the dataset refresh workflow have therefore not yet been executed by CI. In particular, the app asset must be regenerated from the updated \`data/speed_history.json\` and verified against it before the new production values can be considered published to the app.
+The bundled app asset and \`data/latest.json\` have now been regenerated from \`data/speed_history.json\`. Both files share Git blob SHA \`edff2da9fc71f0be397a58944021cd5601ca282c\` and generated timestamp 8 November 2026, 12:55:22 UTC. Their PR diff confirms the production Montpellier (1.664; 54/54 sides) and Marrakech (0.999; 52/52 sides) values and preserves Tennis Abstract in \`publishedSpeed\`. The refresh workflow now checks every computed rating, match/side count and confidence interval against the history source before publication. The latest PR validation cycle is running separately.
 
 ## Reproduction
 
