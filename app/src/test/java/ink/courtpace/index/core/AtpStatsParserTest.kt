@@ -321,7 +321,7 @@ class AtpStatsParserTest {
     }
 
     @Test
-    fun `shortened full names remain unresolved when more than one profile matches`() {
+    fun `shortened full names use a tour prior when multiple profiles match`() {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
@@ -338,8 +338,12 @@ class AtpStatsParserTest {
 
         val coverage = AceRating.coverage(matches, ambiguousBaseline)
 
-        assertEquals(0, coverage.adjustedServerSides)
-        assertEquals(20, coverage.issues.size)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(10, coverage.serverProfilesMatched)
+        assertEquals(10, coverage.returnerProfilesMatched)
+        assertEquals(10, coverage.serverProfilesFallback)
+        assertEquals(10, coverage.returnerProfilesFallback)
+        assertTrue(coverage.issues.isEmpty())
     }
 
     @Test
