@@ -21,6 +21,8 @@ class AggregateEventProfileCoverageTests(unittest.TestCase):
             "unrateable_server_sides": sides - rateable,
             "events_with_unrateable_sides": int(sides != rateable),
             "tour_prior_sides": priors,
+            "tour_prior_server_side_uses": priors,
+            "tour_prior_returner_side_uses": priors,
             "events_with_tour_prior_sides": int(priors > 0),
             "fallback_diagnostics": {
                 "profile_exists_without_rate_occurrences": 1,
@@ -62,6 +64,8 @@ class AggregateEventProfileCoverageTests(unittest.TestCase):
             self.assertEqual(10, report["totals"]["eligible_server_sides"])
             self.assertEqual(9, report["totals"]["rateable_server_sides"])
             self.assertEqual(3, report["totals"]["tour_prior_sides"])
+            self.assertEqual(3, report["totals"]["tour_prior_server_side_uses"])
+            self.assertEqual(3, report["totals"]["tour_prior_returner_side_uses"])
             self.assertEqual(2, report["fallback_diagnostics"]["ambiguous_name_match_occurrences"])
             self.assertAlmostEqual(90.0, report["totals"]["rateable_pct"])
             self.assertEqual(2, len(report["events"]))
