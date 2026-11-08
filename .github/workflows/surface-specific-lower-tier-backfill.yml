@@ -30,7 +30,7 @@ jobs:
         run: python3 -m unittest discover -s tools -p "test_surface_specific_lower_tier_backfill.py" -v
       - name: Run surface-specific weight selection and 2026 forward test
         env:
-          CACHE_DIR: \${{ runner.temp }}/surface-tier-weight-backfill
+          CACHE_DIR: .cache/surface-tier-weight-backfill
         run: |
           set -euo pipefail
           python3 tools/audit_surface_specific_lower_tier_backfill.py \
