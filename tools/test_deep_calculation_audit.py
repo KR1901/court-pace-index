@@ -324,9 +324,12 @@ class PairedBootstrapDifferenceTests(unittest.TestCase):
             {"r": 0.90, "rho": 0.91, "mae": 0.08, "bias": 0.0},
         ]
         result = audit.paired_bootstrap_differences(candidate, baseline)
-        self.assertEqual([0.02, 0.01], result["r"])
-        self.assertEqual([0.02, 0.01], result["rho"])
-        self.assertEqual([-0.02, -0.01], result["mae"])
+        for actual, expected in zip(result["r"], [0.02, 0.01]):
+            self.assertAlmostEqual(expected, actual, places=12)
+        for actual, expected in zip(result["rho"], [0.02, 0.01]):
+            self.assertAlmostEqual(expected, actual, places=12)
+        for actual, expected in zip(result["mae"], [-0.02, -0.01]):
+            self.assertAlmostEqual(expected, actual, places=12)
 
     def test_paired_differences_reject_unmatched_resample_counts(self):
         with self.assertRaises(ValueError):
