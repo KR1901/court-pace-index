@@ -1098,17 +1098,14 @@ def main():
             )
         ]
         source_counts = {
-            "currentSeasonQualified": sum(
+            "currentSeasonQualifiedServeProfiles": sum(
                 p["serveRateSource"] == "current-season-qualified" for p in live_profile_rows
             ),
-            "priorSeasonQualified": sum(
-                p["serveRateSource"] == "prior-season-qualified" for p in live_profile_rows
+            "careerHistorySurfaceShrunkServeProfiles": sum(
+                p["serveRateSource"] == "career-history-surface-shrunk" for p in live_profile_rows
             ),
-            "currentSeasonShrunk": sum(
-                p["serveRateSource"] == "current-season-shrunk" for p in live_profile_rows
-            ),
-            "priorSeasonShrunk": sum(
-                p["serveRateSource"] == "prior-season-shrunk" for p in live_profile_rows
+            "careerHistoryPooledShrunkServeProfiles": sum(
+                p["serveRateSource"] == "career-history-pooled-shrunk" for p in live_profile_rows
             ),
             "withoutServeRate": sum(p["serveRate"] is None for p in live_profile_rows),
             "withoutConcedeRate": sum(p["concedeRate"] is None for p in live_profile_rows),
@@ -1139,9 +1136,9 @@ def main():
         }
         print(
             "live profile coverage: "
-            f"{source_counts['currentSeasonQualified']} current-season qualified, "
-            f"{source_counts['priorSeasonQualified']} prior-season qualified, "
-            f"{source_counts['currentSeasonShrunk']} low-sample shrunk, "
+            f"{source_counts['currentSeasonQualifiedServeProfiles']} current-season qualified, "
+            f"{source_counts['careerHistorySurfaceShrunkServeProfiles']} career-history surface-shrunk, "
+            f"{source_counts['careerHistoryPooledShrunkServeProfiles']} career-history pooled-shrunk, "
             f"{source_counts['withoutServeRate']} without serve rate"
         )
         baseline_path = os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json")
