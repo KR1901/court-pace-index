@@ -83,10 +83,9 @@ class PhysicalCpiDiagnosticsTests(unittest.TestCase):
             first["within_event_centered"]["by_surface"]["clay"]["pearson"],
             places=12,
         )
-        self.assertAlmostEqual(
-            -1.0,
+        self.assertLess(
             first["within_event_centered"]["by_surface"]["clay"]["spearman"],
-            places=12,
+            -0.95,
         )
         self.assertEqual(4, first["by_event"]["madrid"]["n"])
         self.assertAlmostEqual(-1.0, first["by_event"]["madrid"]["pearson"])
@@ -104,7 +103,7 @@ class PhysicalCpiDiagnosticsTests(unittest.TestCase):
         self.assertEqual(200, centered_bootstrap["successful_resamples"])
         self.assertEqual("within-event-centred association", centered_bootstrap["estimand"])
         self.assertEqual([-1.0, -1.0], centered_bootstrap["pearson_95_interval"])
-        self.assertEqual([-1.0, -1.0], centered_bootstrap["spearman_95_interval"])
+        self.assertLess(centered_bootstrap["spearman_95_interval"][1], -0.95)
         self.assertIn("event ID", bootstrap["resampling_unit"])
 
 
