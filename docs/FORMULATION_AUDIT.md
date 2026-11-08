@@ -92,3 +92,13 @@ The 2026 production asset at the pre-fix audit baseline contained 57 CALC / 1 TA
 - Every standard historical CALC reading now carries a 95% match-cluster interval. The bootstrap samples whole matches so both server sides remain together; fitted LOEO profiles and the season normaliser are held fixed. This interval is explicitly conditional and does not represent total parameter or physical-measurement uncertainty.
 - Events with 10–19 eligible adjusted server sides carry a separate provisional CALC estimate and conditional interval. They have no primary speed value and therefore cannot enter ranking, comparison or season normalisation. Events below 10 sides remain unrated.
 - The app displays the conditional interval for standard CALC readings and labels provisional values separately with their match and server-side counts.
+
+
+## Production refresh verification (2026-11-08)
+- Current-season live baseline: profile season 2026, 804 profiles, 2,519 training matches, 150-service-point historical and live priors. The seven-day event manifest was fresh; Paris was excluded by event ID, although the TML source contained zero Paris match rows at refresh time.
+- 2026 coverage after the LOEO/150-point refresh: 57 computed primary readings and one TA-only primary reading. One sub-threshold event (Laver Cup) carries a provisional diagnostic only.
+- Marrakech: CALC 1.049; 26 matches; 41 eligible server sides; conditional 95% match-cluster interval 0.855–1.253. The published TA comparison remains 0.93.
+- Laver Cup: 7 matches / 14 eligible sides; provisional CALC 0.472; conditional 95% match-cluster interval 0.274–0.708. The provisional value has no primary speed field and is not ranked.
+- The production refresh workflow passed Python tests, baseline validation, dataset rebuild, bundled/downloadable dataset consistency and Android unit tests. Android CI also passed unit tests and debug APK assembly/upload.
+- Full 1991–2026 reference comparison passed: 1,240 common event-seasons over 35 completed seasons, 5,000 season-stratified paired bootstrap resamples. Completed-season calibrated odds-ratio result: Pearson r=0.925, Spearman rho=0.917, MAE=0.055. Surface-matched returner candidate: r=0.925, rho=0.926, MAE=0.052. Paired candidate-minus-calibrated differences: r +0.001 [-0.004,+0.005], rho +0.010 [+0.006,+0.014], MAE -0.003 [-0.004,-0.002].
+- Partial 2026 reference set: 49 common events; calibrated r=0.908, rho=0.869, MAE=0.068; surface-matched returner r=0.926, rho=0.913, MAE=0.060. Treat this as provisional because the season is incomplete.
