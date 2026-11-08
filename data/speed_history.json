@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-07",
+ "generated": "2026-11-08",
  "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; both player profiles use qualified clay (1/3) and hard/grass (2/3) rates, with pooled returner fallback when neither surface qualifies; positive expected-ace values are floored at 0.5 and season-normalised",
  "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
  "season_sources": {
@@ -18,6 +18,17 @@
   "2024": "Jeff Sackmann ATP archive",
   "2025": "Jeff Sackmann ATP archive",
   "2026": "TennisMyLife ATP Match Database"
+ },
+ "source_metadata": {
+  "2026": {
+   "source": "TennisMyLife ATP Match Database",
+   "url": "https://stats.tennismylife.org/data/2026.csv",
+   "fetchedAtUtc": "2026-11-08T04:14:01.249855+00:00",
+   "latestMatchDate": "20261101",
+   "matchRows": 2719,
+   "bytes": 578416,
+   "sha256": "4219d664cb7f4989b2529791ed60cbc6276b0b621708016799064163bda9efe8"
+  }
  },
  "seasons": {
   "2012": {
