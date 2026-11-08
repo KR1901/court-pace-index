@@ -113,6 +113,51 @@ The descriptive result is heterogeneous: the Challenger 0.25 arm improves both l
 
 The run artifact contains only aggregate metrics and pinned-source hashes, not match-level rows, names or player IDs. The workflow's next run also includes explicit Jeff Sackmann / Tennis Abstract attribution in the generated README.
 
+## 2026 available-to-date source extension and chronological forward test
+
+The original pinned Sackmann 2026 main-draw file is not a complete 2026 season snapshot; it stops in the first part of the season (through 17 May in the pinned file). The 2026 forward experiment therefore obtains the current season snapshot from TennisMyLife's data-files API at run time:
+
+- ATP main draw: \`2026.csv\`, supplemented by \`ongoing_tourneys.csv\`.
+- Challenger main draw: \`2026_challenger.csv\`, supplemented by \`challenger_ongoing_tourneys.csv\`.
+- ATP qualifying: \`atp_quali/2026_atp_quali.csv\`, restricted to Q1/Q2/Q3 records with valid service statistics.
+- Player ID aliases: \`ATP_Database.csv\`, used only for exact full-name crosswalks to historical archive IDs.
+
+The downloaded files are hashed and their API modification timestamps / source metadata are recorded in the aggregate report. The report's post-17-May count uses \`tourney_date\` (the tournament-week/date key) on or after 18 May 2026. The source CSV does not supply an exact match date for every row, so this is a tournament-date cutoff, not a claim that each match was played on the exact date value.
+
+The current snapshot available at the 8 November 2026 run includes ATP main-draw rows through the Paris Masters ongoing-results feed (latest completed match row dated 7 November in the feed); the ATP static 2026 CSV itself extends through the start of November. It is therefore the complete **available-to-date** 2026 record, not the yet-unplayed remainder of the calendar. The remaining future 2026 tournaments must be picked up by a later refresh after their results exist.
+
+### Chronological use of same-season matches
+
+The 2026 ATP target is evaluated event by event, in tournament-week order:
+
+- Historical ATP main draw (1991–2025) and historical Challenger / qualifying (2008–2025) form the starting player-history database.
+- A 2026 ATP main-draw event may use earlier 2026 ATP main-draw events. Those ATP rows can update the player profile and the ATP-only population prior.
+- A 2026 ATP event may use earlier 2026 Challenger and qualifying events only when their tournament-date key is **strictly earlier** than the ATP target event. Same-week and later lower-tier rows are excluded.
+- Challenger and qualifying observations affect player-role profiles only. They never enter the ATP population prior.
+- The target ATP event's own matches are excluded from its profiles. The tournament date key is intentionally conservative: even an earlier match played during the same tournament week is excluded if the source assigns the same week key.
+
+This is different from using the entire 2026 Challenger/qualifying file to predict all 2026 ATP matches, which would introduce look-ahead. It also means that lower-tier results after 17 May can contribute to profiles for later 2026 ATP events once those lower-tier tournaments have finished and their date key precedes the target event.
+
+### Ephemeral source handling
+
+TML files are fetched into a temporary directory for the duration of the research run and are deleted when the script exits. They are not saved into the repository, workflow cache, or artifact. Only aggregate counts, model metrics, source metadata and SHA-256 hashes are uploaded. The repository remains public; no visibility or access setting is changed.
+
+The TML terms remain separate from the repository visibility setting: this is a non-commercial research audit only. It is not permission to distribute TML rows or deploy TML-derived profiles / predictions in a commercial app. Obtain written permission before any such use. The historical Sackmann-derived material continues to carry CC BY-NC-SA attribution, non-commercial and share-alike obligations.
+
+### Reproduction
+
+Run the 2026 extension as part of the dedicated workflow, or locally:
+
+\`\`\`bash
+python3 -m unittest discover -s tools -p "test_surface_backfill_2026_forward.py" -v
+python3 tools/audit_surface_backfill_2026_forward.py \\
+  --archive-cache-dir .cache/lower-tier-backfill \\
+  --output-dir build/surface-backfill-2026 \\
+  --bootstrap 2000
+\`\`\`
+
+The output separates the full available-to-date 2026 ATP population from events with tournament-date keys on or after 18 May. The lower-tier 2026 source coverage is reported separately, and its contribution to 2026 profiles is limited to strictly prior events.
+
 ## Decision gate
 
 No lower-tier profile contribution should enter production unless:
