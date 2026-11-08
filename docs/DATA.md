@@ -75,13 +75,13 @@ The latest completed formula comparison covered 1,289 common event-seasons acros
 
 The latest deep audit found that the 150-point shrinkage configuration improves historical out-of-sample reference agreement over the unshrunk configuration. Its full-pipeline event bootstrap intervals include profile and target-event uncertainty and are wider than conditional match-only intervals.
 
-Montpellier 2026 has CALC 1.60 versus TA 1.49, with CALC ace rate 14.2% versus TA's published 19.8%. The discrepancy is not yet explained by an exact match-ID/source-stat reconciliation. Do not attribute it to qualifying scope without evidence. A local event audit is available:
+Montpellier 2026 has CALC 1.60 versus TA 1.49, with CALC ace rate 14.2% versus TA's published 19.8%. The source-required workflow loaded the TennisMyLife ATP Match Database and reconciled 27 event rows: all 27 met the source-stat eligibility rules (54 statistically complete server sides), totalling 545 aces over 3,839 service points (14.1964%). The production leave-one-event-out player profiles could rate 47 of those 54 sides; seven were not rateable because five lacked a server profile, one lacked a returner profile and one lacked both profiles. No side failed the expected-aces calculation after profiles were available. This explains the 54-versus-47 difference in CALC coverage, but it does **not** explain TA's higher 19.8% ace rate or establish which matches TA included. Do not attribute that remaining discrepancy to qualifying scope without evidence. A local event audit is available:
 
 ```bash
 python3 tools/audit_event_population.py --event Montpellier --season 2026
 ```
 
-It writes `build/event-population-audit/match-population.csv` and `summary.json`. The CSV contains derived match-level reconciliation fields only; it does not include the raw source CSV. It describes only the source loaded by `compute_speed.py` and cannot establish TA's population.
+It writes `build/event-population-audit/match-population.csv` and `summary.json`. Add `--require-source "TennisMyLife ATP Match Database"` to fail closed if the loader selects any fallback. The CSV contains derived match-level reconciliation fields only; it does not include the complete raw source CSV. It describes only the source loaded by `compute_speed.py` and cannot establish TA's population. The successful source-required workflow run on PR #2 head `461272379dc3e69a4b444111b022bf0721f340ef` is [run #42469683324](https://github.com/KR1901/court-pace-index/actions/runs/42469683324).
 
 ## Independent physical validation
 
