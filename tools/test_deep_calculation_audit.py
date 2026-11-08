@@ -313,6 +313,26 @@ class LeaveOneEventOutTests(unittest.TestCase):
         self.assertAlmostEqual(30 / 200, tour_rate)
 
 
+class PairedBootstrapDifferenceTests(unittest.TestCase):
+    def test_paired_differences_use_identical_resample_draws(self):
+        candidate = [
+            {"r": 0.92, "rho": 0.93, "mae": 0.06, "bias": 0.0},
+            {"r": 0.91, "rho": 0.92, "mae": 0.07, "bias": 0.0},
+        ]
+        baseline = [
+            {"r": 0.90, "rho": 0.91, "mae": 0.08, "bias": 0.0},
+            {"r": 0.90, "rho": 0.91, "mae": 0.08, "bias": 0.0},
+        ]
+        result = audit.paired_bootstrap_differences(candidate, baseline)
+        self.assertEqual([0.02, 0.01], result["r"])
+        self.assertEqual([0.02, 0.01], result["rho"])
+        self.assertEqual([-0.02, -0.01], result["mae"])
+
+    def test_paired_differences_reject_unmatched_resample_counts(self):
+        with self.assertRaises(ValueError):
+            audit.paired_bootstrap_differences([{"r": 1}], [])
+
+
 class UncertaintyTests(unittest.TestCase):
     def test_match_cluster_bootstrap_is_reproducible(self):
         clusters = [[0.8, 1.2], [1.0, 0.9], [1.3, 0.7], [1.1, 1.0]]

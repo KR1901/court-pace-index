@@ -520,6 +520,22 @@ def mean_ci(values):
     )
 
 
+def paired_bootstrap_differences(candidate_samples, baseline_samples):
+    """Paired metric deltas from identical bootstrap draws (candidate minus baseline)."""
+    if len(candidate_samples) != len(baseline_samples):
+        raise ValueError("paired bootstrap samples must have equal lengths")
+    if not candidate_samples:
+        return {}
+    metrics = ("r", "rho", "mae", "bias")
+    return {
+        metric: [
+            candidate[metric] - baseline[metric]
+            for candidate, baseline in zip(candidate_samples, baseline_samples)
+        ]
+        for metric in metrics
+    }
+
+
 def cluster_bootstrap_interval(clusters, normaliser, iterations, seed):
     """Conditional CI: resample whole matches, retaining both server sides together."""
     if not clusters or not normaliser or normaliser <= 0:
@@ -677,6 +693,22 @@ def run_audit(seasons, boot, detail_ids):
         print(f"{variant:30s} r {result['r']:.3f} [{r_ci[0]:.3f},{r_ci[1]:.3f}]  "
               f"rho {result['rho']:.3f} [{rho_ci[0]:.3f},{rho_ci[1]:.3f}]  "
               f"MAE {result['mae']:.3f} [{mae_ci[0]:.3f},{mae_ci[1]:.3f}]")
+
+    print("\nPAIRED BOOTSTRAP DIFFERENCES (candidate minus baseline; same resamples)")
+    comparison_pairs = (
+        ("shrink_150_min3", "loeo_current_1_3"),
+        ("loeo_empirical_bayes_1_3_min3", "loeo_current_1_3"),
+        ("loeo_empirical_bayes_1_3_min3", "shrink_150_min3"),
+    )
+    for candidate, baseline in comparison_pairs:
+        deltas = paired_bootstrap_differences(bootstrap[candidate], bootstrap[baseline])
+        print(f"  {candidate} minus {baseline}:")
+        for metric in ("r", "rho", "mae"):
+            values = deltas[metric]
+            delta = point_metrics[candidate][metric] - point_metrics[baseline][metric]
+            low, high = mean_ci(values)
+            conclusion = "interval includes zero" if low <= 0.0 <= high else "interval excludes zero"
+            print(f"    {metric:5s} {delta:+.4f} [{low:+.4f},{high:+.4f}] ({conclusion})")
 
     # Compare weights on an earlier training window and a later held-out window.
     training_keys = [key for key in shared if key[0] <= 2020]
