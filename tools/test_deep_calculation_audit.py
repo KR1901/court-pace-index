@@ -66,6 +66,33 @@ class SufficientStatisticsTests(unittest.TestCase):
         )
         self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, result)
 
+    def test_pooled_returner_fallback_keeps_production_one_match_eligibility(self):
+        player = {
+            "serve": {
+                "clay": {"aces": 0.0, "points": 0.0, "matches": 0},
+                "hard_grass": {"aces": 0.0, "points": 0.0, "matches": 0},
+                "pooled": {"aces": 0.0, "points": 0.0, "matches": 0},
+            },
+            "return": {
+                "clay": {"aces": 0.0, "points": 0.0, "matches": 0},
+                "hard_grass": {"aces": 0.0, "points": 0.0, "matches": 0},
+                "pooled": {"aces": 8.0, "points": 100.0, "matches": 1},
+            },
+        }
+        prior = {
+            role: {
+                bucket: {"aces": 8.0, "points": 100.0, "matches": 3}
+                for bucket in ("clay", "hard_grass", "pooled")
+            }
+            for role in ("serve", "return")
+        }
+        result = audit.weighted_profile(
+            player, "return", prior, clay_weight=1 / 3,
+            prior_points=0.0, min_matches=3, pooled_fallback=True,
+            pooled_min_matches=1,
+        )
+        self.assertAlmostEqual(0.08, result)
+
     def test_grass_is_grouped_with_hard_for_the_neutral_profile(self):
         self.assertEqual("hard_grass", audit.surface_bucket("Grass"))
         self.assertEqual("hard_grass", audit.surface_bucket("Hard"))

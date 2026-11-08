@@ -172,7 +172,7 @@ def posterior_rate(player_stats, prior_stats, prior_points, min_matches):
 
 
 def weighted_profile(player, role, prior_player, clay_weight, prior_points, min_matches,
-                     pooled_fallback):
+                     pooled_fallback, pooled_min_matches=None):
     """Build one neutral player tendency; return None when no defensible sample exists."""
     rates = {}
     for bucket in ("clay", "hard_grass"):
@@ -189,7 +189,8 @@ def weighted_profile(player, role, prior_player, clay_weight, prior_points, min_
     if pooled_fallback:
         return posterior_rate(
             player[role]["pooled"], prior_player[role]["pooled"],
-            prior_points, min_matches,
+            prior_points,
+            min_matches if pooled_min_matches is None else pooled_min_matches,
         )
     return None
 
@@ -247,6 +248,7 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
                 training_player, "return", prior_players,
                 config["clay_weight"], config["prior_points"], config["min_matches"],
                 config.get("pooled_return_fallback", True),
+                config.get("pooled_return_min_matches", 1),
             )
 
         profiles[player_id] = {
@@ -305,7 +307,7 @@ def config_grid():
     configs = {
         "loeo_current_1_3": {
             "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
-            "pooled_return_fallback": True,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
         },
         "loeo_carpet_pooled": {
             "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,

@@ -12,7 +12,7 @@ current season. Only tour-level main-draw matches with serve stats are used.
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, json, math, os, sys, urllib.request, unicodedata
+import csv, hashlib, json, math, os, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
@@ -92,13 +92,28 @@ def load(year):
                 payload = response.read()
             if not payload.startswith(b"tourney_id,") or b"w_svpt" not in payload[:4096]:
                 raise ValueError("TennisMyLife returned an unexpected ATP CSV schema")
+            decoded = payload.decode("utf-8-sig")
+            parsed_rows = list(csv.DictReader(decoded.splitlines()))
+            if not parsed_rows:
+                raise ValueError("TennisMyLife returned an empty ATP match table")
+            if not {"tourney_date", "w_svpt", "l_svpt", "w_ace", "l_ace"}.issubset(parsed_rows[0]):
+                raise ValueError("TennisMyLife ATP CSV is missing required serve-stat fields")
+            match_dates = [
+                row.get("tourney_date", "")
+                for row in parsed_rows
+                if (row.get("tourney_date") or "").isdigit()
+            ]
+            latest_match_date = max(match_dates) if match_dates else None
             with open(tml_path, "wb") as f:
                 f.write(payload)
             metadata = {
                 "source": "TennisMyLife ATP Match Database",
                 "url": TML_CURRENT_URL.format(year),
                 "fetchedAtUtc": datetime.now(timezone.utc).isoformat(),
+                "latestMatchDate": latest_match_date,
+                "matchRows": len(parsed_rows),
                 "bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
             }
             with open(metadata_path, "w", encoding="utf-8") as f:
                 json.dump(metadata, f, indent=2)

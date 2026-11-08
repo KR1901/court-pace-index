@@ -90,7 +90,11 @@ jobs:
               assert age.total_seconds() >= -900 and age.total_seconds() <= 7 * 86400, (
                   f"TML baseline snapshot is outside the seven-day freshness window: {age}"
               )
-              print(f"Source snapshot is fresh: {source_metadata['fetchedAtUtc']}")
+              print(f"Source snapshot fetched: {source_metadata['fetchedAtUtc']}")
+              print(f"Source match rows: {source_metadata.get('matchRows')}, latest match date: "
+                    f"{source_metadata.get('latestMatchDate')}, SHA-256: {source_metadata.get('sha256')}")
+              assert source_metadata.get("latestMatchDate"), "source snapshot has no dated match observations"
+              assert source_metadata.get("matchRows", 0) > 0, "source snapshot is empty"
           coverage = baseline.get("profileCoverage") or {}
           assert coverage.get("playerProfiles") == len(profiles), "profile coverage count does not match the baseline"
           assert coverage.get("ambiguousNameCollisionsExcluded", 0) >= 0, (
