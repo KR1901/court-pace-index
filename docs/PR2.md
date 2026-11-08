@@ -128,6 +128,43 @@ TML-to-archive identity mapping used exact Unicode-normalised full names only: 2
 
 **Decision: keep ATP-only production profile policy unchanged.** The extended 2026 results are promising as a research signal, but calibration worsens and the key post-May log-loss confidence interval crosses zero. No player profiles, surface weights, ratings, rankings or Android assets were changed by this experiment. [Corrected aggregate-only 2026 forward-test run #38](https://github.com/KR1901/court-pace-index/actions/runs/42497240644).
 
+## Deep calculation audit and physical-source reconciliation (8 November 2026)
+
+The full leave-one-tournament-out audit completed successfully in [Deep calculation audit #243](https://github.com/KR1901/court-pace-index/actions/runs/42497787750): 2,208 common event-seasons across 36 seasons, with 2,000 season-stratified matched bootstrap resamples. All 26 calculation variants covered the same 2,208 event-seasons.
+
+| Variant | Pearson r | Spearman rho | MAE |
+|---|---:|---:|---:|
+| Existing unshrunk 1/3 clay blend | 0.880 | 0.894 | 0.080 |
+| Fixed 150-point shrinkage, three-match qualification | 0.920 | 0.927 | 0.066 |
+| Empirical-Bayes prior, three-match qualification | 0.915 | 0.922 | 0.067 |
+| Fixed 150-point shrinkage, one-match qualification | 0.927 | 0.931 | 0.065 |
+| Empirical-Bayes prior, one-match qualification | 0.926 | 0.931 | 0.064 |
+
+The paired 2,000-resample comparison of shrink_150_min3 against the current unshrunk formula was:
+- Pearson delta +0.0405, 95% interval [+0.0310, +0.0514].
+- Spearman delta +0.0331, 95% interval [+0.0268, +0.0396].
+- MAE delta −0.0139, 95% interval [−0.0161, −0.0117].
+
+Empirical Bayes does **not** beat fixed 150-point shrinkage on the like-for-like three-match comparison: its paired deltas were −0.0049 for Pearson, −0.0048 for Spearman and +0.0008 for MAE, with all three intervals excluding zero in the unfavourable direction. It does outperform the unshrunk baseline, but no replacement of the production 150-point prior is justified by this audit. The one-match qualification variants change profile eligibility as well as shrinkage and are not a direct three-match comparison.
+
+The 2021–2025 held-out sensitivity window also favours moderate shrinkage: the fixed 100–150 point variants had the best MAE range (about 0.062) and rank agreement (rho about 0.931–0.932). The exploratory 0.5 clay weight improves the matched TA holdout slightly but does not justify changing the production weight without independent physical evidence.
+
+The full-pipeline bootstrap refit profiles, target matches and the LOEO season normaliser on every draw. It completed 250/250 resamples for 2025 and 2026 Marrakech and Montpellier:
+- 2025 Marrakech 0.772, 95% interval [0.607, 0.933]; Montpellier 1.304 [1.067, 1.563].
+- 2026 Marrakech 1.049 [0.866, 1.304]; Montpellier 1.600 [1.370, 1.986].
+
+These are calculation uncertainty intervals, not physical validation. Tennis Abstract remains a behavioural reference.
+
+### CPI source refresh and paired-cohort divergence correction
+
+The Court Speed CPI source was reconciled to its 7 November 2026 public snapshot. The refreshed bundle contains 107 CPI readings: the previous 106 event-season keys remain, seven hard-court values were corrected, and Paris Masters 2026 (50.0) was added. The refreshed source did not change any of the 24 clay readings.
+
+The current 106 computed-speed/CPI overlaps give Pearson 0.660 and Spearman 0.693 overall; clay n=24 gives −0.415/−0.427, hard n=81 gives 0.512/0.506, and grass n=1 is not estimable. The within-surface-centred pooled association is Pearson 0.397 and Spearman 0.346. Clay still comprises only four distinct tournament IDs and is not a broad sample of independent physical sites. The refresh therefore does not establish that the clay formula is wrong.
+
+A new unpaired CPI-only record (Paris 2026) exposed a separate app analytics issue: divergence percentiles were previously calculated against each metric's full field, even when some events lacked the other metric. That meant a CPI-only event could move the CPI percentile of every paired event without itself appearing in the divergence list. The app now calculates both percentiles on the **same event-season intersection**. A regression test proves that adding a CPI-only event cannot change existing paired-event divergence ranks. Single-metric rankings still use the full field for that metric.
+
+The refreshed CPI source and updated paired-cohort code do not modify the expected-aces formula, player profiles or lower-tier production policy. The full physical-source comparison and limitations are documented in the [physical validation protocol](PHYSICAL_VALIDATION.md).
+
 ## Other findings and remaining validation
 
 - **Montpellier 2026 production full-history CALC:** 1.664, 54/54 server sides, rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]. TA reference 1.49 lies inside the interval.
@@ -148,22 +185,18 @@ TML-to-archive identity mapping used exact Unicode-normalised full names only: 2
 
 ## Verification
 
-Latest documentation head: `c73023523ff379201a7ec30981ef638e8bfc7184`. The validated calculation / research-code head for the 8 November run was `c6295e01bbb39b1fd38e8a8c2bdd9734fbd71e92`; subsequent commits update documentation and PR notes only. The validated calculation / research-code head for the 8 November run was \`c6295e01bbb39b1fd38e8a8c2bdd9734fbd71e92\`. Five of six workflows completed successfully; the deep calculation audit's full statistical stage was still running at the latest check.
+Latest research/code changes include the CPI refresh, paired-cohort divergence calculation and regression tests. The dataset refresh completed successfully in [Refresh dataset #103](https://github.com/KR1901/court-pace-index/actions/runs/42499365532): it recomputed data/speed_history.json, rebuilt the 107-reading CPI bundle and data/latest.json, verified both assets carry the same baseline, and passed :app:testDebugUnitTest in the refreshed working tree. The refresh workflow committed the generated dataset as 64332a80388fc041f89a9db99dada457278b028c.
 
-- [Lower-tier profile backfill audit #38](https://github.com/KR1901/court-pace-index/actions/runs/42497240644): **passed**. Historical 2012–2025 rolling-origin backfill, 2026 source fetch, chronological current-season profile test, all 2026 match-day scoring, 2,000 paired bootstrap resamples, and aggregate-only report upload.
-- [Event population audit #179](https://github.com/KR1901/court-pace-index/actions/runs/42497240739): **passed**, including Montpellier source reconciliation and the 1991–2026 all-event sweep.
-- [Android CI #684](https://github.com/KR1901/court-pace-index/actions/runs/42497240662): **passed**, including unit tests, debug APK assembly and artifact upload.
-- [Expected-aces formula comparison #310](https://github.com/KR1901/court-pace-index/actions/runs/42497240927): **passed**.
-- [Surface-specific lower-tier backfill audit #28](https://github.com/KR1901/court-pace-index/actions/runs/42497240670): **passed**.
-- [Deep calculation audit #240](https://github.com/KR1901/court-pace-index/actions/runs/42497240791): Python tests passed; leave-one-tournament-out, shrinkage, weighting and physical cross-check stage still running.
+- [Deep calculation audit #243](https://github.com/KR1901/court-pace-index/actions/runs/42497787750): **passed**, including LOEO, shrinkage and weight sensitivity, 2,000 paired season-stratified resamples, event/profile/full-pipeline bootstrap and the physical CPI cross-check. It used the immediately preceding CPI snapshot; a fresh run is triggered by the current source/asset update.
+- [Lower-tier profile backfill audit #41](https://github.com/KR1901/court-pace-index/actions/runs/42497787708): **passed**, including the corrected 2026 source extension and chronological match-day profile tests.
+- [Event population audit #182](https://github.com/KR1901/court-pace-index/actions/runs/42497787799): **passed**, including Montpellier reconciliation and the 1991–2026 all-event sweep.
+- [Android CI #684](https://github.com/KR1901/court-pace-index/actions/runs/42497240662): **passed** on the prior validated code head.
+- [Expected-aces formula comparison #313](https://github.com/KR1901/court-pace-index/actions/runs/42497619705): **passed**.
+- [Surface-specific lower-tier backfill audit #31](https://github.com/KR1901/court-pace-index/actions/runs/42497787796): **passed**.
 
-The 2026 forward-test source and all-date results are documented above and in \`docs/LOWER_TIER_BACKFILL_AUDIT.md\`. The corrected match-day aggregation is covered by a regression test. No production calculation file or data asset is changed by the lower-tier research tools.
+The ordinary PR checks are being rerun against the refreshed dataset and the updated paired-cohort analytics code. No lower-tier backfill has been introduced into production. The 150-service-point production prior and existing expected-aces formulation remain unchanged.
 
-### Lower-tier research decision
-
-Neither the prior 2019–2025 global backfill nor the extended 2026 surface-specific forward test authorises production adoption. The results indicate strong personal-profile coverage gains and point-weighted MAE improvement, but calibration bias worsens; the later-season (post-17-May) log-loss interval includes zero. ATP-only production profiles remain in place. A subsequent independent prospective period is required before changing the production policy.
-
-PR #2 remains open and unmerged. PR #1's base branch remains unchanged. The repository remains public; no visibility or permission changes were made.
+PR #2 remains open and unmerged. PR #1's base branch is unchanged. The repository remains public; no visibility or access-permission changes were made.
 
 ## Reproduction
 
