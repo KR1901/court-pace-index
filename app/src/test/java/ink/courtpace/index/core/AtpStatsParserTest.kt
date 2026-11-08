@@ -407,8 +407,14 @@ class AtpStatsParserTest {
         val rating = AceRating.rate(matches, liveBaseline)!!
 
         assertEquals(56, coverage.totalServerSides)
-        assertEquals(56, coverage.serverProfilesMatched)
-        assertEquals(56, coverage.returnerProfilesMatched)
+        assertEquals(
+            56,
+            coverage.serverProfilesMatched + coverage.serverProfilesFallback,
+        )
+        assertEquals(
+            56,
+            coverage.returnerProfilesMatched + coverage.returnerProfilesFallback,
+        )
         assertEquals(56, coverage.adjustedServerSides)
         assertEquals(56, rating.adjustedServerSides)
     }
