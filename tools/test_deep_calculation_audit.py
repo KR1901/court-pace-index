@@ -102,7 +102,8 @@ class PhysicalCpiDiagnosticsTests(unittest.TestCase):
         self.assertEqual(3, centered_bootstrap["cluster_count"])
         self.assertEqual(200, centered_bootstrap["successful_resamples"])
         self.assertEqual("within-event-centred association", centered_bootstrap["estimand"])
-        self.assertEqual([-1.0, -1.0], centered_bootstrap["pearson_95_interval"])
+        for bound in centered_bootstrap["pearson_95_interval"]:
+            self.assertAlmostEqual(-1.0, bound, places=12)
         self.assertLess(centered_bootstrap["spearman_95_interval"][1], -0.95)
         self.assertIn("event ID", bootstrap["resampling_unit"])
 
