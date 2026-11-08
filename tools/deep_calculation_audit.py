@@ -990,9 +990,9 @@ def run_audit(seasons, boot, detail_ids):
     print(json.dumps(physical_cpi_diagnostics(DATASET), indent=2, sort_keys=True))
     print("\nInterpretation: TA agreement is a behavioural reference comparison, not physical "
           "ground truth. LOEO profiles and tour baselines exclude every match from the event "
-          "being rated. Conditional intervals resample whole matches with fixed profiles; the "
-          "nested intervals additionally refit profiles from tournament-stratified training "
-          "match resamples, while holding the full-sample LOEO normaliser fixed.")
+          "being rated. Conditional intervals hold profiles fixed; profile-and-match intervals "
+          "refit profiles but hold the normaliser fixed; full-pipeline intervals refit profiles, "
+          "target matches and the season LOEO normaliser on every bootstrap draw.")
 
 
 def details_for_event(details, tid):
