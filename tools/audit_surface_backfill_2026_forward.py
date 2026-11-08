@@ -751,7 +751,7 @@ def render_markdown(report):
         "admitted only if their event-week date key is strictly earlier than the target event.",
         "Same-week and later events are excluded to prevent look-ahead.",
         "",
-        "| Population | Valid match rows in available-to-date 2026 snapshot | After 17 May |",
+        "| Population | Valid rows in available-to-date 2026 snapshot | Tourney-date key on/after 18 May |",
         "|---|---:|---:|",
         f"| ATP main draw + ongoing ATP feed | {report['source_coverage']['atp_main_draw_2026']['deduplicated_combined_valid_rows']:,} | {report['source_coverage']['atp_main_draw_2026']['post_2026_05_17_valid_rows_in_combined']:,} |",
         f"| Challenger + ongoing Challenger feed | {report['source_coverage']['challenger_2026']['deduplicated_combined_valid_rows']:,} | {report['source_coverage']['challenger_2026']['post_2026_05_17_valid_rows_in_combined']:,} |",
@@ -783,7 +783,7 @@ def render_markdown(report):
         f"| Binomial log loss / service point | {full['atp_only']['binomial_log_loss_per_point']:.6f} | {full['surface_policy']['binomial_log_loss_per_point']:.6f} |",
         f"| Calibration bias | {full['atp_only']['calibration_bias']:+.6f} | {full['surface_policy']['calibration_bias']:+.6f} |",
         "",
-        "### Forward test — matches from 18 May onward",
+        "### Forward test — tournament-date keys on/after 18 May",
         "",
         "| Metric | ATP-only | Surface-specific policy |",
         "|---|---:|---:|",
@@ -815,7 +815,7 @@ def render_markdown(report):
     ])
     for label, result in (
         ("All available 2026", full),
-        ("After 17 May", late),
+        ("Tourney-date key on/after 18 May", late),
     ):
         lines.append(f"### {label}")
         for metric, name in (
@@ -998,8 +998,8 @@ def run_forward_test(archive_cache_dir, output_dir, bootstrap_iterations):
         "full_2026_atp_sides": full_report["atp_only"]["server_sides"],
         "post_may_17_atp_sides": late_report["atp_only"]["server_sides"],
         "source_post_may_17": {
-            "atp_main_draw": main_source["post_2026_05_17_valid_rows"],
-            "challenger": challenger_source["post_2026_05_17_valid_rows"],
+            "atp_main_draw": report["source_coverage"]["atp_main_draw_2026"]["post_2026_05_17_valid_rows_in_combined"],
+            "challenger": report["source_coverage"]["challenger_2026"]["post_2026_05_17_valid_rows_in_combined"],
             "atp_qualifying": qualifying_source["post_2026_05_17_valid_rows"],
         },
         "full_2026_log_loss": {
