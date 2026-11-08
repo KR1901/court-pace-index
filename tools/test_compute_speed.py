@@ -617,14 +617,21 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
             )
         }
 
-        with patch.object(compute_speed, "load", return_value=[{"year": 2025}]), \
+        def fake_load(year):
+            return [{"year": year}]
+
+        def fake_player_rates(rows):
+            return prior if rows[0]["year"] == 2025 else {}
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "load", side_effect=fake_load), \
              patch.object(compute_speed, "valid_rows", side_effect=lambda rows: rows), \
-             patch.object(compute_speed, "player_rates", return_value=prior):
+             patch.object(compute_speed, "player_rates", side_effect=fake_player_rates):
             live = compute_speed.build_live_profiles(2026, current)
 
         self.assertAlmostEqual(0.10, live["player"]["serve_rate"])
         expected_history_return_rate = (
-            (28.0 * 0.9) + 150.0 * ((12.0 + 20.0 * 0.9) / (150.0 + 200.0 * 0.9))
+            (28.0 * 0.9) + 150.0 * ((15.0 + 20.0 * 0.9) / (150.0 + 200.0 * 0.9))
         ) / (200.0 * 0.9 + 150.0)
         self.assertAlmostEqual(expected_history_return_rate, live["player"]["concede_rate"])
         self.assertEqual("career-history-surface-shrunk", live["player"]["concede_rate_source"])
