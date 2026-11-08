@@ -79,6 +79,55 @@ A second research source is Sackmann's separate qualifying/Challenger archive. I
 
 This is the mapped event population in the selected source files, not a claim that every ATP event or every match is present and not proof that the source population equals Tennis Abstract's population. The consolidated workflow retains aggregate season/event CSVs, a machine-readable report and a README as a GitHub Actions artifact for 90 days; it excludes raw source CSVs, player names and player IDs. The latest ambiguity-aware report is attached to [Event population audit run #92](https://github.com/KR1901/court-pace-index/actions/runs/42480868160).
 
+## 2026 available-to-date season extension and chronological profile backfill
+
+The earlier pinned Sackmann 2026 file was a partial snapshot through 17 May. The research-only forward test now uses the available-to-date TML 2026 season datasets, including ongoing feeds, and evaluates ATP matches chronologically. This is separate from production ratings.
+
+| Source population | Valid rows available through the 8 Nov snapshot | Rows with match-date key on/after 18 May |
+|---|---:|---:|
+| ATP main draw + ongoing ATP feed | 2,572 | 1,444 |
+| Challenger + ongoing Challenger feed | 5,993 | 3,405 |
+| ATP qualifying Q1/Q2/Q3 | 1,268 | 753 |
+
+The ATP static file includes valid matches through 1 November and the ongoing ATP feed through 7 November. The qualifying file's latest valid date key is 9 November; this is reported as source metadata, not treated as evidence that future matches have been played. This is the complete **available-to-date** snapshot, not the results of tournaments still unplayed.
+
+The previous 2026 forward-test report undercounted matches because TML's date key changes on each match day within a tournament and the event accumulator overwrote previous days. That report's 150-side total is invalid and superseded. The accumulator now adds every match day to its tournament totals, and regression tests verify multi-day event accumulation and strict same-day/future exclusion.
+
+The surface-specific profile weights were selected on the 2012–2018 development data only:
+
+| Surface | Selected arm | Development sides | Development event-seasons |
+|---|---|---:|---:|
+| Clay | Challenger + qualifying, each at 1.00 | 11,388 | 155 |
+| Hard | Qualifying at 0.25 | 20,996 | 261 |
+| Grass | ATP-only | 4,456 | 49 |
+
+The policy was then applied to all available 2026 ATP main-draw match sides, with date-ordered same-season history. Prior 2026 ATP main-draw matches update both player profiles and the ATP-only population anchor. Prior 2026 Challenger / qualifying matches update player-role profiles only. Every match with the same date as the target ATP match-day and all future matches are excluded. This allows later 2026 lower-tier results to inform later 2026 ATP matches without look-ahead.
+
+| Full available-to-date 2026 | ATP-only profiles | Surface-specific policy |
+|---|---:|---:|
+| Server sides | 5,144 | 5,144 |
+| Both roles with personal histories | 97.74% | 99.49% |
+| Point-weighted ace-rate MAE | 0.035828 | 0.034805 |
+| Binomial log loss / service point | 0.285229 | 0.284828 |
+| Calibration bias | +0.007953 | +0.011978 |
+
+The 2,000-resample paired event-cluster bootstrap for policy minus ATP-only is [-0.000707, -0.000120] for log loss and [-0.001510, -0.000582] for point-weighted MAE. Both intervals favour the surface policy on the full available 2026 dataset. Calibration bias becomes worse.
+
+For the 1,444 ATP matches / 2,888 server sides dated on or after 18 May:
+
+| Post-17-May 2026 | ATP-only profiles | Surface-specific policy |
+|---|---:|---:|
+| Both roles with personal histories | 97.58% | 99.31% |
+| Point-weighted ace-rate MAE | 0.034921 | 0.034032 |
+| Binomial log loss / service point | 0.288031 | 0.287696 |
+| Calibration bias | +0.008520 | +0.011933 |
+
+The post-17-May paired 95% interval is [-0.000716, +0.000018] for log loss (includes zero; inconclusive) and [-0.001475, -0.000400] for point-weighted MAE (favours the policy). Calibration again worsens. Therefore, later-season data improves personal-profile coverage and point-weighted MAE, but does not establish a conclusive post-May log-loss improvement.
+
+TML-to-archive identity mapping used exact Unicode-normalised full names only: 277 of 291 target IDs mapped uniquely; 3 ambiguous and 11 unmatched IDs were excluded. No fuzzy identity match was used. The source files are ephemeral, raw CSVs are not cached or uploaded, and artifacts contain aggregate metrics / hashes only.
+
+**Decision: keep ATP-only production profile policy unchanged.** The extended 2026 results are promising as a research signal, but calibration worsens and the key post-May log-loss confidence interval crosses zero. No player profiles, surface weights, ratings, rankings or Android assets were changed by this experiment. [Corrected aggregate-only 2026 forward-test run #38](https://github.com/KR1901/court-pace-index/actions/runs/42497240644).
+
 ## Other findings and remaining validation
 
 - **Montpellier 2026 production full-history CALC:** 1.664, 54/54 server sides, rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]. TA reference 1.49 lies inside the interval.
@@ -99,29 +148,22 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Verification
 
-### Latest validated calculation-code head
+Latest code and documentation head: pending final documentation-only commit. The validated calculation / research-code head for the 8 November run was \`c6295e01bbb39b1fd38e8a8c2bdd9734fbd71e92\`. Five of six workflows completed successfully; the deep calculation audit's full statistical stage was still running at the latest check.
 
-Calculation and research code head: `89648e798f98a7b3a5d9af4d8e47d60ee394071a`. Five of six workflows have completed successfully; the deep calculation audit is still running.
+- [Lower-tier profile backfill audit #38](https://github.com/KR1901/court-pace-index/actions/runs/42497240644): **passed**. Historical 2012–2025 rolling-origin backfill, 2026 source fetch, chronological current-season profile test, all 2026 match-day scoring, 2,000 paired bootstrap resamples, and aggregate-only report upload.
+- [Event population audit #179](https://github.com/KR1901/court-pace-index/actions/runs/42497240739): **passed**, including Montpellier source reconciliation and the 1991–2026 all-event sweep.
+- [Android CI #684](https://github.com/KR1901/court-pace-index/actions/runs/42497240662): **passed**, including unit tests, debug APK assembly and artifact upload.
+- [Expected-aces formula comparison #310](https://github.com/KR1901/court-pace-index/actions/runs/42497240927): **passed**.
+- [Surface-specific lower-tier backfill audit #28](https://github.com/KR1901/court-pace-index/actions/runs/42497240670): **passed**.
+- [Deep calculation audit #240](https://github.com/KR1901/court-pace-index/actions/runs/42497240791): Python tests passed; leave-one-tournament-out, shrinkage, weighting and physical cross-check stage still running.
 
-- [Surface-specific lower-tier backfill audit #10](https://github.com/KR1901/court-pace-index/actions/runs/42490461457): **passed**. Includes surface-weight selection on 2012–2018, the 2026 forward test, 2,000 overall event-cluster bootstrap resamples, separate 2,000-resample within-surface intervals and aggregate-only artifact upload.
-- [Global lower-tier profile backfill audit #20](https://github.com/KR1901/court-pace-index/actions/runs/42490461393): **passed**.
-- [Expected-aces formula comparison #292](https://github.com/KR1901/court-pace-index/actions/runs/42490461417): **passed**.
-- [Event population audit #161](https://github.com/KR1901/court-pace-index/actions/runs/42490461423): **passed**, including the 1991–2026 all-event sweep and source-required Montpellier reconciliation.
-- [Android CI #666](https://github.com/KR1901/court-pace-index/actions/runs/42490461401): **passed**, including unit tests and debug APK assembly/upload.
-- [Deep calculation audit #222](https://github.com/KR1901/court-pace-index/actions/runs/42490461420): Python tests passed; its full leave-one-tournament-out, shrinkage, weighting and physical cross-check stage is still running.
+The 2026 forward-test source and all-date results are documented above and in \`docs/LOWER_TIER_BACKFILL_AUDIT.md\`. The corrected match-day aggregation is covered by a regression test. No production calculation file or data asset is changed by the lower-tier research tools.
 
 ### Lower-tier research decision
 
-Neither lower-tier experiment justifies production adoption. The global 2019–2025 holdout and the new 2026 partial-season forward test both show substantial profile-coverage gains, but predictive effects are heterogeneous and calibration worsens.
+Neither the prior 2019–2025 global backfill nor the extended 2026 surface-specific forward test authorises production adoption. The results indicate strong personal-profile coverage gains and point-weighted MAE improvement, but calibration bias worsens; the later-season (post-17-May) log-loss interval includes zero. ATP-only production profiles remain in place. A subsequent independent prospective period is required before changing the production policy.
 
-On the 2026 surface test, the paired within-surface intervals are:
-- Clay (13 events): log-loss difference **[-0.001526, -0.000732]** and point-weighted MAE difference **[-0.002473, -0.001208]** (both improve); calibration-bias difference **[+0.000760, +0.003407]** (worsens).
-- Hard (15 events): log-loss difference **[+0.000314, +0.001123]** (worsens); point-weighted MAE difference **[-0.000022, +0.001138]** (inconclusive); calibration-bias difference **[+0.002958, +0.003771]** (worsens).
-- Grass: no 2026 target matches were present in the archive snapshot dated through 17 May 2026.
-
-These surface intervals describe the same locked 2026 holdout; they are not a second independent validation set. **ATP-only profiles remain the production policy.** A fuller independent 2027 season is required before reconsidering lower-tier weighting.
-
-The PR's current documentation head contains only report / verification updates after the validated calculation-code head above. PR #2 remains open and unmerged; PR #1's base branch is unchanged. The repository remains public, with no visibility or permission changes.
+PR #2 remains open and unmerged. PR #1's base branch remains unchanged. The repository remains public; no visibility or permission changes were made.
 
 ## Reproduction
 
