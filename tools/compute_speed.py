@@ -1054,7 +1054,8 @@ def main():
             profile_year = current_year - 1
             print(f"live manifest stale; using completed season {profile_year}: {live_manifest['reason']}")
             profile_rows = valid_rows(load(profile_year))
-        profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        profiles = build_live_profiles(profile_year, current_profiles)
         tour_rate = tour_average_ace_rate(profile_rows)
         raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
         if len(raw_events) < 5 and profile_year == current_year:
@@ -1062,16 +1063,17 @@ def main():
             excluded_live_event_ids = []
             excluded_live_event_matches = 0
             profile_rows = valid_rows(load(profile_year))
-            profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+            current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+            profiles = build_live_profiles(profile_year, current_profiles)
             tour_rate = tour_average_ace_rate(profile_rows)
             raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
         if not raw_events:
             raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events in current or previous season")
         normalisation = sum(raw_events.values()) / len(raw_events)
 
-        # Expand only the live baseline. Historical season_ratings() continues to use
-        # its original qualified profiles and therefore keeps all published rankings intact.
-        live_profiles = build_live_profiles(profile_year, profiles)
+        # Historical and live ratings share the same multi-season profile backfill;
+        # only their target-match population and normalisation policies differ.
+        live_profiles = profiles
         unique_live_profiles, identity_diagnostics = dedupe_live_profiles_with_diagnostics(
             live_profiles.values()
         )
