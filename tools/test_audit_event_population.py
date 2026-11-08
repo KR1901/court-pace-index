@@ -63,6 +63,11 @@ class EventPopulationAuditTests(unittest.TestCase):
         self.assertEqual(audit.reason(row), "missing_or_conflicting_player_ids")
         self.assert_same_eligibility_as_production(row)
 
+    def test_profile_coverage_reports_unknown_event_without_inventing_coverage(self):
+        result = audit.model_profile_coverage([], None)
+        self.assertIsNone(result["rateable_server_sides"])
+        self.assertIsNone(result["missing_server_profile"])
+
 
 if __name__ == "__main__":
     unittest.main()
