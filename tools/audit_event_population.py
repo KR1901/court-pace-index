@@ -13,9 +13,11 @@ Require the current-season TennisMyLife source:
 """
 import argparse
 import csv
+import hashlib
 import json
 import math
 import sys
+import urllib.request
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,6 +49,82 @@ def reason(row):
     if not row.get("winner_id") or not row.get("loser_id") or row["winner_id"] == row["loser_id"]:
         return "missing_or_conflicting_player_ids"
     return None
+
+
+def _match_key(row):
+    match_num = str(row.get("match_num") or "")
+    if row.get("tourney_id") and match_num:
+        return (
+            str(row.get("tourney_id")),
+            str(row.get("tourney_date") or ""),
+            match_num,
+        )
+    return (
+        str(row.get("tourney_id") or ""),
+        str(row.get("tourney_date") or ""),
+        str(row.get("round") or ""),
+        str(row.get("winner_id") or ""),
+        str(row.get("loser_id") or ""),
+    )
+
+
+def merge_match_rows(existing_rows, incoming_rows):
+    """Append new match rows without double-counting event/match identifiers."""
+    merged = list(existing_rows)
+    seen = {_match_key(row) for row in existing_rows}
+    appended = 0
+    duplicates = 0
+    for row in incoming_rows:
+        key = _match_key(row)
+        if key in seen:
+            duplicates += 1
+            continue
+        seen.add(key)
+        merged.append(row)
+        appended += 1
+    return merged, {"appended_rows": appended, "duplicate_rows": duplicates}
+
+
+def add_current_ongoing_rows(rows, season):
+    """Add the current TML ATP ongoing-results feed to an audit snapshot only.
+
+    This deliberately lives in the audit tool, not compute_speed.load(), so an unfinished
+    tournament feed cannot leak into production historical/live rating inputs.
+    """
+    if int(season) != datetime.now().year:
+        return rows, None
+
+    url = "https://stats.tennismylife.org/data/ongoing_tourneys.csv"
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "CourtPaceIndex-EventPopulationAudit/1.0",
+            "Accept": "text/csv",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=90) as response:
+        payload = response.read()
+    if not payload.startswith(b"tourney_id,") or b"w_svpt" not in payload[:4096]:
+        raise ValueError("TennisMyLife ongoing ATP feed returned an unexpected CSV schema")
+    incoming = list(csv.DictReader(payload.decode("utf-8-sig").splitlines()))
+    merged, counts = merge_match_rows(rows, incoming)
+    match_dates = [
+        row.get("tourney_date", "")
+        for row in incoming
+        if (row.get("tourney_date") or "").isdigit()
+    ]
+    metadata = {
+        "source": "TennisMyLife ATP ongoing tournament results",
+        "url": url,
+        "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
+        "latest_tournament_date": max(match_dates) if match_dates else None,
+        "match_rows": len(incoming),
+        "appended_rows": counts["appended_rows"],
+        "duplicate_rows": counts["duplicate_rows"],
+        "bytes": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+    }
+    return merged, metadata
 
 
 def model_profile_coverage(all_rows, event_id, season=None):
@@ -116,6 +194,7 @@ def main():
 
     rows = compute_speed.load(args.season)
     source_label = compute_speed.SOURCE_BY_YEAR.get(args.season, "unknown")
+    rows, ongoing_metadata = add_current_ongoing_rows(rows, args.season)
     if args.require_source and args.require_source.casefold() not in source_label.casefold():
         raise SystemExit(
             f"Required source {args.require_source!r}, but compute_speed.load({args.season}) "
@@ -247,7 +326,11 @@ def main():
                 key: metadata.get(key)
                 for key in ("url", "fetchedAtUtc", "latestMatchDate", "matchRows", "bytes", "sha256")
             },
-            "scope": "all mapped ATP tour events in the selected season source",
+            "ongoing_source_metadata": ongoing_metadata,
+            "scope": (
+                "all mapped ATP tour events in the selected season source plus the current "
+                "TML ongoing-results feed when auditing the current season"
+            ),
             "event_count": int(totals["events"]),
             "raw_event_rows": int(totals["raw_event_rows"]),
             "eligible_matches": int(totals["eligible_matches"]),
