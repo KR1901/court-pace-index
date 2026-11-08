@@ -98,14 +98,14 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Verification
 
-On code head \`9042c2201c6902c15d79ad302fe84824a61d771e\`:
+The latest implementation/code head is \`05a8cf83f3022782563ad4abeff1391cd78f9f36\`. Its CI status:
 
-- [Event population audit #79](https://github.com/KR1901/court-pace-index/actions/runs/42479832106): passed. It ran the Montpellier source reconciliation, swept all mapped events from 1991 through 2026, aggregated the report and uploaded the 90-day artifact \`all-event-profile-coverage-1991-2026\`.
-- [Expected-aces formula comparison #210](https://github.com/KR1901/court-pace-index/actions/runs/42479833008): passed.
-- [Android CI #584](https://github.com/KR1901/court-pace-index/actions/runs/42479832112): passed.
-- [Deep calculation audit #140](https://github.com/KR1901/court-pace-index/actions/runs/42479832179): in progress when this record was written; its completed result must be checked before claiming the full four-workflow set is green.
+- [Event population audit #92](https://github.com/KR1901/court-pace-index/actions/runs/42480868160): passed. Unit tests, Montpellier source reconciliation, 1991–2026 all-event sweep, aggregation and 90-day artifact upload completed.
+- [Expected-aces formula comparison #223](https://github.com/KR1901/court-pace-index/actions/runs/42480868104): passed.
+- [Android CI #597](https://github.com/KR1901/court-pace-index/actions/runs/42480868071): passed, including debug APK assembly and upload.
+- [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): still running when this update was prepared; do not describe the entire four-workflow set as green until its final conclusion is confirmed.
 
-The documentation-only updates after this code head preserve the same calculation implementation. PR #2 remains open and unmerged; PR #1's branch has not been modified.
+The retained audit artifact is \`all-event-profile-coverage-1991-2026\`, expires 6 February 2027, and contains aggregate JSON/CSV/README files only. Subsequent PR commits in this batch are documentation-only and preserve the same calculation implementation. PR #2 remains open and unmerged; PR #1's code branch has not been modified.
 
 ## Reproduction
 
