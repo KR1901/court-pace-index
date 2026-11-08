@@ -131,10 +131,7 @@ class LeaveOneEventOutTests(unittest.TestCase):
             target, event_surfaces[target], players, by_event_players,
             global_stats, event_stats, config,
         )
-        _ratios, tour_rate = audit.score_event(
-            target, event_rows[target], event_surfaces[target], profiles,
-            global_stats, event_stats, priors,
-        )
+        tour_rate = audit.tour_rate_excluding_event(target, global_stats, event_stats)
         # Only Clay B contributes to the neutral anchor after event exclusion.
         self.assertAlmostEqual(30 / 200, tour_rate)
 

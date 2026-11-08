@@ -256,9 +256,8 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
     return profiles, prior_players
 
 
-def score_event(tid, event_rows, event_surface, profiles, global_stats,
-                event_stats, prior_players):
-    """Return match-clustered ratios using a tour baseline excluding this event."""
+def tour_rate_excluding_event(tid, global_stats, event_stats):
+    """Season ace probability after subtracting all matches from the target event."""
     excluded = event_stats.get(tid, {
         role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "pooled")}
         for role in ("serve", "return")
@@ -266,7 +265,13 @@ def score_event(tid, event_rows, event_surface, profiles, global_stats,
     tour = subtract_stats(
         global_stats["serve"]["pooled"], excluded["serve"]["pooled"]
     )
-    tour_rate = tour["aces"] / tour["points"] if tour["points"] > 0 else None
+    return tour["aces"] / tour["points"] if tour["points"] > 0 else None
+
+
+def score_event(tid, event_rows, event_surface, profiles, global_stats,
+                event_stats, prior_players):
+    """Return match-clustered ratios using a tour baseline excluding this event."""
+    tour_rate = tour_rate_excluding_event(tid, global_stats, event_stats)
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
         return [], None
 
