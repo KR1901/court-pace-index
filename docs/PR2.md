@@ -67,7 +67,7 @@ The all-event audit swept every mapped event in each season's selected ATP sourc
 
 The 100% figure means every source-stat-eligible side received finite inputs to the expected-aces calculation; it does **not** mean every role has an individual player-history estimate. A neutral prior is a transparent coverage fallback, not a recovered personal statistic.
 
-The fallback audit found **zero** occurrences where a player profile record existed but lacked a usable role rate. All 1,610 missing role-estimate occurrences were classified as **no player profile found in the selected history window**: 805 server-role and 805 returner-role occurrences, summed across seasons. The role count exceeds the 1,584 side count because some sides required a prior for both roles. These aggregate diagnostics do not publish player names or IDs.
+The fallback-reason audit found **zero** occurrences where a player profile record existed but lacked a usable role rate, and **zero** ambiguous normalized-name collisions. All 1,610 missing role-estimate occurrences were classified as **no player profile found in the selected history window**: 805 server-role and 805 returner-role occurrences, summed across seasons. The role count exceeds the 1,584 side count because some sides required a prior for both roles. These aggregate diagnostics do not publish player names or IDs.
 
 For 2026 specifically, the audit covered 58 mapped events, 2,519 matches and 5,038 server sides. All 5,038 were rateable; 70 sides (1.39%) used at least one neutral tour-average prior. Those 70 sides corresponded to 72 missing role inputs and 36 distinct fallback player IDs in the 2026 season audit.
 
