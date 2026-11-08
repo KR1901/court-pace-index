@@ -661,6 +661,7 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             player_id = row.get(player_id_key)
             player_name = row.get(player_name_key) or ""
             profile = profiles.get(player_id)
+            had_exact_player_profile = profile is not None
             normalized_name = _normalise_profile_name(player_name)
             name_candidates = candidates.get(normalized_name, []) if normalized_name else []
             candidate = unique_by_name.get(normalized_name)
@@ -700,7 +701,7 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                 "player_id": player_id,
                 "player_name": player_name,
                 "had_player_profile": had_player_profile,
-                "had_exact_player_profile": profile is not None,
+                "had_exact_player_profile": had_exact_player_profile,
                 "name_candidate_count": len(name_candidates),
             }
 
