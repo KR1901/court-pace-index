@@ -63,6 +63,7 @@ That result measures agreement with a published behavioural reference, **not phy
 - [PR #2 — formulation, statistical audit and diagnostics](docs/PR2.md)
 - [Data provenance and calculation details](docs/DATA.md)
 - [Physical validation protocol](docs/PHYSICAL_VALIDATION.md)
+- [Recommended GitHub About description and Topics](docs/ABOUT.md)
 
 ## Data and provenance
 
