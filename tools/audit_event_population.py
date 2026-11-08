@@ -193,6 +193,9 @@ def main():
                 "fallback_profile_exists_without_rate": int(
                     fallback_reasons["player_profile_exists_without_rate"]
                 ),
+                "fallback_ambiguous_name_matches": int(
+                    fallback_reasons["ambiguous_name_match"]
+                ),
                 "fallback_no_player_profile_in_history": int(
                     fallback_reasons["no_player_profile_in_history"]
                 ),
@@ -224,6 +227,7 @@ def main():
             totals["unrateable_server_sides"] += gap_sides
             totals["tour_prior_sides"] += record["tour_prior_sides"]
             totals["fallback_profile_exists_without_rate"] += record["fallback_profile_exists_without_rate"]
+            totals["fallback_ambiguous_name_matches"] += record["fallback_ambiguous_name_matches"]
             totals["fallback_no_player_profile_in_history"] += record["fallback_no_player_profile_in_history"]
             totals["fallback_server_role_occurrences"] += record["fallback_server_role_occurrences"]
             totals["fallback_returner_role_occurrences"] += record["fallback_returner_role_occurrences"]
@@ -252,6 +256,9 @@ def main():
             "fallback_diagnostics": {
                 "profile_exists_without_rate_occurrences": int(
                     fallback_reason_totals["player_profile_exists_without_rate"]
+                ),
+                "ambiguous_name_match_occurrences": int(
+                    fallback_reason_totals["ambiguous_name_match"]
                 ),
                 "no_player_profile_in_history_occurrences": int(
                     fallback_reason_totals["no_player_profile_in_history"]
