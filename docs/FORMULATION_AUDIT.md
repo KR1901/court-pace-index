@@ -141,7 +141,7 @@ On source/profile-audit code head `461272379dc3e69a4b444111b022bf0721f340ef`:
 - [Event population audit](https://github.com/KR1901/court-pace-index/actions/runs/42469683324): passed, including the source-required Montpellier reconciliation.
 - [Expected-aces formula comparison](https://github.com/KR1901/court-pace-index/actions/runs/42469683149): passed.
 - [Android CI](https://github.com/KR1901/court-pace-index/actions/runs/42469683108): passed.
-- [Deep calculation audit](https://github.com/KR1901/court-pace-index/actions/runs/42469683166): pending at last check.
+- [Deep calculation audit](https://github.com/KR1901/court-pace-index/actions/runs/42469683166): passed; the 1991–2026 LOEO, shrinkage, weighting and physical cross-check audit completed and its report artifact was uploaded.
 
 The preceding code head `d01025706a754a292445b7dbcbdf5f6b1bf0573c` passed all four workflows, including deep calculation audit: [run #42468091511](https://github.com/KR1901/court-pace-index/actions/runs/42468091511). The updated source/profile coverage tooling was separately validated by run #42469683324. Later commits changing only documentation do not alter the audited calculation code.
 
