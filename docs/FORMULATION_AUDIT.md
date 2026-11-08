@@ -122,15 +122,30 @@ Montpellier's CALC rating is 1.60 versus TA's 1.49. TA is within the full-pipeli
 
 Marrakech 2026 CALC is 1.049 with a full-pipeline interval [0.866, 1.304]. Its ordinal placement alone is not evidence of a formula defect. Do not infer physical speed or a systematic clay adjustment from that one rating.
 
-## Expanded player database and 2026 all-event coverage
+## Expanded player database and 1991–2026 all-event coverage
 
-The profile database is constructed from match-level serve and return observations, not from biographical player records. The TML ATP player directory contains identity/biography fields, but not the service-point/ace observations required by this formulation. The calculation instead uses historical ATP match archives from 1991 onward and the current-season match file.
+The profile database is constructed from match-level serve and return observations, not from biographical player records. The ATP player directory contains identity/biography fields, but not the service-point/ace observations required by this formulation. The calculation instead uses historical ATP match archives from 1991 onward and the current-season match file.
 
-For each target event, all of that event's current-season matches are excluded from its training set. Player rates are aggregated across up to 35 prior ATP seasons, with a 0.90 multiplicative decay per year of age. TML's current alphanumeric player IDs are crosswalked to numeric archive IDs only when the normalised full name is unique in the historical profile pool. Ambiguous collisions are not merged. Surface rates require at least three observations in the surface bucket and are shrunk with the 150-service-point prior; pooled career estimates are the next fallback. If no individual estimate can be formed, the calculation uses the season tour-average rate as an explicitly labelled neutral prior.
+For each target event, all matches belonging to that event are excluded from its training profiles and tour anchor. Player rates are aggregated across up to 35 prior ATP seasons, with a 0.90 multiplicative decay per year of age. Current TML player IDs are crosswalked to historical archive IDs only when the normalised full name is unique. Ambiguous collisions are not merged. Surface rates require at least three observations in the surface bucket and are shrunk with the 150-service-point prior; pooled career estimates are the next player-specific fallback. If no defensible individual role estimate can be formed, the calculation uses the event's leave-one-event-out tour-average rate as an explicitly labelled neutral prior.
 
-The source-required 2026 audit swept all mapped ATP tournaments in the TML current-season file:
+The all-season workflow swept every mapped event in every available year from 1991 through 2026. The completed 36-season run reported:
 
-| Measure | Result |
+| Measure | 1991–2026 result |
+|---|---:|
+| Seasons | 36 |
+| Mapped event-seasons | 1,533 |
+| Eligible matches | 71,150 |
+| Statistically eligible server sides | 142,300 |
+| Rateable server sides | 142,300 |
+| Unrateable sides | 0 |
+| Sides using at least one neutral tour-average prior | 1,584 |
+| Neutral-prior share | 1.113% |
+
+The 100% figure is **rateability**, not 100% individual profile coverage. A side is considered rateable when both role inputs are mathematically valid, including when one or both must use an explicitly recorded neutral tour-average prior. The remaining 140,716 sides required no side-level neutral-prior fallback. The audit scope is the mapped event population in the selected source files; it does not establish that every ATP event is represented or that the source population equals Tennis Abstract's population.
+
+The 2026 source-required TML sweep is separately reconciled:
+
+| Measure | 2026 result |
 |---|---:|
 | Mapped events | 58 |
 | Eligible matches | 2,519 |
@@ -140,9 +155,11 @@ The source-required 2026 audit swept all mapped ATP tournaments in the TML curre
 | Sides using at least one neutral tour-average prior | 70 |
 | Events with at least one neutral-prior side | 25 |
 
-Thus 4,968 server sides used player-specific serve/return profile estimates; the remaining 70 used an explicitly identified tour-average rate for at least one missing role. The method does not assign an arbitrary player's profile to a name collision and does not drop a valid side simply because the player is new to the database. This is profile coverage, not proof that every rate is equally precise: prior-only estimates are less player-specific and must remain observable in the UI/data diagnostics.
+Thus 4,968 server sides did not require a side-level neutral-prior fallback. This does not mean every one of those sides had equally strong evidence; player-specific rates still differ in sample size, surface qualification and recency. The audit does not assign an arbitrary player's profile to an ambiguous name collision and does not silently treat a neutral prior as a recovered player statistic.
 
-Montpellier is 54/54 rateable after expansion, with zero tour-prior assignments. The source ace rate (14.1964%) remains different from TA's published 19.8%; the profile expansion does not resolve TA's match-population/stat-definition discrepancy. [All-event workflow run #42473954065](https://github.com/KR1901/court-pace-index/actions/runs/42473954065).
+The Montpellier 2026 discrepancy was resolved at the profile-coverage stage: 54/54 statistically complete sides are now rateable, with no neutral-prior assignments in that event. The source ace rate (14.1964%) remains different from Tennis Abstract's published 19.8%; the profile expansion does not resolve the TA match-population/stat-definition discrepancy. That requires authorized TA match-level data or independently documented evidence.
+
+The consolidated workflow report is designed to retain aggregate season- and event-level coverage tables, source manifests and fallback categories. It excludes raw source CSVs, player names and player IDs. It distinguishes (a) a player record existing but lacking a usable role estimate from (b) no player profile being found in the history window. Its output is a diagnostic, not permission to redistribute source-derived data.
 
 ## Live baseline and coverage controls
 
