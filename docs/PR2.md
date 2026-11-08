@@ -106,7 +106,7 @@ The ambiguity-aware audit/profile implementation passed its full validation set 
 - [Android CI #597](https://github.com/KR1901/court-pace-index/actions/runs/42480868071): passed, including debug APK assembly and upload.
 - [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): passed, including 250 successful bootstrap resamples per selected event and full-audit artifact upload.
 
-Subsequent commits added the dataset consistency guard in \`refresh-data.yml\` and documentation updates. On the latest PR head inspected on 8 November 2026, GitHub reported all four PR checks as \`action_required\` before jobs were created; no code-level failure was reported, but those latest-head checks have not executed. The refresh-data run and resulting bundled-asset regeneration are therefore **not yet verified**. The previously readable app-asset snapshot contained the earlier same-season values; do not assume the installed APK/asset has picked up the new full-history values until the refresh job publishes and the asset parity check passes.
+Subsequent commits added the dataset consistency guard in \`refresh-data.yml\`. The bundled app asset and \`data/latest.json\` have since been regenerated: both use Git blob SHA \`edff2da9fc71f0be397a58944021cd5601ca282c\` and generated timestamp **8 November 2026, 12:55:22 UTC**. Their diff against the previous asset shows CALC values of 1.664 / 54 sides for Montpellier and 0.999 / 52 sides for Marrakech, with Tennis Abstract retained in \`publishedSpeed\`. The latest PR checks are now running on the current branch head; their final result is recorded separately below when complete.
 
 PR #2 remains open and unmerged. PR #1's branch has not been modified.
 
