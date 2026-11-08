@@ -65,16 +65,29 @@ Carpet-specific profile variants performed poorly; retain the pooled fallback tr
 
 ## Event uncertainty and sensitivity
 
-The full-pipeline event bootstrap refits player profiles, target-event matches and the season LOEO normaliser on each draw (250 successful draws per event in the reported run):
+**Interpretation warning:** the separate \`deep_calculation_audit.py\` variant grid and its nested bootstrap deliberately rebuild player profiles from the current season's training rows only. They are same-season LOEO sensitivity checks, not the production 35-season profile-history estimator. Their lower side counts for Montpellier/Marrakech therefore do not contradict the production all-event profile-coverage audit.
 
-| Season / event | CALC | Full-pipeline 95% interval | Matches / rateable sides |
+The same-season-only full-pipeline bootstrap refits its training profiles, target-event matches and season LOEO normaliser on each draw (250 successful draws per event):
+
+| Season / event | Same-season LOEO CALC | Full-pipeline 95% interval | Matches / profile-supported sides |
 |---|---:|---:|---:|
 | 2025 Marrakech | 0.772 | [0.607, 0.933] | 27 / 47 |
 | 2025 Montpellier | 1.304 | [1.067, 1.563] | 27 / 45 |
 | 2026 Marrakech | 1.049 | [0.866, 1.304] | 26 / 41 |
 | 2026 Montpellier | 1.600 | [1.370, 1.986] | 27 / 47 |
 
-Conditional match-cluster intervals hold the fitted profiles and normaliser fixed; they are narrower and must not be confused with full-pipeline intervals. Laver Cup 2026 remains provisional at 0.472 (7 matches / 14 sides; full-pipeline interval [0.276, 0.706]) and is not promoted into the ordinary ranking.
+The production full-history series in \`data/speed_history.json\` uses up to 35 prior ATP seasons, 0.90 annual recency decay, unique-name-only TML/Sackmann crosswalking and explicit neutral tour-prior fallback. Its latest 2026 values are:
+
+| Event | Production CALC | Production sides | Match-cluster conditional 95% interval | TA reference |
+|---|---:|---:|---:|---:|
+| Montpellier | 1.664 (rank 1/57) | 54/54 | [1.465, 1.862] | 1.49 |
+| Marrakech | 0.999 (rank 34/57) | 52/52 | [0.828, 1.182] | 0.93 |
+
+Both TA reference values fall inside the production conditional intervals. The production values differ from the same-season-only sensitivity values because the former have the longer historical player profiles and the complete event-side population. The distinction is important when interpreting ranking changes: the latest full-history calculation does not place Marrakech near the top; it places it 34th among 57 ranked 2026 events. Montpellier is first, consistent with the high value already present in the TA behavioural reference.
+
+The production intervals shown here are match-cluster conditional intervals: they hold fitted player profiles and the season normaliser fixed. The wider same-season full-pipeline intervals above refit that narrower model's profiles, matches and normaliser; they are not a bootstrap of the 35-season production profile estimator. A dedicated full-history bootstrap is still required before presenting production-wide uncertainty as fully propagated.
+
+Laver Cup 2026 remains provisional and is not promoted into the ordinary ranking. The latest production history carries 7 matches / 14 server sides; this is below the standard 20-side threshold.
 
 ## Montpellier 2026 source-population and model-coverage reconciliation
 
