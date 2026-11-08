@@ -50,11 +50,16 @@ def reason(row):
 
 
 def model_profile_coverage(all_rows, event_id):
-    """Measure source-stat sides that can receive a production LOEO profile adjustment."""
+    """Measure current-season LOEO profile coverage and identify missing profile inputs."""
     if not event_id:
-        return {"rateable_server_sides": None, "missing_server_profile": None,
-                "missing_returner_profile": None, "missing_both_profiles": None,
-                "invalid_expected_aces": None}
+        return {
+            "rateable_server_sides": None,
+            "missing_server_profile": None,
+            "missing_returner_profile": None,
+            "missing_both_profiles": None,
+            "invalid_expected_aces": None,
+            "missing_profile_sides": [],
+        }
 
     usable = compute_speed.valid_rows(all_rows)
     target_rows = [
@@ -71,30 +76,49 @@ def model_profile_coverage(all_rows, event_id):
     )
     tour_rate = compute_speed.tour_average_ace_rate(training_rows)
     counts = Counter()
+    missing_sides = []
 
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
-        return {"rateable_server_sides": 0, "missing_server_profile": None,
-                "missing_returner_profile": None, "missing_both_profiles": None,
-                "invalid_expected_aces": None, "reason": "invalid_leave_one_event_out_tour_rate"}
+        return {
+            "rateable_server_sides": 0,
+            "missing_server_profile": None,
+            "missing_returner_profile": None,
+            "missing_both_profiles": None,
+            "invalid_expected_aces": None,
+            "missing_profile_sides": [],
+            "reason": "invalid_leave_one_event_out_tour_rate",
+        }
 
     for row in target_rows:
-        for server, returner, service_points in (
-            (row["winner_id"], row["loser_id"], number(row, "w_svpt")),
-            (row["loser_id"], row["winner_id"], number(row, "l_svpt")),
+        for server_key, returner_key, service_points_key, aces_key in (
+            ("winner_id", "loser_id", "w_svpt", "w_ace"),
+            ("loser_id", "winner_id", "l_svpt", "l_ace"),
         ):
+            server = row[server_key]
+            returner = row[returner_key]
             serve_rate = profiles.get(server, {}).get("serve_rate")
             concede_rate = profiles.get(returner, {}).get("concede_rate")
-            if serve_rate is None and concede_rate is None:
-                counts["missing_both_profiles"] += 1
-                continue
-            if serve_rate is None:
-                counts["missing_server_profile"] += 1
-                continue
-            if concede_rate is None:
-                counts["missing_returner_profile"] += 1
+            if serve_rate is None or concede_rate is None:
+                reason = (
+                    "missing_both_profiles" if serve_rate is None and concede_rate is None
+                    else "missing_server_profile" if serve_rate is None
+                    else "missing_returner_profile"
+                )
+                counts[reason] += 1
+                missing_sides.append({
+                    "match_id": row.get("match_id", ""),
+                    "round": row.get("round", ""),
+                    "server_id": server,
+                    "server_name": row.get("winner_name" if server_key == "winner_id" else "loser_name", ""),
+                    "returner_id": returner,
+                    "returner_name": row.get("loser_name" if returner_key == "loser_id" else "winner_name", ""),
+                    "missing": reason,
+                    "server_service_points": number(row, service_points_key),
+                    "server_aces": number(row, aces_key),
+                })
                 continue
             expected = compute_speed.expected_calibrated_aces(
-                serve_rate, concede_rate, tour_rate, service_points
+                serve_rate, concede_rate, tour_rate, number(row, service_points_key)
             )
             if not math.isfinite(expected) or expected <= compute_speed.MIN_EXPECTED_ACES:
                 counts["invalid_expected_aces"] += 1
@@ -107,6 +131,7 @@ def model_profile_coverage(all_rows, event_id):
         "missing_returner_profile": int(counts["missing_returner_profile"]),
         "missing_both_profiles": int(counts["missing_both_profiles"]),
         "invalid_expected_aces": int(counts["invalid_expected_aces"]),
+        "missing_profile_sides": missing_sides,
         "reason": None,
     }
 
