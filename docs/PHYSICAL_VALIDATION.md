@@ -130,6 +130,19 @@ The clay subset covers only **four distinct tournament IDs** (Monte Carlo, Madri
 
 The seven updated hard-court values move the hard-only correlation marginally (Pearson 0.518 to 0.512; Spearman 0.514 to 0.506); the clay values and their correlation are unchanged. The current source snapshot therefore resolves a source-staleness concern for some hard-court rows but **does not resolve the clay discrepancy**.
 
+### Reproducible event-level diagnostics
+
+The deep calculation audit now computes the following statistics directly from the versioned pace_dataset.json snapshot:
+
+1. **Per-event series:** Pearson/Spearman association across all matched seasons for each tournament ID. A one-season event is retained as a count, but no correlation is reported for it.
+2. **Within-event-centred association:** subtract each event ID's multi-season mean from both its CALC and CPI values, then correlate the pooled residuals. This tests whether year-to-year changes within the same tournament tend to move together, rather than allowing differences between tournament baselines to dominate.
+3. **Raw clay event-cluster bootstrap:** resample the four clay tournament IDs with replacement, retaining all matched seasons for each sampled ID, and compute the raw clay event-season association.
+4. **Within-event-centred clay event-cluster bootstrap:** use the same event-ID resampling unit, but subtract each event's mean inside each resample before calculating the association.
+
+Both cluster intervals default to 2,000 resamples with a fixed seed (73191) for reproducibility. The script reports the number of event clusters, successful resamples, estimand and percentile interval. Resampling complete tournament IDs prevents repeated years within Madrid, Rome, Monte Carlo or Roland Garros from being counted as independent courts.
+
+The relevant output appears under within_event_centered, by_event, clay_event_cluster_bootstrap and clay_within_event_centered_cluster_bootstrap in the deep audit's physical CPI cross-check. The CI workflow runs the same script and uploads its aggregate-only audit log. This is an exploratory cluster sensitivity analysis, not a substitute for a larger set of independently measured courts.
+
 The negative clay association is not explained only by the average pace difference between the four clay tournaments. After subtracting each tournament's own multi-season mean from both CPI and CALC, the pooled within-event-centred clay correlation remains negative (Pearson −0.400; Spearman −0.348). Event-specific descriptive correlations are also negative for Madrid (n=8; r=−0.341), Rome (n=7; r=−0.546) and Monte Carlo (n=8; r=−0.244); Roland Garros has only one matched year and cannot support a within-event correlation. These repeated-year series are still small and may not represent the same physical court condition over time. They narrow the diagnostic but do not establish a causal formula defect.
 
 The source's CPI readings are generally centre/stadium-court measurements, whereas CALC aggregates eligible main-draw match statistics across the event's playable courts. Matching an event-season is therefore not always a same-court comparison. It also pairs a live/broadcast chart-based measurement with match outcomes affected by balls, player styles, weather, altitude and court allocation. These are major measurement-population limitations, even before considering the small number of clay event clusters.
