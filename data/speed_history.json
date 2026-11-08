@@ -23,7 +23,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-08T06:27:03.131457+00:00",
+   "fetchedAtUtc": "2026-11-08T06:38:15.808108+00:00",
    "latestMatchDate": "20261101",
    "matchRows": 2719,
    "bytes": 578416,
@@ -33,3622 +33,6524 @@
  "seasons": {
   "2012": {
    "brisbane": {
+    "ace": 8.6,
+    "matches": 30,
     "speed": 1.255,
-    "ace": 8.622,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 1.073,
+    "speedCiHigh": 1.469,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 6.1,
+    "matches": 29,
     "speed": 0.905,
-    "ace": 6.069,
-    "matches": 29
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.771,
+    "speedCiHigh": 1.055,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 6.4,
+    "matches": 27,
     "speed": 0.945,
-    "ace": 6.379,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.767,
+    "speedCiHigh": 1.129,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 7.0,
+    "matches": 126,
     "speed": 0.948,
-    "ace": 7.019,
-    "matches": 126
+    "adjustedServerSides": 235,
+    "speedCiLow": 0.875,
+    "speedCiHigh": 1.028,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 10.0,
+    "matches": 27,
     "speed": 1.491,
-    "ace": 9.997,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.26,
+    "speedCiHigh": 1.729,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 2.9,
+    "matches": 27,
     "speed": 0.691,
-    "ace": 2.95,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.56,
+    "speedCiHigh": 0.821,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 7.0,
+    "matches": 30,
     "speed": 0.893,
-    "ace": 6.97,
-    "matches": 30
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.758,
+    "speedCiHigh": 1.033,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 4.4,
+    "matches": 31,
     "speed": 0.917,
-    "ace": 4.449,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.723,
+    "speedCiHigh": 1.116,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 4.6,
+    "matches": 31,
     "speed": 0.934,
-    "ace": 4.647,
-    "matches": 31
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.727,
+    "speedCiHigh": 1.132,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 7.8,
+    "matches": 31,
     "speed": 0.99,
-    "ace": 7.771,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.866,
+    "speedCiHigh": 1.128,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
-    "speed": 1.175,
     "ace": 8.9,
-    "matches": 31
+    "matches": 31,
+    "speed": 1.175,
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.998,
+    "speedCiHigh": 1.369,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 6.1,
+    "matches": 93,
     "speed": 0.849,
-    "ace": 6.14,
-    "matches": 93
+    "adjustedServerSides": 182,
+    "speedCiLow": 0.765,
+    "speedCiHigh": 0.936,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 6.9,
+    "matches": 93,
     "speed": 0.915,
-    "ace": 6.904,
-    "matches": 93
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.841,
+    "speedCiHigh": 0.983,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 6.4,
+    "matches": 27,
     "speed": 0.737,
-    "ace": 6.415,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.597,
+    "speedCiHigh": 0.889,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.4,
+    "matches": 55,
     "speed": 0.672,
-    "ace": 4.444,
-    "matches": 55
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.568,
+    "speedCiHigh": 0.779,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 5.3,
+    "matches": 55,
     "speed": 0.917,
-    "ace": 5.313,
-    "matches": 55
+    "adjustedServerSides": 99,
+    "speedCiLow": 0.792,
+    "speedCiHigh": 1.045,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 4.2,
+    "matches": 27,
     "speed": 0.601,
-    "ace": 4.159,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.521,
+    "speedCiHigh": 0.681,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 3.7,
+    "matches": 27,
     "speed": 0.671,
-    "ace": 3.702,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.545,
+    "speedCiHigh": 0.787,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 7.1,
+    "matches": 27,
     "speed": 0.972,
-    "ace": 7.107,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.849,
+    "speedCiHigh": 1.107,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 8.0,
+    "matches": 55,
     "speed": 1.204,
-    "ace": 8.046,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 1.1,
+    "speedCiHigh": 1.301,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 4.3,
+    "matches": 55,
     "speed": 0.605,
-    "ace": 4.279,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.51,
+    "speedCiHigh": 0.705,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.9,
+    "matches": 127,
     "speed": 0.872,
-    "ace": 5.933,
-    "matches": 127
+    "adjustedServerSides": 244,
+    "speedCiLow": 0.797,
+    "speedCiHigh": 0.948,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 9.1,
+    "matches": 27,
     "speed": 1.226,
-    "ace": 9.055,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.092,
+    "speedCiHigh": 1.39,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 9.7,
+    "matches": 55,
     "speed": 1.117,
-    "ace": 9.656,
-    "matches": 55
+    "adjustedServerSides": 106,
+    "speedCiLow": 1.018,
+    "speedCiHigh": 1.212,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 7.8,
+    "matches": 30,
     "speed": 1.143,
-    "ace": 7.772,
-    "matches": 30
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.949,
+    "speedCiHigh": 1.333,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 6.3,
+    "matches": 27,
     "speed": 0.937,
-    "ace": 6.318,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.765,
+    "speedCiHigh": 1.101,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 9.5,
+    "matches": 127,
     "speed": 1.289,
-    "ace": 9.495,
-    "matches": 127
+    "adjustedServerSides": 249,
+    "speedCiLow": 1.221,
+    "speedCiHigh": 1.361,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.4,
+    "matches": 27,
     "speed": 0.829,
-    "ace": 4.405,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 0.612,
+    "speedCiHigh": 1.104,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 5.7,
+    "matches": 27,
     "speed": 0.992,
-    "ace": 5.672,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.8,
+    "speedCiHigh": 1.186,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 4.0,
+    "matches": 27,
     "speed": 0.613,
-    "ace": 4.036,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 0.453,
+    "speedCiHigh": 0.772,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 6.9,
+    "matches": 27,
     "speed": 0.893,
-    "ace": 6.912,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.75,
+    "speedCiHigh": 1.029,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.0,
+    "matches": 31,
     "speed": 0.732,
-    "ace": 3.986,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.605,
+    "speedCiHigh": 0.862,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.4,
+    "matches": 27,
     "speed": 0.905,
-    "ace": 5.391,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.625,
+    "speedCiHigh": 1.181,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 10.4,
+    "matches": 31,
     "speed": 1.382,
-    "ace": 10.426,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.234,
+    "speedCiHigh": 1.533,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 7.7,
+    "matches": 46,
     "speed": 1.056,
-    "ace": 7.704,
-    "matches": 46
+    "adjustedServerSides": 90,
+    "speedCiLow": 0.931,
+    "speedCiHigh": 1.181,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 8.5,
+    "matches": 55,
     "speed": 1.109,
-    "ace": 8.524,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 1.006,
+    "speedCiHigh": 1.223,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 9.3,
+    "matches": 47,
     "speed": 1.18,
-    "ace": 9.253,
-    "matches": 47
+    "adjustedServerSides": 90,
+    "speedCiLow": 1.033,
+    "speedCiHigh": 1.348,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.4,
+    "matches": 126,
     "speed": 1.092,
-    "ace": 8.354,
-    "matches": 126
+    "adjustedServerSides": 238,
+    "speedCiLow": 1.015,
+    "speedCiHigh": 1.171,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 9.7,
+    "matches": 27,
     "speed": 1.162,
-    "ace": 9.741,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.999,
+    "speedCiHigh": 1.327,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 8.4,
+    "matches": 30,
     "speed": 1.096,
-    "ace": 8.417,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.921,
+    "speedCiHigh": 1.265,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 8.6,
+    "matches": 31,
     "speed": 1.252,
-    "ace": 8.583,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.066,
+    "speedCiHigh": 1.435,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 8.7,
+    "matches": 54,
     "speed": 1.161,
-    "ace": 8.678,
-    "matches": 54
+    "adjustedServerSides": 105,
+    "speedCiLow": 1.064,
+    "speedCiHigh": 1.262,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 10.5,
+    "matches": 27,
     "speed": 1.275,
-    "ace": 10.471,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.101,
+    "speedCiHigh": 1.479,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 9.0,
+    "matches": 31,
     "speed": 1.263,
-    "ace": 9.023,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.118,
+    "speedCiHigh": 1.416,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.7,
+    "matches": 46,
     "speed": 1.216,
-    "ace": 9.703,
-    "matches": 46
+    "adjustedServerSides": 92,
+    "speedCiLow": 1.108,
+    "speedCiHigh": 1.324,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 7.3,
+    "matches": 15,
     "speed": 0.92,
-    "ace": 7.257,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.76,
+    "speedCiHigh": 1.07,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2013": {
    "brisbane": {
+    "ace": 8.2,
+    "matches": 27,
     "speed": 1.321,
-    "ace": 8.167,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.142,
+    "speedCiHigh": 1.508,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 6.9,
+    "matches": 31,
     "speed": 0.948,
-    "ace": 6.872,
-    "matches": 31
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.76,
+    "speedCiHigh": 1.148,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 8.9,
+    "matches": 27,
     "speed": 1.173,
-    "ace": 8.936,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.959,
+    "speedCiHigh": 1.411,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 8.1,
+    "matches": 127,
     "speed": 1.086,
-    "ace": 8.131,
-    "matches": 127
+    "adjustedServerSides": 240,
+    "speedCiLow": 1.004,
+    "speedCiHigh": 1.168,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.2,
+    "matches": 27,
     "speed": 1.248,
-    "ace": 8.201,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.05,
+    "speedCiHigh": 1.462,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 5.2,
+    "matches": 26,
     "speed": 1.082,
-    "ace": 5.177,
-    "matches": 26
+    "adjustedServerSides": 43,
+    "speedCiLow": 0.865,
+    "speedCiHigh": 1.272,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 8.7,
+    "matches": 31,
     "speed": 1.288,
-    "ace": 8.73,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.128,
+    "speedCiHigh": 1.44,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.7,
+    "matches": 31,
     "speed": 0.657,
-    "ace": 3.743,
-    "matches": 31
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.502,
+    "speedCiHigh": 0.812,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 4.3,
+    "matches": 31,
     "speed": 0.762,
-    "ace": 4.35,
-    "matches": 31
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.623,
+    "speedCiHigh": 0.928,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 8.6,
+    "matches": 31,
     "speed": 0.86,
-    "ace": 8.574,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.738,
+    "speedCiHigh": 0.998,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 6.8,
+    "matches": 31,
     "speed": 0.986,
-    "ace": 6.837,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.848,
+    "speedCiHigh": 1.12,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 6.0,
+    "matches": 93,
     "speed": 0.764,
-    "ace": 6.031,
-    "matches": 93
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.695,
+    "speedCiHigh": 0.838,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 6.7,
+    "matches": 93,
     "speed": 0.873,
-    "ace": 6.667,
-    "matches": 93
+    "adjustedServerSides": 185,
+    "speedCiLow": 0.79,
+    "speedCiHigh": 0.959,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 6.3,
+    "matches": 27,
     "speed": 0.648,
-    "ace": 6.309,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.539,
+    "speedCiHigh": 0.775,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.7,
+    "matches": 55,
     "speed": 0.659,
-    "ace": 4.731,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.574,
+    "speedCiHigh": 0.75,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 5.3,
+    "matches": 46,
     "speed": 0.733,
-    "ace": 5.329,
-    "matches": 46
+    "adjustedServerSides": 85,
+    "speedCiLow": 0.636,
+    "speedCiHigh": 0.834,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 4.4,
+    "matches": 27,
     "speed": 0.657,
-    "ace": 4.368,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.536,
+    "speedCiHigh": 0.777,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 3.3,
+    "matches": 27,
     "speed": 0.599,
-    "ace": 3.252,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.447,
+    "speedCiHigh": 0.739,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 7.6,
+    "matches": 27,
     "speed": 1.01,
-    "ace": 7.565,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.865,
+    "speedCiHigh": 1.16,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 5.8,
+    "matches": 55,
     "speed": 0.89,
-    "ace": 5.815,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.782,
+    "speedCiHigh": 1.009,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 6.0,
+    "matches": 53,
     "speed": 0.8,
-    "ace": 5.982,
-    "matches": 53
+    "adjustedServerSides": 102,
+    "speedCiLow": 0.704,
+    "speedCiHigh": 0.914,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.8,
+    "matches": 126,
     "speed": 0.777,
-    "ace": 5.756,
-    "matches": 126
+    "adjustedServerSides": 246,
+    "speedCiLow": 0.718,
+    "speedCiHigh": 0.834,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 7.7,
+    "matches": 27,
     "speed": 1.177,
-    "ace": 7.718,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.006,
+    "speedCiHigh": 1.362,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 10.2,
+    "matches": 54,
     "speed": 1.253,
-    "ace": 10.191,
-    "matches": 54
+    "adjustedServerSides": 100,
+    "speedCiLow": 1.132,
+    "speedCiHigh": 1.38,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 8.4,
+    "matches": 31,
     "speed": 1.065,
-    "ace": 8.364,
-    "matches": 31
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.89,
+    "speedCiHigh": 1.246,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 8.6,
+    "matches": 27,
     "speed": 1.152,
-    "ace": 8.604,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.977,
+    "speedCiHigh": 1.302,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 10.1,
+    "matches": 125,
     "speed": 1.352,
-    "ace": 10.073,
-    "matches": 125
+    "adjustedServerSides": 234,
+    "speedCiLow": 1.27,
+    "speedCiHigh": 1.43,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.3,
+    "matches": 27,
     "speed": 0.643,
-    "ace": 4.331,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.483,
+    "speedCiHigh": 0.81,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 5.5,
+    "matches": 27,
     "speed": 0.899,
-    "ace": 5.467,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.713,
+    "speedCiHigh": 1.088,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 5.0,
+    "matches": 47,
     "speed": 0.765,
-    "ace": 4.976,
-    "matches": 47
+    "adjustedServerSides": 92,
+    "speedCiLow": 0.654,
+    "speedCiHigh": 0.883,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 7.9,
+    "matches": 27,
     "speed": 1.213,
-    "ace": 7.865,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.047,
+    "speedCiHigh": 1.351,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 4.8,
+    "matches": 27,
     "speed": 0.845,
-    "ace": 4.818,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.592,
+    "speedCiHigh": 1.114,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
-    "speed": 0.856,
     "ace": 5.4,
-    "matches": 27
+    "matches": 27,
+    "speed": 0.856,
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.662,
+    "speedCiHigh": 1.051,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 10.1,
+    "matches": 47,
     "speed": 1.141,
-    "ace": 10.148,
-    "matches": 47
+    "adjustedServerSides": 92,
+    "speedCiLow": 1.023,
+    "speedCiHigh": 1.258,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 7.2,
+    "matches": 55,
     "speed": 0.972,
-    "ace": 7.19,
-    "matches": 55
+    "adjustedServerSides": 103,
+    "speedCiLow": 0.853,
+    "speedCiHigh": 1.097,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 9.1,
+    "matches": 55,
     "speed": 1.146,
-    "ace": 9.069,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 1.046,
+    "speedCiHigh": 1.246,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.3,
+    "matches": 47,
     "speed": 1.151,
-    "ace": 8.266,
-    "matches": 47
+    "adjustedServerSides": 91,
+    "speedCiLow": 1.038,
+    "speedCiHigh": 1.28,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 7.8,
+    "matches": 127,
     "speed": 1.048,
-    "ace": 7.794,
-    "matches": 127
+    "adjustedServerSides": 232,
+    "speedCiLow": 0.985,
+    "speedCiHigh": 1.115,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 9.0,
+    "matches": 27,
     "speed": 1.001,
-    "ace": 8.989,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.811,
+    "speedCiHigh": 1.216,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 6.7,
+    "matches": 30,
     "speed": 0.904,
-    "ace": 6.713,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.802,
+    "speedCiHigh": 1.012,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 11.1,
+    "matches": 31,
     "speed": 1.286,
-    "ace": 11.143,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.163,
+    "speedCiHigh": 1.416,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 10.7,
+    "matches": 54,
     "speed": 1.375,
-    "ace": 10.701,
-    "matches": 54
+    "adjustedServerSides": 104,
+    "speedCiLow": 1.255,
+    "speedCiHigh": 1.507,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 9.8,
+    "matches": 27,
     "speed": 1.533,
-    "ace": 9.769,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 1.26,
+    "speedCiHigh": 1.868,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 8.6,
+    "matches": 31,
     "speed": 1.039,
-    "ace": 8.64,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.901,
+    "speedCiHigh": 1.21,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.4,
+    "matches": 47,
     "speed": 1.148,
-    "ace": 9.413,
-    "matches": 47
+    "adjustedServerSides": 92,
+    "speedCiLow": 1.023,
+    "speedCiHigh": 1.277,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 7.8,
+    "matches": 15,
     "speed": 1.213,
-    "ace": 7.784,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.035,
+    "speedCiHigh": 1.375,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2014": {
    "brisbane": {
+    "ace": 11.6,
+    "matches": 27,
     "speed": 1.26,
-    "ace": 11.615,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 1.134,
+    "speedCiHigh": 1.386,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 6.5,
+    "matches": 31,
     "speed": 0.819,
-    "ace": 6.531,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.674,
+    "speedCiHigh": 0.987,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 8.1,
+    "matches": 27,
     "speed": 0.991,
-    "ace": 8.055,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.868,
+    "speedCiHigh": 1.122,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 8.8,
+    "matches": 126,
     "speed": 1.173,
-    "ace": 8.78,
-    "matches": 126
+    "adjustedServerSides": 241,
+    "speedCiLow": 1.093,
+    "speedCiHigh": 1.258,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 10.0,
+    "matches": 27,
     "speed": 1.311,
-    "ace": 10.023,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 1.114,
+    "speedCiHigh": 1.511,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.5,
+    "matches": 31,
     "speed": 0.636,
-    "ace": 3.549,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.508,
+    "speedCiHigh": 0.785,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 9.8,
+    "matches": 31,
     "speed": 1.115,
-    "ace": 9.818,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.977,
+    "speedCiHigh": 1.24,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 9.0,
+    "matches": 31,
     "speed": 0.914,
-    "ace": 9.047,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.78,
+    "speedCiHigh": 1.037,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 4.7,
+    "matches": 30,
     "speed": 0.755,
-    "ace": 4.705,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.584,
+    "speedCiHigh": 0.936,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 8.5,
+    "matches": 31,
     "speed": 0.941,
-    "ace": 8.54,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.799,
+    "speedCiHigh": 1.087,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 7.1,
+    "matches": 29,
     "speed": 0.952,
-    "ace": 7.146,
-    "matches": 29
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.821,
+    "speedCiHigh": 1.092,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 7.1,
+    "matches": 95,
     "speed": 0.847,
-    "ace": 7.073,
-    "matches": 95
+    "adjustedServerSides": 185,
+    "speedCiLow": 0.777,
+    "speedCiHigh": 0.92,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 8.4,
+    "matches": 92,
     "speed": 1.081,
-    "ace": 8.356,
-    "matches": 92
+    "adjustedServerSides": 183,
+    "speedCiLow": 0.996,
+    "speedCiHigh": 1.155,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 6.0,
+    "matches": 26,
     "speed": 0.76,
-    "ace": 6.033,
-    "matches": 26
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.593,
+    "speedCiHigh": 0.917,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.6,
+    "matches": 54,
     "speed": 0.625,
-    "ace": 4.593,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.544,
+    "speedCiHigh": 0.714,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.9,
+    "matches": 47,
     "speed": 0.805,
-    "ace": 4.893,
-    "matches": 47
+    "adjustedServerSides": 85,
+    "speedCiLow": 0.672,
+    "speedCiHigh": 0.964,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 3.9,
+    "matches": 27,
     "speed": 0.558,
-    "ace": 3.93,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.444,
+    "speedCiHigh": 0.701,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 3.9,
+    "matches": 27,
     "speed": 0.717,
-    "ace": 3.925,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.552,
+    "speedCiHigh": 0.931,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 6.1,
+    "matches": 27,
     "speed": 0.865,
-    "ace": 6.062,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.742,
+    "speedCiHigh": 0.991,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.2,
+    "matches": 54,
     "speed": 1.003,
-    "ace": 7.244,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.901,
+    "speedCiHigh": 1.118,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.9,
+    "matches": 55,
     "speed": 0.743,
-    "ace": 5.931,
-    "matches": 55
+    "adjustedServerSides": 107,
+    "speedCiLow": 0.641,
+    "speedCiHigh": 0.859,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.9,
+    "matches": 127,
     "speed": 0.769,
-    "ace": 5.873,
-    "matches": 127
+    "adjustedServerSides": 239,
+    "speedCiLow": 0.709,
+    "speedCiHigh": 0.834,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 10.6,
+    "matches": 25,
     "speed": 1.363,
-    "ace": 10.625,
-    "matches": 25
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.161,
+    "speedCiHigh": 1.571,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 11.2,
+    "matches": 54,
     "speed": 1.346,
-    "ace": 11.174,
-    "matches": 54
+    "adjustedServerSides": 105,
+    "speedCiLow": 1.213,
+    "speedCiHigh": 1.481,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 7.6,
+    "matches": 30,
     "speed": 1.068,
-    "ace": 7.586,
-    "matches": 30
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.872,
+    "speedCiHigh": 1.299,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 10.8,
+    "matches": 27,
     "speed": 1.323,
-    "ace": 10.83,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.12,
+    "speedCiHigh": 1.532,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 11.1,
+    "matches": 127,
     "speed": 1.401,
-    "ace": 11.062,
-    "matches": 127
+    "adjustedServerSides": 236,
+    "speedCiLow": 1.317,
+    "speedCiHigh": 1.488,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.6,
+    "matches": 26,
     "speed": 0.956,
-    "ace": 4.568,
-    "matches": 26
+    "adjustedServerSides": 38,
+    "speedCiLow": 0.777,
+    "speedCiHigh": 1.128,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 5.7,
+    "matches": 27,
     "speed": 0.968,
-    "ace": 5.68,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 0.766,
+    "speedCiHigh": 1.18,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.7,
+    "matches": 46,
     "speed": 0.881,
-    "ace": 4.739,
-    "matches": 46
+    "adjustedServerSides": 92,
+    "speedCiLow": 0.736,
+    "speedCiHigh": 1.053,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 4.3,
+    "matches": 27,
     "speed": 0.83,
-    "ace": 4.296,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.636,
+    "speedCiHigh": 1.048,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 5.8,
+    "matches": 26,
     "speed": 0.841,
-    "ace": 5.769,
-    "matches": 26
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.689,
+    "speedCiHigh": 0.998,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 4.9,
+    "matches": 26,
     "speed": 0.825,
-    "ace": 4.884,
-    "matches": 26
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.68,
+    "speedCiHigh": 0.97,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 9.8,
+    "matches": 47,
     "speed": 1.045,
-    "ace": 9.802,
-    "matches": 47
+    "adjustedServerSides": 89,
+    "speedCiLow": 0.924,
+    "speedCiHigh": 1.184,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 8.9,
+    "matches": 53,
     "speed": 0.974,
-    "ace": 8.903,
-    "matches": 53
+    "adjustedServerSides": 104,
+    "speedCiLow": 0.877,
+    "speedCiHigh": 1.084,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 8.7,
+    "matches": 55,
     "speed": 1.176,
-    "ace": 8.68,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 1.067,
+    "speedCiHigh": 1.295,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.7,
+    "matches": 46,
     "speed": 1.082,
-    "ace": 8.67,
-    "matches": 46
+    "adjustedServerSides": 90,
+    "speedCiLow": 0.964,
+    "speedCiHigh": 1.222,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.6,
+    "matches": 125,
     "speed": 1.115,
-    "ace": 8.575,
-    "matches": 125
+    "adjustedServerSides": 235,
+    "speedCiLow": 1.047,
+    "speedCiHigh": 1.201,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 10.5,
+    "matches": 27,
     "speed": 1.357,
-    "ace": 10.478,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 1.201,
+    "speedCiHigh": 1.533,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 7.0,
+    "matches": 31,
     "speed": 0.849,
-    "ace": 6.969,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.694,
+    "speedCiHigh": 1.017,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 9.0,
+    "matches": 31,
     "speed": 1.013,
-    "ace": 8.953,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.897,
+    "speedCiHigh": 1.133,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 10.3,
+    "matches": 55,
     "speed": 1.335,
-    "ace": 10.295,
-    "matches": 55
+    "adjustedServerSides": 104,
+    "speedCiLow": 1.207,
+    "speedCiHigh": 1.471,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 9.4,
+    "matches": 27,
     "speed": 1.287,
-    "ace": 9.437,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 1.113,
+    "speedCiHigh": 1.465,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 11.5,
+    "matches": 31,
     "speed": 1.294,
-    "ace": 11.451,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.115,
+    "speedCiHigh": 1.477,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.1,
+    "matches": 47,
     "speed": 1.12,
-    "ace": 9.052,
-    "matches": 47
+    "adjustedServerSides": 91,
+    "speedCiLow": 0.97,
+    "speedCiHigh": 1.259,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 6.6,
+    "matches": 14,
     "speed": 0.912,
-    "ace": 6.567,
-    "matches": 14
+    "adjustedServerSides": 28,
+    "speedCiLow": 0.827,
+    "speedCiHigh": 0.995,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2015": {
    "brisbane": {
+    "ace": 11.6,
+    "matches": 27,
     "speed": 1.174,
-    "ace": 11.623,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.056,
+    "speedCiHigh": 1.308,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 8.8,
+    "matches": 31,
     "speed": 1.107,
-    "ace": 8.802,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.938,
+    "speedCiHigh": 1.281,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 9.6,
+    "matches": 27,
     "speed": 1.264,
-    "ace": 9.567,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.107,
+    "speedCiHigh": 1.428,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.6,
+    "matches": 127,
     "speed": 1.178,
-    "ace": 9.602,
-    "matches": 127
+    "adjustedServerSides": 241,
+    "speedCiLow": 1.112,
+    "speedCiHigh": 1.249,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.2,
+    "matches": 27,
     "speed": 1.373,
-    "ace": 8.16,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.092,
+    "speedCiHigh": 1.719,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 9.6,
+    "matches": 31,
     "speed": 1.194,
-    "ace": 9.571,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.039,
+    "speedCiHigh": 1.356,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 8.9,
+    "matches": 31,
     "speed": 0.837,
-    "ace": 8.883,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.71,
+    "speedCiHigh": 0.966,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 4.4,
+    "matches": 31,
     "speed": 0.837,
-    "ace": 4.429,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.676,
+    "speedCiHigh": 0.989,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 6.8,
+    "matches": 31,
     "speed": 0.719,
-    "ace": 6.79,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.6,
+    "speedCiHigh": 0.834,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 4.2,
+    "matches": 27,
     "speed": 0.864,
-    "ace": 4.23,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.627,
+    "speedCiHigh": 1.111,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 7.3,
+    "matches": 31,
     "speed": 0.934,
-    "ace": 7.285,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.796,
+    "speedCiHigh": 1.053,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 8.1,
+    "matches": 94,
     "speed": 0.992,
-    "ace": 8.088,
-    "matches": 94
+    "adjustedServerSides": 179,
+    "speedCiLow": 0.908,
+    "speedCiHigh": 1.086,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 6.8,
+    "matches": 95,
     "speed": 0.884,
-    "ace": 6.826,
-    "matches": 95
+    "adjustedServerSides": 190,
+    "speedCiLow": 0.801,
+    "speedCiHigh": 0.97,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 7.7,
+    "matches": 27,
     "speed": 0.829,
-    "ace": 7.676,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.67,
+    "speedCiHigh": 0.995,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 5.0,
+    "matches": 55,
     "speed": 0.641,
-    "ace": 5.007,
-    "matches": 55
+    "adjustedServerSides": 107,
+    "speedCiLow": 0.554,
+    "speedCiHigh": 0.729,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.4,
+    "matches": 47,
     "speed": 0.706,
-    "ace": 4.363,
-    "matches": 47
+    "adjustedServerSides": 90,
+    "speedCiLow": 0.595,
+    "speedCiHigh": 0.812,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 4.9,
+    "matches": 27,
     "speed": 0.63,
-    "ace": 4.911,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.519,
+    "speedCiHigh": 0.749,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 5.2,
+    "matches": 27,
     "speed": 0.703,
-    "ace": 5.247,
-    "matches": 27
+    "adjustedServerSides": 40,
+    "speedCiLow": 0.513,
+    "speedCiHigh": 0.897,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 7.0,
+    "matches": 27,
     "speed": 0.963,
-    "ace": 7.005,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.811,
+    "speedCiHigh": 1.12,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.8,
+    "matches": 55,
     "speed": 0.908,
-    "ace": 7.814,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.818,
+    "speedCiHigh": 0.998,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 7.2,
+    "matches": 54,
     "speed": 0.979,
-    "ace": 7.156,
-    "matches": 54
+    "adjustedServerSides": 101,
+    "speedCiLow": 0.869,
+    "speedCiHigh": 1.087,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 4.7,
+    "matches": 27,
     "speed": 0.78,
-    "ace": 4.724,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.639,
+    "speedCiHigh": 0.942,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.8,
+    "matches": 125,
     "speed": 0.767,
-    "ace": 5.752,
-    "matches": 125
+    "adjustedServerSides": 241,
+    "speedCiLow": 0.708,
+    "speedCiHigh": 0.823,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 9.3,
+    "matches": 27,
     "speed": 1.088,
-    "ace": 9.265,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.909,
+    "speedCiHigh": 1.264,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 11.4,
+    "matches": 27,
     "speed": 1.393,
-    "ace": 11.401,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 1.162,
+    "speedCiHigh": 1.677,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 10.0,
+    "matches": 31,
     "speed": 1.226,
-    "ace": 10.015,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.076,
+    "speedCiHigh": 1.408,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 14.1,
+    "matches": 31,
     "speed": 1.322,
-    "ace": 14.075,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.168,
+    "speedCiHigh": 1.491,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 10.4,
+    "matches": 126,
     "speed": 1.208,
-    "ace": 10.404,
-    "matches": 126
+    "adjustedServerSides": 244,
+    "speedCiLow": 1.144,
+    "speedCiHigh": 1.274,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 5.1,
+    "matches": 27,
     "speed": 0.677,
-    "ace": 5.066,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.558,
+    "speedCiHigh": 0.812,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 4.2,
+    "matches": 27,
     "speed": 0.699,
-    "ace": 4.178,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.53,
+    "speedCiHigh": 0.899,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 5.9,
+    "matches": 27,
     "speed": 0.967,
-    "ace": 5.866,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.778,
+    "speedCiHigh": 1.188,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.4,
+    "matches": 30,
     "speed": 0.644,
-    "ace": 4.356,
-    "matches": 30
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.501,
+    "speedCiHigh": 0.793,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 6.5,
+    "matches": 27,
     "speed": 0.957,
-    "ace": 6.457,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.755,
+    "speedCiHigh": 1.165,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 11.3,
+    "matches": 47,
     "speed": 1.188,
-    "ace": 11.322,
-    "matches": 47
+    "adjustedServerSides": 89,
+    "speedCiLow": 1.09,
+    "speedCiHigh": 1.311,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 9.6,
+    "matches": 55,
     "speed": 1.077,
-    "ace": 9.645,
-    "matches": 55
+    "adjustedServerSides": 105,
+    "speedCiLow": 0.975,
+    "speedCiHigh": 1.188,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
-    "speed": 1.078,
     "ace": 9.6,
-    "matches": 55
+    "matches": 55,
+    "speed": 1.078,
+    "adjustedServerSides": 109,
+    "speedCiLow": 0.991,
+    "speedCiHigh": 1.168,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 11.5,
+    "matches": 46,
     "speed": 1.352,
-    "ace": 11.514,
-    "matches": 46
+    "adjustedServerSides": 89,
+    "speedCiLow": 1.197,
+    "speedCiHigh": 1.513,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 9.0,
+    "matches": 127,
     "speed": 1.084,
-    "ace": 8.957,
-    "matches": 127
+    "adjustedServerSides": 246,
+    "speedCiLow": 1.019,
+    "speedCiHigh": 1.144,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 9.7,
+    "matches": 26,
     "speed": 1.168,
-    "ace": 9.734,
-    "matches": 26
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.964,
+    "speedCiHigh": 1.356,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 8.2,
+    "matches": 31,
     "speed": 1.033,
-    "ace": 8.199,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.884,
+    "speedCiHigh": 1.201,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 8.9,
+    "matches": 31,
     "speed": 1.017,
-    "ace": 8.925,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.895,
+    "speedCiHigh": 1.135,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 9.7,
+    "matches": 55,
     "speed": 1.067,
-    "ace": 9.709,
-    "matches": 55
+    "adjustedServerSides": 107,
+    "speedCiLow": 0.959,
+    "speedCiHigh": 1.172,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 12.4,
+    "matches": 31,
     "speed": 1.436,
-    "ace": 12.435,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 1.293,
+    "speedCiHigh": 1.585,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 9.4,
+    "matches": 31,
     "speed": 1.039,
-    "ace": 9.351,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.935,
+    "speedCiHigh": 1.153,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 8.8,
+    "matches": 47,
     "speed": 1.052,
-    "ace": 8.755,
-    "matches": 47
+    "adjustedServerSides": 94,
+    "speedCiLow": 0.937,
+    "speedCiHigh": 1.191,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 6.0,
+    "matches": 15,
     "speed": 0.967,
-    "ace": 6.034,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.804,
+    "speedCiHigh": 1.139,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2016": {
    "brisbane": {
+    "ace": 9.5,
+    "matches": 27,
     "speed": 1.082,
-    "ace": 9.537,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.966,
+    "speedCiHigh": 1.198,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 6.5,
+    "matches": 31,
     "speed": 1.149,
-    "ace": 6.475,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.935,
+    "speedCiHigh": 1.39,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 10.5,
+    "matches": 27,
     "speed": 1.13,
-    "ace": 10.53,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.974,
+    "speedCiHigh": 1.282,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.7,
+    "matches": 127,
     "speed": 1.292,
-    "ace": 9.71,
-    "matches": 127
+    "adjustedServerSides": 243,
+    "speedCiLow": 1.223,
+    "speedCiHigh": 1.365,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.7,
+    "matches": 27,
     "speed": 1.249,
-    "ace": 8.689,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.09,
+    "speedCiHigh": 1.411,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 5.5,
+    "matches": 27,
     "speed": 0.859,
-    "ace": 5.479,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.695,
+    "speedCiHigh": 1.049,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 8.3,
+    "matches": 31,
     "speed": 1.079,
-    "ace": 8.26,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.943,
+    "speedCiHigh": 1.208,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 7.7,
+    "matches": 31,
     "speed": 0.842,
-    "ace": 7.72,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.722,
+    "speedCiHigh": 0.955,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 6.0,
+    "matches": 30,
     "speed": 0.928,
-    "ace": 5.979,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.793,
+    "speedCiHigh": 1.093,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 8.3,
+    "matches": 31,
     "speed": 0.895,
-    "ace": 8.341,
-    "matches": 31
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.759,
+    "speedCiHigh": 1.06,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 7.4,
+    "matches": 31,
     "speed": 0.944,
-    "ace": 7.38,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.848,
+    "speedCiHigh": 1.043,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 6.5,
+    "matches": 94,
     "speed": 0.815,
-    "ace": 6.481,
-    "matches": 94
+    "adjustedServerSides": 185,
+    "speedCiLow": 0.749,
+    "speedCiHigh": 0.888,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 7.5,
+    "matches": 94,
     "speed": 0.978,
-    "ace": 7.478,
-    "matches": 94
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.896,
+    "speedCiHigh": 1.057,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 7.6,
+    "matches": 27,
     "speed": 0.838,
-    "ace": 7.577,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.681,
+    "speedCiHigh": 1.007,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 6.4,
+    "matches": 26,
     "speed": 0.998,
-    "ace": 6.435,
-    "matches": 26
+    "adjustedServerSides": 43,
+    "speedCiLow": 0.814,
+    "speedCiHigh": 1.181,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 5.1,
+    "matches": 55,
     "speed": 0.72,
-    "ace": 5.063,
-    "matches": 55
+    "adjustedServerSides": 109,
+    "speedCiLow": 0.622,
+    "speedCiHigh": 0.817,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.5,
+    "matches": 47,
     "speed": 0.622,
-    "ace": 4.456,
-    "matches": 47
+    "adjustedServerSides": 88,
+    "speedCiLow": 0.53,
+    "speedCiHigh": 0.714,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 4.9,
+    "matches": 27,
     "speed": 0.685,
-    "ace": 4.904,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.57,
+    "speedCiHigh": 0.812,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 5.8,
+    "matches": 27,
     "speed": 0.768,
-    "ace": 5.77,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.64,
+    "speedCiHigh": 0.907,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 4.8,
+    "matches": 27,
     "speed": 0.649,
-    "ace": 4.752,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.504,
+    "speedCiHigh": 0.778,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.2,
+    "matches": 55,
     "speed": 0.907,
-    "ace": 7.244,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.834,
+    "speedCiHigh": 0.981,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.6,
+    "matches": 54,
     "speed": 0.789,
-    "ace": 5.551,
-    "matches": 54
+    "adjustedServerSides": 103,
+    "speedCiLow": 0.699,
+    "speedCiHigh": 0.88,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 6.9,
+    "matches": 27,
     "speed": 0.798,
-    "ace": 6.878,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.7,
+    "speedCiHigh": 0.916,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.9,
+    "matches": 126,
     "speed": 0.775,
-    "ace": 5.928,
-    "matches": 126
+    "adjustedServerSides": 245,
+    "speedCiLow": 0.722,
+    "speedCiHigh": 0.832,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
-    "speed": 1.168,
     "ace": 11.8,
-    "matches": 27
+    "matches": 27,
+    "speed": 1.168,
+    "adjustedServerSides": 51,
+    "speedCiLow": 1.02,
+    "speedCiHigh": 1.323,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 11.2,
+    "matches": 27,
     "speed": 1.474,
-    "ace": 11.166,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.292,
+    "speedCiHigh": 1.652,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 9.5,
+    "matches": 29,
     "speed": 1.196,
-    "ace": 9.505,
-    "matches": 29
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.092,
+    "speedCiHigh": 1.344,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 12.9,
+    "matches": 30,
     "speed": 1.236,
-    "ace": 12.925,
-    "matches": 30
+    "adjustedServerSides": 59,
+    "speedCiLow": 1.115,
+    "speedCiHigh": 1.343,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 9.6,
+    "matches": 126,
     "speed": 1.079,
-    "ace": 9.611,
-    "matches": 126
+    "adjustedServerSides": 236,
+    "speedCiLow": 1.025,
+    "speedCiHigh": 1.135,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.1,
+    "matches": 27,
     "speed": 0.689,
-    "ace": 4.137,
-    "matches": 27
+    "adjustedServerSides": 38,
+    "speedCiLow": 0.541,
+    "speedCiHigh": 0.861,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.3,
+    "matches": 31,
     "speed": 0.686,
-    "ace": 4.312,
-    "matches": 31
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.539,
+    "speedCiHigh": 0.848,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 7.8,
+    "matches": 27,
     "speed": 1.147,
-    "ace": 7.769,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 1.025,
+    "speedCiHigh": 1.258,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.4,
+    "matches": 27,
     "speed": 0.99,
-    "ace": 5.364,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.828,
+    "speedCiHigh": 1.164,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 3.7,
+    "matches": 27,
     "speed": 0.797,
-    "ace": 3.671,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 0.657,
+    "speedCiHigh": 0.952,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 11.8,
+    "matches": 47,
     "speed": 1.128,
-    "ace": 11.821,
-    "matches": 47
+    "adjustedServerSides": 92,
+    "speedCiLow": 1.014,
+    "speedCiHigh": 1.247,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 9.9,
+    "matches": 55,
     "speed": 1.174,
-    "ace": 9.874,
-    "matches": 55
+    "adjustedServerSides": 101,
+    "speedCiLow": 1.053,
+    "speedCiHigh": 1.295,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 8.7,
+    "matches": 27,
     "speed": 0.882,
-    "ace": 8.743,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.766,
+    "speedCiHigh": 1.009,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 10.8,
+    "matches": 54,
     "speed": 1.201,
-    "ace": 10.813,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 1.084,
+    "speedCiHigh": 1.331,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.2,
+    "matches": 46,
     "speed": 1.163,
-    "ace": 8.199,
-    "matches": 46
+    "adjustedServerSides": 88,
+    "speedCiLow": 1.048,
+    "speedCiHigh": 1.27,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 7.2,
+    "matches": 126,
     "speed": 0.849,
-    "ace": 7.174,
-    "matches": 126
+    "adjustedServerSides": 233,
+    "speedCiLow": 0.802,
+    "speedCiHigh": 0.901,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 11.1,
+    "matches": 27,
     "speed": 1.336,
-    "ace": 11.061,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 1.156,
+    "speedCiHigh": 1.529,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 9.1,
+    "matches": 27,
     "speed": 1.233,
-    "ace": 9.065,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.099,
+    "speedCiHigh": 1.367,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 7.3,
+    "matches": 30,
     "speed": 1.036,
-    "ace": 7.327,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.887,
+    "speedCiHigh": 1.198,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 10.4,
+    "matches": 30,
     "speed": 1.105,
-    "ace": 10.419,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.975,
+    "speedCiHigh": 1.245,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 8.0,
+    "matches": 55,
     "speed": 1.07,
-    "ace": 7.997,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.955,
+    "speedCiHigh": 1.183,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 9.3,
+    "matches": 31,
     "speed": 1.205,
-    "ace": 9.269,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.047,
+    "speedCiHigh": 1.373,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 10.4,
+    "matches": 30,
     "speed": 1.051,
-    "ace": 10.429,
-    "matches": 30
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.876,
+    "speedCiHigh": 1.244,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 10.6,
+    "matches": 46,
     "speed": 1.211,
-    "ace": 10.607,
-    "matches": 46
+    "adjustedServerSides": 92,
+    "speedCiLow": 1.104,
+    "speedCiHigh": 1.329,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 7.6,
+    "matches": 15,
     "speed": 1.106,
-    "ace": 7.596,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.863,
+    "speedCiHigh": 1.375,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2017": {
    "brisbane": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 1.03,
-    "ace": 8.329,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.873,
+    "speedCiHigh": 1.192,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 8.7,
+    "matches": 31,
     "speed": 1.047,
-    "ace": 8.661,
-    "matches": 31
+    "adjustedServerSides": 55,
+    "speedCiLow": 0.935,
+    "speedCiHigh": 1.158,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 10.3,
+    "matches": 26,
     "speed": 1.187,
-    "ace": 10.279,
-    "matches": 26
+    "adjustedServerSides": 42,
+    "speedCiLow": 1.009,
+    "speedCiHigh": 1.356,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.4,
+    "matches": 127,
     "speed": 1.189,
-    "ace": 9.352,
-    "matches": 127
+    "adjustedServerSides": 238,
+    "speedCiLow": 1.11,
+    "speedCiHigh": 1.271,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 9.0,
+    "matches": 27,
     "speed": 1.089,
-    "ace": 9.027,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.945,
+    "speedCiHigh": 1.246,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 5.1,
+    "matches": 27,
     "speed": 0.871,
-    "ace": 5.065,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.736,
+    "speedCiHigh": 1.023,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 9.0,
+    "matches": 31,
     "speed": 1.121,
-    "ace": 8.972,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.971,
+    "speedCiHigh": 1.275,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 8.3,
+    "matches": 29,
     "speed": 0.948,
-    "ace": 8.258,
-    "matches": 29
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.841,
+    "speedCiHigh": 1.055,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 4.8,
+    "matches": 31,
     "speed": 0.817,
-    "ace": 4.773,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.656,
+    "speedCiHigh": 0.982,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 8.4,
+    "matches": 30,
     "speed": 0.91,
-    "ace": 8.375,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.811,
+    "speedCiHigh": 1.008,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 6.9,
+    "matches": 31,
     "speed": 0.913,
-    "ace": 6.885,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.782,
+    "speedCiHigh": 1.051,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 7.4,
+    "matches": 93,
     "speed": 0.978,
-    "ace": 7.356,
-    "matches": 93
+    "adjustedServerSides": 185,
+    "speedCiLow": 0.886,
+    "speedCiHigh": 1.075,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 6.7,
+    "matches": 94,
     "speed": 0.814,
-    "ace": 6.688,
-    "matches": 94
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.745,
+    "speedCiHigh": 0.883,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 8.0,
+    "matches": 27,
     "speed": 0.95,
-    "ace": 8.009,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.826,
+    "speedCiHigh": 1.073,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 6.1,
+    "matches": 27,
     "speed": 0.975,
-    "ace": 6.134,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.74,
+    "speedCiHigh": 1.254,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 3.9,
+    "matches": 55,
     "speed": 0.51,
-    "ace": 3.92,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.446,
+    "speedCiHigh": 0.587,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.4,
+    "matches": 46,
     "speed": 0.547,
-    "ace": 4.358,
-    "matches": 46
+    "adjustedServerSides": 86,
+    "speedCiLow": 0.473,
+    "speedCiHigh": 0.63,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 3.9,
+    "matches": 26,
     "speed": 0.511,
-    "ace": 3.865,
-    "matches": 26
+    "adjustedServerSides": 38,
+    "speedCiLow": 0.383,
+    "speedCiHigh": 0.633,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 7.0,
+    "matches": 27,
     "speed": 1.0,
-    "ace": 6.988,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.872,
+    "speedCiHigh": 1.124,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.7,
+    "matches": 53,
     "speed": 0.957,
-    "ace": 7.703,
-    "matches": 53
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.867,
+    "speedCiHigh": 1.039,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 7.6,
+    "matches": 55,
     "speed": 0.933,
-    "ace": 7.619,
-    "matches": 55
+    "adjustedServerSides": 105,
+    "speedCiLow": 0.797,
+    "speedCiHigh": 1.081,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 6.7,
+    "matches": 27,
     "speed": 0.864,
-    "ace": 6.745,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.78,
+    "speedCiHigh": 0.956,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 6.8,
+    "matches": 27,
     "speed": 0.883,
-    "ace": 6.826,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.75,
+    "speedCiHigh": 1.033,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 6.2,
+    "matches": 127,
     "speed": 0.804,
-    "ace": 6.15,
-    "matches": 127
+    "adjustedServerSides": 237,
+    "speedCiLow": 0.742,
+    "speedCiHigh": 0.873,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 11.7,
+    "matches": 27,
     "speed": 1.119,
-    "ace": 11.669,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.972,
+    "speedCiHigh": 1.297,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 13.0,
+    "matches": 27,
     "speed": 1.37,
-    "ace": 12.992,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.238,
+    "speedCiHigh": 1.528,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 8.6,
+    "matches": 31,
     "speed": 1.119,
-    "ace": 8.646,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.955,
+    "speedCiHigh": 1.294,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 13.3,
+    "matches": 31,
     "speed": 1.333,
-    "ace": 13.325,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.206,
+    "speedCiHigh": 1.462,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 8.5,
+    "matches": 27,
     "speed": 1.076,
-    "ace": 8.482,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.956,
+    "speedCiHigh": 1.201,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 9.3,
+    "matches": 127,
     "speed": 1.057,
-    "ace": 9.259,
-    "matches": 127
+    "adjustedServerSides": 243,
+    "speedCiLow": 0.981,
+    "speedCiHigh": 1.141,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 5.7,
+    "matches": 27,
     "speed": 0.872,
-    "ace": 5.742,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.737,
+    "speedCiHigh": 1.005,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 3.5,
+    "matches": 27,
     "speed": 0.543,
-    "ace": 3.49,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 0.406,
+    "speedCiHigh": 0.707,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 5.9,
+    "matches": 27,
     "speed": 1.0,
-    "ace": 5.918,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.831,
+    "speedCiHigh": 1.19,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 5.8,
+    "matches": 31,
     "speed": 0.945,
-    "ace": 5.805,
-    "matches": 31
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.817,
+    "speedCiHigh": 1.073,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 6.9,
+    "matches": 27,
     "speed": 1.005,
-    "ace": 6.943,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.87,
+    "speedCiHigh": 1.129,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 0.892,
-    "ace": 8.277,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.743,
+    "speedCiHigh": 1.074,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 9.4,
+    "matches": 47,
     "speed": 1.205,
-    "ace": 9.37,
-    "matches": 47
+    "adjustedServerSides": 84,
+    "speedCiLow": 1.063,
+    "speedCiHigh": 1.367,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 7.7,
+    "matches": 55,
     "speed": 0.954,
-    "ace": 7.694,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.874,
+    "speedCiHigh": 1.033,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 11.2,
+    "matches": 55,
     "speed": 1.244,
-    "ace": 11.167,
-    "matches": 55
+    "adjustedServerSides": 106,
+    "speedCiLow": 1.138,
+    "speedCiHigh": 1.363,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 7.9,
+    "matches": 47,
     "speed": 1.122,
-    "ace": 7.936,
-    "matches": 47
+    "adjustedServerSides": 87,
+    "speedCiLow": 0.987,
+    "speedCiHigh": 1.253,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 7.5,
+    "matches": 127,
     "speed": 0.875,
-    "ace": 7.46,
-    "matches": 127
+    "adjustedServerSides": 239,
+    "speedCiLow": 0.812,
+    "speedCiHigh": 0.94,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 9.6,
+    "matches": 27,
     "speed": 1.314,
-    "ace": 9.556,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.17,
+    "speedCiHigh": 1.473,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 9.0,
+    "matches": 27,
     "speed": 1.313,
-    "ace": 8.99,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.175,
+    "speedCiHigh": 1.46,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 8.0,
+    "matches": 31,
     "speed": 0.962,
-    "ace": 8.03,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.85,
+    "speedCiHigh": 1.077,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 9.4,
+    "matches": 30,
     "speed": 1.244,
-    "ace": 9.369,
-    "matches": 30
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.083,
+    "speedCiHigh": 1.428,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 12.4,
+    "matches": 55,
     "speed": 1.562,
-    "ace": 12.38,
-    "matches": 55
+    "adjustedServerSides": 106,
+    "speedCiLow": 1.431,
+    "speedCiHigh": 1.707,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 8.5,
+    "matches": 31,
     "speed": 0.986,
-    "ace": 8.463,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.851,
+    "speedCiHigh": 1.128,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 7.8,
+    "matches": 31,
     "speed": 1.035,
-    "ace": 7.77,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.922,
+    "speedCiHigh": 1.152,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.9,
+    "matches": 46,
     "speed": 1.129,
-    "ace": 9.915,
-    "matches": 46
+    "adjustedServerSides": 87,
+    "speedCiLow": 1.003,
+    "speedCiHigh": 1.241,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 7.7,
+    "matches": 14,
     "speed": 0.876,
-    "ace": 7.656,
-    "matches": 14
+    "adjustedServerSides": 28,
+    "speedCiLow": 0.695,
+    "speedCiHigh": 1.049,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2018": {
    "brisbane": {
+    "ace": 10.9,
+    "matches": 27,
     "speed": 1.21,
-    "ace": 10.866,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.074,
+    "speedCiHigh": 1.337,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 7.6,
+    "matches": 29,
     "speed": 0.916,
-    "ace": 7.632,
-    "matches": 29
+    "adjustedServerSides": 55,
+    "speedCiLow": 0.774,
+    "speedCiHigh": 1.063,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 9.4,
+    "matches": 27,
     "speed": 1.231,
-    "ace": 9.417,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.017,
+    "speedCiHigh": 1.494,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.4,
+    "matches": 127,
     "speed": 1.135,
-    "ace": 9.364,
-    "matches": 127
+    "adjustedServerSides": 247,
+    "speedCiLow": 1.057,
+    "speedCiHigh": 1.213,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.5,
+    "matches": 27,
     "speed": 1.132,
-    "ace": 8.526,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.956,
+    "speedCiHigh": 1.305,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 4.7,
+    "matches": 27,
     "speed": 0.768,
-    "ace": 4.724,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.617,
+    "speedCiHigh": 0.932,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 9.6,
+    "matches": 30,
     "speed": 1.187,
-    "ace": 9.605,
-    "matches": 30
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.039,
+    "speedCiHigh": 1.341,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 10.3,
+    "matches": 31,
     "speed": 1.043,
-    "ace": 10.308,
-    "matches": 31
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.915,
+    "speedCiHigh": 1.18,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 5.0,
+    "matches": 31,
     "speed": 0.748,
-    "ace": 4.953,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.608,
+    "speedCiHigh": 0.881,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 9.6,
+    "matches": 31,
     "speed": 1.037,
-    "ace": 9.577,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.883,
+    "speedCiHigh": 1.207,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 7.9,
+    "matches": 31,
     "speed": 1.054,
-    "ace": 7.95,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.91,
+    "speedCiHigh": 1.192,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 7.4,
+    "matches": 94,
     "speed": 0.817,
-    "ace": 7.445,
-    "matches": 94
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.749,
+    "speedCiHigh": 0.892,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 7.1,
+    "matches": 95,
     "speed": 0.792,
-    "ace": 7.106,
-    "matches": 95
+    "adjustedServerSides": 179,
+    "speedCiLow": 0.723,
+    "speedCiHigh": 0.862,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 8.9,
+    "matches": 27,
     "speed": 0.89,
-    "ace": 8.884,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.724,
+    "speedCiHigh": 1.062,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 3.6,
+    "matches": 31,
     "speed": 0.696,
-    "ace": 3.559,
-    "matches": 31
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.545,
+    "speedCiHigh": 0.899,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
-    "speed": 0.587,
     "ace": 4.8,
-    "matches": 54
+    "matches": 54,
+    "speed": 0.587,
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.513,
+    "speedCiHigh": 0.66,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.7,
+    "matches": 47,
     "speed": 0.627,
-    "ace": 4.72,
-    "matches": 47
+    "adjustedServerSides": 92,
+    "speedCiLow": 0.538,
+    "speedCiHigh": 0.721,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 3.6,
+    "matches": 27,
     "speed": 0.637,
-    "ace": 3.628,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.461,
+    "speedCiHigh": 0.859,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 6.1,
+    "matches": 27,
     "speed": 0.834,
-    "ace": 6.072,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.703,
+    "speedCiHigh": 0.974,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.6,
+    "matches": 55,
     "speed": 0.9,
-    "ace": 7.623,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.807,
+    "speedCiHigh": 0.991,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.8,
+    "matches": 55,
     "speed": 0.764,
-    "ace": 5.811,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.687,
+    "speedCiHigh": 0.85,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 8.8,
+    "matches": 27,
     "speed": 1.11,
-    "ace": 8.763,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.923,
+    "speedCiHigh": 1.293,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 5.7,
+    "matches": 27,
     "speed": 0.962,
-    "ace": 5.686,
-    "matches": 27
+    "adjustedServerSides": 39,
+    "speedCiLow": 0.746,
+    "speedCiHigh": 1.232,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 6.0,
+    "matches": 127,
     "speed": 0.791,
-    "ace": 5.965,
-    "matches": 127
+    "adjustedServerSides": 238,
+    "speedCiLow": 0.73,
+    "speedCiHigh": 0.856,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 10.2,
+    "matches": 27,
     "speed": 1.07,
-    "ace": 10.221,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.932,
+    "speedCiHigh": 1.233,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 13.5,
+    "matches": 27,
     "speed": 1.366,
-    "ace": 13.46,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.198,
+    "speedCiHigh": 1.561,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 8.9,
+    "matches": 31,
     "speed": 1.189,
-    "ace": 8.945,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.008,
+    "speedCiHigh": 1.434,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 13.4,
+    "matches": 30,
     "speed": 1.313,
-    "ace": 13.441,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.159,
+    "speedCiHigh": 1.489,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 6.9,
+    "matches": 27,
     "speed": 0.911,
-    "ace": 6.872,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.762,
+    "speedCiHigh": 1.058,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 10.4,
+    "matches": 126,
     "speed": 1.171,
-    "ace": 10.382,
-    "matches": 126
+    "adjustedServerSides": 242,
+    "speedCiLow": 1.099,
+    "speedCiHigh": 1.25,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 3.8,
+    "matches": 27,
     "speed": 0.726,
-    "ace": 3.827,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.578,
+    "speedCiHigh": 0.881,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 5.3,
+    "matches": 27,
     "speed": 0.768,
-    "ace": 5.296,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.636,
+    "speedCiHigh": 0.924,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 7.7,
+    "matches": 27,
     "speed": 1.173,
-    "ace": 7.748,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 1.029,
+    "speedCiHigh": 1.327,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 5.0,
+    "matches": 30,
     "speed": 0.77,
-    "ace": 5.02,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.664,
+    "speedCiHigh": 0.874,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 8.2,
+    "matches": 27,
     "speed": 0.897,
-    "ace": 8.176,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.745,
+    "speedCiHigh": 1.039,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.9,
+    "matches": 27,
     "speed": 0.906,
-    "ace": 5.887,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.786,
+    "speedCiHigh": 1.017,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 8.0,
+    "matches": 46,
     "speed": 0.996,
-    "ace": 7.979,
-    "matches": 46
+    "adjustedServerSides": 83,
+    "speedCiLow": 0.872,
+    "speedCiHigh": 1.122,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 9.9,
+    "matches": 55,
     "speed": 1.198,
-    "ace": 9.865,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 1.085,
+    "speedCiHigh": 1.321,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 10.0,
+    "matches": 55,
     "speed": 1.037,
-    "ace": 10.024,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.95,
+    "speedCiHigh": 1.127,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.0,
+    "matches": 46,
     "speed": 1.044,
-    "ace": 8.031,
-    "matches": 46
+    "adjustedServerSides": 84,
+    "speedCiLow": 0.945,
+    "speedCiHigh": 1.144,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.6,
+    "matches": 127,
     "speed": 1.013,
-    "ace": 8.55,
-    "matches": 127
+    "adjustedServerSides": 247,
+    "speedCiLow": 0.953,
+    "speedCiHigh": 1.071,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 9.3,
+    "matches": 27,
     "speed": 1.414,
-    "ace": 9.269,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 1.22,
+    "speedCiHigh": 1.617,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 9.2,
+    "matches": 27,
     "speed": 1.02,
-    "ace": 9.173,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.898,
+    "speedCiHigh": 1.14,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 7.7,
+    "matches": 30,
     "speed": 1.065,
-    "ace": 7.699,
-    "matches": 30
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.917,
+    "speedCiHigh": 1.207,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 11.5,
+    "matches": 31,
     "speed": 1.407,
-    "ace": 11.513,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.205,
+    "speedCiHigh": 1.626,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 10.3,
+    "matches": 55,
     "speed": 1.213,
-    "ace": 10.325,
-    "matches": 55
+    "adjustedServerSides": 106,
+    "speedCiLow": 1.111,
+    "speedCiHigh": 1.328,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 9.7,
+    "matches": 31,
     "speed": 1.096,
-    "ace": 9.715,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.982,
+    "speedCiHigh": 1.205,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 10.0,
+    "matches": 30,
     "speed": 1.187,
-    "ace": 9.985,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.056,
+    "speedCiHigh": 1.332,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.0,
+    "matches": 45,
     "speed": 1.073,
-    "ace": 9.022,
-    "matches": 45
+    "adjustedServerSides": 90,
+    "speedCiLow": 0.965,
+    "speedCiHigh": 1.185,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 10.5,
+    "matches": 15,
     "speed": 1.106,
-    "ace": 10.529,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.901,
+    "speedCiHigh": 1.327,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2019": {
    "brisbane": {
+    "ace": 13.5,
+    "matches": 27,
     "speed": 1.345,
-    "ace": 13.502,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 1.156,
+    "speedCiHigh": 1.541,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 7.9,
+    "matches": 30,
     "speed": 1.127,
-    "ace": 7.866,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.984,
+    "speedCiHigh": 1.258,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 9.4,
+    "matches": 27,
     "speed": 1.056,
-    "ace": 9.359,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.858,
+    "speedCiHigh": 1.259,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 10.6,
+    "matches": 127,
     "speed": 1.303,
-    "ace": 10.584,
-    "matches": 127
+    "adjustedServerSides": 241,
+    "speedCiLow": 1.228,
+    "speedCiHigh": 1.369,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 9.8,
+    "matches": 27,
     "speed": 1.203,
-    "ace": 9.822,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.066,
+    "speedCiHigh": 1.349,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.0,
+    "matches": 27,
     "speed": 0.522,
-    "ace": 2.983,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.382,
+    "speedCiHigh": 0.674,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 6.9,
+    "matches": 31,
     "speed": 0.934,
-    "ace": 6.878,
-    "matches": 31
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.773,
+    "speedCiHigh": 1.097,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 10.5,
+    "matches": 31,
     "speed": 1.107,
-    "ace": 10.489,
-    "matches": 31
+    "adjustedServerSides": 55,
+    "speedCiLow": 0.94,
+    "speedCiHigh": 1.272,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 4.5,
+    "matches": 30,
     "speed": 0.706,
-    "ace": 4.511,
-    "matches": 30
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.541,
+    "speedCiHigh": 0.928,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 10.6,
+    "matches": 30,
     "speed": 0.942,
-    "ace": 10.588,
-    "matches": 30
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.81,
+    "speedCiHigh": 1.077,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 6.7,
+    "matches": 31,
     "speed": 0.943,
-    "ace": 6.721,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.822,
+    "speedCiHigh": 1.075,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 6.8,
+    "matches": 93,
     "speed": 0.796,
-    "ace": 6.79,
-    "matches": 93
+    "adjustedServerSides": 182,
+    "speedCiLow": 0.716,
+    "speedCiHigh": 0.873,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 8.1,
+    "matches": 93,
     "speed": 0.893,
-    "ace": 8.064,
-    "matches": 93
+    "adjustedServerSides": 183,
+    "speedCiLow": 0.819,
+    "speedCiHigh": 0.969,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 7.0,
+    "matches": 27,
     "speed": 0.742,
-    "ace": 7.026,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.605,
+    "speedCiHigh": 0.878,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 6.4,
+    "matches": 30,
     "speed": 0.974,
-    "ace": 6.364,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.821,
+    "speedCiHigh": 1.128,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 3.6,
+    "matches": 54,
     "speed": 0.527,
-    "ace": 3.628,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.441,
+    "speedCiHigh": 0.61,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.3,
+    "matches": 47,
     "speed": 0.594,
-    "ace": 4.256,
-    "matches": 47
+    "adjustedServerSides": 92,
+    "speedCiLow": 0.51,
+    "speedCiHigh": 0.675,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 4.0,
+    "matches": 27,
     "speed": 0.605,
-    "ace": 3.95,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.499,
+    "speedCiHigh": 0.745,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 5.8,
+    "matches": 27,
     "speed": 0.759,
-    "ace": 5.795,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.614,
+    "speedCiHigh": 0.895,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 5.8,
+    "matches": 54,
     "speed": 0.765,
-    "ace": 5.847,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.666,
+    "speedCiHigh": 0.864,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.7,
+    "matches": 54,
     "speed": 0.726,
-    "ace": 5.735,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.648,
+    "speedCiHigh": 0.801,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 5.3,
+    "matches": 27,
     "speed": 0.819,
-    "ace": 5.346,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.702,
+    "speedCiHigh": 0.953,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 7.3,
+    "matches": 26,
     "speed": 0.978,
-    "ace": 7.309,
-    "matches": 26
+    "adjustedServerSides": 43,
+    "speedCiLow": 0.844,
+    "speedCiHigh": 1.117,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.7,
+    "matches": 127,
     "speed": 0.757,
-    "ace": 5.659,
-    "matches": 127
+    "adjustedServerSides": 239,
+    "speedCiLow": 0.704,
+    "speedCiHigh": 0.811,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 8.7,
+    "matches": 27,
     "speed": 1.031,
-    "ace": 8.703,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.874,
+    "speedCiHigh": 1.185,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 12.5,
+    "matches": 26,
     "speed": 1.406,
-    "ace": 12.47,
-    "matches": 26
+    "adjustedServerSides": 45,
+    "speedCiLow": 1.279,
+    "speedCiHigh": 1.545,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 10.5,
+    "matches": 31,
     "speed": 1.323,
-    "ace": 10.466,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.155,
+    "speedCiHigh": 1.501,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 10.9,
+    "matches": 30,
     "speed": 1.202,
-    "ace": 10.884,
-    "matches": 30
+    "adjustedServerSides": 59,
+    "speedCiLow": 1.043,
+    "speedCiHigh": 1.373,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 9.6,
+    "matches": 27,
     "speed": 1.082,
-    "ace": 9.649,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.924,
+    "speedCiHigh": 1.249,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 8.6,
+    "matches": 127,
     "speed": 0.988,
-    "ace": 8.564,
-    "matches": 127
+    "adjustedServerSides": 246,
+    "speedCiLow": 0.933,
+    "speedCiHigh": 1.048,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 5.0,
+    "matches": 27,
     "speed": 0.774,
-    "ace": 5.004,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.645,
+    "speedCiHigh": 0.911,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 4.5,
+    "matches": 27,
     "speed": 0.688,
-    "ace": 4.486,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.581,
+    "speedCiHigh": 0.792,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 4.9,
+    "matches": 27,
     "speed": 0.882,
-    "ace": 4.856,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.717,
+    "speedCiHigh": 1.064,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 6.4,
+    "matches": 31,
     "speed": 0.86,
-    "ace": 6.352,
-    "matches": 31
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.745,
+    "speedCiHigh": 0.982,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.2,
+    "matches": 27,
     "speed": 0.763,
-    "ace": 5.231,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.644,
+    "speedCiHigh": 0.887,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 6.2,
+    "matches": 27,
     "speed": 0.876,
-    "ace": 6.218,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.762,
+    "speedCiHigh": 0.997,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 11.9,
+    "matches": 47,
     "speed": 1.239,
-    "ace": 11.909,
-    "matches": 47
+    "adjustedServerSides": 79,
+    "speedCiLow": 1.125,
+    "speedCiHigh": 1.354,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 8.6,
+    "matches": 54,
     "speed": 1.08,
-    "ace": 8.593,
-    "matches": 54
+    "adjustedServerSides": 107,
+    "speedCiLow": 0.94,
+    "speedCiHigh": 1.221,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 9.7,
+    "matches": 54,
     "speed": 1.096,
-    "ace": 9.656,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.986,
+    "speedCiHigh": 1.205,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 9.2,
+    "matches": 47,
     "speed": 1.192,
-    "ace": 9.231,
-    "matches": 47
+    "adjustedServerSides": 86,
+    "speedCiLow": 1.037,
+    "speedCiHigh": 1.355,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.0,
+    "matches": 125,
     "speed": 0.95,
-    "ace": 8.029,
-    "matches": 125
+    "adjustedServerSides": 237,
+    "speedCiLow": 0.893,
+    "speedCiHigh": 1.003,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 10.8,
+    "matches": 27,
     "speed": 1.264,
-    "ace": 10.764,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.063,
+    "speedCiHigh": 1.488,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 12.6,
+    "matches": 27,
     "speed": 1.514,
-    "ace": 12.62,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.326,
+    "speedCiHigh": 1.698,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 9.7,
+    "matches": 31,
     "speed": 1.137,
-    "ace": 9.723,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.019,
+    "speedCiHigh": 1.251,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 9.6,
+    "matches": 31,
     "speed": 1.141,
-    "ace": 9.59,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.987,
+    "speedCiHigh": 1.3,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 10.3,
+    "matches": 55,
     "speed": 1.306,
-    "ace": 10.252,
-    "matches": 55
+    "adjustedServerSides": 109,
+    "speedCiLow": 1.189,
+    "speedCiHigh": 1.418,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 11.2,
+    "matches": 30,
     "speed": 1.204,
-    "ace": 11.158,
-    "matches": 30
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.064,
+    "speedCiHigh": 1.337,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 8.9,
+    "matches": 31,
     "speed": 1.222,
-    "ace": 8.885,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.035,
+    "speedCiHigh": 1.42,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 10.4,
+    "matches": 46,
     "speed": 1.247,
-    "ace": 10.397,
-    "matches": 46
+    "adjustedServerSides": 92,
+    "speedCiLow": 1.123,
+    "speedCiHigh": 1.374,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 9.4,
+    "matches": 15,
     "speed": 1.412,
-    "ace": 9.388,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.221,
+    "speedCiHigh": 1.604,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2020": {
    "doha": {
+    "ace": 7.7,
+    "matches": 27,
     "speed": 1.003,
-    "ace": 7.688,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.856,
+    "speedCiHigh": 1.171,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "adelaide": {
+    "ace": 11.5,
+    "matches": 27,
     "speed": 1.226,
-    "ace": 11.483,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.078,
+    "speedCiHigh": 1.382,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 9.4,
+    "matches": 27,
     "speed": 1.092,
-    "ace": 9.431,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.948,
+    "speedCiHigh": 1.233,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.0,
+    "matches": 126,
     "speed": 1.078,
-    "ace": 8.986,
-    "matches": 126
+    "adjustedServerSides": 208,
+    "speedCiLow": 0.999,
+    "speedCiHigh": 1.17,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 9.3,
+    "matches": 27,
     "speed": 1.131,
-    "ace": 9.285,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.981,
+    "speedCiHigh": 1.304,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 4.8,
+    "matches": 26,
     "speed": 0.915,
-    "ace": 4.801,
-    "matches": 26
+    "adjustedServerSides": 41,
+    "speedCiLow": 0.711,
+    "speedCiHigh": 1.127,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 8.6,
+    "matches": 30,
     "speed": 1.216,
-    "ace": 8.61,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 1.07,
+    "speedCiHigh": 1.375,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 9.5,
+    "matches": 31,
     "speed": 0.978,
-    "ace": 9.465,
-    "matches": 31
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.786,
+    "speedCiHigh": 1.186,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 9.7,
+    "matches": 31,
     "speed": 1.027,
-    "ace": 9.696,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.878,
+    "speedCiHigh": 1.174,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 7.2,
+    "matches": 31,
     "speed": 0.903,
-    "ace": 7.19,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.781,
+    "speedCiHigh": 1.041,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 4.6,
+    "matches": 27,
     "speed": 0.943,
-    "ace": 4.602,
-    "matches": 27
+    "adjustedServerSides": 31,
+    "speedCiLow": 0.649,
+    "speedCiHigh": 1.249,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 9.5,
+    "matches": 55,
     "speed": 1.032,
-    "ace": 9.511,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.917,
+    "speedCiHigh": 1.156,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.3,
+    "matches": 127,
     "speed": 1.055,
-    "ace": 8.311,
-    "matches": 127
+    "adjustedServerSides": 222,
+    "speedCiLow": 0.97,
+    "speedCiHigh": 1.147,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.9,
+    "matches": 27,
     "speed": 0.872,
-    "ace": 5.885,
-    "matches": 27
+    "adjustedServerSides": 40,
+    "speedCiLow": 0.689,
+    "speedCiHigh": 1.066,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.5,
+    "matches": 54,
     "speed": 0.799,
-    "ace": 5.498,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.689,
+    "speedCiHigh": 0.903,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.7,
+    "matches": 31,
     "speed": 0.577,
-    "ace": 4.745,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.484,
+    "speedCiHigh": 0.674,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 4.3,
+    "matches": 127,
     "speed": 0.578,
-    "ace": 4.298,
-    "matches": 127
+    "adjustedServerSides": 214,
+    "speedCiLow": 0.53,
+    "speedCiHigh": 0.625,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 9.5,
+    "matches": 31,
     "speed": 1.272,
-    "ace": 9.542,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.112,
+    "speedCiHigh": 1.421,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.9,
+    "matches": 54,
     "speed": 1.269,
-    "ace": 9.873,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 1.139,
+    "speedCiHigh": 1.408,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 8.3,
+    "matches": 15,
     "speed": 1.032,
-    "ace": 8.33,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.834,
+    "speedCiHigh": 1.251,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2021": {
    "munich": {
+    "ace": 5.4,
+    "matches": 26,
     "speed": 0.748,
-    "ace": 5.369,
-    "matches": 26
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.641,
+    "speedCiHigh": 0.869,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 10.9,
+    "matches": 31,
     "speed": 1.211,
-    "ace": 10.866,
-    "matches": 31
+    "adjustedServerSides": 57,
+    "speedCiLow": 1.017,
+    "speedCiHigh": 1.416,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 7.0,
+    "matches": 27,
     "speed": 1.253,
-    "ace": 7.016,
-    "matches": 27
+    "adjustedServerSides": 37,
+    "speedCiLow": 0.991,
+    "speedCiHigh": 1.576,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.5,
+    "matches": 26,
     "speed": 0.699,
-    "ace": 4.462,
-    "matches": 26
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.592,
+    "speedCiHigh": 0.804,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 4.9,
+    "matches": 27,
     "speed": 0.761,
-    "ace": 4.866,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.628,
+    "speedCiHigh": 0.904,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 12.8,
+    "matches": 27,
     "speed": 1.308,
-    "ace": 12.773,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.149,
+    "speedCiHigh": 1.475,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 5.7,
+    "matches": 27,
     "speed": 0.754,
-    "ace": 5.739,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.625,
+    "speedCiHigh": 0.893,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 9.0,
+    "matches": 31,
     "speed": 1.207,
-    "ace": 8.967,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.06,
+    "speedCiHigh": 1.365,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 8.9,
+    "matches": 27,
     "speed": 1.185,
-    "ace": 8.859,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 1.09,
+    "speedCiHigh": 1.289,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 8.2,
+    "matches": 54,
     "speed": 1.114,
-    "ace": 8.221,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 1.012,
+    "speedCiHigh": 1.219,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 1.14,
-    "ace": 8.347,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.972,
+    "speedCiHigh": 1.321,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 7.5,
+    "matches": 94,
     "speed": 0.955,
-    "ace": 7.45,
-    "matches": 94
+    "adjustedServerSides": 182,
+    "speedCiLow": 0.871,
+    "speedCiHigh": 1.042,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 6.0,
+    "matches": 94,
     "speed": 0.719,
-    "ace": 5.96,
-    "matches": 94
+    "adjustedServerSides": 181,
+    "speedCiLow": 0.659,
+    "speedCiHigh": 0.783,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 6.9,
+    "matches": 31,
     "speed": 0.873,
-    "ace": 6.88,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.758,
+    "speedCiHigh": 0.993,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 3.6,
+    "matches": 55,
     "speed": 0.526,
-    "ace": 3.592,
-    "matches": 55
+    "adjustedServerSides": 107,
+    "speedCiLow": 0.447,
+    "speedCiHigh": 0.63,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.6,
+    "matches": 26,
     "speed": 0.786,
-    "ace": 4.598,
-    "matches": 26
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.613,
+    "speedCiHigh": 0.966,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.9,
+    "matches": 54,
     "speed": 0.739,
-    "ace": 5.943,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.621,
+    "speedCiHigh": 0.87,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 7.7,
+    "matches": 46,
     "speed": 0.952,
-    "ace": 7.679,
-    "matches": 46
+    "adjustedServerSides": 88,
+    "speedCiLow": 0.838,
+    "speedCiHigh": 1.076,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 10.8,
+    "matches": 46,
     "speed": 1.215,
-    "ace": 10.774,
-    "matches": 46
+    "adjustedServerSides": 91,
+    "speedCiLow": 1.108,
+    "speedCiHigh": 1.335,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 10.3,
+    "matches": 55,
     "speed": 1.317,
-    "ace": 10.296,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 1.191,
+    "speedCiHigh": 1.445,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.1,
+    "matches": 47,
     "speed": 0.692,
-    "ace": 4.058,
-    "matches": 47
+    "adjustedServerSides": 90,
+    "speedCiLow": 0.566,
+    "speedCiHigh": 0.837,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 3.2,
+    "matches": 27,
     "speed": 0.523,
-    "ace": 3.221,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.385,
+    "speedCiHigh": 0.683,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 8.0,
+    "matches": 25,
     "speed": 1.027,
-    "ace": 8.024,
-    "matches": 25
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.866,
+    "speedCiHigh": 1.187,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 9.4,
+    "matches": 45,
     "speed": 1.305,
-    "ace": 9.408,
-    "matches": 45
+    "adjustedServerSides": 87,
+    "speedCiLow": 1.166,
+    "speedCiHigh": 1.467,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 7.8,
+    "matches": 27,
     "speed": 1.035,
-    "ace": 7.761,
-    "matches": 27
+    "adjustedServerSides": 29,
+    "speedCiLow": 0.797,
+    "speedCiHigh": 1.31,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 9.4,
+    "matches": 31,
     "speed": 1.203,
-    "ace": 9.403,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.077,
+    "speedCiHigh": 1.334,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.2,
+    "matches": 27,
     "speed": 0.728,
-    "ace": 3.169,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.554,
+    "speedCiHigh": 0.918,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 13.1,
+    "matches": 15,
     "speed": 1.593,
-    "ace": 13.08,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.352,
+    "speedCiHigh": 1.796,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 7.8,
+    "matches": 27,
     "speed": 1.009,
-    "ace": 7.758,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.821,
+    "speedCiHigh": 1.197,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 6.0,
+    "matches": 30,
     "speed": 0.725,
-    "ace": 5.975,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.602,
+    "speedCiHigh": 0.84,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 6.9,
+    "matches": 55,
     "speed": 0.844,
-    "ace": 6.947,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.761,
+    "speedCiHigh": 0.932,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.7,
+    "matches": 126,
     "speed": 0.777,
-    "ace": 5.703,
-    "matches": 126
+    "adjustedServerSides": 244,
+    "speedCiLow": 0.722,
+    "speedCiHigh": 0.835,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 8.5,
+    "matches": 126,
     "speed": 1.052,
-    "ace": 8.454,
-    "matches": 126
+    "adjustedServerSides": 244,
+    "speedCiLow": 0.989,
+    "speedCiHigh": 1.117,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 10.0,
+    "matches": 127,
     "speed": 1.263,
-    "ace": 10.046,
-    "matches": 127
+    "adjustedServerSides": 241,
+    "speedCiLow": 1.187,
+    "speedCiHigh": 1.344,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.1,
+    "matches": 126,
     "speed": 1.167,
-    "ace": 9.11,
-    "matches": 126
+    "adjustedServerSides": 235,
+    "speedCiLow": 1.089,
+    "speedCiHigh": 1.253,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.4,
+    "matches": 47,
     "speed": 1.296,
-    "ace": 8.39,
-    "matches": 47
+    "adjustedServerSides": 85,
+    "speedCiLow": 1.169,
+    "speedCiHigh": 1.437,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 5.0,
+    "matches": 26,
     "speed": 0.648,
-    "ace": 4.963,
-    "matches": 26
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.492,
+    "speedCiHigh": 0.803,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 10.4,
+    "matches": 27,
     "speed": 0.961,
-    "ace": 10.362,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.792,
+    "speedCiHigh": 1.122,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 5.4,
+    "matches": 27,
     "speed": 0.894,
-    "ace": 5.449,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.755,
+    "speedCiHigh": 1.042,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
+    "ace": 11.3,
+    "matches": 26,
     "speed": 1.51,
-    "ace": 11.322,
-    "matches": 26
+    "adjustedServerSides": 51,
+    "speedCiLow": 1.261,
+    "speedCiHigh": 1.801,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 6.6,
+    "matches": 27,
     "speed": 1.286,
-    "ace": 6.63,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 1.015,
+    "speedCiHigh": 1.528,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2022": {
    "ausopen": {
+    "ace": 8.4,
+    "matches": 126,
     "speed": 1.161,
-    "ace": 8.442,
-    "matches": 126
+    "adjustedServerSides": 240,
+    "speedCiLow": 1.076,
+    "speedCiHigh": 1.242,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.2,
+    "matches": 27,
     "speed": 1.25,
-    "ace": 8.198,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 1.028,
+    "speedCiHigh": 1.495,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.2,
+    "matches": 27,
     "speed": 0.653,
-    "ace": 3.201,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.494,
+    "speedCiHigh": 0.829,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 7.3,
+    "matches": 31,
     "speed": 1.009,
-    "ace": 7.26,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.888,
+    "speedCiHigh": 1.137,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
+    "ace": 14.1,
+    "matches": 27,
     "speed": 1.316,
-    "ace": 14.118,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 1.174,
+    "speedCiHigh": 1.463,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 7.3,
+    "matches": 27,
     "speed": 0.646,
-    "ace": 7.31,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.527,
+    "speedCiHigh": 0.768,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 7.6,
+    "matches": 27,
     "speed": 1.093,
-    "ace": 7.602,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.89,
+    "speedCiHigh": 1.344,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 4.2,
+    "matches": 27,
     "speed": 1.455,
-    "ace": 4.163,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.696,
+    "speedCiHigh": 2.731,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 6.9,
+    "matches": 30,
     "speed": 0.868,
-    "ace": 6.888,
-    "matches": 30
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.72,
+    "speedCiHigh": 1.046,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 10.2,
+    "matches": 31,
     "speed": 1.347,
-    "ace": 10.186,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.147,
+    "speedCiHigh": 1.583,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 3.9,
+    "matches": 27,
     "speed": 0.819,
-    "ace": 3.913,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 0.666,
+    "speedCiHigh": 0.966,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 7.2,
+    "matches": 93,
     "speed": 0.868,
-    "ace": 7.249,
-    "matches": 93
+    "adjustedServerSides": 183,
+    "speedCiLow": 0.776,
+    "speedCiHigh": 0.952,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 7.2,
+    "matches": 95,
     "speed": 0.963,
-    "ace": 7.239,
-    "matches": 95
+    "adjustedServerSides": 189,
+    "speedCiLow": 0.877,
+    "speedCiHigh": 1.067,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 9.5,
+    "matches": 26,
     "speed": 0.885,
-    "ace": 9.535,
-    "matches": 26
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.739,
+    "speedCiHigh": 1.036,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 3.8,
+    "matches": 31,
     "speed": 0.691,
-    "ace": 3.829,
-    "matches": 31
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.558,
+    "speedCiHigh": 0.826,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.1,
+    "matches": 55,
     "speed": 0.625,
-    "ace": 4.115,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.532,
+    "speedCiHigh": 0.735,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.0,
+    "matches": 47,
     "speed": 0.708,
-    "ace": 4.002,
-    "matches": 47
+    "adjustedServerSides": 90,
+    "speedCiLow": 0.596,
+    "speedCiHigh": 0.819,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 4.4,
+    "matches": 27,
     "speed": 0.709,
-    "ace": 4.404,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.543,
+    "speedCiHigh": 0.875,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 4.3,
+    "matches": 27,
     "speed": 0.617,
-    "ace": 4.325,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.5,
+    "speedCiHigh": 0.738,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.1,
+    "matches": 54,
     "speed": 1.019,
-    "ace": 7.139,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.912,
+    "speedCiHigh": 1.128,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.2,
+    "matches": 55,
     "speed": 0.738,
-    "ace": 5.163,
-    "matches": 55
+    "adjustedServerSides": 109,
+    "speedCiLow": 0.633,
+    "speedCiHigh": 0.844,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 6.2,
+    "matches": 27,
     "speed": 0.897,
-    "ace": 6.245,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.789,
+    "speedCiHigh": 1.019,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 4.8,
+    "matches": 27,
     "speed": 0.77,
-    "ace": 4.798,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.665,
+    "speedCiHigh": 0.89,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.3,
+    "matches": 127,
     "speed": 0.734,
-    "ace": 5.28,
-    "matches": 127
+    "adjustedServerSides": 234,
+    "speedCiLow": 0.678,
+    "speedCiHigh": 0.793,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 0.993,
-    "ace": 8.263,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.827,
+    "speedCiHigh": 1.176,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 12.2,
+    "matches": 26,
     "speed": 1.281,
-    "ace": 12.22,
-    "matches": 26
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.13,
+    "speedCiHigh": 1.453,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 11.3,
+    "matches": 31,
     "speed": 1.182,
-    "ace": 11.259,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.013,
+    "speedCiHigh": 1.353,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 9.5,
+    "matches": 31,
     "speed": 1.194,
-    "ace": 9.495,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.017,
+    "speedCiHigh": 1.392,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
+    "ace": 9.1,
+    "matches": 26,
     "speed": 1.365,
-    "ace": 9.137,
-    "matches": 26
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.139,
+    "speedCiHigh": 1.611,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 8.4,
+    "matches": 27,
     "speed": 0.985,
-    "ace": 8.36,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.814,
+    "speedCiHigh": 1.137,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 8.3,
+    "matches": 125,
     "speed": 1.082,
-    "ace": 8.275,
-    "matches": 125
+    "adjustedServerSides": 229,
+    "speedCiLow": 1.016,
+    "speedCiHigh": 1.157,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 3.9,
+    "matches": 27,
     "speed": 0.735,
-    "ace": 3.905,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.602,
+    "speedCiHigh": 0.873,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.0,
+    "matches": 31,
     "speed": 0.77,
-    "ace": 4.033,
-    "matches": 31
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.603,
+    "speedCiHigh": 0.965,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 7.4,
+    "matches": 27,
     "speed": 1.085,
-    "ace": 7.386,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.917,
+    "speedCiHigh": 1.281,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.2,
+    "matches": 27,
     "speed": 1.011,
-    "ace": 5.231,
-    "matches": 27
+    "adjustedServerSides": 36,
+    "speedCiLow": 0.76,
+    "speedCiHigh": 1.258,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 3.2,
+    "matches": 27,
     "speed": 0.597,
-    "ace": 3.24,
-    "matches": 27
+    "adjustedServerSides": 40,
+    "speedCiLow": 0.462,
+    "speedCiHigh": 0.731,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
-    "speed": 0.875,
     "ace": 8.3,
-    "matches": 27
+    "matches": 27,
+    "speed": 0.875,
+    "adjustedServerSides": 43,
+    "speedCiLow": 0.738,
+    "speedCiHigh": 1.003,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 9.3,
+    "matches": 47,
     "speed": 1.101,
-    "ace": 9.302,
-    "matches": 47
+    "adjustedServerSides": 89,
+    "speedCiLow": 0.988,
+    "speedCiHigh": 1.222,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 8.3,
+    "matches": 55,
     "speed": 0.994,
-    "ace": 8.276,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.893,
+    "speedCiHigh": 1.1,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 9.2,
+    "matches": 55,
     "speed": 1.21,
-    "ace": 9.246,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 1.112,
+    "speedCiHigh": 1.31,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.6,
+    "matches": 47,
     "speed": 1.068,
-    "ace": 8.625,
-    "matches": 47
+    "adjustedServerSides": 93,
+    "speedCiLow": 0.972,
+    "speedCiHigh": 1.162,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.3,
+    "matches": 126,
     "speed": 1.069,
-    "ace": 8.265,
-    "matches": 126
+    "adjustedServerSides": 240,
+    "speedCiLow": 1.005,
+    "speedCiHigh": 1.139,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 6.8,
+    "matches": 27,
     "speed": 1.032,
-    "ace": 6.825,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.895,
+    "speedCiHigh": 1.165,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 8.9,
+    "matches": 30,
     "speed": 1.137,
-    "ace": 8.941,
-    "matches": 30
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.017,
+    "speedCiHigh": 1.254,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 8.8,
+    "matches": 31,
     "speed": 1.179,
-    "ace": 8.811,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.036,
+    "speedCiHigh": 1.33,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 10.6,
+    "matches": 31,
     "speed": 1.344,
-    "ace": 10.605,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.143,
+    "speedCiHigh": 1.568,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 8.3,
+    "matches": 55,
     "speed": 1.179,
-    "ace": 8.28,
-    "matches": 55
+    "adjustedServerSides": 108,
+    "speedCiLow": 1.077,
+    "speedCiHigh": 1.292,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 13.1,
+    "matches": 15,
     "speed": 1.691,
-    "ace": 13.128,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.441,
+    "speedCiHigh": 1.978,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2023": {
    "unitedcup": {
+    "ace": 9.3,
+    "matches": 48,
     "speed": 1.136,
-    "ace": 9.328,
-    "matches": 48
+    "adjustedServerSides": 72,
+    "speedCiLow": 1.016,
+    "speedCiHigh": 1.25,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 8.9,
+    "matches": 26,
     "speed": 1.124,
-    "ace": 8.947,
-    "matches": 26
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.938,
+    "speedCiHigh": 1.32,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 8.6,
+    "matches": 127,
     "speed": 1.074,
-    "ace": 8.639,
-    "matches": 127
+    "adjustedServerSides": 236,
+    "speedCiLow": 1.002,
+    "speedCiHigh": 1.137,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
+    "ace": 12.9,
+    "matches": 27,
     "speed": 1.511,
-    "ace": 12.93,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.363,
+    "speedCiHigh": 1.671,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.9,
+    "matches": 26,
     "speed": 0.987,
-    "ace": 8.901,
-    "matches": 26
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.855,
+    "speedCiHigh": 1.136,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 7.2,
+    "matches": 27,
     "speed": 0.932,
-    "ace": 7.151,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.779,
+    "speedCiHigh": 1.094,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.4,
+    "matches": 27,
     "speed": 0.631,
-    "ace": 3.376,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.492,
+    "speedCiHigh": 0.785,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 9.0,
+    "matches": 31,
     "speed": 1.008,
-    "ace": 8.985,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.885,
+    "speedCiHigh": 1.135,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 7.2,
+    "matches": 27,
     "speed": 1.038,
-    "ace": 7.16,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.9,
+    "speedCiHigh": 1.191,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 6.0,
+    "matches": 31,
     "speed": 0.793,
-    "ace": 5.985,
-    "matches": 31
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.623,
+    "speedCiHigh": 0.991,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 10.1,
+    "matches": 31,
     "speed": 1.253,
-    "ace": 10.073,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 1.089,
+    "speedCiHigh": 1.441,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 5.6,
+    "matches": 27,
     "speed": 0.873,
-    "ace": 5.591,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.748,
+    "speedCiHigh": 1.003,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 7.0,
+    "matches": 95,
     "speed": 0.898,
-    "ace": 6.995,
-    "matches": 95
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.825,
+    "speedCiHigh": 0.969,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 9.1,
+    "matches": 93,
     "speed": 1.225,
-    "ace": 9.114,
-    "matches": 93
+    "adjustedServerSides": 184,
+    "speedCiLow": 1.12,
+    "speedCiHigh": 1.334,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 4.6,
+    "matches": 27,
     "speed": 0.725,
-    "ace": 4.562,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.593,
+    "speedCiHigh": 0.85,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 0.922,
-    "ace": 8.331,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.816,
+    "speedCiHigh": 1.027,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 4.2,
+    "matches": 27,
     "speed": 0.655,
-    "ace": 4.195,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.485,
+    "speedCiHigh": 0.849,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 5.1,
+    "matches": 54,
     "speed": 0.618,
-    "ace": 5.144,
-    "matches": 54
+    "adjustedServerSides": 102,
+    "speedCiLow": 0.55,
+    "speedCiHigh": 0.686,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 3.9,
+    "matches": 45,
     "speed": 0.592,
-    "ace": 3.881,
-    "matches": 45
+    "adjustedServerSides": 82,
+    "speedCiLow": 0.455,
+    "speedCiHigh": 0.781,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 5.2,
+    "matches": 27,
     "speed": 0.656,
-    "ace": 5.153,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.55,
+    "speedCiHigh": 0.774,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.3,
+    "matches": 95,
     "speed": 0.984,
-    "ace": 7.306,
-    "matches": 95
+    "adjustedServerSides": 188,
+    "speedCiLow": 0.889,
+    "speedCiHigh": 1.074,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.0,
+    "matches": 95,
     "speed": 0.712,
-    "ace": 4.987,
-    "matches": 95
+    "adjustedServerSides": 189,
+    "speedCiLow": 0.648,
+    "speedCiHigh": 0.775,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 7.2,
+    "matches": 26,
     "speed": 0.923,
-    "ace": 7.151,
-    "matches": 26
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.8,
+    "speedCiHigh": 1.032,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 4.9,
+    "matches": 26,
     "speed": 0.64,
-    "ace": 4.886,
-    "matches": 26
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.509,
+    "speedCiHigh": 0.778,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 4.8,
+    "matches": 126,
     "speed": 0.649,
-    "ace": 4.825,
-    "matches": 126
+    "adjustedServerSides": 232,
+    "speedCiLow": 0.6,
+    "speedCiHigh": 0.702,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 9.5,
+    "matches": 27,
     "speed": 1.215,
-    "ace": 9.507,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.048,
+    "speedCiHigh": 1.385,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 13.3,
+    "matches": 27,
     "speed": 1.558,
-    "ace": 13.309,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.422,
+    "speedCiHigh": 1.695,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 11.0,
+    "matches": 31,
     "speed": 1.332,
-    "ace": 11.048,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.189,
+    "speedCiHigh": 1.5,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 7.6,
+    "matches": 31,
     "speed": 1.119,
-    "ace": 7.574,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.99,
+    "speedCiHigh": 1.239,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
+    "ace": 9.8,
+    "matches": 27,
     "speed": 1.151,
-    "ace": 9.846,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.013,
+    "speedCiHigh": 1.286,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 7.4,
+    "matches": 27,
     "speed": 1.091,
-    "ace": 7.395,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.947,
+    "speedCiHigh": 1.23,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 8.8,
+    "matches": 127,
     "speed": 1.108,
-    "ace": 8.765,
-    "matches": 127
+    "adjustedServerSides": 245,
+    "speedCiLow": 1.051,
+    "speedCiHigh": 1.17,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 6.2,
+    "matches": 27,
     "speed": 0.778,
-    "ace": 6.242,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.638,
+    "speedCiHigh": 0.935,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.8,
+    "matches": 27,
     "speed": 0.874,
-    "ace": 4.771,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.69,
+    "speedCiHigh": 1.061,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 5.2,
+    "matches": 31,
     "speed": 0.753,
-    "ace": 5.176,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.608,
+    "speedCiHigh": 0.893,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 4.0,
+    "matches": 27,
     "speed": 0.647,
-    "ace": 4.035,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.498,
+    "speedCiHigh": 0.794,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 6.8,
+    "matches": 27,
     "speed": 0.957,
-    "ace": 6.754,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.815,
+    "speedCiHigh": 1.095,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 7.4,
+    "matches": 27,
     "speed": 0.871,
-    "ace": 7.442,
-    "matches": 27
+    "adjustedServerSides": 43,
+    "speedCiLow": 0.725,
+    "speedCiHigh": 1.006,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 8.7,
+    "matches": 46,
     "speed": 1.049,
-    "ace": 8.742,
-    "matches": 46
+    "adjustedServerSides": 85,
+    "speedCiLow": 0.915,
+    "speedCiHigh": 1.177,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 8.2,
+    "matches": 54,
     "speed": 1.129,
-    "ace": 8.21,
-    "matches": 54
+    "adjustedServerSides": 105,
+    "speedCiLow": 1.019,
+    "speedCiHigh": 1.243,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 6.7,
+    "matches": 54,
     "speed": 0.835,
-    "ace": 6.748,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.737,
+    "speedCiHigh": 0.941,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 8.1,
+    "matches": 46,
     "speed": 1.099,
-    "ace": 8.055,
-    "matches": 46
+    "adjustedServerSides": 75,
+    "speedCiLow": 0.979,
+    "speedCiHigh": 1.229,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.2,
+    "matches": 127,
     "speed": 1.01,
-    "ace": 8.243,
-    "matches": 127
+    "adjustedServerSides": 237,
+    "speedCiLow": 0.958,
+    "speedCiHigh": 1.059,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 7.8,
+    "matches": 27,
     "speed": 1.063,
-    "ace": 7.787,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.92,
+    "speedCiHigh": 1.217,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 6.4,
+    "matches": 31,
     "speed": 0.963,
-    "ace": 6.383,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.819,
+    "speedCiHigh": 1.118,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 8.4,
+    "matches": 95,
     "speed": 1.096,
-    "ace": 8.38,
-    "matches": 95
+    "adjustedServerSides": 172,
+    "speedCiLow": 0.998,
+    "speedCiHigh": 1.196,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 8.3,
+    "matches": 31,
     "speed": 1.097,
-    "ace": 8.347,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.966,
+    "speedCiHigh": 1.233,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 9.3,
+    "matches": 31,
     "speed": 1.163,
-    "ace": 9.252,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.012,
+    "speedCiHigh": 1.328,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 8.9,
+    "matches": 31,
     "speed": 1.201,
-    "ace": 8.929,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.119,
+    "speedCiHigh": 1.293,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 9.1,
+    "matches": 53,
     "speed": 1.137,
-    "ace": 9.102,
-    "matches": 53
+    "adjustedServerSides": 106,
+    "speedCiLow": 1.046,
+    "speedCiHigh": 1.224,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 8.6,
+    "matches": 27,
     "speed": 1.263,
-    "ace": 8.579,
-    "matches": 27
+    "adjustedServerSides": 33,
+    "speedCiLow": 1.036,
+    "speedCiHigh": 1.493,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 12.5,
+    "matches": 15,
     "speed": 1.884,
-    "ace": 12.546,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.631,
+    "speedCiHigh": 2.139,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2024": {
    "brisbane": {
+    "ace": 10.0,
+    "matches": 30,
     "speed": 1.388,
-    "ace": 9.96,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.254,
+    "speedCiHigh": 1.542,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "unitedcup": {
+    "ace": 8.6,
+    "matches": 25,
     "speed": 1.032,
-    "ace": 8.643,
-    "matches": 25
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.875,
+    "speedCiHigh": 1.19,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hongkong": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 0.977,
-    "ace": 8.301,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.864,
+    "speedCiHigh": 1.104,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "adelaide": {
+    "ace": 8.6,
+    "matches": 27,
     "speed": 1.078,
-    "ace": 8.643,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.902,
+    "speedCiHigh": 1.268,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 8.4,
+    "matches": 26,
     "speed": 1.064,
-    "ace": 8.371,
-    "matches": 26
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.926,
+    "speedCiHigh": 1.198,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.1,
+    "matches": 127,
     "speed": 1.156,
-    "ace": 9.089,
-    "matches": 127
+    "adjustedServerSides": 242,
+    "speedCiLow": 1.09,
+    "speedCiHigh": 1.224,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 8.2,
+    "matches": 27,
     "speed": 1.083,
-    "ace": 8.183,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.909,
+    "speedCiHigh": 1.253,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
+    "ace": 9.4,
+    "matches": 26,
     "speed": 1.163,
-    "ace": 9.394,
-    "matches": 26
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.982,
+    "speedCiHigh": 1.323,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 1.042,
-    "ace": 8.293,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.929,
+    "speedCiHigh": 1.15,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 3.7,
+    "matches": 27,
     "speed": 0.556,
-    "ace": 3.749,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.449,
+    "speedCiHigh": 0.661,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 11.1,
+    "matches": 31,
     "speed": 1.277,
-    "ace": 11.107,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.168,
+    "speedCiHigh": 1.409,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 7.1,
+    "matches": 27,
     "speed": 0.728,
-    "ace": 7.069,
-    "matches": 27
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.61,
+    "speedCiHigh": 0.845,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 5.9,
+    "matches": 27,
     "speed": 0.754,
-    "ace": 5.889,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.624,
+    "speedCiHigh": 0.888,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 7.1,
+    "matches": 31,
     "speed": 0.881,
-    "ace": 7.129,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.784,
+    "speedCiHigh": 0.987,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 10.3,
+    "matches": 31,
     "speed": 1.146,
-    "ace": 10.298,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.993,
+    "speedCiHigh": 1.321,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 5.1,
+    "matches": 27,
     "speed": 1.048,
-    "ace": 5.054,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.862,
+    "speedCiHigh": 1.245,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 6.6,
+    "matches": 94,
     "speed": 0.824,
-    "ace": 6.644,
-    "matches": 94
+    "adjustedServerSides": 187,
+    "speedCiLow": 0.761,
+    "speedCiHigh": 0.887,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 9.2,
+    "matches": 95,
     "speed": 1.117,
-    "ace": 9.174,
-    "matches": 95
+    "adjustedServerSides": 181,
+    "speedCiLow": 1.036,
+    "speedCiHigh": 1.202,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 4.2,
+    "matches": 27,
     "speed": 0.559,
-    "ace": 4.232,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 0.456,
+    "speedCiHigh": 0.673,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 7.9,
+    "matches": 27,
     "speed": 0.932,
-    "ace": 7.936,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.821,
+    "speedCiHigh": 1.046,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 4.9,
+    "matches": 27,
     "speed": 0.869,
-    "ace": 4.862,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.695,
+    "speedCiHigh": 1.092,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.9,
+    "matches": 55,
     "speed": 0.615,
-    "ace": 4.866,
-    "matches": 55
+    "adjustedServerSides": 109,
+    "speedCiLow": 0.55,
+    "speedCiHigh": 0.679,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.0,
+    "matches": 46,
     "speed": 0.624,
-    "ace": 3.961,
-    "matches": 46
+    "adjustedServerSides": 87,
+    "speedCiLow": 0.519,
+    "speedCiHigh": 0.737,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 5.9,
+    "matches": 27,
     "speed": 0.765,
-    "ace": 5.867,
-    "matches": 27
+    "adjustedServerSides": 42,
+    "speedCiLow": 0.622,
+    "speedCiHigh": 0.943,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 3.6,
+    "matches": 27,
     "speed": 0.521,
-    "ace": 3.638,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.397,
+    "speedCiHigh": 0.648,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 5.9,
+    "matches": 94,
     "speed": 0.77,
-    "ace": 5.929,
-    "matches": 94
+    "adjustedServerSides": 185,
+    "speedCiLow": 0.705,
+    "speedCiHigh": 0.842,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.7,
+    "matches": 95,
     "speed": 0.721,
-    "ace": 5.726,
-    "matches": 95
+    "adjustedServerSides": 182,
+    "speedCiLow": 0.647,
+    "speedCiHigh": 0.797,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 5.4,
+    "matches": 26,
     "speed": 0.703,
-    "ace": 5.438,
-    "matches": 26
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.58,
+    "speedCiHigh": 0.854,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 6.4,
+    "matches": 25,
     "speed": 0.784,
-    "ace": 6.443,
-    "matches": 25
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.664,
+    "speedCiHigh": 0.93,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.4,
+    "matches": 126,
     "speed": 0.701,
-    "ace": 5.448,
-    "matches": 126
+    "adjustedServerSides": 244,
+    "speedCiLow": 0.653,
+    "speedCiHigh": 0.759,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 8.6,
+    "matches": 27,
     "speed": 0.959,
-    "ace": 8.613,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.846,
+    "speedCiHigh": 1.087,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 13.7,
+    "matches": 26,
     "speed": 1.397,
-    "ace": 13.69,
-    "matches": 26
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.246,
+    "speedCiHigh": 1.55,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 13.2,
+    "matches": 31,
     "speed": 1.412,
-    "ace": 13.177,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 1.271,
+    "speedCiHigh": 1.561,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 10.5,
+    "matches": 31,
     "speed": 1.274,
-    "ace": 10.465,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.128,
+    "speedCiHigh": 1.429,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
+    "ace": 8.9,
+    "matches": 27,
     "speed": 1.171,
-    "ace": 8.863,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.978,
+    "speedCiHigh": 1.371,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 8.9,
+    "matches": 27,
     "speed": 1.171,
-    "ace": 8.888,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.004,
+    "speedCiHigh": 1.338,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 9.5,
+    "matches": 125,
     "speed": 1.168,
-    "ace": 9.533,
-    "matches": 125
+    "adjustedServerSides": 237,
+    "speedCiLow": 1.103,
+    "speedCiHigh": 1.233,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 7.8,
+    "matches": 27,
     "speed": 0.95,
-    "ace": 7.768,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.785,
+    "speedCiHigh": 1.132,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 5.9,
+    "matches": 31,
     "speed": 0.916,
-    "ace": 5.945,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 0.76,
+    "speedCiHigh": 1.072,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 4.5,
+    "matches": 27,
     "speed": 0.838,
-    "ace": 4.521,
-    "matches": 27
+    "adjustedServerSides": 43,
+    "speedCiLow": 0.626,
+    "speedCiHigh": 1.043,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 5.3,
+    "matches": 27,
     "speed": 0.979,
-    "ace": 5.336,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.783,
+    "speedCiHigh": 1.194,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 3.9,
+    "matches": 27,
     "speed": 0.576,
-    "ace": 3.854,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 0.447,
+    "speedCiHigh": 0.713,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 11.4,
+    "matches": 47,
     "speed": 1.29,
-    "ace": 11.355,
-    "matches": 47
+    "adjustedServerSides": 90,
+    "speedCiLow": 1.128,
+    "speedCiHigh": 1.457,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 7.2,
+    "matches": 54,
     "speed": 0.792,
-    "ace": 7.184,
-    "matches": 54
+    "adjustedServerSides": 106,
+    "speedCiLow": 0.714,
+    "speedCiHigh": 0.868,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 9.7,
+    "matches": 54,
     "speed": 1.161,
-    "ace": 9.738,
-    "matches": 54
+    "adjustedServerSides": 107,
+    "speedCiLow": 1.053,
+    "speedCiHigh": 1.277,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 6.9,
+    "matches": 46,
     "speed": 0.885,
-    "ace": 6.887,
-    "matches": 46
+    "adjustedServerSides": 86,
+    "speedCiLow": 0.777,
+    "speedCiHigh": 0.991,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.4,
+    "matches": 127,
     "speed": 1.009,
-    "ace": 8.425,
-    "matches": 127
+    "adjustedServerSides": 244,
+    "speedCiLow": 0.954,
+    "speedCiHigh": 1.061,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 11.4,
+    "matches": 27,
     "speed": 1.514,
-    "ace": 11.441,
-    "matches": 27
+    "adjustedServerSides": 41,
+    "speedCiLow": 1.328,
+    "speedCiHigh": 1.695,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hangzhou": {
+    "ace": 10.4,
+    "matches": 26,
     "speed": 1.192,
-    "ace": 10.397,
-    "matches": 26
+    "adjustedServerSides": 41,
+    "speedCiLow": 1.023,
+    "speedCiHigh": 1.374,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "lavercup": {
+    "ace": 7.4,
+    "matches": 9,
+    "provisionalSpeed": 0.787,
+    "provisionalServerSides": 18,
+    "provisionalMatches": 9,
+    "provisionalCiLow": 0.659,
+    "provisionalCiHigh": 0.921,
+    "provisionalCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 9.2,
+    "matches": 31,
     "speed": 1.099,
-    "ace": 9.205,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.971,
+    "speedCiHigh": 1.226,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 6.7,
+    "matches": 31,
     "speed": 0.852,
-    "ace": 6.718,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.75,
+    "speedCiHigh": 0.962,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 8.6,
+    "matches": 95,
     "speed": 1.104,
-    "ace": 8.632,
-    "matches": 95
+    "adjustedServerSides": 179,
+    "speedCiLow": 1.026,
+    "speedCiHigh": 1.181,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "almaty": {
+    "ace": 9.5,
+    "matches": 27,
     "speed": 1.043,
-    "ace": 9.461,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.885,
+    "speedCiHigh": 1.218,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 12.7,
+    "matches": 31,
     "speed": 1.501,
-    "ace": 12.712,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.36,
+    "speedCiHigh": 1.651,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 9.2,
+    "matches": 30,
     "speed": 1.146,
-    "ace": 9.168,
-    "matches": 30
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.95,
+    "speedCiHigh": 1.387,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 10.2,
+    "matches": 55,
     "speed": 1.263,
-    "ace": 10.221,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 1.152,
+    "speedCiHigh": 1.37,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 8.2,
+    "matches": 26,
     "speed": 1.037,
-    "ace": 8.169,
-    "matches": 26
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.925,
+    "speedCiHigh": 1.137,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 11.2,
+    "matches": 15,
     "speed": 1.424,
-    "ace": 11.244,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.229,
+    "speedCiHigh": 1.62,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2025": {
    "unitedcup": {
+    "ace": 11.5,
+    "matches": 24,
     "speed": 1.276,
-    "ace": 11.518,
-    "matches": 24
+    "adjustedServerSides": 48,
+    "speedCiLow": 1.091,
+    "speedCiHigh": 1.479,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "brisbane": {
+    "ace": 13.0,
+    "matches": 31,
     "speed": 1.232,
-    "ace": 13.009,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.067,
+    "speedCiHigh": 1.417,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hongkong": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 1.329,
-    "ace": 8.28,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.125,
+    "speedCiHigh": 1.566,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "adelaide": {
+    "ace": 10.2,
+    "matches": 26,
     "speed": 1.085,
-    "ace": 10.235,
-    "matches": 26
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.962,
+    "speedCiHigh": 1.226,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 6.5,
+    "matches": 27,
     "speed": 0.924,
-    "ace": 6.521,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.773,
+    "speedCiHigh": 1.096,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.0,
+    "matches": 127,
     "speed": 1.088,
-    "ace": 8.965,
-    "matches": 127
+    "adjustedServerSides": 235,
+    "speedCiLow": 1.019,
+    "speedCiHigh": 1.162,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 11.4,
+    "matches": 27,
     "speed": 1.313,
-    "ace": 11.443,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 1.109,
+    "speedCiHigh": 1.586,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
+    "ace": 9.2,
+    "matches": 31,
     "speed": 1.133,
-    "ace": 9.234,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.015,
+    "speedCiHigh": 1.248,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 7.3,
+    "matches": 31,
     "speed": 0.782,
-    "ace": 7.263,
-    "matches": 31
+    "adjustedServerSides": 54,
+    "speedCiLow": 0.673,
+    "speedCiHigh": 0.891,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 4.6,
+    "matches": 26,
     "speed": 0.83,
-    "ace": 4.619,
-    "matches": 26
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.694,
+    "speedCiHigh": 0.978,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 8.9,
+    "matches": 26,
     "speed": 1.089,
-    "ace": 8.893,
-    "matches": 26
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.921,
+    "speedCiHigh": 1.263,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 9.8,
+    "matches": 30,
     "speed": 1.12,
-    "ace": 9.824,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 0.984,
+    "speedCiHigh": 1.27,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 5.8,
+    "matches": 31,
     "speed": 0.939,
-    "ace": 5.788,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.787,
+    "speedCiHigh": 1.103,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 6.9,
+    "matches": 29,
     "speed": 0.8,
-    "ace": 6.859,
-    "matches": 29
+    "adjustedServerSides": 56,
+    "speedCiLow": 0.663,
+    "speedCiHigh": 0.956,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 8.8,
+    "matches": 31,
     "speed": 0.896,
-    "ace": 8.812,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.776,
+    "speedCiHigh": 1.016,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 5.5,
+    "matches": 27,
     "speed": 0.841,
-    "ace": 5.548,
-    "matches": 27
+    "adjustedServerSides": 51,
+    "speedCiLow": 0.679,
+    "speedCiHigh": 1.042,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 5.8,
+    "matches": 95,
     "speed": 0.71,
-    "ace": 5.793,
-    "matches": 95
+    "adjustedServerSides": 190,
+    "speedCiLow": 0.639,
+    "speedCiHigh": 0.774,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 10.2,
+    "matches": 94,
     "speed": 1.148,
-    "ace": 10.182,
-    "matches": 94
+    "adjustedServerSides": 187,
+    "speedCiLow": 1.067,
+    "speedCiHigh": 1.222,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 2.4,
+    "matches": 27,
     "speed": 0.383,
-    "ace": 2.437,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.295,
+    "speedCiHigh": 0.47,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
-    "speed": 0.708,
     "ace": 5.4,
-    "matches": 27
+    "matches": 27,
+    "speed": 0.708,
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.61,
+    "speedCiHigh": 0.814,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 5.8,
+    "matches": 27,
     "speed": 0.777,
-    "ace": 5.839,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.646,
+    "speedCiHigh": 0.923,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.2,
+    "matches": 55,
     "speed": 0.556,
-    "ace": 4.239,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.484,
+    "speedCiHigh": 0.638,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 3.8,
+    "matches": 31,
     "speed": 0.534,
-    "ace": 3.78,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.417,
+    "speedCiHigh": 0.674,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 5.8,
+    "matches": 31,
     "speed": 0.712,
-    "ace": 5.766,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.596,
+    "speedCiHigh": 0.859,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 6.7,
+    "matches": 93,
     "speed": 0.787,
-    "ace": 6.708,
-    "matches": 93
+    "adjustedServerSides": 186,
+    "speedCiLow": 0.715,
+    "speedCiHigh": 0.86,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 4.8,
+    "matches": 94,
     "speed": 0.603,
-    "ace": 4.848,
-    "matches": 94
+    "adjustedServerSides": 180,
+    "speedCiLow": 0.541,
+    "speedCiHigh": 0.673,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 7.2,
+    "matches": 27,
     "speed": 0.739,
-    "ace": 7.197,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.657,
+    "speedCiHigh": 0.827,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 5.0,
+    "matches": 31,
     "speed": 0.559,
-    "ace": 4.993,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.473,
+    "speedCiHigh": 0.646,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 5.8,
+    "matches": 125,
     "speed": 0.693,
-    "ace": 5.771,
-    "matches": 125
+    "adjustedServerSides": 237,
+    "speedCiLow": 0.646,
+    "speedCiHigh": 0.736,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 8.9,
+    "matches": 25,
     "speed": 0.94,
-    "ace": 8.913,
-    "matches": 25
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.796,
+    "speedCiHigh": 1.103,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 12.2,
+    "matches": 27,
     "speed": 1.42,
-    "ace": 12.152,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.217,
+    "speedCiHigh": 1.658,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 10.5,
+    "matches": 31,
     "speed": 1.256,
-    "ace": 10.453,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.161,
+    "speedCiHigh": 1.359,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 11.6,
+    "matches": 31,
     "speed": 1.388,
-    "ace": 11.575,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.223,
+    "speedCiHigh": 1.562,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 1.059,
-    "ace": 8.323,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.92,
+    "speedCiHigh": 1.204,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 7.2,
+    "matches": 27,
     "speed": 0.787,
-    "ace": 7.155,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.675,
+    "speedCiHigh": 0.903,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 9.5,
+    "matches": 127,
     "speed": 1.087,
-    "ace": 9.537,
-    "matches": 127
+    "adjustedServerSides": 228,
+    "speedCiLow": 1.03,
+    "speedCiHigh": 1.147,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 5.3,
+    "matches": 27,
     "speed": 0.749,
-    "ace": 5.278,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.604,
+    "speedCiHigh": 0.883,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 8.3,
+    "matches": 27,
     "speed": 1.029,
-    "ace": 8.331,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.855,
+    "speedCiHigh": 1.187,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 7.3,
+    "matches": 27,
     "speed": 0.76,
-    "ace": 7.329,
-    "matches": 27
+    "adjustedServerSides": 32,
+    "speedCiLow": 0.622,
+    "speedCiHigh": 0.908,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
-    "speed": 0.681,
     "ace": 4.6,
-    "matches": 27
+    "matches": 27,
+    "speed": 0.681,
+    "adjustedServerSides": 39,
+    "speedCiLow": 0.557,
+    "speedCiHigh": 0.833,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 7.7,
+    "matches": 27,
     "speed": 0.812,
-    "ace": 7.723,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.68,
+    "speedCiHigh": 0.959,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 9.4,
+    "matches": 47,
     "speed": 1.112,
-    "ace": 9.441,
-    "matches": 47
+    "adjustedServerSides": 91,
+    "speedCiLow": 0.991,
+    "speedCiHigh": 1.235,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 8.8,
+    "matches": 94,
     "speed": 1.013,
-    "ace": 8.787,
-    "matches": 94
+    "adjustedServerSides": 173,
+    "speedCiLow": 0.936,
+    "speedCiHigh": 1.092,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
+    "ace": 9.8,
+    "matches": 95,
     "speed": 1.188,
-    "ace": 9.823,
-    "matches": 95
+    "adjustedServerSides": 188,
+    "speedCiLow": 1.092,
+    "speedCiHigh": 1.278,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 9.1,
+    "matches": 45,
     "speed": 1.07,
-    "ace": 9.098,
-    "matches": 45
+    "adjustedServerSides": 84,
+    "speedCiLow": 0.947,
+    "speedCiHigh": 1.2,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.6,
+    "matches": 126,
     "speed": 0.929,
-    "ace": 8.641,
-    "matches": 126
+    "adjustedServerSides": 237,
+    "speedCiLow": 0.875,
+    "speedCiHigh": 0.984,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 11.1,
+    "matches": 27,
     "speed": 1.223,
-    "ace": 11.125,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.091,
+    "speedCiHigh": 1.35,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hangzhou": {
+    "ace": 10.0,
+    "matches": 27,
     "speed": 1.097,
-    "ace": 10.017,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.929,
+    "speedCiHigh": 1.307,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "lavercup": {
+    "ace": 4.9,
+    "matches": 9,
+    "provisionalSpeed": 0.55,
+    "provisionalServerSides": 18,
+    "provisionalMatches": 9,
+    "provisionalCiLow": 0.364,
+    "provisionalCiHigh": 0.749,
+    "provisionalCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 9.4,
+    "matches": 31,
     "speed": 1.172,
-    "ace": 9.386,
-    "matches": 31
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.043,
+    "speedCiHigh": 1.3,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 7.6,
+    "matches": 31,
     "speed": 1.057,
-    "ace": 7.604,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.896,
+    "speedCiHigh": 1.234,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 9.5,
+    "matches": 95,
     "speed": 1.104,
-    "ace": 9.539,
-    "matches": 95
+    "adjustedServerSides": 187,
+    "speedCiLow": 1.028,
+    "speedCiHigh": 1.183,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "almaty": {
+    "ace": 9.0,
+    "matches": 27,
     "speed": 1.209,
-    "ace": 9.048,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 1.057,
+    "speedCiHigh": 1.369,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "brussels": {
+    "ace": 11.9,
+    "matches": 27,
     "speed": 1.372,
-    "ace": 11.931,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.227,
+    "speedCiHigh": 1.53,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 12.1,
+    "matches": 30,
     "speed": 1.479,
-    "ace": 12.138,
-    "matches": 30
+    "adjustedServerSides": 56,
+    "speedCiLow": 1.272,
+    "speedCiHigh": 1.696,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 9.8,
+    "matches": 30,
     "speed": 1.235,
-    "ace": 9.84,
-    "matches": 30
+    "adjustedServerSides": 58,
+    "speedCiLow": 1.107,
+    "speedCiHigh": 1.361,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
+    "ace": 8.4,
+    "matches": 54,
     "speed": 0.987,
-    "ace": 8.417,
-    "matches": 54
+    "adjustedServerSides": 108,
+    "speedCiLow": 0.892,
+    "speedCiHigh": 1.086,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "athens": {
+    "ace": 11.9,
+    "matches": 27,
     "speed": 1.49,
-    "ace": 11.944,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 1.354,
+    "speedCiHigh": 1.655,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
+    "ace": 9.4,
+    "matches": 27,
     "speed": 1.272,
-    "ace": 9.376,
-    "matches": 27
+    "adjustedServerSides": 38,
+    "speedCiLow": 1.15,
+    "speedCiHigh": 1.389,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
+    "ace": 9.8,
+    "matches": 15,
     "speed": 1.441,
-    "ace": 9.837,
-    "matches": 15
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.284,
+    "speedCiHigh": 1.615,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2026": {
    "unitedcup": {
+    "ace": 11.0,
+    "matches": 25,
     "speed": 1.082,
-    "ace": 10.965,
-    "matches": 25
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.969,
+    "speedCiHigh": 1.224,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "brisbane": {
+    "ace": 13.3,
+    "matches": 31,
     "speed": 1.21,
-    "ace": 13.333,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 1.085,
+    "speedCiHigh": 1.327,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hongkong": {
+    "ace": 9.1,
+    "matches": 27,
     "speed": 1.078,
-    "ace": 9.071,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.898,
+    "speedCiHigh": 1.294,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
+    "ace": 9.5,
+    "matches": 27,
     "speed": 1.095,
-    "ace": 9.477,
-    "matches": 27
+    "adjustedServerSides": 52,
+    "speedCiLow": 0.959,
+    "speedCiHigh": 1.222,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "adelaide": {
+    "ace": 9.7,
+    "matches": 26,
     "speed": 1.119,
-    "ace": 9.682,
-    "matches": 26
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.924,
+    "speedCiHigh": 1.313,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
+    "ace": 9.5,
+    "matches": 126,
     "speed": 1.178,
-    "ace": 9.535,
-    "matches": 126
+    "adjustedServerSides": 240,
+    "speedCiLow": 1.1,
+    "speedCiHigh": 1.268,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
+    "ace": 14.2,
+    "matches": 27,
     "speed": 1.6,
-    "ace": 14.196,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 1.401,
+    "speedCiHigh": 1.802,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
+    "ace": 8.6,
+    "matches": 31,
     "speed": 0.93,
-    "ace": 8.592,
-    "matches": 31
+    "adjustedServerSides": 55,
+    "speedCiLow": 0.801,
+    "speedCiHigh": 1.072,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
+    "ace": 13.7,
+    "matches": 31,
     "speed": 1.521,
-    "ace": 13.678,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.356,
+    "speedCiHigh": 1.708,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
+    "ace": 4.1,
+    "matches": 27,
     "speed": 0.651,
-    "ace": 4.133,
-    "matches": 27
+    "adjustedServerSides": 45,
+    "speedCiLow": 0.528,
+    "speedCiHigh": 0.802,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
+    "ace": 7.3,
+    "matches": 31,
     "speed": 0.858,
-    "ace": 7.339,
-    "matches": 31
+    "adjustedServerSides": 55,
+    "speedCiLow": 0.75,
+    "speedCiHigh": 0.968,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
+    "ace": 11.6,
+    "matches": 27,
     "speed": 1.247,
-    "ace": 11.59,
-    "matches": 27
+    "adjustedServerSides": 54,
+    "speedCiLow": 1.11,
+    "speedCiHigh": 1.398,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rio": {
+    "ace": 6.4,
+    "matches": 31,
     "speed": 0.999,
-    "ace": 6.377,
-    "matches": 31
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.853,
+    "speedCiHigh": 1.141,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
+    "ace": 13.2,
+    "matches": 30,
     "speed": 1.298,
-    "ace": 13.188,
-    "matches": 30
+    "adjustedServerSides": 57,
+    "speedCiLow": 1.161,
+    "speedCiHigh": 1.443,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
+    "ace": 5.3,
+    "matches": 27,
     "speed": 0.834,
-    "ace": 5.322,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.687,
+    "speedCiHigh": 0.974,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
+    "ace": 10.1,
+    "matches": 31,
     "speed": 1.13,
-    "ace": 10.075,
-    "matches": 31
+    "adjustedServerSides": 60,
+    "speedCiLow": 1.002,
+    "speedCiHigh": 1.266,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
+    "ace": 9.0,
+    "matches": 94,
     "speed": 1.088,
-    "ace": 8.993,
-    "matches": 94
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.995,
+    "speedCiHigh": 1.194,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
+    "ace": 10.6,
+    "matches": 95,
     "speed": 1.16,
-    "ace": 10.567,
-    "matches": 95
+    "adjustedServerSides": 185,
+    "speedCiLow": 1.091,
+    "speedCiHigh": 1.23,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
+    "ace": 6.4,
+    "matches": 26,
     "speed": 1.049,
-    "ace": 6.444,
-    "matches": 26
+    "adjustedServerSides": 41,
+    "speedCiLow": 0.855,
+    "speedCiHigh": 1.253,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
+    "ace": 6.9,
+    "matches": 27,
     "speed": 0.673,
-    "ace": 6.93,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 0.526,
+    "speedCiHigh": 0.835,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
+    "ace": 2.9,
+    "matches": 27,
     "speed": 0.473,
-    "ace": 2.896,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.313,
+    "speedCiHigh": 0.645,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
+    "ace": 4.6,
+    "matches": 55,
     "speed": 0.532,
-    "ace": 4.585,
-    "matches": 55
+    "adjustedServerSides": 110,
+    "speedCiLow": 0.47,
+    "speedCiHigh": 0.592,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
+    "ace": 5.3,
+    "matches": 31,
     "speed": 0.692,
-    "ace": 5.346,
-    "matches": 31
+    "adjustedServerSides": 53,
+    "speedCiLow": 0.569,
+    "speedCiHigh": 0.815,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
+    "ace": 4.3,
+    "matches": 30,
     "speed": 0.52,
-    "ace": 4.313,
-    "matches": 30
+    "adjustedServerSides": 60,
+    "speedCiLow": 0.42,
+    "speedCiHigh": 0.612,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
+    "ace": 7.2,
+    "matches": 94,
     "speed": 0.927,
-    "ace": 7.225,
-    "matches": 94
+    "adjustedServerSides": 185,
+    "speedCiLow": 0.844,
+    "speedCiHigh": 1.015,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
+    "ace": 5.4,
+    "matches": 94,
     "speed": 0.647,
-    "ace": 5.421,
-    "matches": 94
+    "adjustedServerSides": 183,
+    "speedCiLow": 0.586,
+    "speedCiHigh": 0.712,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
+    "ace": 6.1,
+    "matches": 27,
     "speed": 0.649,
-    "ace": 6.108,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 0.526,
+    "speedCiHigh": 0.788,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
+    "ace": 4.2,
+    "matches": 31,
     "speed": 0.524,
-    "ace": 4.211,
-    "matches": 31
+    "adjustedServerSides": 59,
+    "speedCiLow": 0.416,
+    "speedCiHigh": 0.648,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
+    "ace": 6.9,
+    "matches": 124,
     "speed": 0.874,
-    "ace": 6.869,
-    "matches": 124
+    "adjustedServerSides": 243,
+    "speedCiLow": 0.815,
+    "speedCiHigh": 0.937,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
+    "ace": 14.0,
+    "matches": 27,
     "speed": 1.323,
-    "ace": 13.985,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 1.201,
+    "speedCiHigh": 1.45,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
+    "ace": 8.8,
+    "matches": 27,
     "speed": 0.965,
-    "ace": 8.751,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.852,
+    "speedCiHigh": 1.086,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
+    "ace": 12.0,
+    "matches": 31,
     "speed": 1.184,
-    "ace": 12.028,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 1.063,
+    "speedCiHigh": 1.312,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
+    "ace": 7.8,
+    "matches": 31,
     "speed": 1.013,
-    "ace": 7.768,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.869,
+    "speedCiHigh": 1.154,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
+    "ace": 9.1,
+    "matches": 27,
     "speed": 1.164,
-    "ace": 9.133,
-    "matches": 27
+    "adjustedServerSides": 46,
+    "speedCiLow": 1.014,
+    "speedCiHigh": 1.318,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
+    "ace": 8.7,
+    "matches": 27,
     "speed": 1.007,
-    "ace": 8.675,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 0.842,
+    "speedCiHigh": 1.168,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
+    "ace": 9.7,
+    "matches": 127,
     "speed": 1.082,
-    "ace": 9.71,
-    "matches": 127
+    "adjustedServerSides": 243,
+    "speedCiLow": 1.024,
+    "speedCiHigh": 1.144,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
+    "ace": 8.7,
+    "matches": 27,
     "speed": 0.97,
-    "ace": 8.692,
-    "matches": 27
+    "adjustedServerSides": 44,
+    "speedCiLow": 0.811,
+    "speedCiHigh": 1.146,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
+    "ace": 6.7,
+    "matches": 26,
     "speed": 0.954,
-    "ace": 6.663,
-    "matches": 26
+    "adjustedServerSides": 39,
+    "speedCiLow": 0.713,
+    "speedCiHigh": 1.283,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
+    "ace": 4.4,
+    "matches": 27,
     "speed": 0.729,
-    "ace": 4.396,
-    "matches": 27
+    "adjustedServerSides": 40,
+    "speedCiLow": 0.589,
+    "speedCiHigh": 0.892,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
+    "ace": 7.4,
+    "matches": 27,
     "speed": 0.778,
-    "ace": 7.411,
-    "matches": 27
+    "adjustedServerSides": 50,
+    "speedCiLow": 0.671,
+    "speedCiHigh": 0.899,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
+    "ace": 4.4,
+    "matches": 27,
     "speed": 0.574,
-    "ace": 4.435,
-    "matches": 27
+    "adjustedServerSides": 37,
+    "speedCiLow": 0.464,
+    "speedCiHigh": 0.693,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
+    "ace": 9.4,
+    "matches": 31,
     "speed": 1.184,
-    "ace": 9.435,
-    "matches": 31
+    "adjustedServerSides": 55,
+    "speedCiLow": 1.032,
+    "speedCiHigh": 1.364,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
+    "ace": 5.6,
+    "matches": 27,
     "speed": 0.712,
-    "ace": 5.57,
-    "matches": 27
+    "adjustedServerSides": 39,
+    "speedCiLow": 0.539,
+    "speedCiHigh": 0.886,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
+    "ace": 7.0,
+    "matches": 94,
     "speed": 0.805,
-    "ace": 7.024,
-    "matches": 94
+    "adjustedServerSides": 184,
+    "speedCiLow": 0.742,
+    "speedCiHigh": 0.879,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
-    "speed": 1.123,
     "ace": 9.5,
-    "matches": 94
+    "matches": 94,
+    "speed": 1.123,
+    "adjustedServerSides": 184,
+    "speedCiLow": 1.04,
+    "speedCiHigh": 1.208,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
+    "ace": 7.9,
+    "matches": 47,
     "speed": 0.929,
-    "ace": 7.852,
-    "matches": 47
+    "adjustedServerSides": 78,
+    "speedCiLow": 0.816,
+    "speedCiHigh": 1.049,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
+    "ace": 8.4,
+    "matches": 127,
     "speed": 0.976,
-    "ace": 8.372,
-    "matches": 127
+    "adjustedServerSides": 243,
+    "speedCiLow": 0.918,
+    "speedCiHigh": 1.036,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
+    "ace": 12.1,
+    "matches": 27,
     "speed": 1.403,
-    "ace": 12.055,
-    "matches": 27
+    "adjustedServerSides": 49,
+    "speedCiLow": 1.228,
+    "speedCiHigh": 1.571,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hangzhou": {
+    "ace": 10.3,
+    "matches": 27,
     "speed": 1.291,
-    "ace": 10.262,
-    "matches": 27
+    "adjustedServerSides": 47,
+    "speedCiLow": 1.118,
+    "speedCiHigh": 1.501,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "lavercup": {
+    "ace": 3.9,
+    "matches": 7,
+    "provisionalSpeed": 0.472,
+    "provisionalServerSides": 14,
+    "provisionalMatches": 7,
+    "provisionalCiLow": 0.274,
+    "provisionalCiHigh": 0.708,
+    "provisionalCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
+    "ace": 7.5,
+    "matches": 31,
     "speed": 0.88,
-    "ace": 7.531,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.734,
+    "speedCiHigh": 1.037,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
+    "ace": 9.5,
+    "matches": 31,
     "speed": 1.039,
-    "ace": 9.496,
-    "matches": 31
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.924,
+    "speedCiHigh": 1.146,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
+    "ace": 10.4,
+    "matches": 94,
     "speed": 1.261,
-    "ace": 10.379,
-    "matches": 94
+    "adjustedServerSides": 177,
+    "speedCiLow": 1.179,
+    "speedCiHigh": 1.35,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "almaty": {
+    "ace": 11.2,
+    "matches": 26,
     "speed": 1.335,
-    "ace": 11.165,
-    "matches": 26
+    "adjustedServerSides": 46,
+    "speedCiLow": 1.154,
+    "speedCiHigh": 1.537,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "brussels": {
+    "ace": 10.6,
+    "matches": 26,
     "speed": 1.199,
-    "ace": 10.628,
-    "matches": 26
+    "adjustedServerSides": 39,
+    "speedCiLow": 1.012,
+    "speedCiHigh": 1.417,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
+    "ace": 9.4,
+    "matches": 27,
     "speed": 1.161,
-    "ace": 9.405,
-    "matches": 27
+    "adjustedServerSides": 48,
+    "speedCiLow": 0.988,
+    "speedCiHigh": 1.341,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
+    "ace": 7.5,
+    "matches": 31,
     "speed": 1.049,
-    "ace": 7.497,
-    "matches": 31
+    "adjustedServerSides": 61,
+    "speedCiLow": 0.887,
+    "speedCiHigh": 1.214,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
+    "ace": 13.4,
+    "matches": 31,
     "speed": 1.273,
-    "ace": 13.442,
-    "matches": 31
+    "adjustedServerSides": 52,
+    "speedCiLow": 1.152,
+    "speedCiHigh": 1.391,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   }
  }
