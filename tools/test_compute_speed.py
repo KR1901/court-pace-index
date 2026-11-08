@@ -60,7 +60,7 @@ def profile(
             clay_matches + hard_grass_matches if pooled_serve_matches is None else pooled_serve_matches
         ),
         "pooled_return_aces": (
-            concede_rate * concede_service_points
+            (concede_rate or 0.0) * concede_service_points
             if pooled_return_aces is None else pooled_return_aces
         ),
         "pooled_return_points": (
@@ -208,7 +208,7 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertIsNotNone(live["p2"]["serve_rate"])
         self.assertEqual("career-history-surface-shrunk", live["p2"]["serve_rate_source"])
         self.assertGreaterEqual(live["p2"]["serve_rate_sample_matches"], 7)
-        self.assertEqual(2025, live["p2"]["serve_rate_season"])
+        self.assertEqual(2026, live["p2"]["serve_rate_season"])
 
         self.assertIsNotNone(live["p3"]["serve_rate"])
         self.assertGreaterEqual(live["p3"]["serve_rate"], 0.0)
