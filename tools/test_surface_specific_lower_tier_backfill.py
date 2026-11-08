@@ -183,6 +183,43 @@ class SurfaceMetricTests(unittest.TestCase):
         self.assertAlmostEqual(0.375, metrics["binomial_log_loss_per_point"])
         self.assertAlmostEqual(0.0075, metrics["point_weighted_mae"])
 
+    def test_paired_surface_bootstrap_keeps_surface_clusters_separate(self):
+        def populated(surface, point_abs_error):
+            value = audit.empty_cluster(surface)
+            value.update({
+                "sides": 2,
+                "points": 200.0,
+                "aces": 14.0,
+                "predicted_aces": 15.0,
+                "point_abs_error": point_abs_error,
+                "side_abs_error": 0.02,
+                "binomial_log_loss": 80.0,
+                "server_profile_sides": 2,
+                "returner_profile_sides": 2,
+                "both_profile_sides": 2,
+            })
+            return value
+
+        baseline = {}
+        candidate = {}
+        for index in range(4):
+            baseline[f"clay-{index}"] = populated("clay", 2.0)
+            candidate[f"clay-{index}"] = populated("clay", 1.0)
+            baseline[f"hard-{index}"] = populated("hard", 2.0)
+            candidate[f"hard-{index}"] = populated("hard", 3.0)
+
+        result = audit.paired_surface_bootstrap(
+            baseline, candidate, iterations=100, seed=17
+        )
+        self.assertEqual(4, result["clay"]["events"])
+        self.assertEqual(4, result["hard"]["events"])
+        self.assertEqual(100, result["clay"]["successful"])
+        self.assertEqual(100, result["hard"]["successful"])
+        clay_mae = result["clay"]["intervals"]["point_weighted_mae"]
+        hard_mae = result["hard"]["intervals"]["point_weighted_mae"]
+        self.assertLess(clay_mae["high"], 0.0)
+        self.assertGreater(hard_mae["low"], 0.0)
+
     def test_paired_event_bootstrap_returns_zero_for_identical_arms(self):
         def populated(surface):
             value = audit.empty_cluster(surface)
