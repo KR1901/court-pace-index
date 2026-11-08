@@ -765,15 +765,17 @@ def within_group_centered_pairs(rows):
     return centered
 
 
-def cluster_bootstrap_correlation(rows, iterations=2000, seed=73191):
+def cluster_bootstrap_correlation(rows, iterations=2000, seed=73191,
+                                  center_within_event=False):
     """Resample complete event IDs, retaining every matched season per event.
 
-    This is deliberately an event-cluster bootstrap: repeated seasons for one event
-    remain together and do not masquerade as independent physical sites.
+    When center_within_event is true, event means are removed within each bootstrap
+    sample before the correlation is calculated. This keeps the resampling unit at
+    tournament ID rather than treating repeated event-seasons as independent sites.
     """
     by_event = defaultdict(list)
     for row in rows:
-        by_event[row[1]].append((row[3], row[4]))
+        by_event[row[1]].append(row)
     event_ids = sorted(by_event)
     if len(event_ids) < 2:
         return {
@@ -790,11 +792,16 @@ def cluster_bootstrap_correlation(rows, iterations=2000, seed=73191):
         sampled_events = [
             rng.choice(event_ids) for _ in range(len(event_ids))
         ]
-        sample = [
-            pair
+        sample_rows = [
+            row
             for event_id in sampled_events
-            for pair in by_event[event_id]
+            for row in by_event[event_id]
         ]
+        sample = (
+            within_group_centered_pairs(sample_rows)
+            if center_within_event
+            else [(row[3], row[4]) for row in sample_rows]
+        )
         summary = correlation_summary(sample)
         pearson = summary["pearson"]
         spearman = summary["spearman"]
@@ -814,6 +821,10 @@ def cluster_bootstrap_correlation(rows, iterations=2000, seed=73191):
         "successful_resamples": len(pearson_draws),
         "seed": seed,
         "resampling_unit": "tournament ID; all matched seasons for an event stay together",
+        "estimand": (
+            "within-event-centred association" if center_within_event
+            else "raw event-season association"
+        ),
         "pearson_95_interval": interval(pearson_draws),
         "spearman_95_interval": interval(spearman_draws),
         "caveat": (
@@ -907,6 +918,14 @@ def physical_cpi_diagnostics(dataset_path, bootstrap_iterations=2000,
         clay_pairs,
         iterations=bootstrap_iterations,
         seed=bootstrap_seed,
+    )
+    result["clay_within_event_centered_cluster_bootstrap"] = (
+        cluster_bootstrap_correlation(
+            clay_pairs,
+            iterations=bootstrap_iterations,
+            seed=bootstrap_seed,
+            center_within_event=True,
+        )
     )
     result["caveat"] = (
         "CPI overlaps cover a small, non-random set of show-court events; "
