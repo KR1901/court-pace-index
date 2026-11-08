@@ -163,6 +163,8 @@ The current 106 computed-speed/CPI overlaps give Pearson 0.660 and Spearman 0.69
 
 A new unpaired CPI-only record (Paris 2026) exposed a separate app analytics issue: divergence percentiles were previously calculated against each metric's full field, even when some events lacked the other metric. That meant a CPI-only event could move the CPI percentile of every paired event without itself appearing in the divergence list. The app now calculates both percentiles on the **same event-season intersection**. A regression test proves that adding a CPI-only event cannot change existing paired-event divergence ranks. Single-metric rankings still use the full field for that metric.
 
+The negative clay association remains after subtracting each tournament's own multi-season mean: within-event-centred Pearson is −0.400 and Spearman is −0.348. Madrid (n=8; r=−0.341), Rome (n=7; r=−0.546) and Monte Carlo (n=8; r=−0.244) each show negative descriptive within-event correlations; Roland Garros has one observation. These are small repeated-year samples, not independent court-level tests.
+
 The refreshed CPI source and updated paired-cohort code do not modify the expected-aces formula, player profiles or lower-tier production policy. The full physical-source comparison and limitations are documented in the [physical validation protocol](PHYSICAL_VALIDATION.md).
 
 ## Other findings and remaining validation
