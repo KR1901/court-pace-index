@@ -168,7 +168,7 @@ The 2026 source-required TML sweep is separately reconciled:
 | Sides using at least one neutral tour-average prior | 84 |
 | Events with at least one neutral-prior side | 25 |
 
-The corrected 2026 audit finds 84 affected sides (1.667% of 5,038), with 43 server-role uses and 43 returner-role uses; 30? (Need exact per-year both-role sides are 2) This represents 72 unique missing player-role assignments across 36 distinct fallback player IDs and 25 events. The earlier 70 count omitted repeated match-side uses. Neutral priors remain explicit and are not represented as recovered personal rates.
+The corrected 2026 audit finds 84 affected sides (1.667% of 5,038), with 43 server-role uses and 43 returner-role uses; two sides required neutral priors for both roles This represents 72 unique missing player-role assignments across 36 distinct fallback player IDs and 25 events. The earlier 70 count omitted repeated match-side uses. Neutral priors remain explicit and are not represented as recovered personal rates.
 
 The Montpellier 2026 discrepancy was resolved at the profile-coverage stage: 54/54 statistically complete sides are now rateable, with no neutral-prior assignments in that event. The source ace rate (14.1964%) remains different from Tennis Abstract's published 19.8%; the profile expansion does not resolve the TA match-population/stat-definition discrepancy. That requires authorized TA match-level data or independently documented evidence.
 
