@@ -43,7 +43,7 @@ jobs:
       - name: Run leave-one-tournament-out, shrinkage, weighting and physical cross-check audit
         run: |
           set -euo pipefail
-          python3 tools/deep_calculation_audit.py --seasons $(seq 1991 "$(date +%Y)") --boot 2000 | tee deep-calculation-audit.txt
+          python3 tools/deep_calculation_audit.py --seasons $(seq 1991 "$(date +%Y)") --boot 2000 --detail marrakech,lavercup,montpellier,paris | tee deep-calculation-audit.txt
           cat deep-calculation-audit.txt >> "$GITHUB_STEP_SUMMARY"
       - name: Upload full audit report
         uses: actions/upload-artifact@v4
