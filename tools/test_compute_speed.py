@@ -195,6 +195,7 @@ class BuildLiveProfilesTests(unittest.TestCase):
         def fake_player_rates(rows):
             return prior if rows[0]["year"] == 2025 else {}
 
+        compute_speed._PROFILE_YEAR_CACHE.clear()
         with patch.object(compute_speed, "load", side_effect=fake_load), \
              patch.object(compute_speed, "valid_rows", side_effect=lambda rows: rows), \
              patch.object(compute_speed, "player_rates", side_effect=fake_player_rates):
@@ -204,30 +205,31 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual("current-season-qualified", live["p1"]["serve_rate_source"])
         self.assertEqual(2026, live["p1"]["serve_rate_season"])
 
-        self.assertEqual(0.095, live["p2"]["serve_rate"])
-        self.assertEqual("prior-season-qualified", live["p2"]["serve_rate_source"])
+        self.assertIsNotNone(live["p2"]["serve_rate"])
+        self.assertEqual("career-history-surface-shrunk", live["p2"]["serve_rate_source"])
+        self.assertGreaterEqual(live["p2"]["serve_rate_sample_matches"], 7)
         self.assertEqual(2025, live["p2"]["serve_rate_season"])
 
         self.assertIsNotNone(live["p3"]["serve_rate"])
         self.assertGreaterEqual(live["p3"]["serve_rate"], 0.0)
         self.assertLessEqual(live["p3"]["serve_rate"], 1.0)
-        self.assertEqual("current-season-shrunk", live["p3"]["serve_rate_source"])
+        self.assertEqual("career-history-pooled-shrunk", live["p3"]["serve_rate_source"])
         self.assertEqual(2026, live["p3"]["serve_rate_season"])
         self.assertEqual(150.0, live["p3"]["serve_rate_prior_points"])
 
-        self.assertEqual(0.10, live["p5"]["serve_rate"])
-        self.assertEqual("prior-season-qualified", live["p5"]["serve_rate_source"])
+        self.assertIsNotNone(live["p5"]["serve_rate"])
+        self.assertEqual("career-history-surface-shrunk", live["p5"]["serve_rate_source"])
         self.assertEqual(2025, live["p5"]["serve_rate_season"])
 
         self.assertIsNotNone(live["p6"]["serve_rate"])
-        self.assertEqual("prior-season-shrunk", live["p6"]["serve_rate_source"])
+        self.assertEqual("career-history-pooled-shrunk", live["p6"]["serve_rate_source"])
         self.assertEqual(2025, live["p6"]["serve_rate_season"])
 
         # Never manufacture a rate if the archive contains no serve-side sample at all.
         self.assertIsNone(live["p4"]["serve_rate"])
         self.assertIsNone(live["p4"]["serve_rate_source"])
 
-    def test_uses_only_the_ten_most_recent_prior_seasons(self):
+    def test_backfills_all_prior_archive_seasons_since_1991(self):
         current = {
             "p1": profile("p1", "Current", serve_rate=None, clay_aces=1, clay_points=20, clay_matches=1),
         }
@@ -240,13 +242,102 @@ class BuildLiveProfilesTests(unittest.TestCase):
         def fake_player_rates(rows):
             return {}
 
+        compute_speed._PROFILE_YEAR_CACHE.clear()
         with patch.object(compute_speed, "load", side_effect=fake_load), \
              patch.object(compute_speed, "valid_rows", side_effect=lambda rows: rows), \
              patch.object(compute_speed, "player_rates", side_effect=fake_player_rates):
             compute_speed.build_live_profiles(2026, current)
 
-        self.assertEqual(list(range(2025, 2015, -1)), visited)
+        self.assertEqual(list(range(2025, 1990, -1)), visited)
 
+
+    def test_crosswalks_current_alphanumeric_atp_id_to_historical_numeric_id_by_unique_name(self):
+        current = {
+            "TFRI": profile("TFRI", "Taylor Fritz", serve_rate=None, concede_rate=None),
+        }
+        prior = {
+            "126203": profile(
+                "126203", "Taylor Fritz", serve_rate=None, concede_rate=None,
+                clay_aces=10, clay_points=100, clay_matches=4, serve_matches=4,
+                pooled_serve_aces=10, pooled_serve_points=100, pooled_serve_matches=4,
+                pooled_return_aces=8, pooled_return_points=100, pooled_return_matches=4,
+            ),
+        }
+
+        def fake_load(year):
+            return [{"year": year}]
+
+        def fake_player_rates(rows):
+            return prior if rows[0]["year"] == 2025 else {}
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "load", side_effect=fake_load), \
+             patch.object(compute_speed, "valid_rows", side_effect=lambda rows: rows), \
+             patch.object(compute_speed, "player_rates", side_effect=fake_player_rates):
+            live = compute_speed.build_live_profiles(2026, current)
+
+        self.assertIn("TFRI", live)
+        self.assertNotIn("126203", live)
+        self.assertIsNotNone(live["TFRI"]["serve_rate"])
+        self.assertEqual("career-history-surface-shrunk", live["TFRI"]["serve_rate_source"])
+        self.assertEqual("career-history-pooled-shrunk", live["TFRI"]["concede_rate_source"])
+
+    def test_ambiguous_historical_full_name_is_not_crosswalked(self):
+        current = {
+            "TFRI": profile("TFRI", "Taylor Fritz", serve_rate=None, concede_rate=None),
+        }
+        duplicate = {
+            "126203": profile(
+                "126203", "Taylor Fritz", clay_aces=10, clay_points=100, clay_matches=4,
+                serve_matches=4, pooled_serve_aces=10, pooled_serve_points=100,
+                pooled_serve_matches=4,
+            ),
+            "999999": profile(
+                "999999", "Taylor Fritz", clay_aces=15, clay_points=100, clay_matches=4,
+                serve_matches=4, pooled_serve_aces=15, pooled_serve_points=100,
+                pooled_serve_matches=4,
+            ),
+        }
+
+        def fake_load(year):
+            return [{"year": year}]
+
+        def fake_player_rates(rows):
+            return duplicate if rows[0]["year"] == 2025 else {}
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "load", side_effect=fake_load), \
+             patch.object(compute_speed, "valid_rows", side_effect=lambda rows: rows), \
+             patch.object(compute_speed, "player_rates", side_effect=fake_player_rates):
+            live = compute_speed.build_live_profiles(2026, current)
+
+        self.assertIsNone(live["TFRI"]["serve_rate"])
+
+    def test_unseen_event_players_receive_transparent_tour_average_prior(self):
+        rows = [{
+            "winner_id": "TFRI",
+            "winner_name": "Taylor Fritz",
+            "loser_id": "NEW1",
+            "loser_name": "Unknown Debutant",
+            "w_svpt": 80,
+            "l_svpt": 82,
+        }]
+        profiles = {
+            "126203": {
+                "id": "126203", "name": "Taylor Fritz",
+                "serve_rate": 0.13, "concede_rate": 0.08,
+                "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate_source": "career-history-pooled-shrunk",
+            },
+        }
+        coverage = compute_speed.ensure_event_profiles(rows, profiles, 0.08)
+
+        self.assertEqual(0.13, profiles["TFRI"]["serve_rate"])
+        self.assertEqual("career-history-surface-shrunk", profiles["TFRI"]["serve_rate_source"])
+        self.assertEqual(0.08, profiles["NEW1"]["concede_rate"])
+        self.assertEqual("tour-average-prior-only", profiles["NEW1"]["concede_rate_source"])
+        self.assertEqual(1, coverage["tour_prior_returner_profiles"])
+        self.assertEqual(1, coverage["tour_prior_sides"])
 
     def test_tour_average_rate_is_computed_from_all_usable_service_points(self):
         rows = [
@@ -597,7 +688,9 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
                 })
 
         real_player_rates = compute_speed.player_rates
-        with patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+             patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
             ratings = compute_speed.season_ratings(2026, rows)
 
         self.assertEqual({"paris", "rome"}, set(ratings))
