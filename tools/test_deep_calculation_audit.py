@@ -361,5 +361,53 @@ class UncertaintyTests(unittest.TestCase):
         self.assertIn("weight_050_shrink_150", configs)
 
 
+    def test_profile_and_match_bootstrap_refits_profiles_and_is_reproducible(self):
+        rows = (
+            [match("Paris Masters", 8, 8, surface="Hard") for _ in range(10)]
+            + [match("Rome Masters", 8, 8, surface="Hard") for _ in range(10)]
+        )
+        (_usable, event_rows, surfaces, _players, _event_players,
+         _global_stats, _event_stats) = audit.aggregate_season(rows)
+        target = audit.event_id("Paris Masters")
+        config = audit.config_grid()["shrink_150_min3"]
+        one = audit.profile_and_match_bootstrap_interval(
+            target, event_rows[target], surfaces[target], event_rows,
+            config, normaliser=1.0, iterations=12, seed=91,
+        )
+        two = audit.profile_and_match_bootstrap_interval(
+            target, event_rows[target], surfaces[target], event_rows,
+            config, normaliser=1.0, iterations=12, seed=91,
+        )
+        self.assertEqual(one, two)
+        self.assertEqual(12, one["iterations"])
+        self.assertEqual(12, one["successful"])
+        self.assertAlmostEqual(1.0, one["low"], places=10)
+        self.assertAlmostEqual(1.0, one["high"], places=10)
+
+    def test_event_profiles_include_target_players_without_training_history(self):
+        rows = [match("Rome Masters", 8, 8, surface="Hard") for _ in range(10)]
+        (_usable, _event_rows, surfaces, players, event_players,
+         global_stats, event_stats) = audit.aggregate_season(rows)
+        target = audit.event_id("Paris Masters")
+        profiles, _ = audit.build_event_profiles(
+            target, "Hard", players, event_players, global_stats, event_stats,
+            audit.config_grid()["shrink_150_min3"],
+            target_player_ids={"target-one", "target-two"},
+        )
+        self.assertIn("target-one", profiles)
+        self.assertIn("target-two", profiles)
+        self.assertIsNone(profiles["target-one"]["serve_rate"])
+        self.assertIsNone(profiles["target-two"]["concede_rate"])
+
+    def test_unmapped_valid_match_rows_still_train_season_priors(self):
+        row = match("Unknown Tour Event", 8, 7, surface="Hard")
+        row["tourney_name"] = ""
+        (_usable, event_rows, _surfaces, _players, _event_players,
+         global_stats, _event_stats) = audit.aggregate_season([row])
+        self.assertEqual({}, dict(event_rows))
+        self.assertEqual(15.0, global_stats["serve"]["pooled"]["aces"])
+        self.assertEqual(200.0, global_stats["serve"]["pooled"]["points"])
+
+
 if __name__ == "__main__":
     unittest.main()

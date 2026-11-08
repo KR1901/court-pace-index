@@ -118,21 +118,19 @@ fun MethodScreen(data: PaceData) {
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "Server and returner tendencies use qualified surface-specific rates: clay and " +
-                    "hard/grass, with clay weighted one third and hard/grass two thirds when both qualify " +
-                    "(at least three matches in each surface bucket). If only one surface qualifies, that " +
-                    "rate is used. A returner without a qualified surface profile falls back to their pooled " +
-                    "ace-concession rate. Player profiles come from the baseline's profile season or the " +
-                    "most recent eligible profile in the ten seasons before it. Where a server has no " +
-                    "qualified profile, their available surface-specific serve sample is shrunk toward the " +
-                    "season surface average using a 300-service-point prior. Expected-ace odds are the " +
-                    "server's serve odds multiplied by the returner's concession odds and divided by the " +
-                    "season tour-average ace odds, then multiplied by service points. Positive expected-ace " +
-                    "counts below 0.5 are floored at 0.5 rather than dropping that side. The expected-aces " +
-                    "equation is shared by historical and live ratings, but profile policies are not identical: " +
-                    "historical ratings use same-season qualified profiles, while live ratings can backfill " +
-                    "from recent seasons or use explicitly tagged low-sample shrinkage. Source season and " +
-                    "sample provenance are retained in the live baseline.",
+                text = "Historical event ratings are calculated leave-one-tournament-out: every match from " +
+                    "the event being rated is excluded from its player profiles and tour-average anchor. " +
+                    "Qualified server and returner rates use at least three matches per surface bucket and " +
+                    "are shrunk toward the season's surface-wide rate with a 150-service-point prior before " +
+                    "the neutral blend: clay one third, hard/grass two thirds. If only one surface qualifies, " +
+                    "that rate is used. A returner without a qualified surface profile uses a pooled " +
+                    "ace-concession rate shrunk toward the tour-wide average with the same prior. Positive " +
+                    "expected-ace counts below 0.5 are floored at 0.5. The event score is the equal-weight " +
+                    "mean of actual/expected ace ratios, then season-normalised to 1.00. Live ratings use " +
+                    "the same calibrated odds equation but a season-wide player baseline: current and " +
+                    "recent-season qualified profiles are preferred, with a 150-point prior; an unqualified " +
+                    "server's available observations can be shrunk with a 300-point low-sample prior. Live " +
+                    "profiles retain source season, role, and sample provenance.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )

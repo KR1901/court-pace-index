@@ -139,9 +139,20 @@ returns the live value first, then the calibrated calculation, then a published-
 - The calibrated archive calculation covers event seasons from 2012 through 2026 where
   sufficient match statistics are available. Tennis Abstract is a rolling 52-week reference
   and remains the labelled fallback for event-seasons without an archive calculation.
-- Current-season cached TML data is only accepted when its fetch manifest is at most seven days old.
-- Conflicting same-season player records with the same normalized display name are excluded from
-  the name-keyed live baseline rather than arbitrarily assigning one player's rates to another.
+- Current-season TML data is refreshed from the official CSV on each pipeline run. A cached
+  snapshot is used only after a source outage, only when its SHA-256/byte-count manifest matches,
+  and only when it is at most seven days old. The CSV's latest completed-match date is recorded;
+  the separate live event feed is not treated as completed-match archive data.
+- Historical ratings are leave-one-tournament-out: the target event is removed from server and
+  returner profiles and the tour-average ace-rate anchor before its score is calculated.
+- Qualified surface rates require three matches and use a 150-service-point prior toward the
+  corresponding season-wide surface rate. Pooled returner fallback is shrunk toward the tour rate.
+  Live low-sample server fallback is separately tagged and uses a 300-point prior.
+- Conflicting same-season player IDs with the same normalized display name are excluded from
+  the name-keyed live baseline even when their rates are numerically similar; the source does not
+  provide a safe identity join for those collisions.
+- TML's public terms allow non-commercial research use; commercial exploitation/redistribution
+  requires written permission. No raw TML CSV is committed to this repository.
 
 ## Regenerating
 

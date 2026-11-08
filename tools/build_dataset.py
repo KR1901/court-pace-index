@@ -279,12 +279,16 @@ doc = {
                 "id": "computed",
                 "name": "Computed history - ATP match archives",
                 "metric": "Speed",
-                "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); "
-                          "the current season prefers the TennisMyLife ATP Match Database. Both use "
-                          "surface-consistent server and returner profiles (clay 1/3, hard/grass 2/3; "
-                          "pooled returner fallback without a qualified surface sample), the "
-                          "season-calibrated odds-ratio method, 0.5 expected-ace floor and season "
-                          "normalisation. TML data use is non-commercial only.",
+                "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); " +
+                          "the current season prefers the TennisMyLife ATP Match Database. Historical " +
+                          "events are calculated leave-one-tournament-out, with qualified server and " +
+                          "returner rates shrunk toward surface-wide rates using a 150-service-point " +
+                          "prior before the neutral clay 1/3, hard/grass 2/3 blend. Pooled returners use " +
+                          "the tour-wide prior. Match-level actual/expected ratios are equally weighted, " +
+                          "floored at 0.5 expected aces and season-normalised. Live ratings use the same " +
+                          "odds equation with a separately documented season-wide baseline. TML data " +
+                          "terms restrict free use to non-commercial purposes; written permission is " +
+                          "required for commercial exploitation or redistribution.",
                 "url": "https://github.com/Aneeshers/tennis-sackmann-archive",
             },
         ],

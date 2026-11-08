@@ -25,6 +25,7 @@ LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Fina
 SOURCE_BY_YEAR = {}
 SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
+PROFILE_PRIOR_SERVICE_POINTS = 150.0
 TML_CACHE_MAX_AGE_DAYS = 7
 
 # CSV event name -> tournament id used by the app
@@ -97,6 +98,8 @@ def load(year):
     # Prefer a fresh TML current-season download. After an outage, reuse a cached TML file
     # only if its sidecar proves it was fetched in the prior seven days.
     if year == date.today().year:
+        SOURCE_BY_YEAR.pop(year, None)
+        SOURCE_METADATA_BY_YEAR.pop(year, None)
         tml_path = os.path.join(CACHE, f"tml_atp_matches_{year}.csv")
         metadata_path = tml_path + ".meta.json"
         request = urllib.request.Request(
@@ -182,157 +185,133 @@ def num(v):
 
 
 def valid_rows(rows):
-    """Tour-level main-draw rows with both players' aces and service-point totals."""
+    """Tour-level main-draw rows with internally consistent ace/service-point counts."""
     usable = []
     for r in rows:
-        if r["tourney_level"] not in LEVELS:
+        if r.get("tourney_level") not in LEVELS:
             continue
-        w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
-        w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
-        if None in (w_sv, l_sv, w_ac, l_ac) or w_sv <= 0 or l_sv <= 0:
+        values = [num(r.get(k)) for k in ("w_svpt", "l_svpt", "w_ace", "l_ace")]
+        if any(value is None or not math.isfinite(value) for value in values):
             continue
-        if not r["winner_id"] or not r["loser_id"]:
+        w_sv, l_sv, w_ac, l_ac = values
+        if w_sv <= 0 or l_sv <= 0 or w_ac < 0 or l_ac < 0:
+            continue
+        if w_ac > w_sv or l_ac > l_sv:
+            continue
+        if not r.get("winner_id") or not r.get("loser_id") or r["winner_id"] == r["loser_id"]:
             continue
         usable.append(r)
     return usable
 
 
-def player_rates(usable):
-    """
-    Return the historical method's season-level player profiles.
-
-    serve_rate: clay ace rate blended 1/3 with hard/grass ace rate blended 2/3,
-    requiring at least three matches in each available surface bucket.
-    concede_rate: returner ace-concession rate built with the same surface weighting
-    and per-surface three-match qualification. If neither surface qualifies, use the
-    pooled concession rate as a coverage-preserving fallback.
-    """
+def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
+    """Surface-specific, 150-service-point-shrunk player profiles."""
+    if not math.isfinite(float(prior_points)) or prior_points < 0:
+        raise ValueError("prior_points must be finite and non-negative")
     clay_ace = defaultdict(float); clay_sv = defaultdict(float); clay_n = defaultdict(int)
     hg_ace = defaultdict(float); hg_sv = defaultdict(float); hg_n = defaultdict(int)
-    ret_ace = defaultdict(float); ret_pts = defaultdict(float)
+    ret_ace = defaultdict(float); ret_pts = defaultdict(float); ret_n = defaultdict(int)
     ret_clay_ace = defaultdict(float); ret_clay_pts = defaultdict(float); ret_clay_n = defaultdict(int)
     ret_hg_ace = defaultdict(float); ret_hg_pts = defaultdict(float); ret_hg_n = defaultdict(int)
     names = {}
+    tour_aces = tour_points = clay_tour_aces = clay_tour_points = hg_tour_aces = hg_tour_points = 0.0
 
     for r in usable:
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
         w_ac, l_ac = num(r["w_ace"]), num(r["l_ace"])
         wid, lid = r["winner_id"], r["loser_id"]
-        names[wid] = r["winner_name"]
-        names[lid] = r["loser_name"]
-        surface = (r["surface"] or "").strip()
-
+        names[wid] = r.get("winner_name") or ""
+        names[lid] = r.get("loser_name") or ""
+        surface = (r.get("surface") or "").strip()
+        tour_aces += w_ac + l_ac
+        tour_points += w_sv + l_sv
         if surface == "Clay":
+            clay_tour_aces += w_ac + l_ac; clay_tour_points += w_sv + l_sv
             clay_ace[wid] += w_ac; clay_sv[wid] += w_sv; clay_n[wid] += 1
             clay_ace[lid] += l_ac; clay_sv[lid] += l_sv; clay_n[lid] += 1
             ret_clay_ace[wid] += l_ac; ret_clay_pts[wid] += l_sv; ret_clay_n[wid] += 1
             ret_clay_ace[lid] += w_ac; ret_clay_pts[lid] += w_sv; ret_clay_n[lid] += 1
         elif surface in ("Hard", "Grass"):
+            hg_tour_aces += w_ac + l_ac; hg_tour_points += w_sv + l_sv
             hg_ace[wid] += w_ac; hg_sv[wid] += w_sv; hg_n[wid] += 1
             hg_ace[lid] += l_ac; hg_sv[lid] += l_sv; hg_n[lid] += 1
             ret_hg_ace[wid] += l_ac; ret_hg_pts[wid] += l_sv; ret_hg_n[wid] += 1
             ret_hg_ace[lid] += w_ac; ret_hg_pts[lid] += w_sv; ret_hg_n[lid] += 1
+        ret_ace[wid] += l_ac; ret_pts[wid] += l_sv; ret_n[wid] += 1
+        ret_ace[lid] += w_ac; ret_pts[lid] += w_sv; ret_n[lid] += 1
 
-        # The winner is returning against the loser's serve, and vice versa.
-        ret_ace[wid] += l_ac; ret_pts[wid] += l_sv
-        ret_ace[lid] += w_ac; ret_pts[lid] += w_sv
+    tour_rate = tour_aces / tour_points if tour_points else None
+    clay_tour_rate = clay_tour_aces / clay_tour_points if clay_tour_points else None
+    hg_tour_rate = hg_tour_aces / hg_tour_points if hg_tour_points else None
 
-    serve_rate = {}
-    serve_samples = {}
-    for p in set(clay_sv) | set(hg_sv):
-        c = clay_ace[p] / clay_sv[p] if clay_sv[p] > 0 else None
-        h = hg_ace[p] / hg_sv[p] if hg_sv[p] > 0 else None
-        clay_qualified = c is not None and clay_n[p] >= MIN_MATCHES_PER_SURFACE
-        hard_grass_qualified = h is not None and hg_n[p] >= MIN_MATCHES_PER_SURFACE
+    def posterior(aces, points, prior):
+        if points <= 0:
+            return None
+        raw = aces / points
+        return (aces + prior_points * prior) / (points + prior_points) if prior_points and prior is not None else raw
 
-        # Qualification is surface-specific. One or two matches on the other surface
-        # must not invalidate a player's adequately sampled surface profile.
-        if clay_qualified and hard_grass_qualified:
-            serve_rate[p] = (1 / 3) * c + (2 / 3) * h
-        elif clay_qualified:
-            serve_rate[p] = c
-        elif hard_grass_qualified:
-            serve_rate[p] = h
-
-        if p in serve_rate:
-            use_clay = clay_qualified
-            use_hard_grass = hard_grass_qualified
-            serve_samples[p] = {
-                "clayMatches": clay_n[p] if use_clay else 0,
-                "hardGrassMatches": hg_n[p] if use_hard_grass else 0,
-                "servicePoints": (
-                    (clay_sv[p] if use_clay else 0.0)
-                    + (hg_sv[p] if use_hard_grass else 0.0)
-                ),
+    serve_rate, serve_samples = {}, {}
+    for player_id in set(clay_sv) | set(hg_sv):
+        cq = clay_sv[player_id] > 0 and clay_n[player_id] >= MIN_MATCHES_PER_SURFACE
+        hq = hg_sv[player_id] > 0 and hg_n[player_id] >= MIN_MATCHES_PER_SURFACE
+        clay = posterior(clay_ace[player_id], clay_sv[player_id], clay_tour_rate) if cq else None
+        hard = posterior(hg_ace[player_id], hg_sv[player_id], hg_tour_rate) if hq else None
+        if clay is not None and hard is not None:
+            serve_rate[player_id] = clay / 3 + 2 * hard / 3
+        elif clay is not None:
+            serve_rate[player_id] = clay
+        elif hard is not None:
+            serve_rate[player_id] = hard
+        if player_id in serve_rate:
+            serve_samples[player_id] = {
+                "clayMatches": clay_n[player_id] if cq else 0,
+                "hardGrassMatches": hg_n[player_id] if hq else 0,
+                "servicePoints": (clay_sv[player_id] if cq else 0.0) + (hg_sv[player_id] if hq else 0.0),
             }
 
-    pooled_concede_rate = {
-        p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0
-    }
-    concede_rate = {}
-    concede_samples = {}
-    for p in ret_pts:
-        c = ret_clay_ace[p] / ret_clay_pts[p] if ret_clay_pts[p] > 0 else None
-        h = ret_hg_ace[p] / ret_hg_pts[p] if ret_hg_pts[p] > 0 else None
-        clay_qualified = c is not None and ret_clay_n[p] >= MIN_MATCHES_PER_SURFACE
-        hard_grass_qualified = h is not None and ret_hg_n[p] >= MIN_MATCHES_PER_SURFACE
+    pooled_concede = {p: ret_ace[p] / ret_pts[p] for p in ret_pts if ret_pts[p] > 0}
+    concede_rate, concede_samples = {}, {}
+    for player_id in ret_pts:
+        cq = ret_clay_pts[player_id] > 0 and ret_clay_n[player_id] >= MIN_MATCHES_PER_SURFACE
+        hq = ret_hg_pts[player_id] > 0 and ret_hg_n[player_id] >= MIN_MATCHES_PER_SURFACE
+        clay = posterior(ret_clay_ace[player_id], ret_clay_pts[player_id], clay_tour_rate) if cq else None
+        hard = posterior(ret_hg_ace[player_id], ret_hg_pts[player_id], hg_tour_rate) if hq else None
+        if clay is not None and hard is not None:
+            concede_rate[player_id] = clay / 3 + 2 * hard / 3
+        elif clay is not None:
+            concede_rate[player_id] = clay
+        elif hard is not None:
+            concede_rate[player_id] = hard
+        elif player_id in pooled_concede:
+            concede_rate[player_id] = posterior(ret_ace[player_id], ret_pts[player_id], tour_rate)
 
-        # Keep the returner adjustment symmetric with the server profile. A player
-        # qualified on one surface is still usable; a small secondary-surface sample
-        # cannot pull the rate toward an unstable blend.
-        if clay_qualified and hard_grass_qualified:
-            concede_rate[p] = (1 / 3) * c + (2 / 3) * h
-        elif clay_qualified:
-            concede_rate[p] = c
-        elif hard_grass_qualified:
-            concede_rate[p] = h
-        elif p in pooled_concede_rate:
-            concede_rate[p] = pooled_concede_rate[p]
-
-        use_clay = clay_qualified
-        use_hard_grass = hard_grass_qualified
-        concede_samples[p] = {
-            "clayMatches": ret_clay_n[p] if use_clay else 0,
-            "hardGrassMatches": ret_hg_n[p] if use_hard_grass else 0,
-            "servicePoints": (
-                (ret_clay_pts[p] if use_clay else 0.0)
-                + (ret_hg_pts[p] if use_hard_grass else 0.0)
-            ),
+        surface_qualified = cq or hq
+        concede_samples[player_id] = {
+            "clayMatches": ret_clay_n[player_id] if cq else 0,
+            "hardGrassMatches": ret_hg_n[player_id] if hq else 0,
+            "matches": ((ret_clay_n[player_id] if cq else 0) + (ret_hg_n[player_id] if hq else 0))
+                       if surface_qualified else ret_n[player_id],
+            "servicePoints": ((ret_clay_pts[player_id] if cq else 0.0) + (ret_hg_pts[player_id] if hq else 0.0))
+                             if surface_qualified else ret_pts[player_id],
         }
 
     return {
         p: {
-            "id": p,
-            "name": names.get(p, ""),
-            "serve_rate": serve_rate.get(p),
-            "concede_rate": concede_rate.get(p),
-            "pooled_concede_rate": pooled_concede_rate.get(p),
-            "concede_rate_source": (
-                "surface-qualified"
-                if p in concede_samples and (
-                    concede_samples[p]["clayMatches"] + concede_samples[p]["hardGrassMatches"]
-                ) > 0
-                else "pooled-fallback"
-            ),
-            "concede_matches": (
-                concede_samples.get(p, {}).get("clayMatches", 0)
-                + concede_samples.get(p, {}).get("hardGrassMatches", 0)
-            ),
+            "id": p, "name": names.get(p, ""), "serve_rate": serve_rate.get(p),
+            "concede_rate": concede_rate.get(p), "pooled_concede_rate": pooled_concede.get(p),
+            "concede_rate_source": "surface-qualified" if (concede_samples.get(p, {}).get("clayMatches", 0)
+                + concede_samples.get(p, {}).get("hardGrassMatches", 0)) > 0 else "pooled-fallback",
+            "concede_matches": concede_samples.get(p, {}).get("matches", 0),
             "concede_service_points": concede_samples.get(p, {}).get("servicePoints", 0.0),
-            "serve_matches": (
-                serve_samples.get(p, {}).get("clayMatches", 0)
-                + serve_samples.get(p, {}).get("hardGrassMatches", 0)
-            ),
+            "serve_matches": serve_samples.get(p, {}).get("clayMatches", 0)
+                + serve_samples.get(p, {}).get("hardGrassMatches", 0),
             "serve_service_points": serve_samples.get(p, {}).get("servicePoints", 0.0),
-            "clay_matches": clay_n[p],
-            "hard_grass_matches": hg_n[p],
+            "serve_rate_prior_points": prior_points if serve_rate.get(p) is not None else 0.0,
+            "concede_rate_prior_points": prior_points if concede_rate.get(p) is not None else 0.0,
+            "clay_matches": clay_n[p], "hard_grass_matches": hg_n[p],
             "return_points": ret_pts.get(p, 0.0),
-            # Retain the raw surface totals so low-sample live-only estimates can be
-            # shrunk toward the season surface average without changing historical ratings.
-            "clay_aces": clay_ace[p],
-            "clay_service_points": clay_sv[p],
-            "hard_grass_aces": hg_ace[p],
-            "hard_grass_service_points": hg_sv[p],
+            "clay_aces": clay_ace[p], "clay_service_points": clay_sv[p],
+            "hard_grass_aces": hg_ace[p], "hard_grass_service_points": hg_sv[p],
         }
         for p in set(names)
     }
@@ -382,7 +361,7 @@ def build_live_profiles(profile_year, current_profiles):
     """
     Build a broad but auditable live player baseline.
 
-    Profiles are the union of players seen in the baseline season and the preceding three
+    Profiles are the union of players seen in the baseline season and the preceding ten
     ATP seasons. Serve rates prefer the most recent qualified profile, then a shrunk estimate.
     Returner rates prefer surface-qualified concession profiles over pooled fallbacks, even
     when the qualified profile comes from a prior season.
@@ -458,6 +437,7 @@ def build_live_profiles(profile_year, current_profiles):
                     "serve_service_points",
                     previous["clay_service_points"] + previous["hard_grass_service_points"],
                 )
+                profile["serve_rate_prior_points"] = previous.get("serve_rate_prior_points", 0.0)
             previous_concede_source = previous.get("concede_rate_source")
             current_concede_source = profile.get("concede_rate_source")
             prefer_previous_concede = (
@@ -473,6 +453,7 @@ def build_live_profiles(profile_year, current_profiles):
                 profile["concede_rate_source"] = previous_concede_source
                 profile["concede_matches"] = previous.get("concede_matches", 0)
                 profile["concede_service_points"] = previous.get("concede_service_points", 0.0)
+                profile["concede_rate_prior_points"] = previous.get("concede_rate_prior_points", 0.0)
 
     # Players without any qualified profile still get a player-specific, explicitly
     # low-sample estimate when the archive contains their own service-point observations.
@@ -546,14 +527,9 @@ def dedupe_live_profiles_with_diagnostics(profiles):
             if profile.get("serve_rate_season") or profile.get("concede_rate_season")
         }
         if len(group) > 1 and len(seasons) == 1:
-            serve = [p["serve_rate"] for p in group if p.get("serve_rate") is not None]
-            concede = [p["concede_rate"] for p in group if p.get("concede_rate") is not None]
-            if (
-                (serve and max(serve) - min(serve) > 0.005)
-                or (concede and max(concede) - min(concede) > 0.005)
-            ):
-                ambiguous += 1
-                continue
+            # Similar rates do not prove distinct archive IDs are the same athlete.
+            ambiguous += 1
+            continue
 
         def serve_rank(profile):
             return (
@@ -575,7 +551,7 @@ def dedupe_live_profiles_with_diagnostics(profiles):
         if best_return.get("concede_rate") is not None:
             for field in (
                 "concede_rate", "concede_rate_season", "concede_rate_source",
-                "concede_matches", "concede_service_points",
+                "concede_matches", "concede_service_points", "concede_rate_prior_points",
             ):
                 candidate[field] = best_return.get(field)
         result.append(candidate)
@@ -658,23 +634,44 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
 
 
 def season_ratings(year, rows):
-    """Returns {tournament_id: {'speed': r, 'ace': pct, 'matches': n}} for one season."""
+    """Calculate each event out of sample, excluding its matches from player profiles and tour anchor."""
     usable = valid_rows(rows)
-    profiles = player_rates(usable)
-    tour_rate = tour_average_ace_rate(usable)
-    raw, event_aces, event_sv, event_matches = event_raw_scores(
-        usable, profiles, tour_rate=tour_rate
-    )
-    if not raw:
+    rows_by_event = defaultdict(list)
+    mapped_rows = []
+    for row in usable:
+        tid = NAMES.get((row.get("tourney_name") or "").strip())
+        mapped_rows.append((tid, row))
+        if tid is not None:
+            rows_by_event[tid].append(row)
+
+    raw_scores = {}
+    event_aces = defaultdict(float)
+    event_service_points = defaultdict(float)
+    event_matches = defaultdict(int)
+    for tid, event_rows in rows_by_event.items():
+        training_rows = [row for mapped_id, row in mapped_rows if mapped_id != tid]
+        if not training_rows:
+            continue
+        profiles = player_rates(training_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        tour_rate = tour_average_ace_rate(training_rows)
+        raw, aces, points, matches = event_raw_scores(event_rows, profiles, tour_rate=tour_rate)
+        if tid not in raw:
+            continue
+        raw_scores[tid] = raw[tid]
+        event_aces[tid] = aces[tid]
+        event_service_points[tid] = points[tid]
+        event_matches[tid] = matches[tid]
+
+    if not raw_scores:
         return {}
-    season_mean = sum(raw.values()) / len(raw)
+    mean_raw = sum(raw_scores.values()) / len(raw_scores)
     return {
         tid: {
-            "speed": value / season_mean,
-            "ace": 100.0 * event_aces[tid] / event_sv[tid],
+            "speed": value / mean_raw,
+            "ace": 100.0 * event_aces[tid] / event_service_points[tid],
             "matches": event_matches[tid],
         }
-        for tid, value in raw.items()
+        for tid, value in raw_scores.items()
     }
 
 
@@ -760,6 +757,7 @@ def main():
                 "serveRateSampleServicePoints": int(round(profile["serve_rate_sample_points"])),
                 "serveRatePriorServicePoints": profile.get("serve_rate_prior_points"),
                 "concedeRateSeason": profile["concede_rate_season"],
+                "concedeRatePriorServicePoints": profile.get("concede_rate_prior_points"),
             }
             for profile in unique_live_profiles
             if profile["name"] and (
@@ -815,7 +813,7 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; both player profiles use qualified clay (1/3) and hard/grass (2/3) rates, with pooled returner fallback when neither surface qualifies; positive expected-ace values are floored at 0.5 and season-normalised",
+            "method": "leave-one-tournament-out ace rate adjusted with a season-calibrated server/returner odds ratio; qualified clay and hard/grass player rates are shrunk toward their surface tour rates using a 150-service-point prior before the 1/3–2/3 neutral blend; pooled returner fallback is shrunk toward the tour rate; positive expected-ace values are floored at 0.5 and event ratings are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "source_metadata": {

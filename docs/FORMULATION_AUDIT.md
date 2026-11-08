@@ -2,7 +2,8 @@
 
 ## Scope and baseline
 - Repository: `KR1901/court-pace-index`
-- PR #2 baseline: `f1693cf6349c0050fc575bdf848cb4015ed629a2`
+- Initial PR #2 benchmark base: `f1693cf6349c0050fc575bdf848cb4015ed629a2`
+- Deep-audit implementation reviewed at: `aba2408c15f656dc405b2b898bb176b8e7a34aeb`
 - Production foundation: season-calibrated odds-ratio expected aces, match-level actual/expected ratios, a 20-server-side event threshold, a 0.5 expected-aces floor and season normalisation.
 - Tennis Abstract is a behavioural reference series, not independent physical ground truth.
 
@@ -27,10 +28,10 @@ The surface-matched returner variant improves aggregate Spearman agreement and M
 4. A carpet-pooled stress test and a carpet-specific profile experiment that requires three carpet matches before use, with neutral-profile fallback otherwise.
 5. A method-of-moments empirical-Bayes prior estimated separately by serve/return role and surface bucket from player-rate heterogeneity after excluding the target event.
 6. Season-stratified event bootstrap, training/held-out weight comparisons, surface-stratified metrics and match-cluster uncertainty intervals for selected 2026 events.
-6. Physical CPI overlap diagnostics, explicitly exploratory because CPI covers a small, non-random set of show-court events.
-7. A seven-day source freshness and SHA-256 integrity gate for cached TML current-season data.
-8. Conservative resolution of conflicting same-season live player-name collisions.
-9. Clear documentation that historical and live calculations share the expected-aces equation but have different profile fallback policies.
+7. Physical CPI overlap diagnostics, explicitly exploratory because CPI covers a small, non-random set of show-court events.
+8. A seven-day source freshness and SHA-256 integrity gate for cached TML current-season data.
+9. Conservative resolution of conflicting same-season live player-name collisions.
+10. Clear documentation that historical and live calculations share the expected-aces equation but have different profile fallback policies.
 
 ## Decision rules
 - Retain calibrated odds-ratio expected aces as the production foundation; the existing 35-season benchmark materially improves on the uncalibrated method.
@@ -38,9 +39,9 @@ The surface-matched returner variant improves aggregate Spearman agreement and M
 - Do not promote surface-matched returner profiles universally until leave-one-out and carpet-specific results support it.
 - Carpet-specific and carpet-pooled profile variants are rejected for production: their carpet error worsened materially. Retain the neutral surface profile on carpet.
 - Select weights on training seasons only and report held-out seasons separately.
-- Paired-bootstrap fixed-prior versus empirical-Bayes differences on identical event-season draws. Keep production unchanged when intervals overlap zero.
+- Paired-bootstrap fixed-prior versus empirical-Bayes differences on identical event-season draws. Prefer the fixed 150-service-point prior with three-match surface qualification: it beats the unshrunk and empirical-Bayes alternatives on the full LOEO matched set; retain the 1/3–2/3 neutral blend because a 50/50 blend is only a benchmark-specific improvement, not an independent physical-pace justification.
 - Separate shrinkage from minimum-match coverage: compare one-match profiles and three-match profiles with the same prior strengths before changing the production qualification threshold.
-- Match-cluster intervals condition on fitted player profiles and the season normaliser; full profile-estimation uncertainty remains a follow-up.
+- Match-cluster intervals condition on fitted profiles and the season normaliser. The nested bootstrap additionally resamples training matches within each tournament and target-event matches, rebuilding player profiles in each draw; the full-sample LOEO normaliser remains fixed, so normaliser uncertainty is still not included.
 - CPI association is diagnostic, not proof of physical validity. Independent court-level and conditions data are needed for physical or causal claims.
 - Laver Cup remains below the ordinary 20-side threshold. It may have a clearly labelled provisional uncertainty interval, but never an ordinary CALC ranking until it meets the threshold.
 - TML public terms are non-commercial; obtain written permission before commercial use or redistribution. Raw TML match CSV files are not committed.
@@ -54,7 +55,7 @@ python3 tools/compare_speed_variants.py --seasons $(seq 1991 $(date +%Y)) --boot
 ```
 
 
-## Final leave-one-event-out findings (PR head 8b4e806)
+## Final leave-one-event-out findings (verified at PR head aba2408)
 The expanded audit passed on 2,208 common event-seasons across 36 seasons, using 2,000 season-stratified bootstrap resamples. Each target tournament is excluded from both player profiles and the tour-average ace-rate anchor.
 
 | Variant | Surface profile qualification | Pearson r | Spearman rho | MAE |
@@ -75,4 +76,4 @@ Conditional match-cluster intervals: Marrakech without shrinkage is 1.180 (26 ma
 
 The physical CPI overlap has 106 observations from a non-random set of show-court events: overall r=0.676, rho=0.702; within-surface centred r=0.395, rho=0.345. Clay alone is negatively associated in this small overlap (n=24, r=-0.387, rho=-0.429), while hard is positive (n=81, r=0.511, rho=0.506). This is diagnostic evidence that CALC is behavioural, not a physical court-speed substitute.
 
-The 2026 production asset remains 57 CALC / 1 TA-only; Marrakech remains 1.11 in the bundled production dataset. All LOEO Marrakech values above are counterfactual validation estimates, not substituted production readings.
+The 2026 production asset at the pre-fix audit baseline contained 57 CALC / 1 TA-only, with Marrakech at 1.11. The production refresh after this audit change recalculates the event ratings using the LOEO/150-point estimator; the pre-fix 1.11 value should not be carried forward as the post-fix result.

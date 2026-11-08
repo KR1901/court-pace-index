@@ -358,7 +358,9 @@ class PlayerRateEligibilityTests(unittest.TestCase):
         rows = self.rows([("Clay", 3, 10), ("Hard", 2, 30)])
         player = compute_speed.player_rates(rows)["player"]
 
-        self.assertAlmostEqual(0.10, player["serve_rate"])
+        expected = (30.0 + 150.0 * 0.09) / 450.0
+        self.assertAlmostEqual(expected, player["serve_rate"])
+        self.assertEqual(150.0, player["serve_rate_prior_points"])
         self.assertEqual(3, player["serve_matches"])
         self.assertEqual(300.0, player["serve_service_points"])
         self.assertEqual(3, player["clay_matches"])
@@ -368,7 +370,9 @@ class PlayerRateEligibilityTests(unittest.TestCase):
         rows = self.rows([("Clay", 2, 30), ("Hard", 3, 20)])
         player = compute_speed.player_rates(rows)["player"]
 
-        self.assertAlmostEqual(0.20, player["serve_rate"])
+        expected = (60.0 + 150.0 * 0.14) / 450.0
+        self.assertAlmostEqual(expected, player["serve_rate"])
+        self.assertEqual(150.0, player["serve_rate_prior_points"])
         self.assertEqual(3, player["serve_matches"])
         self.assertEqual(300.0, player["serve_service_points"])
 
@@ -376,7 +380,10 @@ class PlayerRateEligibilityTests(unittest.TestCase):
         rows = self.rows([("Clay", 3, 10), ("Hard", 3, 20)])
         player = compute_speed.player_rates(rows)["player"]
 
-        self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, player["serve_rate"])
+        clay = (30.0 + 150.0 * 0.09) / 450.0
+        hard = (60.0 + 150.0 * 0.14) / 450.0
+        self.assertAlmostEqual((1 / 3) * clay + (2 / 3) * hard, player["serve_rate"])
+        self.assertEqual(150.0, player["serve_rate_prior_points"])
         self.assertEqual(6, player["serve_matches"])
         self.assertEqual(600.0, player["serve_service_points"])
 
@@ -431,8 +438,11 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
         rows = self.rows([("Clay", 3, 0.10), ("Hard", 3, 0.20)])
         player = compute_speed.player_rates(rows)["returner"]
 
-        self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, player["concede_rate"])
+        clay = (30.0 + 150.0 * 0.09) / 450.0
+        hard = (60.0 + 150.0 * 0.14) / 450.0
+        self.assertAlmostEqual((1 / 3) * clay + (2 / 3) * hard, player["concede_rate"])
         self.assertAlmostEqual(0.15, player["pooled_concede_rate"])
+        self.assertEqual(150.0, player["concede_rate_prior_points"])
         self.assertEqual("surface-qualified", player["concede_rate_source"])
         self.assertEqual(6, player["concede_matches"])
         self.assertEqual(600.0, player["concede_service_points"])
@@ -441,7 +451,7 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
         rows = self.rows([("Clay", 3, 0.10), ("Hard", 2, 0.20)])
         player = compute_speed.player_rates(rows)["returner"]
 
-        self.assertAlmostEqual(0.10, player["concede_rate"])
+        self.assertAlmostEqual((30.0 + 150.0 * 0.09) / 450.0, player["concede_rate"])
         self.assertAlmostEqual(0.14, player["pooled_concede_rate"])
         self.assertEqual("surface-qualified", player["concede_rate_source"])
         self.assertEqual(3, player["concede_matches"])
@@ -451,10 +461,12 @@ class SurfaceMatchedReturnerProfileTests(unittest.TestCase):
         rows = self.rows([("Clay", 2, 0.10), ("Hard", 2, 0.20)])
         player = compute_speed.player_rates(rows)["returner"]
 
-        self.assertAlmostEqual(0.15, player["concede_rate"])
+        self.assertAlmostEqual((60.0 + 150.0 * 0.115) / 550.0, player["concede_rate"])
         self.assertAlmostEqual(0.15, player["pooled_concede_rate"])
         self.assertEqual("pooled-fallback", player["concede_rate_source"])
-        self.assertEqual(0, player["concede_matches"])
+        self.assertEqual(4, player["concede_matches"])
+        self.assertEqual(400.0, player["concede_service_points"])
+        self.assertEqual(150.0, player["concede_rate_prior_points"])
 
     def test_live_baseline_prefers_a_prior_surface_qualified_returner_over_current_pooled_fallback(self):
         current = {
@@ -520,6 +532,72 @@ class ReturnerProfileDedupeTests(unittest.TestCase):
         self.assertAlmostEqual(0.15, result[0]["concede_rate"])
         self.assertEqual("surface-qualified", result[0]["concede_rate_source"])
         self.assertEqual(2025, result[0]["concede_rate_season"])
+
+
+class InputValidationTests(unittest.TestCase):
+    def test_rejects_non_finite_negative_or_impossible_ace_counts(self):
+        base = {
+            "tourney_level": "250", "winner_id": "p1", "loser_id": "p2",
+            "w_svpt": "100", "l_svpt": "100", "w_ace": "8", "l_ace": "7",
+            "surface": "Hard",
+        }
+        invalid = [
+            dict(base, w_svpt="nan"),
+            dict(base, w_ace="inf"),
+            dict(base, w_ace="-1"),
+            dict(base, w_ace="101"),
+            dict(base, winner_id="p1", loser_id="p1"),
+        ]
+        self.assertEqual([], compute_speed.valid_rows(invalid))
+        self.assertEqual(1, len(compute_speed.valid_rows([base])))
+
+
+class LeaveOneEventOutProductionTests(unittest.TestCase):
+    def test_event_is_excluded_from_its_own_profiles_and_tour_anchor(self):
+        rows = []
+        for event in ("Paris Masters", "Rome Masters"):
+            for _ in range(10):
+                rows.append({
+                    "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "winner_id": "p1", "loser_id": "p2",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+                })
+
+        real_player_rates = compute_speed.player_rates
+        with patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+            ratings = compute_speed.season_ratings(2026, rows)
+
+        self.assertEqual({"paris", "rome"}, set(ratings))
+        self.assertEqual(2, profiles.call_count)
+        for call in profiles.call_args_list:
+            training_rows = call.args[0]
+            event_names = {row["tourney_name"] for row in training_rows}
+            self.assertEqual(1, len(event_names))
+            self.assertEqual(10, len(training_rows))
+            self.assertEqual(150.0, call.kwargs["prior_points"])
+
+
+class SameSeasonIdentityCollisionTests(unittest.TestCase):
+    def test_same_name_same_season_ids_are_excluded_even_when_rates_match(self):
+        profiles = []
+        for player_id in ("archive-id-one", "archive-id-two"):
+            item = profile(
+                player_id, "A Player", serve_rate=0.08, concede_rate=0.07,
+                concede_rate_source="surface-qualified",
+            )
+            item.update({
+                "serve_rate_season": 2026,
+                "concede_rate_season": 2026,
+                "serve_rate_source": "current-season-qualified",
+                "serve_rate_sample_matches": 8,
+                "serve_rate_sample_points": 500,
+                "concede_service_points": 500,
+            })
+            profiles.append(item)
+
+        deduped, diagnostics = compute_speed.dedupe_live_profiles_with_diagnostics(profiles)
+        self.assertEqual([], deduped)
+        self.assertEqual(1, diagnostics["ambiguousNameCollisionsExcluded"])
 
 
 if __name__ == "__main__":

@@ -100,7 +100,7 @@ def surface_bucket(surface):
 
 
 def aggregate_season(rows):
-    """Aggregate player and event sufficient statistics once for fast event exclusion."""
+    """Aggregate player/event sufficient statistics, retaining unnamed rows for priors."""
     usable = compute_speed.valid_rows(rows)
     players = {}
     by_event_players = {}
@@ -114,46 +114,48 @@ def aggregate_season(rows):
 
     for row in usable:
         tid = event_id(row.get("tourney_name"))
-        if not tid:
-            continue
-        event_rows[tid].append(row)
-        surface = (row.get("surface") or "").strip()
-        event_surfaces.setdefault(tid, surface or "Unknown")
+        if tid:
+            event_rows[tid].append(row)
+            surface = (row.get("surface") or "").strip()
+            event_surfaces.setdefault(tid, surface or "Unknown")
+        else:
+            surface = (row.get("surface") or "").strip()
         bucket = surface_bucket(surface)
 
         w_id, l_id = row["winner_id"], row["loser_id"]
         w_sv, l_sv = compute_speed.num(row["w_svpt"]), compute_speed.num(row["l_svpt"])
         w_ac, l_ac = compute_speed.num(row["w_ace"]), compute_speed.num(row["l_ace"])
 
-        # Both player-server observations.
         for player_id, aces, points, conceded_aces, conceded_points in (
             (w_id, w_ac, w_sv, l_ac, l_sv),
             (l_id, l_ac, l_sv, w_ac, w_sv),
         ):
             player = ensure_player(players, player_id)
-            event_player = ensure_event_player(by_event_players, tid, player_id)
-            event_total = ensure_event_stats(event_stats, tid)
+            event_player = ensure_event_player(by_event_players, tid, player_id) if tid else None
+            event_total = ensure_event_stats(event_stats, tid) if tid else None
 
+            # All valid ATP matches, including rows with an unmapped event label, train
+            # player tendencies and the tour anchor. Only named events form event clusters.
             add_stats(player["serve"]["pooled"], aces, points)
-            add_stats(event_player["serve"]["pooled"], aces, points)
             add_stats(global_stats["serve"]["pooled"], aces, points)
-            add_stats(event_total["serve"]["pooled"], aces, points)
-
-            # A returner's concession rate is the opponent's aces per opponent service point.
             add_stats(player["return"]["pooled"], conceded_aces, conceded_points)
-            add_stats(event_player["return"]["pooled"], conceded_aces, conceded_points)
             add_stats(global_stats["return"]["pooled"], conceded_aces, conceded_points)
-            add_stats(event_total["return"]["pooled"], conceded_aces, conceded_points)
+            if event_player is not None:
+                add_stats(event_player["serve"]["pooled"], aces, points)
+                add_stats(event_total["serve"]["pooled"], aces, points)
+                add_stats(event_player["return"]["pooled"], conceded_aces, conceded_points)
+                add_stats(event_total["return"]["pooled"], conceded_aces, conceded_points)
 
             if bucket:
                 add_stats(player["serve"][bucket], aces, points)
-                add_stats(event_player["serve"][bucket], aces, points)
                 add_stats(global_stats["serve"][bucket], aces, points)
-                add_stats(event_total["serve"][bucket], aces, points)
                 add_stats(player["return"][bucket], conceded_aces, conceded_points)
-                add_stats(event_player["return"][bucket], conceded_aces, conceded_points)
                 add_stats(global_stats["return"][bucket], conceded_aces, conceded_points)
-                add_stats(event_total["return"][bucket], conceded_aces, conceded_points)
+                if event_player is not None:
+                    add_stats(event_player["serve"][bucket], aces, points)
+                    add_stats(event_total["serve"][bucket], aces, points)
+                    add_stats(event_player["return"][bucket], conceded_aces, conceded_points)
+                    add_stats(event_total["return"][bucket], conceded_aces, conceded_points)
 
     return usable, event_rows, event_surfaces, players, by_event_players, global_stats, event_stats
 
@@ -264,9 +266,12 @@ def weighted_profile(player, role, prior_player, clay_weight, prior_points, min_
 
 
 def build_event_profiles(tid, event_surface, players, event_players, global_stats,
-                         event_stats, config):
-    """Build profiles from the season after subtracting every target-event observation."""
-    excluded_players = event_players.get(tid, {})
+                         event_stats, config, target_player_ids=None):
+    """Build training-only profiles, including target players with no training history."""
+    excluded_players = dict(event_players.get(tid, {}))
+    for player_id in target_player_ids or ():
+        if player_id not in excluded_players:
+            ensure_player(excluded_players, player_id)
     excluded_totals = event_stats.get(tid, {
         role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
         for role in ("serve", "return")
@@ -296,7 +301,9 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
     )
 
     for player_id, event_player in excluded_players.items():
-        total_player = players[player_id]
+        total_player = players.get(player_id)
+        if total_player is None:
+            total_player = ensure_player({}, player_id)
         training_player = {
             role: {
                 bucket: subtract_stats(
@@ -507,7 +514,7 @@ def score_season(rows, configs, detail_ids):
             for bucket, values in sorted(buckets.items()):
                 print(f"    {role:7s} {bucket:10s} n={len(values):4d} "
                       f"median={statistics.median(values):.1f}")
-    return raw, normalisers, details, len(usable), len(event_rows), event_surfaces
+    return raw, normalisers, details, len(usable), len(event_rows), event_surfaces, event_rows
 
 
 def mean_ci(values):
@@ -552,6 +559,60 @@ def cluster_bootstrap_interval(clusters, normaliser, iterations, seed):
         return None
     low, high = mean_ci(samples)
     return {"low": low, "high": high, "iterations": iterations}
+
+
+
+def profile_and_match_bootstrap_interval(tid, target_rows, event_surface, all_event_rows,
+                                         config, normaliser, iterations=250, seed=1):
+    """
+    Nested bootstrap: resample training matches within each tournament, rebuild the
+    target players' profiles, and resample target-event matches as intact clusters.
+
+    The original LOEO season normaliser is held fixed. This captures player-profile and
+    match-sample uncertainty, but deliberately does not claim normaliser uncertainty.
+    """
+    if not target_rows or not normaliser or normaliser <= 0 or iterations < 1:
+        return None
+    rng = random.Random(seed)
+    target_player_ids = {
+        player_id
+        for row in target_rows
+        for player_id in (row["winner_id"], row["loser_id"])
+    }
+    samples = []
+    for _ in range(iterations):
+        training_rows = []
+        for event_id_key, matches in all_event_rows.items():
+            if event_id_key == tid or not matches:
+                continue
+            training_rows.extend(rng.choices(matches, k=len(matches)))
+        target_sample = rng.choices(target_rows, k=len(target_rows))
+        if not training_rows:
+            continue
+
+        (_usable, _train_events, _surfaces, players, event_players,
+         global_stats, event_stats) = aggregate_season(training_rows)
+        profiles, prior_players = build_event_profiles(
+            tid, event_surface, players, event_players, global_stats, event_stats,
+            config, target_player_ids=target_player_ids,
+        )
+        ratios, _clusters = score_event(
+            tid, target_sample, event_surface, profiles,
+            global_stats, event_stats, prior_players,
+        )
+        if ratios:
+            samples.append(statistics.fmean(ratios) / normaliser)
+
+    if not samples:
+        return None
+    low, high = mean_ci(samples)
+    return {
+        "low": low,
+        "high": high,
+        "iterations": iterations,
+        "successful": len(samples),
+        "normaliser": "fixed to full-sample LOEO mean",
+    }
 
 
 def physical_cpi_diagnostics(dataset_path):
@@ -620,15 +681,17 @@ def run_audit(seasons, boot, detail_ids):
     surfaces_by_key = {}
     raw_by_season = {}
     detail_by_season = {}
+    event_rows_by_season = {}
 
     print("season  usable matches  events  TA references  common LOEO events")
     for year in sorted(published):
         rows = compute_speed.load(year)
-        raw, normalisers, details, usable_count, event_count, event_surfaces = score_season(
+        raw, normalisers, details, usable_count, event_count, event_surfaces, event_rows = score_season(
             rows, configs, detail_ids
         )
         raw_by_season[year] = raw
         detail_by_season[year] = (details, normalisers)
+        event_rows_by_season[year] = event_rows
         common = set(published[year])
         for variant in configs:
             common.intersection_update(raw[variant])
@@ -717,8 +780,8 @@ def run_audit(seasons, boot, detail_ids):
     print("variant                         train MAE   holdout MAE   heldout rho")
     sensitivity_names = [
         name for name in configs
-        if name.startswith("weight_clay_") or name.startswith("shrink_")
-        or name.startswith("weight_050_shrink_")
+        if name == "loeo_current_1_3" or name.startswith("weight_clay_")
+        or name.startswith("shrink_") or name.startswith("weight_050_shrink_")
         or name.startswith("loeo_empirical_bayes")
     ]
     for name in sensitivity_names:
@@ -759,12 +822,42 @@ def run_audit(seasons, boot, detail_ids):
                       f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
                       f"{item['matches']} matches/{item['sides']} sides")
 
+    # This second interval re-fits the player profiles in every draw. The season
+    # normaliser is intentionally held fixed to isolate profile + match sampling variance.
+    print("\nEVENT-LEVEL PROFILE-AND-MATCH BOOTSTRAP (2026; fixed LOEO normaliser)")
+    latest_year = max(event_rows_by_season)
+    latest_events = event_rows_by_season[latest_year]
+    latest_details, latest_normalisers = detail_by_season[latest_year]
+    profile_bootstrap_variants = ("loeo_current_1_3", "shrink_150_min3",
+                                  "loeo_empirical_bayes_1_3_min3")
+    for variant in profile_bootstrap_variants:
+        if variant not in configs:
+            continue
+        for tid in sorted(detail_ids):
+            item = latest_details.get(variant, {}).get(tid)
+            matches = latest_events.get(tid)
+            normaliser = latest_normalisers.get(variant)
+            if not item or not matches or not normaliser:
+                continue
+            interval = profile_and_match_bootstrap_interval(
+                tid, matches, item["surface"], latest_events, configs[variant],
+                normaliser, iterations=250,
+                seed=20000 + sum(ord(char) for char in (variant + tid)),
+            )
+            if interval:
+                status = "standard" if item["ordinaryRatingEligible"] else "provisional (below 20 sides)"
+                print(f"  {variant} {tid}: {status}, LOEO={item['raw'] / normaliser:.3f}, "
+                      f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
+                      f"{interval['successful']}/{interval['iterations']} successful resamples "
+                      f"({item['matches']} matches/{item['sides']} sides)")
+
     print("\nPHYSICAL CPI CROSS-CHECK")
     print(json.dumps(physical_cpi_diagnostics(DATASET), indent=2, sort_keys=True))
     print("\nInterpretation: TA agreement is a behavioural reference comparison, not physical "
           "ground truth. LOEO profiles and tour baselines exclude every match from the event "
-          "being rated. Event intervals resample whole matches but condition on fitted player "
-          "profiles and the season normaliser; they do not include profile-estimation uncertainty.")
+          "being rated. Conditional intervals resample whole matches with fixed profiles; the "
+          "nested intervals additionally refit profiles from tournament-stratified training "
+          "match resamples, while holding the full-sample LOEO normaliser fixed.")
 
 
 def details_for_event(details, tid):
