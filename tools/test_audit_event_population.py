@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import audit_event_population as audit
 
@@ -67,6 +68,69 @@ class EventPopulationAuditTests(unittest.TestCase):
         result = audit.model_profile_coverage([], None)
         self.assertIsNone(result["rateable_server_sides"])
         self.assertIsNone(result["missing_server_profile"])
+
+    def test_profile_coverage_uses_long_history_profiles_for_both_event_sides(self):
+        rows = [
+            {
+                "tourney_name": "Montpellier", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "winner", "winner_name": "Taylor Fritz",
+                "loser_id": "loser", "loser_name": "Hubert Hurkacz",
+                "w_svpt": "80", "l_svpt": "82", "w_ace": "10", "l_ace": "8",
+            },
+            {
+                "tourney_name": "Adelaide", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "other1", "winner_name": "Other Player One",
+                "loser_id": "other2", "loser_name": "Other Player Two",
+                "w_svpt": "100", "l_svpt": "100", "w_ace": "10", "l_ace": "10",
+            },
+        ]
+        profiles = {
+            "winner": {
+                "id": "winner", "name": "Taylor Fritz",
+                "serve_rate": 0.12, "concede_rate": 0.08,
+                "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate_source": "career-history-pooled-shrunk",
+            },
+            "loser": {
+                "id": "loser", "name": "Hubert Hurkacz",
+                "serve_rate": 0.15, "concede_rate": 0.09,
+                "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate_source": "career-history-surface-shrunk",
+            },
+        }
+        with patch.object(audit.compute_speed, "build_live_profiles", return_value=profiles):
+            result = audit.model_profile_coverage(rows, "montpellier", 2026)
+
+        self.assertEqual(2, result["rateable_server_sides"])
+        self.assertEqual(0, result["tour_prior_sides"])
+        self.assertEqual(2, result["career_history_server_sides"])
+        self.assertEqual(2, result["career_history_returner_sides"])
+        self.assertEqual(35, result["profile_source_window_years"])
+
+    def test_profile_coverage_uses_explicit_tour_prior_for_true_profile_gaps(self):
+        rows = [
+            {
+                "tourney_name": "Montpellier", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "winner", "winner_name": "Unseen Player One",
+                "loser_id": "loser", "loser_name": "Unseen Player Two",
+                "w_svpt": "80", "l_svpt": "82", "w_ace": "10", "l_ace": "8",
+            },
+            {
+                "tourney_name": "Adelaide", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "other1", "winner_name": "Other Player One",
+                "loser_id": "other2", "loser_name": "Other Player Two",
+                "w_svpt": "100", "l_svpt": "100", "w_ace": "10", "l_ace": "10",
+            },
+        ]
+        with patch.object(audit.compute_speed, "build_live_profiles", return_value={}):
+            result = audit.model_profile_coverage(rows, "montpellier", 2026)
+
+        self.assertEqual(2, result["rateable_server_sides"])
+        self.assertEqual(2, result["tour_prior_sides"])
+        self.assertEqual(2, result["tour_prior_server_profiles"])
+        self.assertEqual(2, result["tour_prior_returner_profiles"])
+        self.assertEqual(2, result["missing_server_profile_before_fallback"])
+        self.assertEqual(2, result["missing_returner_profile_before_fallback"])
 
 
 if __name__ == "__main__":
