@@ -183,6 +183,17 @@ class AtpStatsParserTest {
         // 0.08 × 40 = 3.2 expected aces; six actual aces gives 6 / 3.2 per side.
         assertEquals(6.0 / 3.2, result.rating, 1e-9)
         assertEquals(20, result.adjustedServerSides)
+        assertEquals(20, result.sideDiagnostics.size)
+        assertEquals(result.rating, result.rawEventScore / result.normalisation, 1e-12)
+        assertEquals(0.08, result.tourAceRate!!, 1e-12)
+        assertEquals(800, result.totalServicePoints)
+        assertEquals(20, result.serverProfilesMatched)
+        assertEquals(20, result.returnerProfilesMatched)
+        val firstSide = result.sideDiagnostics.first()
+        assertEquals(6, firstSide.actualAces)
+        assertEquals(40, firstSide.servicePoints)
+        assertTrue(firstSide.expectedAces > 0.0)
+        assertEquals(firstSide.actualAces / firstSide.expectedAces, firstSide.actualExpectedRatio, 1e-12)
     }
 
     @Test
