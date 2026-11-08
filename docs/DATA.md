@@ -65,9 +65,9 @@ ATP/Infosys CDN access is device-sensitive. Successful CI verifies code and test
 | Current-season match stats | TennisMyLife ATP CSV | Preferred when available; source metadata and SHA-256 are recorded |
 | Live match stats | ATP/Infosys Stats Plus | Runtime read-only requests from Android |
 
-The current-season pipeline validates the TML CSV schema and records URL, fetch timestamp, latest match date, row count, byte count and SHA-256 in a sidecar manifest. A cached TML snapshot is used only after refresh failure and only if its manifest/hash match and it is no older than seven days. Otherwise the source fallback is logged.
+The current-season pipeline validates the TML CSV schema and records URL, fetch timestamp, latest match date, row count, byte count and SHA-256 in a sidecar manifest. A cached TML snapshot is used only after refresh failure and only if its manifest/hash match and it is no older than seven days. Otherwise the selected fallback source is logged. The event audit can be made fail-closed with `--require-source "TennisMyLife ATP Match Database"`; this prevents an archive fallback being mistaken for a TML population report.
 
-TennisMyLife's published terms limit use to personal, educational and non-commercial research. Do not commit or redistribute its raw CSV. Confirm current terms and obtain written permission before commercial use or broader redistribution. Derived data does not automatically inherit the historical archive's licence; assess each source's terms independently.
+TennisMyLife's [published repository terms](https://github.com/Tennismylife/TML-Database) limit use to personal, educational and non-commercial research; the public terms do not authorize raw CSV redistribution/resale and require written permission for commercial use. Do not commit or redistribute its raw CSV. Derived data does not automatically inherit the historical archive's licence; assess each source's terms independently. See [DATA-LICENSES.md](../DATA-LICENSES.md) for the source-by-source terms, including the Tennis Abstract, courtspeed.com and ATP/Infosys distinctions.
 
 ## Current audit evidence
 
