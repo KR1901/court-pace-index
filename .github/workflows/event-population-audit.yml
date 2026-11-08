@@ -23,6 +23,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run audit-tool unit tests
-        run: python3 -m unittest tools.test_audit_event_population -v
+        run: python3 -m unittest discover -s tools -p "test_audit_event_population.py" -v
       - name: Check audit CLI syntax
         run: python3 tools/audit_event_population.py --help
