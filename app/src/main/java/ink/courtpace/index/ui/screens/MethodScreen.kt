@@ -129,7 +129,11 @@ fun MethodScreen(data: PaceData) {
                     "mean of actual/expected ace ratios, then season-normalised to a mean of 1.00. Live " +
                     "baselines exclude active tournament matches when a fresh event manifest is available; " +
                     "if that manifest is stale or unavailable, the previous completed season is used. " +
-                    "Live low-sample profiles use the same 150-service-point prior. The 1.00 scale is a " +
+                    "Live low-sample profiles use the same 150-service-point prior. Standard CALC requires " +
+                    "20 eligible server sides; 10–19 sides are shown separately as provisional and never " +
+                    "ranked. Each standard reading includes a conditional 95% match-cluster interval: whole " +
+                    "matches are resampled, while fitted player profiles and the season normaliser are fixed. " +
+                    "It is event-sampling uncertainty, not total model uncertainty. The 1.00 scale is a " +
                     "relative behavioural measure, not an absolute physical court-speed measurement.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
