@@ -94,8 +94,17 @@ class PhysicalCpiDiagnosticsTests(unittest.TestCase):
         self.assertEqual(3, bootstrap["cluster_count"])
         self.assertEqual(200, bootstrap["iterations"])
         self.assertEqual(200, bootstrap["successful_resamples"])
-        self.assertEqual([-1.0, -1.0], bootstrap["pearson_95_interval"])
-        self.assertEqual([-1.0, -1.0], bootstrap["spearman_95_interval"])
+        self.assertEqual("raw event-season association", bootstrap["estimand"])
+        self.assertLessEqual(
+            bootstrap["pearson_95_interval"][0],
+            bootstrap["pearson_95_interval"][1],
+        )
+        centered_bootstrap = first["clay_within_event_centered_cluster_bootstrap"]
+        self.assertEqual(3, centered_bootstrap["cluster_count"])
+        self.assertEqual(200, centered_bootstrap["successful_resamples"])
+        self.assertEqual("within-event-centred association", centered_bootstrap["estimand"])
+        self.assertEqual([-1.0, -1.0], centered_bootstrap["pearson_95_interval"])
+        self.assertEqual([-1.0, -1.0], centered_bootstrap["spearman_95_interval"])
         self.assertIn("event ID", bootstrap["resampling_unit"])
 
 
