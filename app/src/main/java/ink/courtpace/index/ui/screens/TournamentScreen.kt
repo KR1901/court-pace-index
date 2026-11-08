@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Tournament
 import ink.courtpace.index.ui.components.ChartPoint
@@ -55,6 +56,7 @@ fun TournamentScreen(
     data: PaceData,
     tournament: Tournament,
     season: Int,
+    liveAceRating: AceRating.Result? = null,
     onBack: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -173,6 +175,38 @@ fun TournamentScreen(
                             caption = "Published reference",
                             color = colors.textDim,
                             modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+                if (liveAceRating != null && season == liveAceRating.let { season }) {
+                    Spacer(Modifier.height(14.dp))
+                    SectionLabel("Live calculation diagnostics")
+                    Spacer(Modifier.height(8.dp))
+                    StatRow("Completed matches", liveAceRating.matches.toString())
+                    HairLine()
+                    StatRow(
+                        "Adjusted server sides",
+                        "${liveAceRating.adjustedServerSides}/${liveAceRating.totalServerSides}",
+                    )
+                    HairLine()
+                    StatRow(
+                        "Pooled ace rate",
+                        String.format(java.util.Locale.US, "%.2f%%", liveAceRating.aceRate * 100.0),
+                    )
+                    HairLine()
+                    StatRow("Aces", liveAceRating.aces.toString())
+                    if (liveAceRating.inProgressMatches > 0 || liveAceRating.walkoversExcluded > 0) {
+                        HairLine()
+                        StatRow("In-progress matches", liveAceRating.inProgressMatches.toString())
+                        HairLine()
+                        StatRow("Walkovers excluded", liveAceRating.walkoversExcluded.toString())
+                    }
+                    if (liveAceRating.adjustmentIssues.isNotEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                        GlassNote(
+                            "${liveAceRating.adjustmentIssues.size} server-side adjustments excluded. " +
+                                liveAceRating.adjustmentIssues.groupingBy { it.reason }
+                                    .eachCount().entries.joinToString(" · ") { "${it.key}: ${it.value}" },
                         )
                     }
                 }
