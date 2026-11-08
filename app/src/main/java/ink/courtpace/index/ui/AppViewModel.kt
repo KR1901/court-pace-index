@@ -140,7 +140,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             t = tournamentId,
             s = season,
             speed = speed,
-            ace = aceRate,
+            // Historical dataset ace values are stored in percentage points (e.g. 8.5),
+            // while AceRating.Result exposes a fraction (e.g. 0.085). Keep the shared
+            // PaceReading unit consistent so detail screens do not display 0.1% instead of 8.5%.
+            ace = aceRate?.times(100.0),
             src = "live",
             live = true,
             asOf = java.time.Instant.now().toString(),
