@@ -1203,6 +1203,9 @@ def main():
             "careerHistoryPooledShrunkServeProfiles": sum(
                 p["serveRateSource"] == "career-history-pooled-shrunk" for p in live_profile_rows
             ),
+            "tourAveragePriorOnlyProfiles": sum(
+                p["serveRateSource"] == "tour-average-prior-only" for p in live_profile_rows
+            ),
             "withoutServeRate": sum(p["serveRate"] is None for p in live_profile_rows),
             "withoutConcedeRate": sum(p["concedeRate"] is None for p in live_profile_rows),
         }
