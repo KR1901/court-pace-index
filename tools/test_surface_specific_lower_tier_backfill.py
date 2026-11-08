@@ -184,11 +184,27 @@ class SurfaceMetricTests(unittest.TestCase):
         self.assertAlmostEqual(0.0075, metrics["point_weighted_mae"])
 
     def test_paired_event_bootstrap_returns_zero_for_identical_arms(self):
+        def populated(surface):
+            value = audit.empty_cluster(surface)
+            value.update({
+                "sides": 2,
+                "points": 200.0,
+                "aces": 14.0,
+                "predicted_aces": 15.0,
+                "point_abs_error": 2.0,
+                "side_abs_error": 0.02,
+                "binomial_log_loss": 80.0,
+                "server_profile_sides": 2,
+                "returner_profile_sides": 2,
+                "both_profile_sides": 2,
+            })
+            return value
+
         baseline = {
-            "event-a": audit.empty_cluster("clay"),
-            "event-b": audit.empty_cluster("hard"),
-            "event-c": audit.empty_cluster("grass"),
-            "event-d": audit.empty_cluster("clay"),
+            "event-a": populated("clay"),
+            "event-b": populated("hard"),
+            "event-c": populated("grass"),
+            "event-d": populated("clay"),
         }
         candidate = {
             key: dict(value) for key, value in baseline.items()
