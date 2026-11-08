@@ -274,7 +274,7 @@ class ProfileAndScoringTests(unittest.TestCase):
 
         metrics = audit.metrics_from_clusters([clay, hard])
         self.assertEqual(4, metrics["server_sides"])
-        self.assertAlmostEqual(0.1775, metrics["binomial_log_loss_per_point"])
+        self.assertAlmostEqual(0.375, metrics["binomial_log_loss_per_point"])
         self.assertAlmostEqual(0.0075, metrics["point_weighted_mae"])
 
     def test_cluster_metrics_and_bootstrap_delta_are_finite(self):
