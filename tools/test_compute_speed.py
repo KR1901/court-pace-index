@@ -627,5 +627,39 @@ class LiveEventExclusionTests(unittest.TestCase):
         self.assertEqual(["Rome Masters"], [row["tourney_name"] for row in filtered])
 
 
+class ProductionIntervalAndProvisionalTests(unittest.TestCase):
+    def test_match_cluster_interval_is_reproducible(self):
+        clusters = [[0.5, 1.5], [1.0, 1.0], [0.25, 1.75], [1.0]]
+        first = compute_speed.bootstrap_event_interval(clusters, 1.0, iterations=200, seed=17)
+        second = compute_speed.bootstrap_event_interval(clusters, 1.0, iterations=200, seed=17)
+        self.assertEqual(first, second)
+        self.assertLess(first["low"], 1.0)
+        self.assertGreater(first["high"], 1.0)
+
+    def test_ten_to_nineteen_server_sides_are_provisional_not_primary(self):
+        rows = []
+        for event, count in (("Paris Masters", 5), ("Rome Masters", 5), ("Madrid Masters", 10)):
+            for _ in range(count):
+                rows.append({
+                    "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "winner_id": "p1", "loser_id": "p2",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+                })
+        ratings = compute_speed.season_ratings(2026, rows)
+        self.assertEqual({"paris", "rome", "madrid"}, set(ratings))
+        for event in ("paris", "rome"):
+            self.assertNotIn("speed", ratings[event])
+            self.assertEqual(10, ratings[event]["provisionalServerSides"])
+            self.assertIn("provisionalSpeed", ratings[event])
+            self.assertIn("provisionalCiLow", ratings[event])
+            self.assertIn("provisionalCiHigh", ratings[event])
+        self.assertIn("speed", ratings["madrid"])
+        self.assertEqual(20, ratings["madrid"]["adjustedServerSides"])
+        self.assertIn("speedCiLow", ratings["madrid"])
+        self.assertIn("speedCiHigh", ratings["madrid"])
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
