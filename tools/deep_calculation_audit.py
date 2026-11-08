@@ -722,7 +722,109 @@ def full_pipeline_bootstrap_interval(tid, all_rows, config, iterations=250, seed
     }
 
 
-def physical_cpi_diagnostics(dataset_path):
+def correlation_summary(pairs):
+    """Descriptive Pearson/Spearman summary for a sequence of (x, y) pairs."""
+    if len(pairs) < 2:
+        return {
+            "n": len(pairs),
+            "pearson": None,
+            "spearman": None,
+            "status": "insufficient pairs",
+        }
+    xs = [item[0] for item in pairs]
+    ys = [item[1] for item in pairs]
+    pearson = reference.pearson(xs, ys)
+    spearman = reference.spearman(xs, ys)
+    return {
+        "n": len(pairs),
+        "pearson": pearson if math.isfinite(pearson) else None,
+        "spearman": spearman if math.isfinite(spearman) else None,
+    }
+
+
+def within_group_centered_pairs(rows):
+    """Subtract each event's multi-season mean from its speed and CPI values.
+
+    Input rows use the physical diagnostics tuple:
+    (season, event_id, surface, calculated_speed, cpi).
+    """
+    grouped = defaultdict(list)
+    for row in rows:
+        grouped[row[1]].append(row)
+    means = {
+        event_id: (
+            statistics.fmean(row[3] for row in event_rows),
+            statistics.fmean(row[4] for row in event_rows),
+        )
+        for event_id, event_rows in grouped.items()
+    }
+    centered = []
+    for row in rows:
+        speed_mean, cpi_mean = means[row[1]]
+        centered.append((row[3] - speed_mean, row[4] - cpi_mean))
+    return centered
+
+
+def cluster_bootstrap_correlation(rows, iterations=2000, seed=73191):
+    """Resample complete event IDs, retaining every matched season per event.
+
+    This is deliberately an event-cluster bootstrap: repeated seasons for one event
+    remain together and do not masquerade as independent physical sites.
+    """
+    by_event = defaultdict(list)
+    for row in rows:
+        by_event[row[1]].append((row[3], row[4]))
+    event_ids = sorted(by_event)
+    if len(event_ids) < 2:
+        return {
+            "cluster_count": len(event_ids),
+            "iterations": iterations,
+            "successful_resamples": 0,
+            "status": "at least two event clusters are required",
+        }
+
+    rng = random.Random(seed)
+    pearson_draws = []
+    spearman_draws = []
+    for _ in range(iterations):
+        sampled_events = [
+            rng.choice(event_ids) for _ in range(len(event_ids))
+        ]
+        sample = [
+            pair
+            for event_id in sampled_events
+            for pair in by_event[event_id]
+        ]
+        summary = correlation_summary(sample)
+        pearson = summary["pearson"]
+        spearman = summary["spearman"]
+        if pearson is not None and spearman is not None:
+            pearson_draws.append(pearson)
+            spearman_draws.append(spearman)
+
+    def interval(values):
+        if not values:
+            return None
+        low, high = reference.interval(values)
+        return [low, high]
+
+    return {
+        "cluster_count": len(event_ids),
+        "iterations": iterations,
+        "successful_resamples": len(pearson_draws),
+        "seed": seed,
+        "resampling_unit": "tournament ID; all matched seasons for an event stay together",
+        "pearson_95_interval": interval(pearson_draws),
+        "spearman_95_interval": interval(spearman_draws),
+        "caveat": (
+            "Only a few event clusters are available; percentile intervals are exploratory "
+            "and should not be treated as robust population-level physical validation."
+        ),
+    }
+
+
+def physical_cpi_diagnostics(dataset_path, bootstrap_iterations=2000,
+                             bootstrap_seed=73191):
     if not dataset_path.exists():
         return {"status": "dataset not found"}
     dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
@@ -770,6 +872,42 @@ def physical_cpi_diagnostics(dataset_path):
             [row[4] - cpi_mean[row[2]] for row in pairs],
         ),
     }
+
+    # Remove each event's own multi-season mean to separate repeated-year
+    # within-event movement from differences between tournament baselines.
+    result["within_event_centered"] = {
+        "overall": correlation_summary(within_group_centered_pairs(pairs)),
+        "by_surface": {},
+        "method": (
+            "For each event ID, subtract that event's mean CALC speed and mean CPI "
+            "across all matched seasons, then correlate the pooled residual pairs."
+        ),
+    }
+    for surface in sorted({row[2] for row in pairs}):
+        subset = [row for row in pairs if row[2] == surface]
+        result["within_event_centered"]["by_surface"][surface] = (
+            correlation_summary(within_group_centered_pairs(subset))
+        )
+
+    result["by_event"] = {}
+    for event_id in sorted({row[1] for row in pairs}):
+        subset = [row for row in pairs if row[1] == event_id]
+        event_surface = subset[0][2]
+        summary = correlation_summary([(row[3], row[4]) for row in subset])
+        result["by_event"][event_id] = {
+            "surface": event_surface,
+            **summary,
+            "interpretation": (
+                "descriptive repeated-season correlation; not independent court measurements"
+            ),
+        }
+
+    clay_pairs = [row for row in pairs if row[2] == "clay"]
+    result["clay_event_cluster_bootstrap"] = cluster_bootstrap_correlation(
+        clay_pairs,
+        iterations=bootstrap_iterations,
+        seed=bootstrap_seed,
+    )
     result["caveat"] = (
         "CPI overlaps cover a small, non-random set of show-court events; "
         "association is diagnostic, not independent validation of all tournaments."
