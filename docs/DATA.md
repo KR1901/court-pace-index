@@ -93,7 +93,7 @@ Montpellier 2026 has CALC 1.60 versus TA 1.49, with CALC ace rate 14.2% versus T
 
 A promising research-only source for reducing residual profile gaps is Sackmann's separate qualifying/Challenger archive. Its upstream documentation says serve statistics are generally available from 2008 for Challenger matches and 2011 for tour-level qualifying. Those competition levels are not interchangeable with ATP main draw; any backfill must be tested with unique identities, event exclusion, competition-level shrinkage and held-out validation before affecting production rates. The archive is CC BY-NC-SA 4.0. [Upstream archive documentation](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/atp/UPSTREAM_README.md) · [Archive licence](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE).
 
-The consolidated all-season report is attached to [Event population audit run #42479832106](https://github.com/KR1901/court-pace-index/actions/runs/42479832106) as \`all-event-profile-coverage-1991-2026\`. It contains \`summary.json\`, \`coverage-by-season.csv\`, \`coverage-by-event.csv\` and \`README.md\`; no raw source CSV, player names or player IDs are included. The artifact is retained for 90 days.
+The latest ambiguity-aware consolidated all-season report is attached to [Event population audit run #42480868160](https://github.com/KR1901/court-pace-index/actions/runs/42480868160) as \`all-event-profile-coverage-1991-2026\`. It contains \`summary.json\`, \`coverage-by-season.csv\`, \`coverage-by-event.csv\` and \`README.md\`; no raw source CSV, player names or player IDs are included. The artifact is retained for 90 days.
 
 Reproduce locally:
 
