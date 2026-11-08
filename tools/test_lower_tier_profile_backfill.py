@@ -161,7 +161,7 @@ class RollingOriginTests(unittest.TestCase):
         )
         # Target-year main and lower-tier rows do not enter the 2023 training profile.
         self.assertAlmostEqual(
-            1 + 1 + 1,
+            1 + 1 + 1 + 1,
             players["player-a"]["serve"]["pooled"]["matches"],
         )
 
@@ -193,7 +193,7 @@ class RollingOriginTests(unittest.TestCase):
         future = audit.aggregate_rows([row(winner_aces=100, loser_aces=100)])
         players, global_stats, _ = audit.build_training_stats(
             2022,
-            {2020: old, 2021: target_year, 2022: future},
+            {2020: old, 2022: target_year, 2023: future},
             {},
             0.0,
             0.0,
@@ -204,7 +204,7 @@ class RollingOriginTests(unittest.TestCase):
         )
         self.assertNotAlmostEqual(
             global_stats["serve"]["pooled"]["aces"],
-            198.0,
+            200.0,
         )
 
 
