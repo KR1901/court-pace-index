@@ -17,7 +17,7 @@ permissions:
 jobs:
   tests-and-reconciliation:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -43,3 +43,11 @@ jobs:
             --season 2026 \
             --require-source "TennisMyLife ATP Match Database" \
             --out "$RUNNER_TEMP/event-population-audit"
+      - name: Sweep profile coverage across every mapped ATP event in 2026
+        run: |
+          set -euo pipefail
+          python3 tools/audit_event_population.py \
+            --all-events \
+            --season 2026 \
+            --require-source "TennisMyLife ATP Match Database" \
+            --out "$RUNNER_TEMP/all-event-profile-coverage"
