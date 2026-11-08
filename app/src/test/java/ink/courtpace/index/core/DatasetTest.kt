@@ -50,7 +50,7 @@ class DatasetTest {
             assertTrue(reading.src.isNotBlank())
             reading.provisionalSpeed?.let {
                 assertTrue(it in 0.30..2.0)
-                assertTrue(reading.provisionalServerSides in 10..19)
+                assertTrue(reading.provisionalServerSides!! in 10..19)
                 assertTrue(reading.provisionalCiLow!! <= it)
                 assertTrue(it <= reading.provisionalCiHigh!!)
                 assertEquals("provisional", reading.src)
