@@ -662,6 +662,7 @@ def render_markdown(report):
         "## Source, controls and limitations",
         "",
         f"- Source archive: {ARCHIVE_REPOSITORY}.",
+        "- Original dataset attribution: Jeff Sackmann / Tennis Abstract; based on the Jeff Sackmann ATP match database. See https://github.com/JeffSackmann/tennis_atp and https://tennisabstract.com/.",
         f"- Pinned archive commit: {ARCHIVE_COMMIT}.",
         "- Source licence: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International.",
         "- Historical ATP match rows and lower-tier rows are downloaded into a local cache only; raw rows, player IDs and player names are not part of the output artifact.",
