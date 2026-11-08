@@ -11,6 +11,8 @@ on:
       - "tools/deep_calculation_audit.py"
       - "tools/test_deep_calculation_audit.py"
       - "tools/test_compute_speed.py"
+      - "tools/audit_event_population.py"
+      - "tools/test_audit_event_population.py"
       - "app/src/main/assets/pace_dataset.json"
   workflow_dispatch:
 
