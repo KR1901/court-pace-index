@@ -200,6 +200,10 @@ Run and aggregate-only artifact: [Lower-tier profile backfill audit #38](https:/
 
 **Decision:** retain ATP-only production profiles for now. The 2026 surface-specific research arm improves aggregate predictive scores, but worsens calibration, and the post-17-May log-loss interval includes zero. The experiment must not silently promote its weights into live or historical rating generation.
 
+### Scheduled available-to-date refresh
+
+The research workflow is configured for Mondays at 08:00 UTC, after the repository's Monday 06:00 UTC production dataset refresh. Each run fetches the current TML ATP main-draw, ongoing ATP, Challenger, ongoing Challenger and qualifying files again, records new source hashes and repeats the chronological 2026 forward test. This schedule becomes active when the workflow file is present on the repository's default branch; PR #2 remains open and unmerged, so the new schedule is not claimed to be active on the default branch yet. Pull-request CI continues to validate changes on the research branch.
+
 ### Ephemeral source handling
 
 TML files are fetched into a temporary directory for the duration of the research run and are deleted when the script exits. They are not saved into the repository, workflow cache, or artifact. Only aggregate counts, model metrics, source metadata and SHA-256 hashes are uploaded. The repository remains public; no visibility or access setting is changed.
