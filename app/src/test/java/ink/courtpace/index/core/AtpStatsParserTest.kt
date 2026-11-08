@@ -410,7 +410,7 @@ class AtpStatsParserTest {
     }
 
     @Test
-    fun `ambiguous abbreviated names are not assigned to an arbitrary profile`() {
+    fun `ambiguous abbreviated names use a neutral prior and never an arbitrary player's profile`() {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
@@ -422,13 +422,52 @@ class AtpStatsParserTest {
             ),
         )
         val matches = (1..10).map {
-            AtpMatchStats("A. SMITH", "B. JONES", 5, 39, 4, 40, true)
+            AtpMatchStats("A. SMITH", "B. JONES", 6, 75, 6, 75, true)
         }
 
         val coverage = AceRating.coverage(matches, ambiguousBaseline)
+        val result = AceRating.rate(matches, ambiguousBaseline)!!
 
-        assertEquals(0, coverage.adjustedServerSides)
-        assertNull(AceRating.rate(matches, ambiguousBaseline))
+        // The ambiguous A. Smith must not be assigned either Alex's or Andrew's profile.
+        // Its side uses the transparent tour prior and remains included.
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(10, coverage.serverProfilesMatched)
+        assertEquals(10, coverage.returnerProfilesMatched)
+        assertEquals(10, coverage.serverProfilesFallback)
+        assertEquals(10, coverage.returnerProfilesFallback)
+        assertEquals(20, result.adjustedServerSides)
+        assertTrue(result.sideDiagnostics.any {
+            it.server == "A. SMITH" && it.serverProfileSource == "tour-average-prior-only"
+        })
+    }
+
+    @Test
+    fun `true debutants are rated with the neutral season prior rather than dropped`() {
+        val prior = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            tourAceRate = 0.08,
+            profiles = emptyList(),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("Unknown Debutant One", "Unknown Debutant Two", 6, 75, 6, 75, true)
+        }
+
+        val coverage = AceRating.coverage(matches, prior)
+        val result = AceRating.rate(matches, prior)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(0, coverage.serverProfilesMatched)
+        assertEquals(0, coverage.returnerProfilesMatched)
+        assertEquals(20, coverage.serverProfilesFallback)
+        assertEquals(20, coverage.returnerProfilesFallback)
+        assertEquals(1.0, result.rating, 1e-12)
+        assertEquals(20, result.sideDiagnostics.size)
+        assertTrue(result.sideDiagnostics.all {
+            it.serverProfileSource == "tour-average-prior-only" &&
+                it.returnerProfileSource == "tour-average-prior-only"
+        })
     }
 
     @Test
