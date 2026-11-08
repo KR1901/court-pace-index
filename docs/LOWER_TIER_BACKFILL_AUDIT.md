@@ -19,7 +19,7 @@ The experiment uses the pinned Jeff Sackmann ATP archive mirror:
 
 The upstream archive documentation says match statistics are generally present from 1991 for tour-level matches, from 2008 for Challenger matches and from 2011 for tour-level qualifying. The script therefore begins target seasons in 2012, uses main-draw player history from 1991, Challenger observations from 2008 and qualifying observations from 2011.
 
-The current experiment deliberately does **not** use TennisMyLife data. TML has separate public terms that limit use to personal, educational and non-commercial research and do not clearly authorize public-app distribution of TML-derived ratings. Making this repository private would not alter those source terms.
+The historical 2012–2025 rolling-origin comparison uses the pinned Sackmann archive only. A separate 2026 current-season forward test uses TennisMyLife's available-to-date 2026 files for non-commercial research only. TML has separate public terms that limit use to personal, educational and non-commercial research and do not clearly authorize public-app distribution of TML-derived ratings. Making this repository private would not alter those source terms.
 
 ## Data classification
 
@@ -61,9 +61,9 @@ A higher personal-profile coverage percentage alone is not sufficient. The candi
 
 ## Privacy and artifact controls
 
-The script downloads source CSVs into a local / Actions cache pinned to the archive commit. It never commits or uploads raw CSV rows, player names, player IDs or player-level profile estimates.
+The historical Sackmann archive script downloads pinned CSVs into a local / Actions cache. The separate TML 2026 forward script downloads current-season CSVs into an ephemeral temporary directory and deletes them when it exits; no TML raw file is saved in the repository, workflow cache or report artifact. Neither workflow commits or uploads raw match rows, player names, player IDs or player-level profile estimates.
 
-The workflow artifact contains only aggregate development/validation metrics, season counts and source-file SHA-256 hashes. It is retained as a 90-day research artifact. Review its contents before any wider redistribution.
+Workflow artifacts contain aggregate development/validation metrics, season counts, source metadata and source-file SHA-256 hashes only. They are retained as 90-day research artifacts. Review their contents before any wider redistribution.
 
 ## Reproduction
 
@@ -138,6 +138,67 @@ The 2026 ATP target is evaluated match-day by match-day:
 - Challenger and qualifying observations never enter the ATP population prior.
 
 This is different from using the entire 2026 Challenger / qualifying file to predict all 2026 ATP matches, which would introduce look-ahead. Lower-tier results after 17 May can contribute to profiles for later 2026 ATP matches after those results are available and their recorded match date precedes the target match date.
+
+### Corrected 2026 available-to-date forward-test result (8 November 2026)
+
+The 2026 run uses the current TML season snapshot rather than treating the 17 May cutoff in the pinned Sackmann snapshot as the end of the season. It fetches the ATP main-draw file plus ongoing feed, the Challenger main-draw file plus ongoing feed, and the ATP qualifying Q1/Q2/Q3 file. It hashes every downloaded file, de-duplicates static / ongoing feeds, and validates player IDs and service-point / ace counts.
+
+| Population | Valid available-to-date rows | Match-date keys on/after 18 May |
+|---|---:|---:|
+| ATP main draw + ongoing ATP feed | 2,572 | 1,444 |
+| Challenger + ongoing Challenger feed | 5,993 | 3,405 |
+| ATP qualifying Q1/Q2/Q3 | 1,268 | 753 |
+
+The ATP ongoing-results feed extends through valid match-date key 7 November 2026. The static ATP season file extends through 1 November. The dataset is therefore the full **available-to-date** season snapshot as of 8 November, not the results of future tournaments which had not yet been played. The qualifying source includes valid rows with date keys through 9 November; that is source date metadata and is not treated as proof that a future event has been completed.
+
+The surface-specific lower-tier policy was selected only on the historical 2012–2018 development window:
+
+| Surface | Selected profile arm | Development sides | Development event-seasons |
+|---|---|---:|---:|
+| Clay | Challenger + qualifying, weight 1.00 each | 11,388 | 155 |
+| Hard | Qualifying, weight 0.25 | 20,996 | 261 |
+| Grass | ATP-only | 4,456 | 49 |
+
+The 2026 data was not used to select or retune these weights. In 2026, each ATP match day is evaluated using only source matches with a strictly earlier recorded match date. Same-day and future matches are excluded together. Earlier 2026 ATP main-draw history can update player profiles and the ATP-only population prior; earlier 2026 Challenger / qualifying history can update individual player profiles only and never changes the ATP population prior. A tournament's multiple match days are accumulated rather than overwritten.
+
+#### All available 2026 ATP main-draw matches
+
+| Metric | ATP-only history | Surface-specific policy |
+|---|---:|---:|
+| Server sides | 5,144 | 5,144 |
+| Both server and returner have personal histories | 97.74% | 99.49% |
+| Point-weighted ace-rate MAE | 0.035828 | 0.034805 |
+| Binomial log loss / service point | 0.285229 | 0.284828 |
+| Calibration bias (actual − predicted) | +0.007953 | +0.011978 |
+
+Paired event-cluster bootstrap, 2,000 resamples, policy minus ATP-only:
+- Binomial log-loss difference, 95% interval **[-0.000707, -0.000120]**.
+- Point-weighted MAE difference, 95% interval **[-0.001510, -0.000582]**.
+
+Both intervals favour the surface-specific policy on the full available 2026 dataset. However, calibration bias is worse under the policy.
+
+#### Match dates on or after 18 May 2026
+
+This subset contains 1,444 ATP main-draw matches / 2,888 server sides.
+
+| Metric | ATP-only history | Surface-specific policy |
+|---|---:|---:|
+| Both server and returner have personal histories | 97.58% | 99.31% |
+| Point-weighted ace-rate MAE | 0.034921 | 0.034032 |
+| Binomial log loss / service point | 0.288031 | 0.287696 |
+| Calibration bias (actual − predicted) | +0.008520 | +0.011933 |
+
+Paired event-cluster bootstrap, 2,000 resamples, policy minus ATP-only:
+- Binomial log-loss difference, 95% interval **[-0.000716, +0.000018]**; it includes zero and is inconclusive.
+- Point-weighted MAE difference, 95% interval **[-0.001475, -0.000400]**; it favours the surface-specific policy.
+
+The post-17-May subset therefore shows better coverage and MAE, but not a conclusive log-loss improvement. Calibration bias is again worse. This is evidence that later-season Challenger / qualifying results can help estimate players for later ATP matches, but it is not sufficient to enable these sources in production.
+
+The TML-to-Sackmann crosswalk used exact Unicode-normalised full names only: 277 of 291 target TML IDs mapped uniquely; 3 ambiguous IDs and 11 IDs without a historical name match were excluded from backfill. No fuzzy identity matching was used.
+
+Run and aggregate-only artifact: [Lower-tier profile backfill audit #38](https://github.com/KR1901/court-pace-index/actions/runs/42497240644).
+
+**Decision:** retain ATP-only production profiles for now. The 2026 surface-specific research arm improves aggregate predictive scores, but worsens calibration, and the post-17-May log-loss interval includes zero. The experiment must not silently promote its weights into live or historical rating generation.
 
 ### Ephemeral source handling
 
