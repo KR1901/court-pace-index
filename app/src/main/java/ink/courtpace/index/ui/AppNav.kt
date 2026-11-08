@@ -236,7 +236,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                         data = data,
                                         tournament = tournament,
                                         season = vm.season,
-                                        liveAceRating = vm.liveAceByEvent[current.tournamentId],
+                                        liveAceRating = vm.liveAceByEvent[current.tournamentId].takeIf { vm.season == data.latestSeason },
                                         onBack = { pop() },
                                     )
                                 }
