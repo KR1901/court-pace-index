@@ -23,7 +23,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-08T12:55:22.662108+00:00",
+   "fetchedAtUtc": "2026-11-08T13:04:52.848697+00:00",
    "latestMatchDate": "20261101",
    "matchRows": 2719,
    "bytes": 578416,
@@ -441,7 +441,7 @@
    "umag": {
     "ace": 4.0,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 4,
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 2,
@@ -553,7 +553,7 @@
    "usopen": {
     "ace": 8.4,
     "matches": 126,
-    "tourPriorSides": 8,
+    "tourPriorSides": 10,
     "careerHistoryServerSides": 4,
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 4,
@@ -567,7 +567,7 @@
    "metz": {
     "ace": 9.7,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -695,7 +695,7 @@
    "doha": {
     "ace": 6.9,
     "matches": 31,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
@@ -751,7 +751,7 @@
    "santiago": {
     "ace": 5.2,
     "matches": 26,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -1157,7 +1157,7 @@
    "canada": {
     "ace": 7.2,
     "matches": 55,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 2,
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
@@ -1269,7 +1269,7 @@
    "vienna": {
     "ace": 9.8,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 8,
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 1,
@@ -1621,7 +1621,7 @@
    "rolandgarros": {
     "ace": 5.9,
     "matches": 127,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 9,
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 2,
@@ -1691,7 +1691,7 @@
    "wimbledon": {
     "ace": 11.1,
     "matches": 127,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 9,
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 2,
@@ -1705,7 +1705,7 @@
    "bastad": {
     "ace": 4.6,
     "matches": 26,
-    "tourPriorSides": 2,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 7,
     "careerHistoryReturnerSides": 7,
     "tourPriorServerSides": 1,
@@ -1901,7 +1901,7 @@
    "shanghai": {
     "ace": 10.3,
     "matches": 55,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 2,
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
@@ -2253,7 +2253,7 @@
    "rome": {
     "ace": 7.2,
     "matches": 54,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
@@ -2941,7 +2941,7 @@
    "rolandgarros": {
     "ace": 5.9,
     "matches": 126,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 2,
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 2,
@@ -3011,7 +3011,7 @@
    "wimbledon": {
     "ace": 9.6,
     "matches": 126,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 11,
     "careerHistoryReturnerSides": 11,
     "tourPriorServerSides": 1,
@@ -3025,7 +3025,7 @@
    "bastad": {
     "ace": 4.1,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 8,
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 3,
@@ -3039,7 +3039,7 @@
    "hamburg": {
     "ace": 4.3,
     "matches": 31,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 6,
     "careerHistoryReturnerSides": 6,
     "tourPriorServerSides": 2,
@@ -3053,7 +3053,7 @@
    "gstaad": {
     "ace": 7.8,
     "matches": 27,
-    "tourPriorSides": 6,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 4,
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 3,
@@ -3081,7 +3081,7 @@
    "umag": {
     "ace": 3.7,
     "matches": 27,
-    "tourPriorSides": 6,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 4,
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 3,
@@ -3545,7 +3545,7 @@
    "estoril": {
     "ace": 3.9,
     "matches": 26,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 1,
@@ -3629,7 +3629,7 @@
    "rolandgarros": {
     "ace": 6.2,
     "matches": 127,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 9,
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 2,
@@ -3755,7 +3755,7 @@
    "gstaad": {
     "ace": 5.9,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 2,
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
@@ -4303,7 +4303,7 @@
    "geneva": {
     "ace": 8.8,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -4317,7 +4317,7 @@
    "lyon": {
     "ace": 5.7,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 8,
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 1,
@@ -4457,7 +4457,7 @@
    "gstaad": {
     "ace": 7.7,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 7,
     "careerHistoryReturnerSides": 7,
     "tourPriorServerSides": 2,
@@ -5159,7 +5159,7 @@
    "gstaad": {
     "ace": 4.9,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 4,
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
@@ -5257,7 +5257,7 @@
    "winstonsalem": {
     "ace": 9.2,
     "matches": 47,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
@@ -5553,7 +5553,7 @@
    "santiago": {
     "ace": 4.6,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 14,
     "careerHistoryReturnerSides": 14,
     "tourPriorServerSides": 2,
@@ -5581,7 +5581,7 @@
    "usopen": {
     "ace": 8.3,
     "matches": 127,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 19,
     "careerHistoryReturnerSides": 19,
     "tourPriorServerSides": 2,
@@ -5723,7 +5723,7 @@
    "gstaad": {
     "ace": 7.0,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 10,
     "careerHistoryServerSides": 7,
     "careerHistoryReturnerSides": 7,
     "tourPriorServerSides": 2,
@@ -5751,7 +5751,7 @@
    "kitzbuhel": {
     "ace": 4.9,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
@@ -5989,7 +5989,7 @@
    "umag": {
     "ace": 3.2,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 2,
@@ -6199,7 +6199,7 @@
    "estoril": {
     "ace": 5.0,
     "matches": 26,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 0,
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 1,
@@ -6411,7 +6411,7 @@
    "santiago": {
     "ace": 3.9,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 1,
@@ -6593,7 +6593,7 @@
    "rolandgarros": {
     "ace": 5.3,
     "matches": 127,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 11,
     "careerHistoryReturnerSides": 11,
     "tourPriorServerSides": 2,
@@ -6873,7 +6873,7 @@
    "tokyo": {
     "ace": 8.9,
     "matches": 30,
-    "tourPriorSides": 6,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 3,
@@ -6945,7 +6945,7 @@
    "unitedcup": {
     "ace": 9.3,
     "matches": 48,
-    "tourPriorSides": 4,
+    "tourPriorSides": 12,
     "careerHistoryServerSides": 10,
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 2,
@@ -7015,7 +7015,7 @@
    "delraybeach": {
     "ace": 7.2,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 2,
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
@@ -7071,7 +7071,7 @@
    "acapulco": {
     "ace": 6.0,
     "matches": 31,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 4,
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
@@ -7267,7 +7267,7 @@
    "lyon": {
     "ace": 4.9,
     "matches": 26,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
@@ -7281,7 +7281,7 @@
    "rolandgarros": {
     "ace": 4.8,
     "matches": 126,
-    "tourPriorSides": 2,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 10,
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 1,
@@ -7533,7 +7533,7 @@
    "usopen": {
     "ace": 8.2,
     "matches": 127,
-    "tourPriorSides": 4,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 8,
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 2,
@@ -7575,7 +7575,7 @@
    "shanghai": {
     "ace": 8.4,
     "matches": 95,
-    "tourPriorSides": 6,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 10,
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 3,
@@ -7913,7 +7913,7 @@
    "miami": {
     "ace": 9.2,
     "matches": 95,
-    "tourPriorSides": 2,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -7927,7 +7927,7 @@
    "estoril": {
     "ace": 4.2,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 9,
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 1,
@@ -8165,7 +8165,7 @@
    "eastbourne": {
     "ace": 8.9,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 2,
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
@@ -8249,7 +8249,7 @@
    "umag": {
     "ace": 3.9,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 6,
     "careerHistoryReturnerSides": 6,
     "tourPriorServerSides": 2,
@@ -8418,7 +8418,7 @@
    "almaty": {
     "ace": 9.5,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 1,
@@ -8756,7 +8756,7 @@
    "bucharest": {
     "ace": 2.4,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -8770,7 +8770,7 @@
    "houston": {
     "ace": 5.4,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 1,
@@ -8854,7 +8854,7 @@
    "rome": {
     "ace": 4.8,
     "matches": 94,
-    "tourPriorSides": 2,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 1,
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 1,
@@ -8994,7 +8994,7 @@
    "wimbledon": {
     "ace": 9.5,
     "matches": 127,
-    "tourPriorSides": 8,
+    "tourPriorSides": 10,
     "careerHistoryServerSides": 14,
     "careerHistoryReturnerSides": 14,
     "tourPriorServerSides": 4,
@@ -9036,7 +9036,7 @@
    "losCabos": {
     "ace": 7.3,
     "matches": 27,
-    "tourPriorSides": 6,
+    "tourPriorSides": 10,
     "careerHistoryServerSides": 9,
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 3,
@@ -9092,7 +9092,7 @@
    "canada": {
     "ace": 8.8,
     "matches": 94,
-    "tourPriorSides": 6,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 3,
@@ -9445,7 +9445,7 @@
    "rotterdam": {
     "ace": 8.6,
     "matches": 31,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -9599,7 +9599,7 @@
    "marrakech": {
     "ace": 6.4,
     "matches": 26,
-    "tourPriorSides": 4,
+    "tourPriorSides": 6,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 2,
@@ -9711,7 +9711,7 @@
    "geneva": {
     "ace": 6.1,
     "matches": 27,
-    "tourPriorSides": 2,
+    "tourPriorSides": 4,
     "careerHistoryServerSides": 3,
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
@@ -9907,7 +9907,7 @@
    "estoril": {
     "ace": 4.4,
     "matches": 27,
-    "tourPriorSides": 4,
+    "tourPriorSides": 10,
     "careerHistoryServerSides": 5,
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 3,
@@ -9935,7 +9935,7 @@
    "losCabos": {
     "ace": 5.6,
     "matches": 27,
-    "tourPriorSides": 6,
+    "tourPriorSides": 8,
     "careerHistoryServerSides": 8,
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 3,
