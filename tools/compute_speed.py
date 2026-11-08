@@ -1203,9 +1203,23 @@ def main():
         }
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
             raise RuntimeError(f"cannot build calibrated live baseline for {current_year}: invalid tour-average ace rate")
+        history_years_loaded = sorted(
+            year for year in _PROFILE_YEAR_CACHE
+            if PROFILE_HISTORY_START_YEAR <= year < profile_year
+        )
+        history_player_matches = sum(
+            int(profile.get("pooled_serve_matches", 0))
+            for year in history_years_loaded
+            for profile in _PROFILE_YEAR_CACHE[year].values()
+        ) // 2
         baseline = {
             "season": current_year,
             "profileSeason": profile_year,
+            "profileHistoryStartYear": PROFILE_HISTORY_START_YEAR,
+            "profileHistoryEndYear": profile_year - 1,
+            "profileHistoryYearsLoaded": len(history_years_loaded),
+            "profileHistoryMatches": history_player_matches,
+            "profileHistoryDecayPerYear": LIVE_PROFILE_HISTORY_DECAY,
             "tourAceRate": tour_rate,
             "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
@@ -1220,6 +1234,9 @@ def main():
             "profiles": live_profile_rows,
             "profileCoverage": {
                 "playerProfiles": len(live_profile_rows),
+                "currentSeasonMatchRows": len(profile_rows),
+                "historicalProfileYears": len(history_years_loaded),
+                "historicalProfileMatches": history_player_matches,
                 **identity_diagnostics,
                 **source_counts,
             },
@@ -1241,7 +1258,7 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "leave-one-tournament-out ace rate adjusted with a season-calibrated server/returner odds ratio; qualified clay and hard/grass player rates are shrunk toward their surface tour rates using a 150-service-point prior before the 1/3–2/3 neutral blend; pooled returner fallback is shrunk toward the tour rate; positive expected-ace values are floored at 0.5 and event ratings are season-normalised",
+            "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "source_metadata": {
