@@ -206,7 +206,7 @@ The ambiguity-aware profile and event-audit implementation passed the full valid
 - [Android CI #597](https://github.com/KR1901/court-pace-index/actions/runs/42480868071): passed.
 - [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): passed; 250 successful bootstrap draws per selected event and the full audit artifact was uploaded.
 
-The later PR head \`1409e38b22fc52848e9ea3be3599bf30581912bc\` has four checks marked \`action_required\` before jobs were created. The recent changes to the dataset refresh workflow have therefore not yet been executed by CI. In particular, the app asset must be regenerated from the updated \`data/speed_history.json\` and verified against it before the new production values can be considered published to the app.
+The latest PR head inspected on 8 November 2026 had four checks marked `action_required` before jobs were created. The recent changes to the dataset refresh workflow have therefore not yet been executed by CI. In particular, the app asset must be regenerated from the updated \`data/speed_history.json\` and verified against it before the new production values can be considered published to the app.
 
 ## Reproduction
 
