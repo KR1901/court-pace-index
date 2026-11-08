@@ -63,13 +63,13 @@ The all-event audit swept every mapped event in each season's selected ATP sourc
 | Statistically eligible server sides | 142,300 |
 | Rateable server sides | 142,300 (100%) |
 | Unrateable sides | 0 |
-| Sides using at least one neutral tour-average prior | 1,584 (1.113%) |
+| Sides using at least one neutral tour-average prior | Corrected per-side total pending the rerun below |
 
-The 100% figure means every source-stat-eligible side received finite inputs to the expected-aces calculation; it does **not** mean every role has an individual player-history estimate. A neutral prior is a transparent coverage fallback, not a recovered personal statistic.
+The 100% figure means every source-stat-eligible side received finite inputs to the expected-aces calculation; it does **not** mean every role has an individual player-history estimate. A neutral prior is a transparent coverage fallback, not a recovered personal statistic. **Audit accounting correction:** the prior audit mutated a missing player-role to `tour-average-prior-only` on its first match and then failed to count later sides reusing that role. Its 1,584 value was therefore not a valid total of all affected server sides. The audit now reports server-role and returner-role prior uses on every side separately; corrected totals are pending the new 1991–2026 run.
 
 The fallback-reason audit found **zero** occurrences where a player profile record existed but lacked a usable role rate, and **zero** ambiguous normalized-name collisions. All 1,610 missing role-estimate occurrences were classified as **no player profile found in the selected history window**: 805 server-role and 805 returner-role occurrences, summed across seasons. The role count exceeds the 1,584 side count because some sides required a prior for both roles. These aggregate diagnostics do not publish player names or IDs.
 
-For 2026 specifically, the audit covered 58 mapped events, 2,519 matches and 5,038 server sides. All 5,038 were rateable; 70 sides (1.39%) used at least one neutral tour-average prior. Those 70 sides corresponded to 72 missing role inputs and 36 distinct fallback player IDs in the 2026 season audit. None were classified as ambiguous-name matches or as an existing profile with an unusable role estimate.
+For 2026 specifically, the previous audit covered 58 mapped events, 2,519 matches and 5,038 server sides. All 5,038 were rateable. Its 70 count represented first fallback side assignments, not all subsequent sides that reused those player-role priors. The 72 missing role inputs and 36 distinct fallback player IDs are unique profile-role diagnostics from that run. The corrected workflow reports per-side server and returner prior uses separately; the updated 2026 totals are pending.
 
 **What this says about the remaining gap:** the current gap is not primarily a player record whose serve/return rate failed to calculate. It is an identity/history coverage gap in the selected ATP main-draw profile pool. The audit alone cannot determine whether each player is genuinely new to the available match-stat archive, has prior matches only in a lower competition tier, or has a name/identity crosswalk mismatch. We must not turn ambiguous matches into automatic identity links.
 
