@@ -659,8 +659,8 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             player_id = row.get(player_id_key)
             player_name = row.get(player_name_key) or ""
             profile = profiles.get(player_id)
-            had_player_profile = profile is not None
             candidate = unique_by_name.get(_normalise_profile_name(player_name))
+            had_player_profile = profile is not None or candidate is not None
             if candidate is not None and profile is None:
                 profile = dict(candidate)
                 profile["id"] = player_id
