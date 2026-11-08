@@ -629,7 +629,7 @@ class LiveEventExclusionTests(unittest.TestCase):
 
 class ProductionIntervalAndProvisionalTests(unittest.TestCase):
     def test_match_cluster_interval_is_reproducible(self):
-        clusters = [[0.5, 1.5], [1.0, 1.0], [0.25, 1.75], [1.0]]
+        clusters = [[0.3, 0.5], [1.5, 1.7], [0.6, 0.8], [1.2, 1.4]]
         first = compute_speed.bootstrap_event_interval(clusters, 1.0, iterations=200, seed=17)
         second = compute_speed.bootstrap_event_interval(clusters, 1.0, iterations=200, seed=17)
         self.assertEqual(first, second)
