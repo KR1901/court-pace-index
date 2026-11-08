@@ -57,8 +57,11 @@ While the app is open, the ATP current-scores hub is re-read every five minutes.
 For the current season, the pipeline prefers TennisMyLife's current-year ATP CSV because the
 Sackmann mirror can lag the live season. Historical seasons continue to use Sackmann. ATP 250/500
 numeric tourney levels in the TML CSV are treated as eligible main-tour events; Davis Cup (D) is
-not included. The current-year source is refreshed on each pipeline run, and a clearly logged
-Sackmann fallback is used only if TML is unreachable and no cached TML file exists.
+not included. The current-year source is refreshed on each pipeline run. A cached TML CSV is
+only reused after a failed refresh when a sidecar manifest proves it was fetched within the prior
+seven days; a missing or stale manifest forces the clearly logged Sackmann fallback rather than
+silently reusing an old current-season snapshot. The manifest records fetch time, URL and byte
+count without copying the raw TML CSV into the repository.
 
 TennisMyLife's published terms limit its data to personal, educational and non-commercial research;
 the project stores derived event ratings and player-profile summaries, not the raw TML match CSV.
@@ -81,6 +84,9 @@ for returners only, fall back to the pooled concession rate when neither surface
 For every server side, neutral-surface expected aces come from the calibrated odds-ratio
 combination of the server and returner's profiles. The event rating is the average of valid
 actual/expected server-side ratios, then season-normalised so the tour-average event reads 1.00.
+The equation is shared by historical and live ratings, but their profile policies differ: historical
+season ratings use qualified profiles from that same season; the live baseline may backfill from
+recent seasons and use explicitly tagged low-sample shrinkage.
 
 Where a published Tennis Abstract figure and a calibrated archive calculation both exist, the
 calibrated calculation is the primary ranking value and the original published figure is retained
@@ -133,6 +139,9 @@ returns the live value first, then the calibrated calculation, then a published-
 - The calibrated archive calculation covers event seasons from 2012 through 2026 where
   sufficient match statistics are available. Tennis Abstract is a rolling 52-week reference
   and remains the labelled fallback for event-seasons without an archive calculation.
+- Current-season cached TML data is only accepted when its fetch manifest is at most seven days old.
+- Conflicting same-season player records with the same normalized display name are excluded from
+  the name-keyed live baseline rather than arbitrarily assigning one player's rates to another.
 
 ## Regenerating
 

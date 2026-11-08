@@ -128,9 +128,11 @@ fun MethodScreen(data: PaceData) {
                     "season surface average using a 300-service-point prior. Expected-ace odds are the " +
                     "server's serve odds multiplied by the returner's concession odds and divided by the " +
                     "season tour-average ace odds, then multiplied by service points. Positive expected-ace " +
-                    "counts below 0.5 are floored at 0.5 rather than dropping that side. Historical and live " +
-                    "ratings use the same calibrated rule; profile sources and low-sample estimates are " +
-                    "tracked in the baseline.",
+                    "counts below 0.5 are floored at 0.5 rather than dropping that side. The expected-aces " +
+                    "equation is shared by historical and live ratings, but profile policies are not identical: " +
+                    "historical ratings use same-season qualified profiles, while live ratings can backfill " +
+                    "from recent seasons or use explicitly tagged low-sample shrinkage. Source season and " +
+                    "sample provenance are retained in the live baseline.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )

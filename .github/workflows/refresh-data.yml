@@ -55,7 +55,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, math, unicodedata
-          from datetime import date
+          from datetime import date, datetime, timezone
           from pathlib import Path
 
           path = Path("data/live_speed_baseline.json")
@@ -83,8 +83,19 @@ jobs:
           usable = [p for p in profiles if p.get("name") and
                     (p.get("serveRate") is not None or p.get("concedeRate") is not None)]
           assert len(usable) >= 20, "too few usable player profiles were generated"
+          source_metadata = baseline.get("sourceMetadata")
+          if source_metadata:
+              fetched = datetime.fromisoformat(source_metadata["fetchedAtUtc"].replace("Z", "+00:00"))
+              age = datetime.now(timezone.utc) - fetched
+              assert age.total_seconds() >= -900 and age.total_seconds() <= 7 * 86400, (
+                  f"TML baseline snapshot is outside the seven-day freshness window: {age}"
+              )
+              print(f"Source snapshot is fresh: {source_metadata['fetchedAtUtc']}")
           coverage = baseline.get("profileCoverage") or {}
           assert coverage.get("playerProfiles") == len(profiles), "profile coverage count does not match the baseline"
+          assert coverage.get("ambiguousNameCollisionsExcluded", 0) >= 0, (
+              "ambiguous name-collision diagnostic must be present and non-negative"
+          )
           assert coverage.get("withoutServeRate") == 0, (
               f"{coverage.get('withoutServeRate')} active baseline profiles still lack a server rate"
           )

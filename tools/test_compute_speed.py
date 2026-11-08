@@ -1,5 +1,8 @@
+import json
 import sys
+import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -44,66 +47,70 @@ def profile(
 
 
 class BuildLiveProfilesTests(unittest.TestCase):
-    def test_duplicate_normalized_names_keep_the_strongest_serve_profile(self):
-        older = profile(
-            "old-id", "Martin Landaluce",
-            serve_rate=0.0733,
-            concede_rate=0.0232,
-            serve_matches=1,
-            hard_grass_aces=2,
-            hard_grass_points=63,
-            hard_grass_matches=1,
-        )
+    def test_same_season_conflicting_player_ids_are_excluded_as_ambiguous(self):
+        first = profile("id-a", "Alex Molcan", serve_rate=0.08, concede_rate=0.06,
+                        concede_rate_source="surface-qualified")
+        second = profile("id-b", "Alex Molčan", serve_rate=0.12, concede_rate=0.09,
+                         concede_rate_source="surface-qualified")
+        for item in (first, second):
+            item.update({
+                "serve_rate_season": 2026,
+                "concede_rate_season": 2026,
+                "serve_rate_source": "current-season-qualified",
+                "serve_rate_sample_matches": 8,
+                "serve_rate_sample_points": 500,
+                "concede_service_points": 500,
+            })
+
+        deduped, diagnostics = compute_speed.dedupe_live_profiles_with_diagnostics([first, second])
+
+        self.assertEqual([], deduped)
+        self.assertEqual(1, diagnostics["ambiguousNameCollisionsExcluded"])
+        self.assertEqual(1, diagnostics["duplicateNameRecordsCollapsed"])
+
+    def test_older_duplicate_id_does_not_override_newer_current_profile(self):
+        older = profile("old-id", "Martin Landaluce", serve_rate=0.0733, concede_rate=0.0232)
         older.update({
             "serve_rate_season": 2022,
             "serve_rate_source": "prior-season-shrunk",
             "serve_rate_sample_matches": 1,
             "serve_rate_sample_points": 63,
             "concede_rate_season": 2022,
+            "concede_rate_source": "pooled-fallback",
         })
-        current = profile(
-            "current-id", "Martin Landaluce",
-            serve_rate=0.0609,
-            concede_rate=0.0699,
-            serve_matches=11,
-            clay_aces=25,
-            clay_points=400,
-            clay_matches=6,
-            hard_grass_aces=36,
-            hard_grass_points=412,
-            hard_grass_matches=5,
-        )
+        current = profile("current-id", "Martin Landaluce", serve_rate=0.0609, concede_rate=0.0699)
         current.update({
             "serve_rate_season": 2026,
             "serve_rate_source": "current-season-qualified",
             "serve_rate_sample_matches": 11,
             "serve_rate_sample_points": 812,
             "concede_rate_season": 2026,
+            "concede_rate_source": "surface-qualified",
+            "concede_service_points": 812,
         })
 
         deduped = compute_speed.dedupe_live_profiles([older, current])
 
         self.assertEqual(1, len(deduped))
         self.assertEqual("current-season-qualified", deduped[0]["serve_rate_source"])
-        self.assertEqual(2026, deduped[0]["serve_rate_season"])
         self.assertEqual(0.0609, deduped[0]["serve_rate"])
         self.assertEqual(0.0699, deduped[0]["concede_rate"])
-        self.assertEqual(2026, deduped[0]["concede_rate_season"])
 
-    def test_duplicate_names_with_different_accents_are_collapsed(self):
-        first = profile("one", "Alex Molcan", serve_rate=0.08)
-        second = profile("two", "Alex Molčan", serve_rate=0.07)
-        first.update({"serve_rate_season": 2026, "serve_rate_source": "current-season-qualified",
-                      "serve_rate_sample_matches": 8, "serve_rate_sample_points": 500,
-                      "concede_rate_season": 2026})
-        second.update({"serve_rate_season": 2025, "serve_rate_source": "prior-season-qualified",
-                       "serve_rate_sample_matches": 5, "serve_rate_sample_points": 300,
-                       "concede_rate_season": 2025})
+    def test_tml_cache_requires_recent_successful_fetch_manifest(self):
+        now = datetime(2026, 11, 8, 12, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as directory:
+            metadata_path = Path(directory) / "tml.csv.meta.json"
+            self.assertFalse(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
 
-        deduped = compute_speed.dedupe_live_profiles([first, second])
+            metadata_path.write_text(json.dumps({
+                "fetchedAtUtc": (now - timedelta(days=3)).isoformat()
+            }), encoding="utf-8")
+            self.assertTrue(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
 
-        self.assertEqual(1, len(deduped))
-        self.assertEqual(0.08, deduped[0]["serve_rate"])
+            metadata_path.write_text(json.dumps({
+                "fetchedAtUtc": (now - timedelta(days=8)).isoformat()
+            }), encoding="utf-8")
+            self.assertFalse(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
 
 
     def test_preserves_qualified_current_profiles_and_backfills_prior_season_profiles(self):

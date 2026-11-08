@@ -14,7 +14,7 @@ Run:  python3 tools/compute_speed.py            # compute and validate against 2
 """
 import csv, json, math, os, sys, urllib.request, unicodedata
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
@@ -23,7 +23,9 @@ TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
 YEARS = range(2012, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Finals
 SOURCE_BY_YEAR = {}
+SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
+TML_CACHE_MAX_AGE_DAYS = 7
 
 # CSV event name -> tournament id used by the app
 NAMES = {
@@ -56,14 +58,31 @@ NAMES = {
 }
 
 
+def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_DAYS):
+    """A cached current-season CSV is trusted only with a recent successful-fetch manifest."""
+    try:
+        with open(metadata_path, encoding="utf-8") as source:
+            metadata = json.load(source)
+        fetched = datetime.fromisoformat(metadata["fetchedAtUtc"].replace("Z", "+00:00"))
+        if fetched.tzinfo is None:
+            fetched = fetched.replace(tzinfo=timezone.utc)
+        current = now or datetime.now(timezone.utc)
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        age = current - fetched
+        return timedelta(seconds=-900) <= age <= timedelta(days=max_age_days)
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+        return False
+
+
 def load(year):
     os.makedirs(CACHE, exist_ok=True)
 
-    # The Sackmann mirror's 2026 snapshot stops in May. TML publishes a current-year
-    # ATP match table through the end of the season; refresh it on every pipeline run.
-    # Only the current year's archive uses TML; historical rows remain reproducible from Sackmann.
+    # Prefer a fresh TML current-season download. After an outage, reuse a cached TML file
+    # only if its sidecar proves it was fetched in the prior seven days.
     if year == date.today().year:
         tml_path = os.path.join(CACHE, f"tml_atp_matches_{year}.csv")
+        metadata_path = tml_path + ".meta.json"
         request = urllib.request.Request(
             TML_CURRENT_URL.format(year),
             headers={"User-Agent": "CourtPaceIndex/1.0", "Accept": "text/csv"},
@@ -75,13 +94,34 @@ def load(year):
                 raise ValueError("TennisMyLife returned an unexpected ATP CSV schema")
             with open(tml_path, "wb") as f:
                 f.write(payload)
+            metadata = {
+                "source": "TennisMyLife ATP Match Database",
+                "url": TML_CURRENT_URL.format(year),
+                "fetchedAtUtc": datetime.now(timezone.utc).isoformat(),
+                "bytes": len(payload),
+            }
+            with open(metadata_path, "w", encoding="utf-8") as f:
+                json.dump(metadata, f, indent=2)
             SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database"
-        except (HTTPError, urllib.error.URLError, TimeoutError, ValueError) as error:
-            if os.path.exists(tml_path):
-                print(f"warning: TML refresh failed ({error}); using cached TML current-season data")
-                SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database (cached)"
+            SOURCE_METADATA_BY_YEAR[year] = metadata
+        except (HTTPError, urllib.error.URLError, TimeoutError, ValueError, OSError) as error:
+            if os.path.exists(tml_path) and tml_cache_is_fresh(metadata_path):
+                with open(metadata_path, encoding="utf-8") as f:
+                    metadata = json.load(f)
+                print(
+                    f"warning: TML refresh failed ({error}); using cached snapshot "
+                    f"fetched {metadata['fetchedAtUtc']}"
+                )
+                SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database (fresh cache)"
+                SOURCE_METADATA_BY_YEAR[year] = metadata
             else:
-                print(f"warning: TML unavailable ({error}); falling back to Sackmann current-year archive")
+                if os.path.exists(tml_path):
+                    print(
+                        f"warning: TML refresh failed ({error}); cached snapshot has no "
+                        f"valid fetch manifest or is older than {TML_CACHE_MAX_AGE_DAYS} days"
+                    )
+                else:
+                    print(f"warning: TML unavailable ({error}); no cached current-season snapshot")
                 path = os.path.join(CACHE, f"atp_matches_{year}.csv")
                 if not os.path.exists(path):
                     with urllib.request.urlopen(MIRROR.format(year), timeout=90) as response:
@@ -442,15 +482,13 @@ def _normalise_profile_name(name):
     )
 
 
-def dedupe_live_profiles(profiles):
+def dedupe_live_profiles_with_diagnostics(profiles):
     """
-    Collapse duplicate archive IDs that refer to the same normalized player name.
+    Build the name-keyed Android index without silently merging conflicting same-name players.
 
-    This is important because the Android profile index is name-keyed. Prefer a qualified
-    current-season serve rate, then a qualified recent-season rate, then a shrunk estimate.
-    Within a source tier, prefer the newest season and larger player-specific sample. Retain
-    the best available return-concession rate independently: a surface-qualified profile
-    takes precedence over a pooled fallback, then the newest season wins.
+    Different archive IDs with the same normalized name are collapsed only when same-season
+    rates agree. Conflicting same-season identities are omitted because ATP live stats arrive
+    as display names, not stable player IDs. Across seasons, the newest/strongest record wins.
     """
     source_priority = {
         "current-season-qualified": 4,
@@ -458,66 +496,68 @@ def dedupe_live_profiles(profiles):
         "current-season-shrunk": 2,
         "prior-season-shrunk": 1,
     }
-    chosen = {}
-
+    groups = defaultdict(list)
     for profile in profiles:
-        name = (profile.get("name") or "").strip()
-        key = _normalise_profile_name(name)
-        if not key:
-            continue
-
-        rank = (
-            source_priority.get(profile.get("serve_rate_source"), 0),
-            profile.get("serve_rate_season") or 0,
-            profile.get("serve_rate_sample_points") or 0,
-            profile.get("serve_rate_sample_matches") or 0,
-        )
-        existing = chosen.get(key)
-        if existing is None:
-            candidate = dict(profile)
-            candidate["_serve_rank"] = rank
-            chosen[key] = candidate
-            continue
-
-        # Select serve and returner tendencies independently. The best serve record
-        # must not erase a better surface-qualified returner record from another ID.
-        candidate = existing
-        concede_priority = {"surface-qualified": 2, "pooled-fallback": 1}
-        candidate_concede_rank = (
-            concede_priority.get(candidate.get("concede_rate_source"), 0),
-            candidate.get("concede_rate_season") or 0,
-            candidate.get("concede_service_points") or 0,
-        )
-        profile_concede_rank = (
-            concede_priority.get(profile.get("concede_rate_source"), 0),
-            profile.get("concede_rate_season") or 0,
-            profile.get("concede_service_points") or 0,
-        )
-        if profile.get("concede_rate") is not None and profile_concede_rank > candidate_concede_rank:
-            candidate["concede_rate"] = profile["concede_rate"]
-            candidate["concede_rate_season"] = profile.get("concede_rate_season")
-            candidate["concede_rate_source"] = profile.get("concede_rate_source")
-            candidate["concede_matches"] = profile.get("concede_matches", 0)
-            candidate["concede_service_points"] = profile.get("concede_service_points", 0.0)
-
-        if rank > candidate["_serve_rank"]:
-            best_concede = {
-                field: candidate.get(field)
-                for field in (
-                    "concede_rate", "concede_rate_season", "concede_rate_source",
-                    "concede_matches", "concede_service_points",
-                )
-            }
-            replacement = dict(profile)
-            replacement["_serve_rank"] = rank
-            replacement.update(best_concede)
-            chosen[key] = replacement
+        key = _normalise_profile_name((profile.get("name") or "").strip())
+        if key:
+            groups[key].append(dict(profile))
 
     result = []
-    for profile in chosen.values():
-        profile.pop("_serve_rank", None)
-        result.append(profile)
-    return result
+    ambiguous = 0
+    collapsed = 0
+    concede_priority = {"surface-qualified": 2, "pooled-fallback": 1}
+
+    for key, group in groups.items():
+        collapsed += max(0, len(group) - 1)
+        seasons = {
+            profile.get("serve_rate_season") or profile.get("concede_rate_season")
+            for profile in group
+            if profile.get("serve_rate_season") or profile.get("concede_rate_season")
+        }
+        if len(group) > 1 and len(seasons) == 1:
+            serve = [p["serve_rate"] for p in group if p.get("serve_rate") is not None]
+            concede = [p["concede_rate"] for p in group if p.get("concede_rate") is not None]
+            if (
+                (serve and max(serve) - min(serve) > 0.005)
+                or (concede and max(concede) - min(concede) > 0.005)
+            ):
+                ambiguous += 1
+                continue
+
+        def serve_rank(profile):
+            return (
+                source_priority.get(profile.get("serve_rate_source"), 0),
+                profile.get("serve_rate_season") or 0,
+                profile.get("serve_rate_sample_points") or 0,
+                profile.get("serve_rate_sample_matches") or 0,
+            )
+
+        candidate = dict(max(group, key=serve_rank))
+        best_return = max(
+            group,
+            key=lambda p: (
+                concede_priority.get(p.get("concede_rate_source"), 0),
+                p.get("concede_rate_season") or 0,
+                p.get("concede_service_points") or 0,
+            ),
+        )
+        if best_return.get("concede_rate") is not None:
+            for field in (
+                "concede_rate", "concede_rate_season", "concede_rate_source",
+                "concede_matches", "concede_service_points",
+            ):
+                candidate[field] = best_return.get(field)
+        result.append(candidate)
+
+    return result, {
+        "duplicateNameRecordsCollapsed": collapsed,
+        "ambiguousNameCollisionsExcluded": ambiguous,
+    }
+
+
+def dedupe_live_profiles(profiles):
+    """Compatibility wrapper returning only safely name-resolvable profiles."""
+    return dedupe_live_profiles_with_diagnostics(profiles)[0]
 
 
 def tour_average_ace_rate(usable):
@@ -673,8 +713,9 @@ def main():
         # Expand only the live baseline. Historical season_ratings() continues to use
         # its original qualified profiles and therefore keeps all published rankings intact.
         live_profiles = build_live_profiles(profile_year, profiles)
-        unique_live_profiles = dedupe_live_profiles(live_profiles.values())
-        duplicate_name_records_collapsed = len(live_profiles) - len(unique_live_profiles)
+        unique_live_profiles, identity_diagnostics = dedupe_live_profiles_with_diagnostics(
+            live_profiles.values()
+        )
         live_profile_rows = [
             {
                 "name": profile["name"],
@@ -718,10 +759,11 @@ def main():
             "tourAceRate": tour_rate,
             "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
+            "sourceMetadata": SOURCE_METADATA_BY_YEAR.get(current_year),
             "profiles": live_profile_rows,
             "profileCoverage": {
                 "playerProfiles": len(live_profile_rows),
-                "duplicateNameRecordsCollapsed": duplicate_name_records_collapsed,
+                **identity_diagnostics,
                 **source_counts,
             },
             "ratedEvents": len(raw_events),
@@ -745,6 +787,9 @@ def main():
             "method": "ace rate adjusted with a season-calibrated server/returner odds ratio; both player profiles use qualified clay (1/3) and hard/grass (2/3) rates, with pooled returner fallback when neither surface qualifies; positive expected-ace values are floored at 0.5 and season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
+            "source_metadata": {
+                str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR
+            },
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
                         for y, ratings in history.items()},

@@ -1,0 +1,161 @@
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import deep_calculation_audit as audit
+
+
+def match(event, winner_aces, loser_aces, surface="Clay"):
+    return {
+        "tourney_name": event,
+        "tourney_level": "250",
+        "winner_id": "p1",
+        "loser_id": "p2",
+        "winner_name": "Player One",
+        "loser_name": "Player Two",
+        "surface": surface,
+        "w_svpt": 100,
+        "l_svpt": 100,
+        "w_ace": winner_aces,
+        "l_ace": loser_aces,
+    }
+
+
+class SufficientStatisticsTests(unittest.TestCase):
+    def test_subtract_stats_removes_the_entire_event_sample(self):
+        total = {"aces": 18.0, "points": 300.0, "matches": 3}
+        excluded = {"aces": 10.0, "points": 100.0, "matches": 1}
+        self.assertEqual(
+            {"aces": 8.0, "points": 200.0, "matches": 2},
+            audit.subtract_stats(total, excluded),
+        )
+
+    def test_posterior_rate_shrinks_low_sample_rate_toward_surface_prior(self):
+        estimate = audit.posterior_rate(
+            {"aces": 8.0, "points": 100.0, "matches": 2},
+            {"aces": 10.0, "points": 100.0, "matches": 2},
+            prior_points=300.0,
+            min_matches=1,
+        )
+        self.assertAlmostEqual(0.095, estimate)
+
+    def test_weighted_profile_applies_the_declared_clay_weight(self):
+        player = {
+            "serve": {
+                "clay": {"aces": 10.0, "points": 100.0, "matches": 3},
+                "hard_grass": {"aces": 20.0, "points": 100.0, "matches": 3},
+                "pooled": {"aces": 30.0, "points": 200.0, "matches": 6},
+            },
+            "return": {
+                "clay": {"aces": 10.0, "points": 100.0, "matches": 3},
+                "hard_grass": {"aces": 20.0, "points": 100.0, "matches": 3},
+                "pooled": {"aces": 30.0, "points": 200.0, "matches": 6},
+            },
+        }
+        prior = {
+            role: {
+                bucket: {"aces": 8.0, "points": 100.0, "matches": 3}
+                for bucket in ("clay", "hard_grass", "pooled")
+            }
+            for role in ("serve", "return")
+        }
+        result = audit.weighted_profile(
+            player, "serve", prior, clay_weight=1 / 3,
+            prior_points=0.0, min_matches=3, pooled_fallback=False,
+        )
+        self.assertAlmostEqual((1 / 3) * 0.10 + (2 / 3) * 0.20, result)
+
+    def test_grass_is_grouped_with_hard_for_the_neutral_profile(self):
+        self.assertEqual("hard_grass", audit.surface_bucket("Grass"))
+        self.assertEqual("hard_grass", audit.surface_bucket("Hard"))
+        self.assertEqual("clay", audit.surface_bucket("Clay"))
+        self.assertIsNone(audit.surface_bucket("Carpet"))
+
+
+class LeaveOneEventOutTests(unittest.TestCase):
+    def test_target_event_is_removed_from_both_player_profiles(self):
+        rows = (
+            [match("Clay A", 10, 5) for _ in range(3)]
+            + [match("Clay B", 20, 10) for _ in range(3)]
+        )
+        (
+            _usable, event_rows, event_surfaces, players, by_event_players,
+            global_stats, event_stats,
+        ) = audit.aggregate_season(rows)
+        target = audit.event_id("Clay A")
+        config = {
+            "clay_weight": 1 / 3,
+            "prior_points": 0.0,
+            "min_matches": 3,
+            "pooled_return_fallback": True,
+        }
+        profiles, _priors = audit.build_event_profiles(
+            target,
+            event_surfaces[target],
+            players,
+            by_event_players,
+            global_stats,
+            event_stats,
+            config,
+        )
+
+        # Player One served at 10% in Clay A and 20% in Clay B. A leaked profile
+        # would be 15%; the event-excluded profile must be 20%.
+        self.assertAlmostEqual(0.20, profiles["p1"]["serve_rate"])
+        self.assertEqual(3, len(event_rows[target]))
+
+    def test_event_names_map_to_tennis_abstract_reference_keys(self):
+        self.assertEqual("australianopen", audit.event_id("Australian Open"))
+        self.assertEqual("montecarlo", audit.event_id("Monte Carlo Masters"))
+        self.assertEqual("parismasters", audit.event_id("Paris Masters"))
+        self.assertEqual("marrakech", audit.event_id("Marrakech"))
+
+    def test_target_event_is_removed_from_tour_average_anchor(self):
+        rows = (
+            [match("Clay A", 10, 5) for _ in range(3)]
+            + [match("Clay B", 20, 10) for _ in range(3)]
+        )
+        (
+            _usable, event_rows, event_surfaces, players, by_event_players,
+            global_stats, event_stats,
+        ) = audit.aggregate_season(rows)
+        target = audit.event_id("Clay A")
+        config = {
+            "clay_weight": 1 / 3,
+            "prior_points": 0.0,
+            "min_matches": 3,
+            "pooled_return_fallback": True,
+        }
+        profiles, priors = audit.build_event_profiles(
+            target, event_surfaces[target], players, by_event_players,
+            global_stats, event_stats, config,
+        )
+        _ratios, tour_rate = audit.score_event(
+            target, event_rows[target], event_surfaces[target], profiles,
+            global_stats, event_stats, priors,
+        )
+        # Only Clay B contributes to the neutral anchor after event exclusion.
+        self.assertAlmostEqual(30 / 200, tour_rate)
+
+
+class UncertaintyTests(unittest.TestCase):
+    def test_match_cluster_bootstrap_is_reproducible(self):
+        clusters = [[0.8, 1.2], [1.0, 0.9], [1.3, 0.7], [1.1, 1.0]]
+        one = audit.cluster_bootstrap_interval(clusters, 1.0, 500, 123)
+        two = audit.cluster_bootstrap_interval(clusters, 1.0, 500, 123)
+        self.assertEqual(one, two)
+        self.assertLessEqual(one["low"], one["high"])
+        self.assertEqual(500, one["iterations"])
+
+    def test_configuration_grid_contains_weights_shrinkage_and_carpet_test(self):
+        configs = audit.config_grid()
+        self.assertIn("loeo_current_1_3", configs)
+        self.assertIn("loeo_carpet_pooled", configs)
+        self.assertIn("shrink_300", configs)
+        self.assertIn("weight_clay_0_500", configs)
+        self.assertIn("weight_clay_0_667", configs)
+
+
+if __name__ == "__main__":
+    unittest.main()

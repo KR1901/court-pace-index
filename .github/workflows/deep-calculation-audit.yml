@@ -1,0 +1,54 @@
+name: Deep calculation audit
+
+on:
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/deep-calculation-audit.yml"
+      - "tools/compute_speed.py"
+      - "tools/compare_speed_variants.py"
+      - "tools/deep_calculation_audit.py"
+      - "tools/test_deep_calculation_audit.py"
+      - "tools/test_compute_speed.py"
+      - "app/src/main/assets/pace_dataset.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out PR code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore ATP and Tennis Abstract history cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/atp
+            .cache/tennisabstract
+          key: deep-calculation-audit-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py', 'tools/compare_speed_variants.py', 'tools/deep_calculation_audit.py') }}
+          restore-keys: |
+            deep-calculation-audit-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
+      - name: Run Python tests
+        run: python3 -m unittest discover -s tools -p "test_*.py" -v
+      - name: Run leave-one-tournament-out, shrinkage, weighting and physical cross-check audit
+        run: |
+          set -euo pipefail
+          python3 tools/deep_calculation_audit.py --seasons $(seq 1991 "$(date +%Y)") --boot 2000 | tee deep-calculation-audit.txt
+          cat deep-calculation-audit.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload full audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: court-pace-deep-calculation-audit
+          path: deep-calculation-audit.txt
+          if-no-files-found: error
+          retention-days: 30
