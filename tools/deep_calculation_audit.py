@@ -216,7 +216,7 @@ def estimate_empirical_bayes_prior_points(players, event_players, prior_players,
     for role in ("serve", "return"):
         result[role] = {}
         diagnostics[role] = {}
-        for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled"):
+        for bucket in ("clay", "hard_grass", "carpet", "pooled"):
             aggregate = prior_players[role][bucket]
             mean_rate = (
                 aggregate["aces"] / aggregate["points"]
