@@ -138,6 +138,44 @@ class EventPopulationAuditTests(unittest.TestCase):
             {item["reason"] for item in details},
         )
 
+    def test_ambiguous_name_matches_are_not_reported_as_absent_history(self):
+        rows = [
+            {
+                "tourney_name": "Montpellier", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "target", "winner_name": "Alex Lee",
+                "loser_id": "known", "loser_name": "Known Player",
+                "w_svpt": "80", "l_svpt": "82", "w_ace": "10", "l_ace": "8",
+            },
+            {
+                "tourney_name": "Adelaide", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "other1", "winner_name": "Other Player One",
+                "loser_id": "other2", "loser_name": "Other Player Two",
+                "w_svpt": "100", "l_svpt": "100", "w_ace": "10", "l_ace": "10",
+            },
+        ]
+        profiles = {
+            "archive-1": {"id": "archive-1", "name": "Alex Lee", "serve_rate": 0.11, "concede_rate": 0.09},
+            "archive-2": {"id": "archive-2", "name": "Alex Lee", "serve_rate": 0.12, "concede_rate": 0.10},
+            "known": {
+                "id": "known", "name": "Known Player",
+                "serve_rate": 0.13, "concede_rate": 0.08,
+                "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate_source": "career-history-surface-shrunk",
+            },
+        }
+        with patch.object(audit.compute_speed, "build_live_profiles", return_value=profiles):
+            result = audit.model_profile_coverage(rows, "montpellier", 2026)
+
+        self.assertEqual(2, result["rateable_server_sides"])
+        self.assertEqual(2, result["tour_prior_sides"])
+        details = result["tour_prior_fallback_details"]
+        self.assertEqual(2, len(details))
+        self.assertEqual(
+            {"ambiguous_name_match"},
+            {item["reason"] for item in details},
+        )
+        self.assertTrue(all(item["name_candidate_count"] == 2 for item in details))
+
     def test_profile_record_without_role_rate_is_distinguished_from_no_profile(self):
         rows = [
             {
