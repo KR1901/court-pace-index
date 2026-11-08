@@ -93,6 +93,16 @@ The ITF's [Recognised Courts listing](https://www.world.tennis/en/about-us/tenni
 
 These rows can support an explicitly ordinal, court-specific cross-check only when venue/court identity and test date genuinely match the tournament court. They must not be converted into numeric midpoints (for example, treating “Medium-fast” as 42), and must not be used as a numeric CPR observation. Product classification alone is weaker still and remains contextual metadata.
 
+#### Example of an ATP venue with an ITF court-category record: Chengdu
+
+The current ITF Recognised Courts register lists a Two-Star record for **Sichuan International Tennis Center — Center Court**, with Laykold M3 (acrylic), pace category **Medium**, and test date **27 September 2025**. The ATP's 2026 Chengdu Open page identifies the same Sichuan International Tennis Center as the tournament venue, and the venue operator separately identifies a dedicated Tennis Center Court. This is a strong venue / court-name match for an ATP event, but the ITF record predates the 2026 edition by about a year.
+
+The same ITF register also lists a **separate Court 1** record at this venue with a Medium-fast category and a different surface product (Toplus MC PRO System). It must not be merged with or substituted for the Center Court record. The main-court/Center Court entry is the only one used for this example.
+
+This gives the physical-validation protocol one useful **ordinal** ATP-venue comparison: Chengdu's 2026 ATP event was on hard court, while its registered Center Court's prior ITF category was Medium. It is not a numeric CPR observation, and the 2025 test does not establish the actual centre-court pace during the 2026 tournament. The ITF recognition document states that recognition may remain in place until resurfacing or ten years, but test results are valid only for the day of testing because use, maintenance and ambient conditions can change court properties. Therefore, this record is kept as contextual ordinal evidence only; it is not inserted into the numeric CPI/CPR sample or used as a 2026 matched physical datapoint.
+
+Sources: [ITF Recognised Courts register](https://www.world.tennis/en/about-us/tennis-tech/recognised-courts/) · [ATP Chengdu Open 2026 overview](https://www.atptour.com/en/tournaments/chengdu/7581/overview) · [Sichuan International Tennis Center — Tennis Center Court](https://en.sciitc.com/sports/venue/1.html) · [ITF 2025 Technical Booklet, Part D](https://www.itftennis.com/media/14104/2025-technical-booklet.pdf).
+
 A 2016 field-study paper, *Measuring the court pace rating of tennis courts using low-cost portable devices*, reports measurements on a Plexicushion Prestige hard court and a sand-filled artificial-grass court using 20 sample points on half a court. It reports mean CPR estimates of 47 and 68, respectively, but also explains that the devices do not reproduce every feature of the ITF impact test. Importantly, the paper states that the actual CPR for professional surfaces was not publicly available to its authors, only the category. Its measured courts are useful as a physical-method / surface-consistency reference, not as ATP event-season observations.
 
 Reference: [Espinosa et al. (2016), JSME Sports Engineering and Human Dynamics](https://www.jstage.jst.go.jp/article/jsmeshd/2016/0/2016_B-8/_pdf).
