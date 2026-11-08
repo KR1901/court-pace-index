@@ -1,4 +1,6 @@
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -20,6 +22,81 @@ def match(event, winner_aces, loser_aces, surface="Clay"):
         "w_ace": winner_aces,
         "l_ace": loser_aces,
     }
+
+
+class PhysicalCpiDiagnosticsTests(unittest.TestCase):
+    def test_event_centered_clay_analysis_and_cluster_bootstrap_are_reproducible(self):
+        readings = []
+        tournaments = []
+        clay_specs = (
+            ("madrid", 1.0, 24.0),
+            ("rome", 2.0, 31.0),
+            ("montecarlo", 0.7, 27.0),
+        )
+        residual_speed = (-1.5, -0.5, 0.5, 1.5)
+        residual_cpi = (1.5, 0.5, -0.5, -1.5)
+        for event_id, speed_mean, cpi_mean in clay_specs:
+            tournaments.append({"id": event_id, "surface": "Clay"})
+            for index, (dx, dy) in enumerate(zip(residual_speed, residual_cpi)):
+                season = 2018 + index
+                readings.append({
+                    "t": event_id, "s": season,
+                    "cpi": cpi_mean + dy, "src": "courtspeed",
+                })
+                readings.append({
+                    "t": event_id, "s": season,
+                    "speed": speed_mean + dx, "src": "computed",
+                })
+
+        tournaments.append({"id": "hard_event", "surface": "Hard"})
+        for index, (dx, dy) in enumerate(zip(residual_speed, tuple(-v for v in residual_speed))):
+            season = 2018 + index
+            readings.append({
+                "t": "hard_event", "s": season,
+                "cpi": 40.0 + dy, "src": "courtspeed",
+            })
+            readings.append({
+                "t": "hard_event", "s": season,
+                "speed": 1.2 + dx, "src": "computed",
+            })
+
+        with tempfile.TemporaryDirectory() as temporary:
+            dataset_path = Path(temporary) / "pace_dataset.json"
+            dataset_path.write_text(
+                json.dumps({"tournaments": tournaments, "readings": readings}),
+                encoding="utf-8",
+            )
+            first = audit.physical_cpi_diagnostics(
+                dataset_path, bootstrap_iterations=200, bootstrap_seed=41
+            )
+            second = audit.physical_cpi_diagnostics(
+                dataset_path, bootstrap_iterations=200, bootstrap_seed=41
+            )
+
+        self.assertEqual(first, second)
+        self.assertEqual(
+            12,
+            first["within_event_centered"]["by_surface"]["clay"]["n"],
+        )
+        self.assertAlmostEqual(
+            -1.0,
+            first["within_event_centered"]["by_surface"]["clay"]["pearson"],
+            places=12,
+        )
+        self.assertAlmostEqual(
+            -1.0,
+            first["within_event_centered"]["by_surface"]["clay"]["spearman"],
+            places=12,
+        )
+        self.assertEqual(4, first["by_event"]["madrid"]["n"])
+        self.assertAlmostEqual(-1.0, first["by_event"]["madrid"]["pearson"])
+        bootstrap = first["clay_event_cluster_bootstrap"]
+        self.assertEqual(3, bootstrap["cluster_count"])
+        self.assertEqual(200, bootstrap["iterations"])
+        self.assertEqual(200, bootstrap["successful_resamples"])
+        self.assertEqual([-1.0, -1.0], bootstrap["pearson_95_interval"])
+        self.assertEqual([-1.0, -1.0], bootstrap["spearman_95_interval"])
+        self.assertIn("event ID", bootstrap["resampling_unit"])
 
 
 class SufficientStatisticsTests(unittest.TestCase):
