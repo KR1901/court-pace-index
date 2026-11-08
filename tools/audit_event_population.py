@@ -49,17 +49,10 @@ def reason(row):
     return None
 
 
-def model_profile_coverage(all_rows, event_id):
-    """Measure current-season LOEO profile coverage and identify missing profile inputs."""
+def model_profile_coverage(all_rows, event_id, season):
+    """Use the production long-history profile builder and explicit neutral prior fallback."""
     if not event_id:
-        return {
-            "rateable_server_sides": None,
-            "missing_server_profile": None,
-            "missing_returner_profile": None,
-            "missing_both_profiles": None,
-            "invalid_expected_aces": None,
-            "missing_profile_sides": [],
-        }
+        return {"rateable_server_sides": None, "tour_prior_sides": None}
 
     usable = compute_speed.valid_rows(all_rows)
     target_rows = [
@@ -70,69 +63,29 @@ def model_profile_coverage(all_rows, event_id):
         row for row in usable
         if compute_speed.NAMES.get((row.get("tourney_name") or "").strip()) != event_id
     ]
-    profiles = compute_speed.player_rates(
+    current_profiles = compute_speed.player_rates(
         training_rows,
         prior_points=compute_speed.PROFILE_PRIOR_SERVICE_POINTS,
     )
+    profiles = compute_speed.build_live_profiles(season, current_profiles)
     tour_rate = compute_speed.tour_average_ace_rate(training_rows)
-    counts = Counter()
-    missing_sides = []
-
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
         return {
             "rateable_server_sides": 0,
-            "missing_server_profile": None,
-            "missing_returner_profile": None,
-            "missing_both_profiles": None,
-            "invalid_expected_aces": None,
-            "missing_profile_sides": [],
+            "tour_prior_sides": None,
             "reason": "invalid_leave_one_event_out_tour_rate",
         }
 
-    for row in target_rows:
-        for server_key, returner_key, service_points_key, aces_key in (
-            ("winner_id", "loser_id", "w_svpt", "w_ace"),
-            ("loser_id", "winner_id", "l_svpt", "l_ace"),
-        ):
-            server = row[server_key]
-            returner = row[returner_key]
-            serve_rate = profiles.get(server, {}).get("serve_rate")
-            concede_rate = profiles.get(returner, {}).get("concede_rate")
-            if serve_rate is None or concede_rate is None:
-                reason = (
-                    "missing_both_profiles" if serve_rate is None and concede_rate is None
-                    else "missing_server_profile" if serve_rate is None
-                    else "missing_returner_profile"
-                )
-                counts[reason] += 1
-                missing_sides.append({
-                    "match_id": row.get("match_id", ""),
-                    "round": row.get("round", ""),
-                    "server_id": server,
-                    "server_name": row.get("winner_name" if server_key == "winner_id" else "loser_name", ""),
-                    "returner_id": returner,
-                    "returner_name": row.get("loser_name" if returner_key == "loser_id" else "winner_name", ""),
-                    "missing": reason,
-                    "server_service_points": number(row, service_points_key),
-                    "server_aces": number(row, aces_key),
-                })
-                continue
-            expected = compute_speed.expected_calibrated_aces(
-                serve_rate, concede_rate, tour_rate, number(row, service_points_key)
-            )
-            if not math.isfinite(expected) or expected <= compute_speed.MIN_EXPECTED_ACES:
-                counts["invalid_expected_aces"] += 1
-                continue
-            counts["rateable_server_sides"] += 1
-
+    coverage = compute_speed.ensure_event_profiles(target_rows, profiles, tour_rate)
     return {
-        "rateable_server_sides": int(counts["rateable_server_sides"]),
-        "missing_server_profile": int(counts["missing_server_profile"]),
-        "missing_returner_profile": int(counts["missing_returner_profile"]),
-        "missing_both_profiles": int(counts["missing_both_profiles"]),
-        "invalid_expected_aces": int(counts["invalid_expected_aces"]),
-        "missing_profile_sides": missing_sides,
-        "reason": None,
+        **coverage,
+        "profile_database_players": len(profiles),
+        "profile_training_matches": len(training_rows),
+        "profile_history_start_year": compute_speed.PROFILE_HISTORY_START_YEAR,
+        "profile_history_end_year": season,
+        "profile_history_decay": compute_speed.LIVE_PROFILE_HISTORY_DECAY,
+        "profile_source_window_years": compute_speed.LIVE_PROFILE_FALLBACK_SEASONS,
+        "profile_match_key": "unique normalised full name across TML/Sackmann IDs",
     }
 
 
@@ -205,7 +158,7 @@ def main():
     aces = totals["winner_aces"] + totals["loser_aces"]
     points = totals["winner_service_points"] + totals["loser_service_points"]
     event_id = compute_speed.NAMES.get((event_rows[0].get("tourney_name") or "").strip())
-    model_coverage = model_profile_coverage(rows, event_id)
+    model_coverage = model_profile_coverage(rows, event_id, args.season)
     metadata = compute_speed.SOURCE_METADATA_BY_YEAR.get(args.season, {})
     summary = {
         "generated_utc": datetime.now(timezone.utc).isoformat(),
