@@ -173,13 +173,79 @@ def posterior_rate(player_stats, prior_stats, prior_points, min_matches):
     return player_stats["aces"] / player_stats["points"]
 
 
+def resolve_prior_points(prior_points, role, bucket):
+    """Resolve fixed or role/surface-specific empirical-Bayes pseudo service points."""
+    if isinstance(prior_points, dict):
+        role_values = prior_points.get(role, prior_points)
+        if isinstance(role_values, dict):
+            return float(role_values.get(bucket, 0.0))
+    return float(prior_points)
+
+
+def estimate_empirical_bayes_prior_points(players, event_players, prior_players,
+                                          min_matches=3, min_prior=25.0, max_prior=1000.0):
+    """
+    Estimate beta-binomial concentration by moments from training players only.
+
+    Remove the target event from each player's sample before measuring between-player
+    variance. Subtract average binomial sampling variance from the observed variance,
+    then convert the remaining heterogeneity into an equivalent service-point prior.
+    """
+    result = {}
+    diagnostics = {}
+    for role in ("serve", "return"):
+        result[role] = {}
+        diagnostics[role] = {}
+        for bucket in ("clay", "hard_grass", "carpet", "pooled"):
+            aggregate = prior_players[role][bucket]
+            mean_rate = (
+                aggregate["aces"] / aggregate["points"]
+                if aggregate["points"] > 0 else None
+            )
+            samples = []
+            for player_id, total in players.items():
+                event_sample = event_players.get(player_id, {}).get(role, {}).get(bucket)
+                sample = subtract_stats(total[role][bucket], event_sample)
+                if sample["points"] > 0 and sample["matches"] >= min_matches:
+                    samples.append((sample["aces"] / sample["points"], sample["points"]))
+            if mean_rate is None or len(samples) < 3:
+                observed_variance = 0.0
+                sampling_variance = 0.0
+                between_variance = 0.0
+                prior = max_prior
+            else:
+                rates = [rate for rate, _points in samples]
+                observed_variance = statistics.variance(rates)
+                sampling_variance = statistics.fmean(
+                    rate * (1.0 - rate) / points
+                    for rate, points in samples if points > 0
+                )
+                between_variance = max(0.0, observed_variance - sampling_variance)
+                if between_variance <= 1e-10:
+                    prior = max_prior
+                else:
+                    concentration = mean_rate * (1.0 - mean_rate) / between_variance - 1.0
+                    prior = min(max_prior, max(min_prior, concentration))
+            result[role][bucket] = prior
+            diagnostics[role][bucket] = {
+                "players": len(samples),
+                "meanRate": mean_rate,
+                "observedVariance": observed_variance,
+                "samplingVariance": sampling_variance,
+                "betweenPlayerVariance": between_variance,
+                "priorServicePoints": prior,
+            }
+    return result, diagnostics
+
+
 def weighted_profile(player, role, prior_player, clay_weight, prior_points, min_matches,
                      pooled_fallback, pooled_min_matches=None):
     """Build one neutral player tendency; return None when no defensible sample exists."""
     rates = {}
     for bucket in ("clay", "hard_grass"):
         rates[bucket] = posterior_rate(
-            player[role][bucket], prior_player[role][bucket], prior_points, min_matches
+            player[role][bucket], prior_player[role][bucket],
+            resolve_prior_points(prior_points, role, bucket), min_matches
         )
     clay, hard_grass = rates["clay"], rates["hard_grass"]
     if clay is not None and hard_grass is not None:
@@ -191,7 +257,7 @@ def weighted_profile(player, role, prior_player, clay_weight, prior_points, min_
     if pooled_fallback:
         return posterior_rate(
             player[role]["pooled"], prior_player[role]["pooled"],
-            prior_points,
+            resolve_prior_points(prior_points, role, "pooled"),
             min_matches if pooled_min_matches is None else pooled_min_matches,
         )
     return None
@@ -213,6 +279,13 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
         for role in ("serve", "return")
     }
     profiles = {}
+    prior_points = config["prior_points"]
+    if config.get("empirical_bayes"):
+        prior_points, prior_diagnostics = estimate_empirical_bayes_prior_points(
+            players, excluded_players, prior_players, min_matches=3
+        )
+        # Keep audit metadata separate from the serve/return surface aggregates.
+        prior_players["_empirical_bayes_audit"] = prior_diagnostics
     carpet_pooled = (
         config.get("carpet_pooled")
         and (event_surface or "").strip().casefold() == "carpet"
@@ -238,44 +311,44 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
         if carpet_pooled:
             serve_rate = posterior_rate(
                 training_player["serve"]["pooled"], prior_players["serve"]["pooled"],
-                config["prior_points"], config["min_matches"],
+                prior_points, config["min_matches"],
             )
             concede_rate = posterior_rate(
                 training_player["return"]["pooled"], prior_players["return"]["pooled"],
-                config["prior_points"], config["min_matches"],
+                prior_points, config["min_matches"],
             )
         elif carpet_specific:
             serve_rate = posterior_rate(
                 training_player["serve"]["carpet"], prior_players["serve"]["carpet"],
-                config["prior_points"], config["min_matches"],
+                prior_points, config["min_matches"],
             )
             concede_rate = posterior_rate(
                 training_player["return"]["carpet"], prior_players["return"]["carpet"],
-                config["prior_points"], config["min_matches"],
+                prior_points, config["min_matches"],
             )
             # A player without three eligible carpet matches retains the usual neutral profile.
             if serve_rate is None:
                 serve_rate = weighted_profile(
                     training_player, "serve", prior_players,
-                    config["clay_weight"], config["prior_points"], config["min_matches"],
+                    config["clay_weight"], prior_points, config["min_matches"],
                     config.get("pooled_serve_fallback", False),
                 )
             if concede_rate is None:
                 concede_rate = weighted_profile(
                     training_player, "return", prior_players,
-                    config["clay_weight"], config["prior_points"], config["min_matches"],
+                    config["clay_weight"], prior_points, config["min_matches"],
                     config.get("pooled_return_fallback", True),
                     config.get("pooled_return_min_matches", 1),
                 )
         else:
             serve_rate = weighted_profile(
                 training_player, "serve", prior_players,
-                config["clay_weight"], config["prior_points"], config["min_matches"],
+                config["clay_weight"], prior_points, config["min_matches"],
                 config.get("pooled_serve_fallback", False),
             )
             concede_rate = weighted_profile(
                 training_player, "return", prior_players,
-                config["clay_weight"], config["prior_points"], config["min_matches"],
+                config["clay_weight"], prior_points, config["min_matches"],
                 config.get("pooled_return_fallback", True),
                 config.get("pooled_return_min_matches", 1),
             )
@@ -348,6 +421,11 @@ def config_grid():
             "pooled_return_fallback": True, "pooled_return_min_matches": 1,
             "carpet_specific": True,
         },
+        "loeo_empirical_bayes_1_3": {
+            "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 1,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+            "empirical_bayes": True,
+        },
     }
     for weight in (0.0, 0.2, 0.5, 2.0 / 3.0, 0.8, 1.0):
         label = f"{weight:.3f}".replace(".", "_")
@@ -378,6 +456,7 @@ def score_season(rows, configs, detail_ids):
     raw = {name: {} for name in configs}
     details = {name: {} for name in configs}
     normalisers = {}
+    empirical_bayes_strengths = defaultdict(lambda: defaultdict(list))
 
     for tid, matches in event_rows.items():
         surface = event_surfaces.get(tid, "Unknown")
@@ -385,6 +464,13 @@ def score_season(rows, configs, detail_ids):
             profiles, prior_players = build_event_profiles(
                 tid, surface, players, event_players, global_stats, event_stats, config
             )
+            if config.get("empirical_bayes"):
+                for role, buckets in prior_players.get("_empirical_bayes_audit", {}).items():
+                    for bucket, values in buckets.items():
+                        if values.get("priorServicePoints") is not None:
+                            empirical_bayes_strengths[role][bucket].append(
+                                values["priorServicePoints"]
+                            )
             ratios, clusters = score_event(
                 tid, matches, surface, profiles, global_stats, event_stats, prior_players
             )
@@ -403,6 +489,12 @@ def score_season(rows, configs, detail_ids):
 
     for name, ratings in raw.items():
         normalisers[name] = statistics.fmean(ratings.values()) if ratings else None
+    if empirical_bayes_strengths:
+        print("  empirical-Bayes prior exposure (median pseudo service points across LOEO events):")
+        for role, buckets in sorted(empirical_bayes_strengths.items()):
+            for bucket, values in sorted(buckets.items()):
+                print(f"    {role:7s} {bucket:10s} n={len(values):4d} "
+                      f"median={statistics.median(values):.1f}")
     return raw, normalisers, details, len(usable), len(event_rows), event_surfaces
 
 

@@ -113,6 +113,109 @@ class SufficientStatisticsTests(unittest.TestCase):
         )
         self.assertAlmostEqual(0.20, profiles["p1"]["serve_rate"])
 
+    def test_empirical_bayes_prior_is_estimated_from_between_player_variance(self):
+        players = {}
+        for index, rate in enumerate((0.05, 0.08, 0.10, 0.12, 0.15)):
+            players[str(index)] = {
+                role: {
+                    bucket: {"aces": rate * 10000, "points": 10000.0, "matches": 12}
+                    for bucket in ("clay", "hard_grass", "carpet", "pooled")
+                }
+                for role in ("serve", "return")
+            }
+        priors = {
+            role: {
+                bucket: {"aces": 1000.0, "points": 10000.0, "matches": 60}
+                for bucket in ("clay", "hard_grass", "carpet", "pooled")
+            }
+            for role in ("serve", "return")
+        }
+        estimated, diagnostics = audit.estimate_empirical_bayes_prior_points(
+            players, {}, priors, min_matches=3
+        )
+        for role in ("serve", "return"):
+            self.assertGreaterEqual(estimated[role]["clay"], 25.0)
+            self.assertLessEqual(estimated[role]["clay"], 1000.0)
+            self.assertEqual(5, diagnostics[role]["clay"]["players"])
+            self.assertGreater(diagnostics[role]["clay"]["betweenPlayerVariance"], 0.0)
+
+    def test_empirical_bayes_estimation_excludes_target_event_observations(self):
+        players = {}
+        event_players = {}
+        for player_id, total_aces, event_aces in (
+            ("p1", 500.0, 300.0),
+            ("p2", 500.0, 50.0),
+            ("p3", 500.0, 0.0),
+        ):
+            players[player_id] = {
+                role: {
+                    bucket: {"aces": total_aces, "points": 5000.0, "matches": 5}
+                    for bucket in ("clay", "hard_grass", "carpet", "pooled")
+                }
+                for role in ("serve", "return")
+            }
+            if event_aces or player_id == "p3":
+                event_players[player_id] = {
+                    role: {
+                        bucket: {"aces": event_aces, "points": 1000.0 if player_id != "p3" else 0.0,
+                                 "matches": 1 if player_id != "p3" else 0}
+                        for bucket in ("clay", "hard_grass", "carpet", "pooled")
+                    }
+                    for role in ("serve", "return")
+                }
+
+        total = {
+            role: {
+                bucket: {
+                    "aces": sum(p[role][bucket]["aces"] for p in players.values()),
+                    "points": sum(p[role][bucket]["points"] for p in players.values()),
+                    "matches": sum(p[role][bucket]["matches"] for p in players.values()),
+                }
+                for bucket in ("clay", "hard_grass", "carpet", "pooled")
+            }
+            for role in ("serve", "return")
+        }
+        event_total = {
+            role: {
+                bucket: {
+                    "aces": sum(p[role][bucket]["aces"] for p in event_players.values()),
+                    "points": sum(p[role][bucket]["points"] for p in event_players.values()),
+                    "matches": sum(p[role][bucket]["matches"] for p in event_players.values()),
+                }
+                for bucket in ("clay", "hard_grass", "carpet", "pooled")
+            }
+            for role in ("serve", "return")
+        }
+        excluded_prior = {
+            role: {
+                bucket: audit.subtract_stats(total[role][bucket], event_total[role][bucket])
+                for bucket in ("clay", "hard_grass", "carpet", "pooled")
+            }
+            for role in ("serve", "return")
+        }
+        full_prior = total
+
+        excluded, _ = audit.estimate_empirical_bayes_prior_points(
+            players, event_players, excluded_prior, min_matches=3
+        )
+        leaked, _ = audit.estimate_empirical_bayes_prior_points(
+            players, {}, full_prior, min_matches=3
+        )
+        self.assertNotEqual(
+            excluded["serve"]["clay"],
+            leaked["serve"]["clay"],
+            "The target tournament must not influence its own empirical-Bayes prior.",
+        )
+
+    def test_empirical_bayes_prior_is_role_and_surface_specific(self):
+        values = {
+            "serve": {"clay": 100.0, "hard_grass": 200.0, "pooled": 300.0},
+            "return": {"clay": 400.0, "hard_grass": 500.0, "pooled": 600.0},
+        }
+        self.assertEqual(100.0, audit.resolve_prior_points(values, "serve", "clay"))
+        self.assertEqual(500.0, audit.resolve_prior_points(values, "return", "hard_grass"))
+        self.assertEqual(600.0, audit.resolve_prior_points(values, "return", "pooled"))
+
     def test_pooled_returner_fallback_keeps_production_one_match_eligibility(self):
         player = {
             "serve": {
@@ -224,6 +327,7 @@ class UncertaintyTests(unittest.TestCase):
         self.assertIn("loeo_current_1_3", configs)
         self.assertIn("loeo_carpet_pooled", configs)
         self.assertIn("loeo_carpet_specific", configs)
+        self.assertIn("loeo_empirical_bayes_1_3", configs)
         self.assertIn("shrink_150", configs)
         self.assertIn("shrink_300", configs)
         self.assertIn("weight_clay_0_500", configs)

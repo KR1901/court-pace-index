@@ -24,10 +24,11 @@ The surface-matched returner variant improves aggregate Spearman agreement and M
 1. Leave-one-tournament-out validation. Each target event is scored with every match from that event removed from both player profiles and the tour-average ace-rate anchor.
 2. Clay-weight sensitivity: 0, 0.20, 1/3, 0.50, 2/3, 0.80 and 1.
 3. Service-point prior sensitivity: 150, 300, 600 and 1,000 pseudo service points.
-4. A carpet-specific pooled-profile experiment.
-5. Season-stratified event bootstrap, training/held-out weight comparisons, surface-stratified metrics and match-cluster uncertainty intervals for selected 2026 events.
+4. A carpet-pooled stress test and a carpet-specific profile experiment that requires three carpet matches before use, with neutral-profile fallback otherwise.
+5. A method-of-moments empirical-Bayes prior estimated separately by serve/return role and surface bucket from player-rate heterogeneity after excluding the target event.
+6. Season-stratified event bootstrap, training/held-out weight comparisons, surface-stratified metrics and match-cluster uncertainty intervals for selected 2026 events.
 6. Physical CPI overlap diagnostics, explicitly exploratory because CPI covers a small, non-random set of show-court events.
-7. A seven-day source freshness gate for cached TML current-season data.
+7. A seven-day source freshness and SHA-256 integrity gate for cached TML current-season data.
 8. Conservative resolution of conflicting same-season live player-name collisions.
 9. Clear documentation that historical and live calculations share the expected-aces equation but have different profile fallback policies.
 
@@ -37,6 +38,7 @@ The surface-matched returner variant improves aggregate Spearman agreement and M
 - Do not promote surface-matched returner profiles universally until leave-one-out and carpet-specific results support it.
 - A carpet-specific profile is only used when the player has at least three carpet matches; otherwise the neutral surface profile is retained. This is an experiment, not a production change.
 - Select weights on training seasons only and report held-out seasons separately.
+- Compare fixed service-point priors with empirical-Bayes shrinkage. Do not promote the estimated prior until its leave-one-event-out and held-out 2021–2025 metrics beat or match the fixed-prior benchmark without materially harming any surface.
 - Match-cluster intervals condition on fitted player profiles and the season normaliser; full profile-estimation uncertainty remains a follow-up.
 - CPI association is diagnostic, not proof of physical validity. Independent court-level and conditions data are needed for physical or causal claims.
 - Laver Cup remains below the ordinary 20-side threshold unless a multi-year or explicitly provisional method is independently validated.
