@@ -81,8 +81,9 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Other findings and remaining validation
 
-- Montpellier CALC 1.60 versus TA 1.49; TA point estimate is inside the full-pipeline CALC 95% interval [1.370, 1.986].
-- Marrakech 2026 CALC 1.049; full-pipeline 95% interval [0.866, 1.304]. Its point ranking alone does not justify changing the formula.
+- **Montpellier 2026 production full-history CALC:** 1.664, 54/54 server sides, rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]. TA reference 1.49 lies inside the interval.
+- **Marrakech 2026 production full-history CALC:** 0.999, 52/52 server sides, rank 34/57; conditional match-cluster 95% interval [0.828, 1.182]. TA reference 0.93 lies inside the interval.
+- The separate deep-calculation sensitivity grid gives same-season-only values 1.600 for Montpellier and 1.049 for Marrakech, with 47 and 41 profile-supported sides respectively. Those intervals are not production 35-season full-history bootstrap intervals; see \`docs/FORMULATION_AUDIT.md\` for the distinction.
 - The CPI cross-check contains only 106 selected show-court overlaps; clay n=24 has negative association. This is a validation warning, not evidence for a clay-specific correction.
 - Tennis Abstract is a behavioural reference, not physical ground truth. See `docs/PHYSICAL_VALIDATION.md` for the CPR/CPI dataset schema and protocol.
 - Exact TA match-population/stat-definition reconciliation still requires an authorized TA source or independently documented evidence.
