@@ -1023,8 +1023,11 @@ def season_ratings(year, rows):
             "ace": round(item["ace"], 1) if item["ace"] is not None else None,
             "matches": item["matches"],
             "tourPriorSides": item["profile_coverage"]["tour_prior_sides"],
-            "careerHistoryServerProfiles": item["profile_coverage"]["career_history_server_profiles"],
-            "careerHistoryReturnerProfiles": item["profile_coverage"]["career_history_returner_profiles"],
+            "careerHistoryServerSides": item["profile_coverage"]["career_history_server_sides"],
+            "careerHistoryReturnerSides": item["profile_coverage"]["career_history_returner_sides"],
+            "tourPriorSides": item["profile_coverage"]["tour_prior_sides"],
+            "tourPriorServerSides": item["profile_coverage"]["tour_prior_server_profiles"],
+            "tourPriorReturnerSides": item["profile_coverage"]["tour_prior_returner_profiles"],
         }
         if item["sides"] >= MIN_EVENT_SERVER_SIDES:
             output[tid] = {
