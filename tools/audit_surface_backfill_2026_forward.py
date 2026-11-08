@@ -256,6 +256,7 @@ def add_historical_names(name_to_ids, rows):
 def build_tml_identity_crosswalk(target_rows, database_rows, historical_name_to_ids):
     """Map TML ATP IDs to one unique Sackmann ID using exact normalised full names only."""
     aliases_by_tml_id = defaultdict(set)
+    target_tml_ids = set()
     for row in target_rows:
         for id_key, name_key in (
             ("winner_id", "winner_name"),
@@ -263,12 +264,15 @@ def build_tml_identity_crosswalk(target_rows, database_rows, historical_name_to_
         ):
             player_id = str(row.get(id_key) or "")
             normalized = compute_speed._normalise_profile_name(row.get(name_key) or "")
+            if player_id:
+                target_tml_ids.add(player_id)
             if player_id and normalized:
                 aliases_by_tml_id[player_id].add(normalized)
 
+    # Use ATP_Database as an alias bridge only for IDs present in the target population.
     for row in database_rows:
         player_id = str(row.get("id") or "")
-        if not player_id:
+        if not player_id or player_id not in target_tml_ids:
             continue
         for name_key in ("player", "atpname"):
             normalized = compute_speed._normalise_profile_name(row.get(name_key) or "")
@@ -363,94 +367,220 @@ def surface_label(row):
     return value if value in {"clay", "hard", "grass", "carpet"} else "unknown"
 
 
+def remap_tml_rows_to_archive_ids(rows, tml_to_archive_id):
+    """Use a unique historical archive ID where available; retain unmatched TML IDs."""
+    remapped = []
+    for row in rows:
+        item = dict(row)
+        for key in ("winner_id", "loser_id"):
+            player_id = str(item.get(key) or "")
+            if player_id:
+                item[key] = tml_to_archive_id.get(player_id, player_id)
+        remapped.append(item)
+    return remapped
+
+
+def aggregate_2026_event_groups(rows):
+    """Aggregate match statistics by 2026 event-week, ready for chronological use."""
+    grouped = defaultdict(list)
+    for row in rows:
+        grouped[(
+            date_key(row),
+            str(row.get("tourney_id") or row.get("tourney_name") or "unknown-event"),
+        )].append(row)
+    result = []
+    for (event_date, event_id), event_rows in sorted(grouped.items()):
+        players, global_stats = backfill.aggregate_rows(event_rows)
+        result.append({
+            "date": event_date,
+            "event_id": event_id,
+            "players": players,
+            "global_stats": global_stats,
+            "matches": len(event_rows),
+        })
+    return result
+
+
+def event_recency_weight(source_date, target_date):
+    """Fractional-year form of the historical 0.90-per-year decay."""
+    if not source_date or not target_date or source_date >= target_date:
+        return 0.0
+    source = datetime.strptime(source_date, "%Y%m%d").date()
+    target = datetime.strptime(target_date, "%Y%m%d").date()
+    years = max(0.0, (target - source).days / 365.25)
+    return backfill.RECENCY_DECAY ** years
+
+
+def merge_player_history(target_players, source_players, weight):
+    if weight <= 0.0:
+        return
+    for player_id, source in source_players.items():
+        target = target_players.setdefault(player_id, backfill.empty_player())
+        backfill.merge_stats(target, source, weight)
+
+
 def evaluate_tml_target_rows(target_rows, tml_to_archive_id,
                              main_by_year, lower_by_year,
+                             current_main_rows, current_challenger_rows,
+                             current_qualifying_rows,
                              challenger_weight, qualifying_weight):
-    players, global_stats, lower_counts = backfill.build_training_stats(
-        TARGET_SEASON,
-        main_by_year,
-        lower_by_year,
-        challenger_weight,
-        qualifying_weight,
+    """Score each 2026 ATP event using only historical and strictly prior 2026 events.
+
+    The tournament-week date key is used as a conservative cutoff: a same-week or later
+    ATP, Challenger or qualifying event is excluded. Prior 2026 ATP main-draw matches may
+    update both player profiles and the ATP-only population priors. Prior 2026 lower-tier
+    matches update individual player profiles only.
+    """
+    historical_players, historical_global, _historical_counts = (
+        backfill.build_training_stats(
+            TARGET_SEASON,
+            main_by_year,
+            lower_by_year,
+            challenger_weight,
+            qualifying_weight,
+        )
     )
-    target_archive_ids = {
-        tml_to_archive_id[player_id]
-        for player_id in tml_to_archive_id
-    }
-    profiles, _priors, tour_rate = backfill.build_profiles(
-        target_archive_ids, players, global_stats
+    current_main = aggregate_2026_event_groups(
+        remap_tml_rows_to_archive_ids(current_main_rows, tml_to_archive_id)
     )
-    if tour_rate is None:
-        raise RuntimeError("No valid ATP-only population prior for 2026; refusing to continue.")
+    current_challenger = aggregate_2026_event_groups(
+        remap_tml_rows_to_archive_ids(current_challenger_rows, tml_to_archive_id)
+    )
+    current_qualifying = aggregate_2026_event_groups(
+        remap_tml_rows_to_archive_ids(current_qualifying_rows, tml_to_archive_id)
+    )
+
+    target_groups = defaultdict(list)
+    for row in target_rows:
+        target_groups[(
+            date_key(row),
+            str(row.get("tourney_id") or row.get("tourney_name") or "unknown-event"),
+        )].append(row)
 
     by_event = {}
     post_by_event = {}
-    for row in target_rows:
-        event_key = str(
-            row.get("tourney_id")
-            or row.get("tourney_name")
-            or "unknown-event"
-        )
-        surface = surface_label(row)
-        if event_key not in by_event:
-            by_event[event_key] = backfill.empty_cluster(surface)
-        elif by_event[event_key]["surface"] != surface:
-            by_event[event_key]["surface"] = "mixed"
+    for (target_date, event_key), event_rows in sorted(target_groups.items()):
+        # Isolate each tournament's profile snapshot so it cannot use its own results.
+        training_players = {
+            player_id: json.loads(json.dumps(stats))
+            for player_id, stats in historical_players.items()
+        }
+        training_global = json.loads(json.dumps(historical_global))
 
-        after_cutoff = date_key(row) >= POST_MAY_17
-        if after_cutoff:
-            if event_key not in post_by_event:
-                post_by_event[event_key] = backfill.empty_cluster(surface)
-            elif post_by_event[event_key]["surface"] != surface:
-                post_by_event[event_key]["surface"] = "mixed"
-
-        for server_key, returner_key, points_key, aces_key in (
-            ("winner_id", "loser_id", "w_svpt", "w_ace"),
-            ("loser_id", "winner_id", "l_svpt", "l_ace"),
-        ):
-            server_tml_id = str(row.get(server_key) or "")
-            returner_tml_id = str(row.get(returner_key) or "")
-            server_archive_id = tml_to_archive_id.get(server_tml_id)
-            returner_archive_id = tml_to_archive_id.get(returner_tml_id)
-            server_profile = profiles.get(server_archive_id, {}) if server_archive_id else {}
-            returner_profile = profiles.get(returner_archive_id, {}) if returner_archive_id else {}
-            points = compute_speed.num(row.get(points_key))
-            aces = compute_speed.num(row.get(aces_key))
-            if points is None or aces is None or points <= 0:
-                continue
-
-            personal_server = server_profile.get("serve_rate")
-            personal_returner = returner_profile.get("concede_rate")
-            has_server = personal_server is not None
-            has_returner = personal_returner is not None
-            serve_rate = personal_server if has_server else tour_rate
-            concede_rate = personal_returner if has_returner else tour_rate
-            predicted_rate = backfill.clip_probability(
-                compute_speed.expected_calibrated_aces(
-                    serve_rate, concede_rate, tour_rate, 1.0
+        for source_event in current_main:
+            if source_event["date"] and target_date and source_event["date"] < target_date:
+                decay = event_recency_weight(source_event["date"], target_date)
+                backfill.merge_stats(
+                    training_global, source_event["global_stats"], decay
                 )
-            )
-            actual_rate = aces / points
-            log_loss = -(
-                aces * math.log(predicted_rate)
-                + (points - aces) * math.log(1.0 - predicted_rate)
+                merge_player_history(
+                    training_players, source_event["players"], decay
+                )
+
+        if challenger_weight > 0.0:
+            for source_event in current_challenger:
+                if source_event["date"] and target_date and source_event["date"] < target_date:
+                    decay = (
+                        event_recency_weight(source_event["date"], target_date)
+                        * challenger_weight
+                    )
+                    # Lower-tier observations never change ATP population priors.
+                    merge_player_history(
+                        training_players, source_event["players"], decay
+                    )
+
+        if qualifying_weight > 0.0:
+            for source_event in current_qualifying:
+                if source_event["date"] and target_date and source_event["date"] < target_date:
+                    decay = (
+                        event_recency_weight(source_event["date"], target_date)
+                        * qualifying_weight
+                    )
+                    merge_player_history(
+                        training_players, source_event["players"], decay
+                    )
+
+        target_player_ids = {
+            tml_to_archive_id.get(str(player_id), str(player_id))
+            for row in event_rows
+            for player_id in (row.get("winner_id"), row.get("loser_id"))
+            if player_id
+        }
+        profiles, _priors, tour_rate = backfill.build_profiles(
+            target_player_ids, training_players, training_global
+        )
+        if tour_rate is None:
+            raise RuntimeError(
+                f"No ATP-only population prior for 2026 event {event_key}; refusing fallback."
             )
 
-            for cluster in (by_event[event_key], post_by_event.get(event_key) if after_cutoff else None):
-                if cluster is None:
+        event_surfaces = {surface_label(row) for row in event_rows}
+        event_surface = (
+            next(iter(event_surfaces)) if len(event_surfaces) == 1 else "mixed"
+        )
+        full_cluster = backfill.empty_cluster(event_surface)
+        post_cluster = backfill.empty_cluster(event_surface)
+        has_post_cutoff_rows = False
+
+        for row in event_rows:
+            after_cutoff = date_key(row) >= POST_MAY_17
+            has_post_cutoff_rows = has_post_cutoff_rows or after_cutoff
+            for server_key, returner_key, points_key, aces_key in (
+                ("winner_id", "loser_id", "w_svpt", "w_ace"),
+                ("loser_id", "winner_id", "l_svpt", "l_ace"),
+            ):
+                server_tml_id = str(row.get(server_key) or "")
+                returner_tml_id = str(row.get(returner_key) or "")
+                server_profile_id = tml_to_archive_id.get(
+                    server_tml_id, server_tml_id
+                )
+                returner_profile_id = tml_to_archive_id.get(
+                    returner_tml_id, returner_tml_id
+                )
+                server_profile = profiles.get(server_profile_id, {})
+                returner_profile = profiles.get(returner_profile_id, {})
+                points = compute_speed.num(row.get(points_key))
+                aces = compute_speed.num(row.get(aces_key))
+                if points is None or aces is None or points <= 0:
                     continue
-                cluster["sides"] += 1
-                cluster["points"] += points
-                cluster["aces"] += aces
-                cluster["predicted_aces"] += predicted_rate * points
-                cluster["side_abs_error"] += abs(actual_rate - predicted_rate)
-                cluster["point_abs_error"] += abs(actual_rate - predicted_rate) * points
-                cluster["binomial_log_loss"] += log_loss
-                cluster["server_profile_sides"] += int(has_server)
-                cluster["returner_profile_sides"] += int(has_returner)
-                cluster["both_profile_sides"] += int(has_server and has_returner)
 
-    return by_event, post_by_event, lower_counts
+                personal_server = server_profile.get("serve_rate")
+                personal_returner = returner_profile.get("concede_rate")
+                has_server = personal_server is not None
+                has_returner = personal_returner is not None
+                serve_rate = personal_server if has_server else tour_rate
+                concede_rate = personal_returner if has_returner else tour_rate
+                predicted_rate = backfill.clip_probability(
+                    compute_speed.expected_calibrated_aces(
+                        serve_rate, concede_rate, tour_rate, 1.0
+                    )
+                )
+                actual_rate = aces / points
+                log_loss = -(
+                    aces * math.log(predicted_rate)
+                    + (points - aces) * math.log(1.0 - predicted_rate)
+                )
+
+                for cluster in (full_cluster, post_cluster if after_cutoff else None):
+                    if cluster is None:
+                        continue
+                    cluster["sides"] += 1
+                    cluster["points"] += points
+                    cluster["aces"] += aces
+                    cluster["predicted_aces"] += predicted_rate * points
+                    cluster["side_abs_error"] += abs(actual_rate - predicted_rate)
+                    cluster["point_abs_error"] += abs(actual_rate - predicted_rate) * points
+                    cluster["binomial_log_loss"] += log_loss
+                    cluster["server_profile_sides"] += int(has_server)
+                    cluster["returner_profile_sides"] += int(has_returner)
+                    cluster["both_profile_sides"] += int(has_server and has_returner)
+
+        if full_cluster["sides"]:
+            by_event[event_key] = full_cluster
+        if has_post_cutoff_rows and post_cluster["sides"]:
+            post_by_event[event_key] = post_cluster
+
+    return by_event, post_by_event
 
 
 def select_surface_policy(development_results, years, arms):
@@ -599,9 +729,10 @@ def render_markdown(report):
         "",
         "The incomplete Sackmann 2026 match file is not used as the 2026 target. The full",
         "TennisMyLife 2026 ATP season CSV is used instead, supplemented by completed rows",
-        "from the ongoing ATP feed. All 2026 Challenger and qualifying files are also fetched",
-        "and counted. Same-season 2026 Challenger / qualifying observations are excluded from",
-        "the 2026 prediction profiles to prevent look-ahead; they are available for 2027 onward.",
+        "from the ongoing ATP feed. All 2026 Challenger and qualifying files are also fetched.",
+        "For each ATP target event, current-season ATP, Challenger and qualifying matches are",
+        "admitted only if their event-week date key is strictly earlier than the target event.",
+        "Same-week and later events are excluded to prevent look-ahead.",
         "",
         "| Population | Valid match rows in available-to-date 2026 snapshot | After 17 May |",
         "|---|---:|---:|",
@@ -694,7 +825,8 @@ def render_markdown(report):
         f"- TML IDs with no historical name match: {report['identity_crosswalk']['without_historical_name_match']:,}.",
         "- Crosswalk rule: exact Unicode-normalised full name; all aliases must resolve to one historical archive ID. No fuzzy matching.",
         "- The ATP population prior is built from ATP main-draw rows only. Challenger / qualifying affect only individual player-role estimates.",
-        "- The target year is excluded from profile training. 2026 Challenger / qualifying rows are not used to predict 2026 ATP matches.",
+        "- Current-season 2026 rows are used only when their event-week date key is strictly earlier than the ATP target event. Same-week and future rows are excluded.",
+        "- The ATP population prior uses historical and earlier 2026 ATP main-draw rows only. Challenger / qualifying observations affect individual player-role profiles only.",
         "- All raw TML files are downloaded to an ephemeral temporary directory and deleted on exit. They are not committed, cached or uploaded.",
         "- Output artifacts contain aggregate metrics, source-file hashes and source metadata only; no match rows, player names or player IDs.",
         "- TennisMyLife public terms allow personal, educational and non-commercial research use only; commercial use requires prior express written permission. Do not deploy these derived estimates in a commercial service without authorization.",
@@ -739,11 +871,14 @@ def run_forward_test(archive_cache_dir, output_dir, bootstrap_iterations):
         evaluated_full = {}
         evaluated_late = {}
         for arm, (challenger_weight, qualifying_weight) in arms.items():
-            full, late, _training_counts = evaluate_tml_target_rows(
+            full, late = evaluate_tml_target_rows(
                 tml["main_rows"],
                 crosswalk,
                 main_by_year,
                 lower_by_year,
+                tml["main_rows"],
+                tml["challenger_rows"],
+                tml["qualifying_rows"],
                 challenger_weight,
                 qualifying_weight,
             )
@@ -818,8 +953,10 @@ def run_forward_test(archive_cache_dir, output_dir, bootstrap_iterations):
                 "post_2026_05_17": late_report,
             },
             "controls": {
-                "target_year_excluded_from_training": True,
-                "lower_tier_2026_rows_used_for_2026_prediction": False,
+                "same_season_rows_are_strictly_prior_event_only": True,
+                "lower_tier_2026_rows_used_for_2026_prediction": (
+                    "only when event-week date is strictly earlier than the ATP target event"
+                ),
                 "atp_main_draw_only_population_prior": True,
                 "surface_weights_selected_without_2026_holdout": True,
                 "raw_tml_sources_ephemeral_only": True,
