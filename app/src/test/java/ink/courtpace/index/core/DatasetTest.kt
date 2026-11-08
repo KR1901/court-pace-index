@@ -39,12 +39,27 @@ class DatasetTest {
     }
 
     @Test
-    fun `readings carry exactly one metric each`() {
+    fun `readings carry one primary metric or one provisional diagnostic`() {
         data.dataset.readings.forEach { reading ->
-            val present = listOfNotNull(reading.cpi, reading.speed).size
-            assertEquals("reading $reading", 1, present)
+            val primary = listOfNotNull(reading.cpi, reading.speed).size
+            val provisionalOnly = reading.provisionalSpeed != null &&
+                reading.cpi == null && reading.speed == null
+            assertTrue("reading has invalid primary/provisional metric shape: $reading",
+                primary == 1 || provisionalOnly)
             assertTrue(reading.s in 1990..2030)
             assertTrue(reading.src.isNotBlank())
+            reading.provisionalSpeed?.let {
+                assertTrue(it in 0.30..2.0)
+                assertTrue(reading.provisionalServerSides in 10..19)
+                assertTrue(reading.provisionalCiLow!! <= it)
+                assertTrue(it <= reading.provisionalCiHigh!!)
+                assertEquals("provisional", reading.src)
+            }
+            if (reading.speedCiLow != null && reading.speedCiHigh != null) {
+                assertTrue(reading.speedCiLow <= reading.speed!!)
+                assertTrue(reading.speed!! <= reading.speedCiHigh)
+                assertEquals("match-cluster-conditional-v1", reading.speedCiMethod)
+            }
         }
     }
 
