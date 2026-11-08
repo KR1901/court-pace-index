@@ -27,6 +27,7 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
 TML_CACHE_MAX_AGE_DAYS = 7
+LIVE_EVENT_FEED_MAX_AGE_DAYS = 7
 
 # CSV event name -> tournament id used by the app
 NAMES = {
@@ -321,7 +322,7 @@ def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
 # used when no qualified player-specific rate is available in the baseline season or
 # any of the preceding ten seasons.
 LIVE_PROFILE_FALLBACK_SEASONS = 10
-LIVE_PROFILE_PRIOR_SERVICE_POINTS = 300.0
+LIVE_PROFILE_PRIOR_SERVICE_POINTS = 150.0
 MIN_EXPECTED_ACES = 0.0
 EXPECTED_ACES_FLOOR = 0.5
 
@@ -675,6 +676,46 @@ def season_ratings(year, rows):
     }
 
 
+def live_event_exclusion(live_path=None, today=None, now=None):
+    """Return active tournament IDs only from a recent, date-valid live manifest."""
+    live_path = live_path or os.path.join(os.path.dirname(__file__), "..", "data", "live.json")
+    today = today or date.today()
+    now = now or datetime.now(timezone.utc)
+    try:
+        with open(live_path, encoding="utf-8") as source:
+            payload = json.load(source)
+        generated = datetime.fromisoformat(payload["generated"].replace("Z", "+00:00"))
+        if generated.tzinfo is None:
+            generated = generated.replace(tzinfo=timezone.utc)
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=timezone.utc)
+        age = now - generated
+        if age < timedelta(seconds=-900) or age > timedelta(days=LIVE_EVENT_FEED_MAX_AGE_DAYS):
+            return {"fresh": False, "generated": generated.isoformat(), "eventIds": [], "reason": f"manifest age {age} outside freshness window"}
+        active = set()
+        for event in payload.get("events", []):
+            if event.get("status") != "in_progress" or int(event.get("s", 0)) != today.year:
+                continue
+            try:
+                start = date.fromisoformat(event["start"])
+                end = date.fromisoformat(event["end"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if start <= today <= end and event.get("t"):
+                active.add(str(event["t"]))
+        return {"fresh": True, "generated": generated.isoformat(), "eventIds": sorted(active), "reason": None}
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
+        return {"fresh": False, "generated": None, "eventIds": [], "reason": f"manifest unavailable or invalid: {error}"}
+
+
+def exclude_live_event_rows(rows, event_ids):
+    """Remove active tournament rows from live player profiles and baseline fitting."""
+    excluded = set(event_ids or ())
+    if not excluded:
+        return list(rows)
+    return [row for row in rows if NAMES.get((row.get("tourney_name") or "").strip()) not in excluded]
+
+
 def main():
     published_path = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main",
                                   "assets", "pace_dataset.json")
@@ -711,29 +752,32 @@ def main():
         print(f"\nvalidation on {n} events in 2026: correlation r = {r:.3f}, mean |diff| = {mae:.3f}")
 
     if "--write" in sys.argv:
-        # Export the same season-wide player profiles and normaliser used by historical Speed.
+        # Active events must not train their own live profiles, tour anchor or normaliser.
         current_year = date.today().year
-        # Use the current season once it has enough rated events; at season start, use the
-        # previous completed season's player profiles and normaliser rather than publishing
-        # an unstable baseline or reverting to a different live formula.
+        live_manifest = live_event_exclusion()
         profile_year = current_year
-        try:
-            profile_rows = valid_rows(load(profile_year))
-        except HTTPError:
-            profile_rows = []
-        profiles = player_rates(profile_rows)
-        tour_rate = tour_average_ace_rate(profile_rows)
-        raw_events, _, _, _ = event_raw_scores(
-            profile_rows, profiles, tour_rate=tour_rate
-        )
-        if len(raw_events) < 5:
+        excluded_live_event_ids = []
+        excluded_live_event_matches = 0
+        if live_manifest["fresh"]:
+            all_profile_rows = valid_rows(load(profile_year))
+            excluded_live_event_ids = live_manifest["eventIds"]
+            profile_rows = exclude_live_event_rows(all_profile_rows, excluded_live_event_ids)
+            excluded_live_event_matches = len(all_profile_rows) - len(profile_rows)
+        else:
             profile_year = current_year - 1
+            print(f"live manifest stale; using completed season {profile_year}: {live_manifest['reason']}")
             profile_rows = valid_rows(load(profile_year))
-            profiles = player_rates(profile_rows)
+        profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        tour_rate = tour_average_ace_rate(profile_rows)
+        raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
+        if len(raw_events) < 5 and profile_year == current_year:
+            profile_year = current_year - 1
+            excluded_live_event_ids = []
+            excluded_live_event_matches = 0
+            profile_rows = valid_rows(load(profile_year))
+            profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
             tour_rate = tour_average_ace_rate(profile_rows)
-            raw_events, _, _, _ = event_raw_scores(
-                profile_rows, profiles, tour_rate=tour_rate
-            )
+            raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
         if not raw_events:
             raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events in current or previous season")
         normalisation = sum(raw_events.values()) / len(raw_events)
@@ -788,7 +832,14 @@ def main():
             "tourAceRate": tour_rate,
             "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
-            "sourceMetadata": SOURCE_METADATA_BY_YEAR.get(current_year),
+            "sourceMetadata": SOURCE_METADATA_BY_YEAR.get(profile_year),
+            "liveFeedGenerated": live_manifest.get("generated"),
+            "liveFeedFresh": bool(live_manifest.get("fresh")),
+            "excludedEventIds": excluded_live_event_ids,
+            "excludedEventMatches": excluded_live_event_matches,
+            "profileTrainingMatches": len(profile_rows),
+            "profilePriorServicePoints": PROFILE_PRIOR_SERVICE_POINTS,
+            "liveProfilePriorServicePoints": LIVE_PROFILE_PRIOR_SERVICE_POINTS,
             "profiles": live_profile_rows,
             "profileCoverage": {
                 "playerProfiles": len(live_profile_rows),
