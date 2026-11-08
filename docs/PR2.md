@@ -148,7 +148,7 @@ TML-to-archive identity mapping used exact Unicode-normalised full names only: 2
 
 ## Verification
 
-Latest code and documentation head: pending final documentation-only commit. The validated calculation / research-code head for the 8 November run was \`c6295e01bbb39b1fd38e8a8c2bdd9734fbd71e92\`. Five of six workflows completed successfully; the deep calculation audit's full statistical stage was still running at the latest check.
+Latest documentation head: `c73023523ff379201a7ec30981ef638e8bfc7184`. The validated calculation / research-code head for the 8 November run was `c6295e01bbb39b1fd38e8a8c2bdd9734fbd71e92`; subsequent commits update documentation and PR notes only. The validated calculation / research-code head for the 8 November run was \`c6295e01bbb39b1fd38e8a8c2bdd9734fbd71e92\`. Five of six workflows completed successfully; the deep calculation audit's full statistical stage was still running at the latest check.
 
 - [Lower-tier profile backfill audit #38](https://github.com/KR1901/court-pace-index/actions/runs/42497240644): **passed**. Historical 2012–2025 rolling-origin backfill, 2026 source fetch, chronological current-season profile test, all 2026 match-day scoring, 2,000 paired bootstrap resamples, and aggregate-only report upload.
 - [Event population audit #179](https://github.com/KR1901/court-pace-index/actions/runs/42497240739): **passed**, including Montpellier source reconciliation and the 1991–2026 all-event sweep.
