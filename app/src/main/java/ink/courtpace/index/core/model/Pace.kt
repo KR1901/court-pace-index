@@ -117,6 +117,17 @@ data class PaceReading(
     val matches: Int? = null,
     /** Original published Tennis Abstract rating when a calibrated calculation also exists. */
     val publishedSpeed: Double? = null,
+    /** Conditional 95% match-cluster interval; profiles and normaliser are held fixed. */
+    val speedCiLow: Double? = null,
+    val speedCiHigh: Double? = null,
+    val speedCiMethod: String? = null,
+    val adjustedServerSides: Int? = null,
+    /** Low-sample estimate is diagnostic only and never used as the primary speed value. */
+    val provisionalSpeed: Double? = null,
+    val provisionalCiLow: Double? = null,
+    val provisionalCiHigh: Double? = null,
+    val provisionalServerSides: Int? = null,
+    val provisionalMatches: Int? = null,
 ) {
     fun value(metric: Metric): Double? = when (metric) {
         Metric.CPI -> cpi
