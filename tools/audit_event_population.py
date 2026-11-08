@@ -188,6 +188,8 @@ def main():
                 "rateable_server_sides": rateable_sides,
                 "unrateable_server_sides": gap_sides,
                 "tour_prior_sides": int(coverage.get("tour_prior_sides") or 0),
+                "tour_prior_server_side_uses": int(coverage.get("tour_prior_server_side_uses") or 0),
+                "tour_prior_returner_side_uses": int(coverage.get("tour_prior_returner_side_uses") or 0),
                 "tour_prior_server_profiles": int(coverage.get("tour_prior_server_profiles") or 0),
                 "tour_prior_returner_profiles": int(coverage.get("tour_prior_returner_profiles") or 0),
                 "fallback_profile_exists_without_rate": int(
@@ -226,6 +228,8 @@ def main():
             totals["rateable_server_sides"] += rateable_sides
             totals["unrateable_server_sides"] += gap_sides
             totals["tour_prior_sides"] += record["tour_prior_sides"]
+            totals["tour_prior_server_side_uses"] += record["tour_prior_server_side_uses"]
+            totals["tour_prior_returner_side_uses"] += record["tour_prior_returner_side_uses"]
             totals["fallback_profile_exists_without_rate"] += record["fallback_profile_exists_without_rate"]
             totals["fallback_ambiguous_name_matches"] += record["fallback_ambiguous_name_matches"]
             totals["fallback_no_player_profile_in_history"] += record["fallback_no_player_profile_in_history"]
@@ -252,6 +256,8 @@ def main():
             "unrateable_server_sides": int(totals["unrateable_server_sides"]),
             "events_with_unrateable_sides": int(totals["events_with_unrateable_sides"]),
             "tour_prior_sides": int(totals["tour_prior_sides"]),
+            "tour_prior_server_side_uses": int(totals["tour_prior_server_side_uses"]),
+            "tour_prior_returner_side_uses": int(totals["tour_prior_returner_side_uses"]),
             "events_with_tour_prior_sides": int(totals["events_with_tour_prior_sides"]),
             "fallback_diagnostics": {
                 "profile_exists_without_rate_occurrences": int(
