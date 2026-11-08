@@ -458,7 +458,6 @@ def build_live_profiles(profile_year, current_profiles):
     })
     most_recent_year_by_name = {}
     most_recent_id_by_name = {}
-    names_by_year = {}
 
     def name_key(profile):
         return _normalise_profile_name(profile.get("name") or "")
@@ -466,7 +465,7 @@ def build_live_profiles(profile_year, current_profiles):
     def add_raw(target, source, weight):
         for field in target:
             if field.endswith("_matches"):
-                target[field] += float(source.get(field, 0) or 0) * weight
+                target[field] += float(source.get(field, 0) or 0)
             else:
                 target[field] += float(source.get(field, 0.0) or 0.0) * weight
 
@@ -523,7 +522,10 @@ def build_live_profiles(profile_year, current_profiles):
 
             # Attach the prior history to the current ATP ID if the unique name matches.
             current_ids = current_by_name.get(key, [])
-            target_id = current_ids[0] if len(current_ids) == 1 else player_id
+            target_id = (
+                current_ids[0] if len(current_ids) == 1
+                else most_recent_id_by_name.get(key, player_id)
+            )
             if target_id not in live:
                 live[target_id] = dict(previous)
                 live[target_id]["id"] = target_id
@@ -570,7 +572,7 @@ def build_live_profiles(profile_year, current_profiles):
         serve_rate = _shrunk_serve_rate(source, surface_priors)
         if not current_serve_qualified and serve_rate is not None:
             profile["serve_rate"] = serve_rate
-            profile["serve_rate_season"] = profile_year
+            profile["serve_rate_season"] = most_recent_year_by_name.get(key, profile_year)
             has_surface = (
                 source["clay_matches"] >= MIN_MATCHES_PER_SURFACE
                 or source["hard_grass_matches"] >= MIN_MATCHES_PER_SURFACE
@@ -589,7 +591,7 @@ def build_live_profiles(profile_year, current_profiles):
         concede_rate = _shrunk_return_rate(source, surface_priors)
         if not current_return_qualified and concede_rate is not None:
             profile["concede_rate"] = concede_rate
-            profile["concede_rate_season"] = profile_year
+            profile["concede_rate_season"] = most_recent_year_by_name.get(key, profile_year)
             has_surface = (
                 source["clay_return_matches"] >= MIN_MATCHES_PER_SURFACE
                 or source["hard_grass_return_matches"] >= MIN_MATCHES_PER_SURFACE
