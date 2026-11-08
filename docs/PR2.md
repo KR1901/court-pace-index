@@ -51,11 +51,31 @@ Source snapshot: retrieved 8 November 2026 at 10:02:19 UTC; latest match date 1 
 
 The 35-season history and unique-name TML/Sackmann crosswalk recover all seven previously missing sides using personal player-history rates. Montpellier requires no neutral tour-prior side. This explains the prior 54-versus-47 profile-coverage discrepancy. It does not establish Tennis Abstract's match population or explain its published 19.8% ace rate. No qualifying-scope explanation is assumed.
 
-## Season-wide profile coverage
+## Full player-profile coverage: 1991–2026
 
-The all-event 2026 source sweep covered 58 mapped tournaments, 2,519 eligible matches and 5,038 statistically eligible server sides. All 5,038 sides were rateable (100%); no tournament had an unrateable side. Seventy sides across 25 events used at least one explicitly labelled tour-average prior, while 4,968 sides used player-specific rates. The audit did not assign an ambiguous name match to any player. [All-event workflow run #42473954065](https://github.com/KR1901/court-pace-index/actions/runs/42473954065).
+The all-event audit swept every mapped event in each season's selected ATP source from 1991 through 2026. The completed 36-season run reported:
 
-This completeness guarantee is about having a defined, auditable expected-aces input for every valid source-stat side. A neutral-prior fallback is not the same evidence quality as a player's own multi-season serve/return history; its use remains visible and should be interpreted as lower player-specific information, not as a recovered individual statistic.
+| Measure | Result |
+|---|---:|
+| Seasons audited | 36 |
+| Mapped event-seasons | 1,533 |
+| Eligible matches | 71,150 |
+| Statistically eligible server sides | 142,300 |
+| Rateable server sides | 142,300 (100%) |
+| Unrateable sides | 0 |
+| Sides using at least one neutral tour-average prior | 1,584 (1.113%) |
+
+The 100% figure means every source-stat-eligible side received finite inputs to the expected-aces calculation; it does **not** mean every role has an individual player-history estimate. A neutral prior is a transparent coverage fallback, not a recovered personal statistic.
+
+The fallback audit found **zero** occurrences where a player profile record existed but lacked a usable role rate. All 1,610 missing role-estimate occurrences were classified as **no player profile found in the selected history window**: 805 server-role and 805 returner-role occurrences, summed across seasons. The role count exceeds the 1,584 side count because some sides required a prior for both roles. These aggregate diagnostics do not publish player names or IDs.
+
+For 2026 specifically, the audit covered 58 mapped events, 2,519 matches and 5,038 server sides. All 5,038 were rateable; 70 sides (1.39%) used at least one neutral tour-average prior. Those 70 sides corresponded to 72 missing role inputs and 36 distinct fallback player IDs in the 2026 season audit.
+
+**What this says about the remaining gap:** the current gap is not primarily a player record whose serve/return rate failed to calculate. It is an identity/history coverage gap in the selected ATP main-draw profile pool. The audit alone cannot determine whether each player is genuinely new to the available match-stat archive, has prior matches only in a lower competition tier, or has a name/identity crosswalk mismatch. We must not turn ambiguous matches into automatic identity links.
+
+A promising next research input is Sackmann's separate qualifying/Challenger match archive. Its upstream documentation states that serve statistics are generally available from 2008 for Challenger matches and 2011 for tour-level qualifying. This data has different competition-level context and is licensed CC BY-NC-SA 4.0. It is **not** folded into production profiles by this PR: a safe next experiment must match only unique identities, keep the target tournament excluded, quantify actual gap recovery, and calibrate the lower-tier observations with out-of-sample evidence before they can influence ATP-level ratings. [Archive documentation](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/atp/UPSTREAM_README.md) · [Archive licence](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE).
+
+This is the mapped event population in the selected source files, not a claim that every ATP event or every match is present and not proof that the source population equals Tennis Abstract's population. The consolidated workflow is configured to retain aggregate season/event CSVs and a machine-readable report while excluding raw source CSVs, player names and player IDs.
 
 ## Other findings and remaining validation
 
