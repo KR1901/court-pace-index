@@ -199,14 +199,14 @@ Historical ATP match data is sourced from the Jeff Sackmann archive mirror (CC B
 
 ## Verification
 
-The latest implementation/code head is \`05a8cf83f3022782563ad4abeff1391cd78f9f36\`:
+The ambiguity-aware profile and event-audit implementation passed the full validation set on code head \`05a8cf83f3022782563ad4abeff1391cd78f9f36\`:
 
-- [Event population audit #92](https://github.com/KR1901/court-pace-index/actions/runs/42480868160): passed, including all-season coverage aggregation and retained artifact upload.
+- [Event population audit #92](https://github.com/KR1901/court-pace-index/actions/runs/42480868160): passed, including the 1991–2026 coverage sweep, report aggregation and artifact upload.
 - [Expected-aces formula comparison #223](https://github.com/KR1901/court-pace-index/actions/runs/42480868104): passed.
 - [Android CI #597](https://github.com/KR1901/court-pace-index/actions/runs/42480868071): passed.
-- [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): was still running when this record was updated; final status must be checked before claiming a complete green set.
+- [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): passed; 250 successful bootstrap draws per selected event and the full audit artifact was uploaded.
 
-The audit artifact is retained for 90 days and contains aggregate season/event outputs without raw source CSVs or player names/IDs. Documentation-only edits after the implementation head do not change the calculation code.
+The later PR head \`1409e38b22fc52848e9ea3be3599bf30581912bc\` has four checks marked \`action_required\` before jobs were created. The recent changes to the dataset refresh workflow have therefore not yet been executed by CI. In particular, the app asset must be regenerated from the updated \`data/speed_history.json\` and verified against it before the new production values can be considered published to the app.
 
 ## Reproduction
 
