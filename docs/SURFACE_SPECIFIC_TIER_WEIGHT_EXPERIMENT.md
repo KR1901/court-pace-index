@@ -56,7 +56,7 @@ Because 2026 is a partial-season snapshot and may have relatively few grass even
 
 ## First completed 2026 forward test (8 November 2026)
 
-Run: https://github.com/KR1901/court-pace-index/actions/runs/42487674176. Unit tests, the full surface-weight selection, 2026 forward scoring and aggregate-only artifact upload all passed.
+Run: [Surface-specific lower-tier backfill audit #10](https://github.com/KR1901/court-pace-index/actions/runs/42490461457). Unit tests, development weight selection, 2026 forward scoring, overall bootstrap, per-surface bootstraps and aggregate-only artifact upload all passed.
 
 The 2012–2018 development window selected the combined Challenger + qualifying arm with:
 - Pooled lower-tier fallback weight: 0.25 for each tier.
@@ -75,18 +75,28 @@ The 2026 archive snapshot contains 1,186 eligible ATP main-draw matches (2,372 s
 | Calibration bias (actual − predicted) | +0.006665 | +0.009596 |
 
 Paired 2,000-resample event-cluster bootstrap, selected minus ATP-only:
-- Log-loss difference: 95% interval **[-0.000626, +0.000368]** (includes zero).
-- Point-weighted MAE difference: 95% interval **[-0.001199, +0.000106]** (includes zero).
-- Calibration-bias difference: 95% interval **[+0.002272, +0.003458]** (worsens significantly).
+- Overall log-loss difference: 95% interval **[-0.000626, +0.000368]** (includes zero).
+- Overall point-weighted MAE difference: 95% interval **[-0.001199, +0.000106]** (includes zero).
+- Overall calibration-bias difference: 95% interval **[+0.002272, +0.003458]** (worsens significantly).
 
-Surface breakdown:
-| Surface | Sides | ATP-only log loss | Selected log loss | ATP-only point MAE | Selected point MAE |
-|---|---:|---:|---:|---:|---:|
-| Clay | 1,054 | 0.210499 | 0.209334 | 0.032908 | 0.031035 |
-| Hard | 1,318 | 0.325732 | 0.326417 | 0.040193 | 0.040695 |
-| Grass | 0 | Not available | Not available | Not available | Not available |
+### 2026 results by actual target surface
 
-The candidate materially increases coverage and modestly lowers aggregate MAE and log loss, but both loss intervals include zero, calibration bias worsens, and the surface response remains mixed: clay improves while hard worsens. There is no grass holdout evidence. **Do not promote this candidate to production.** A 2026 partial-season result with 28 events is a useful new forward check but is not enough to establish stable surface-specific tier weights. Wait for a fuller independent 2027 season or a separately approved prospective dataset; do not retune using this 2026 holdout and then report it as untouched validation.
+| Surface | Event clusters | Sides | ATP-only log loss | Selected log loss | ATP-only point MAE | Selected point MAE |
+|---|---:|---:|---:|---:|---:|---:|
+| Clay | 13 | 1,054 | 0.210499 | 0.209334 | 0.032908 | 0.031035 |
+| Hard | 15 | 1,318 | 0.325732 | 0.326417 | 0.040193 | 0.040695 |
+| Grass | 0 | 0 | Not available | Not available | Not available | Not available |
+
+### Paired event-cluster bootstrap within each surface (candidate minus ATP-only)
+
+| Surface | Log-loss difference 95% CI | Point-weighted MAE difference 95% CI | Calibration-bias difference 95% CI |
+|---|---:|---:|---:|
+| Clay (13 events) | **[-0.001526, -0.000732]** (improves) | **[-0.002473, -0.001208]** (improves) | **[+0.000760, +0.003407]** (worsens) |
+| Hard (15 events) | **[+0.000314, +0.001123]** (worsens) | **[-0.000022, +0.001138]** (inconclusive) | **[+0.002958, +0.003771]** (worsens) |
+
+These per-surface intervals are descriptive uncertainty estimates on the **same locked 2026 holdout**, not a second independent test or a new tuning set. The clay improvements and hard-court log-loss regression have intervals excluding zero, but the candidate worsens calibration bias on both surfaces. There are no grass matches, so the hard/grass profile-weight setting has not been directly tested on grass.
+
+The candidate materially increases profile coverage, but the outcome is surface-dependent: predictive loss improves on clay and worsens on hard; overall predictive-loss intervals include zero; calibration bias worsens across both surfaces. **Do not promote this candidate to production.** A 2026 partial-season result with 28 events cannot establish stable universal surface-specific weights. Wait for a fuller independent 2027 season or a separately approved prospective dataset; do not retune using this 2026 holdout and then report it as untouched validation.
 
 The workflow report and aggregate source manifest are available from the linked run. It contains no raw CSVs, player names or player IDs.
 
