@@ -216,7 +216,10 @@ def load_lower_year(year, cache_dir):
     )
     selected = validate_lower_rows(raw)
     challenger = [row for row in selected if row.get("_lower_tier") == "challenger"]
-    qualifying = [row for row in selected if row.get("_lower_tier") == "qualifying"]
+    qualifying = (
+        [row for row in selected if row.get("_lower_tier") == "qualifying"]
+        if year >= QUALIFYING_START_YEAR else []
+    )
     return {
         "challenger": aggregate_rows(challenger)[0],
         "qualifying": aggregate_rows(qualifying)[0],
