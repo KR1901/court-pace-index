@@ -753,7 +753,7 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             if str(returner_profile.get("concede_rate_source") or "").startswith("career-history"):
                 coverage["career_history_returner_sides"] += 1
 
-            service_points = number(row, service_points_key)
+            service_points = num(row.get(service_points_key))
             if (
                 serve_rate is None or concede_rate is None
                 or not math.isfinite(serve_rate) or not math.isfinite(concede_rate)
