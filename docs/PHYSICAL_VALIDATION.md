@@ -58,8 +58,6 @@ The current repository CPI table provides a limited show-court cross-check. It m
 
 ## Secondary CPI source candidate: The Racquet ATP Court Speed Database
 
-A possible source for expanding the CPI comparison is [Court Speed / The Racquet ATP Court Speed Database](https://courtspeed.com/). Its public site reports CPI coverage for Grand Slams, Masters 1000s and ATP Finals from 2012–2026, transcribed from ATP/TennisTV CPI charts. It says values are usually centre/stadium-court readings, that source screenshots are linked where available, and that chart values can vary within a tournament as surface grit wears and weather changes. Its methodology uses tournament averages or averages across multiple day readings when charts disagree. The site also cautions that values from 2012–2015 are not widely available.
-
 This is a **candidate CPI dataset**, not an ITF-accredited CPR dataset. It is transcribed from ATP/TennisTV pace charts, and its author describes the readings as usually centre/stadium-court values. The website says chart values can drift within a tournament as grit wears and weather varies; where multiple charts disagree, it prefers a tournament average or averages several day readings. The disclaimer describes the database as an independent educational reference, makes no accuracy guarantee and says it is not affiliated with the ATP or TennisTV. See [current table](https://courtspeed.com/), [method notes](https://courtspeed.com/method-notes/) and [disclaimer](https://courtspeed.com/disclaimer/).
 
 ### 8 November 2026 source reconciliation
@@ -94,6 +92,8 @@ The clay subset covers only **four distinct tournament IDs** (Monte Carlo, Madri
 The seven updated hard-court values move the hard-only correlation marginally (Pearson 0.518 to 0.512; Spearman 0.514 to 0.506); the clay values and their correlation are unchanged. The current source snapshot therefore resolves a source-staleness concern for some hard-court rows but **does not resolve the clay discrepancy**.
 
 The source's CPI readings are generally centre/stadium-court measurements, whereas CALC aggregates eligible main-draw match statistics across the event's playable courts. Matching an event-season is therefore not always a same-court comparison. It also pairs a live/broadcast chart-based measurement with match outcomes affected by balls, player styles, weather, altitude and court allocation. These are major measurement-population limitations, even before considering the small number of clay event clusters.
+
+The source's public disclaimer identifies the database as an independent educational reference and makes no guarantee of accuracy. I did not identify an explicit data-reuse licence in the published page. Attribution is retained in the repository, but permission for systematic republication or commercial reuse remains unverified; do not infer redistribution rights from public availability. The raw ATP/TennisTV chart screenshots are not copied into this repository.
 
 Before using new rows in a stronger validation claim, record:
 - source page and individual chart/screenshot URL;
