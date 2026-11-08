@@ -15,14 +15,31 @@ permissions:
   contents: read
 
 jobs:
-  tests:
+  tests-and-reconciliation:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore the recent ATP source snapshot cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/atp
+          key: event-population-audit-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py') }}
+          restore-keys: |
+            deep-calculation-audit-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
       - name: Run audit-tool unit tests
         run: python3 -m unittest discover -s tools -p "test_audit_event_population.py" -v
       - name: Check audit CLI syntax
         run: python3 tools/audit_event_population.py --help
+      - name: Reconcile Montpellier 2026 against the TennisMyLife ATP source
+        run: |
+          set -euo pipefail
+          python3 tools/audit_event_population.py \
+            --event Montpellier \
+            --season 2026 \
+            --require-source "TennisMyLife ATP Match Database" \
+            --out "$RUNNER_TEMP/event-population-audit"
