@@ -827,7 +827,10 @@ def main():
         excluded_live_event_ids = []
         excluded_live_event_matches = 0
         if live_manifest["fresh"]:
-            all_profile_rows = valid_rows(load(profile_year))
+            try:
+                all_profile_rows = valid_rows(load(profile_year))
+            except HTTPError:
+                all_profile_rows = []
             excluded_live_event_ids = live_manifest["eventIds"]
             profile_rows = exclude_live_event_rows(all_profile_rows, excluded_live_event_ids)
             excluded_live_event_matches = len(all_profile_rows) - len(profile_rows)
