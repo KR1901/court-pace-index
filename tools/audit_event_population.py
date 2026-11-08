@@ -134,6 +134,10 @@ def main():
         usable_rows = compute_speed.valid_rows(rows)
         coverage_records = []
         totals = Counter()
+        fallback_reason_totals = Counter()
+        fallback_role_totals = Counter()
+        fallback_player_ids = set()
+        fallback_player_role_keys = set()
         event_names_by_id = {}
         raw_rows_by_id = Counter()
         for row in rows:
@@ -153,6 +157,22 @@ def main():
             ]
             eligible_sides = len(eligible_rows) * 2
             coverage = model_profile_coverage(rows, event_id, args.season)
+            fallback_details = coverage.get("tour_prior_fallback_details") or []
+            fallback_reasons = Counter(detail.get("reason") for detail in fallback_details)
+            fallback_roles = Counter(detail.get("role") for detail in fallback_details)
+            fallback_role_keys = {
+                (str(detail.get("player_id") or detail.get("player_name") or ""), str(detail.get("role") or ""))
+                for detail in fallback_details
+                if detail.get("player_id") or detail.get("player_name")
+            }
+            fallback_reason_totals.update(fallback_reasons)
+            fallback_role_totals.update(fallback_roles)
+            fallback_player_ids.update(
+                str(detail.get("player_id"))
+                for detail in fallback_details
+                if detail.get("player_id")
+            )
+            fallback_player_role_keys.update(fallback_role_keys)
             rateable_sides = int(coverage.get("rateable_server_sides") or 0)
             aces = sum(number(row, "w_ace") + number(row, "l_ace") for row in eligible_rows)
             points = sum(number(row, "w_svpt") + number(row, "l_svpt") for row in eligible_rows)
@@ -170,6 +190,15 @@ def main():
                 "tour_prior_sides": int(coverage.get("tour_prior_sides") or 0),
                 "tour_prior_server_profiles": int(coverage.get("tour_prior_server_profiles") or 0),
                 "tour_prior_returner_profiles": int(coverage.get("tour_prior_returner_profiles") or 0),
+                "fallback_profile_exists_without_rate": int(
+                    fallback_reasons["player_profile_exists_without_rate"]
+                ),
+                "fallback_no_player_profile_in_history": int(
+                    fallback_reasons["no_player_profile_in_history"]
+                ),
+                "fallback_server_role_occurrences": int(fallback_roles["server"]),
+                "fallback_returner_role_occurrences": int(fallback_roles["returner"]),
+                "fallback_distinct_player_roles": len(fallback_role_keys),
                 "missing_server_profiles_before_fallback": int(
                     coverage.get("missing_server_profile_before_fallback") or 0
                 ),
@@ -194,6 +223,10 @@ def main():
             totals["rateable_server_sides"] += rateable_sides
             totals["unrateable_server_sides"] += gap_sides
             totals["tour_prior_sides"] += record["tour_prior_sides"]
+            totals["fallback_profile_exists_without_rate"] += record["fallback_profile_exists_without_rate"]
+            totals["fallback_no_player_profile_in_history"] += record["fallback_no_player_profile_in_history"]
+            totals["fallback_server_role_occurrences"] += record["fallback_server_role_occurrences"]
+            totals["fallback_returner_role_occurrences"] += record["fallback_returner_role_occurrences"]
             totals["events_with_unrateable_sides"] += gap_sides > 0
             totals["events_with_tour_prior_sides"] += record["tour_prior_sides"] > 0
 
@@ -216,6 +249,19 @@ def main():
             "events_with_unrateable_sides": int(totals["events_with_unrateable_sides"]),
             "tour_prior_sides": int(totals["tour_prior_sides"]),
             "events_with_tour_prior_sides": int(totals["events_with_tour_prior_sides"]),
+            "fallback_diagnostics": {
+                "profile_exists_without_rate_occurrences": int(
+                    fallback_reason_totals["player_profile_exists_without_rate"]
+                ),
+                "no_player_profile_in_history_occurrences": int(
+                    fallback_reason_totals["no_player_profile_in_history"]
+                ),
+                "server_role_fallback_occurrences": int(fallback_role_totals["server"]),
+                "returner_role_fallback_occurrences": int(fallback_role_totals["returner"]),
+                "distinct_fallback_player_ids": len(fallback_player_ids),
+                "distinct_fallback_player_role_keys": len(fallback_player_role_keys),
+                "player_names_and_ids_published": False,
+            },
             "profile_history_start_year": compute_speed.PROFILE_HISTORY_START_YEAR,
             "profile_history_window_years": compute_speed.LIVE_PROFILE_FALLBACK_SEASONS,
             "profile_history_decay": compute_speed.LIVE_PROFILE_HISTORY_DECAY,
