@@ -191,15 +191,17 @@ The CPI and ITF CPR scales are not exactly interchangeable: the ITF adjusts rest
 
 The 2026 dataset refresh completed successfully in [Refresh dataset #103](https://github.com/KR1901/court-pace-index/actions/runs/42499365532). It recomputed \`data/speed_history.json\`, rebuilt the 107-reading CPI bundle and \`data/latest.json\`, verified both generated datasets have the same Git blob SHA, and passed Android unit tests in the refreshed workspace. The generated dataset commit is \`64332a80388fc041f89a9db99dada457278b028c\`.
 
-On the latest PR code/documentation head \`d0f0503e89e473acd51b2555207c833fb19f6cd1\`, five of six checks have completed successfully:
-- [Android CI #700](https://github.com/KR1901/court-pace-index/actions/runs/42500501077): **passed**, unit tests and debug APK assembly.
-- [Event population audit #195](https://github.com/KR1901/court-pace-index/actions/runs/42500501172): **passed**, including the 1991–2026 all-event sweep.
-- [Expected-aces formula comparison #326](https://github.com/KR1901/court-pace-index/actions/runs/42500501091): **passed**.
-- [Lower-tier profile backfill audit #54](https://github.com/KR1901/court-pace-index/actions/runs/42500501147): **passed**, including full available-to-date 2026 data and chronological same-season tests.
-- [Surface-specific lower-tier backfill audit #44](https://github.com/KR1901/court-pace-index/actions/runs/42500501093): **passed**.
-- [Deep calculation audit #256](https://github.com/KR1901/court-pace-index/actions/runs/42500501162): still running at the latest check. The immediately preceding full deep audit [#253](https://github.com/KR1901/court-pace-index/actions/runs/42500065380) **passed** against the refreshed CPI dataset and the same calculation/app code; only later documentation edits differ.
+On the validated calculation / research-code head \`a81f3de90327bc871e25e88ae214f684f8f6a3c0\`, all six workflow checks completed successfully:
 
-The passing Android run exercises the paired-event percentile fix and its synthetic regression test. The physical CPI snapshot regression tests also passed in the dataset-refresh workflow. No production expected-aces formula, 150-point prior, player profiles or lower-tier policy has been changed. PR #2 remains open and unmerged; PR #1's base branch is unchanged. The repository remains public.
+- [Deep calculation audit #266](https://github.com/KR1901/court-pace-index/actions/runs/42502255112): **passed**, 2,208 common event-seasons across 36 seasons, full LOEO/shrinkage audit, 2,000 matched bootstrap resamples, physical CPI diagnostics and the new within-event/tournament-cluster tests.
+- [Event population audit #208](https://github.com/KR1901/court-pace-index/actions/runs/42502614635): **passed**, including the 1991–2026 all-event sweep and source-required Montpellier reconciliation.
+- [Android CI #713](https://github.com/KR1901/court-pace-index/actions/runs/42502614695): **passed**, including unit tests and debug APK assembly/upload.
+- [Expected-aces formula comparison #339](https://github.com/KR1901/court-pace-index/actions/runs/42502614498): **passed**.
+- [Lower-tier profile backfill audit #67](https://github.com/KR1901/court-pace-index/actions/runs/42502614581): **passed**, including full available-to-date 2026 ingestion and chronological forward testing.
+- [Surface-specific lower-tier backfill audit #57](https://github.com/KR1901/court-pace-index/actions/runs/42502614658): **passed**.
+
+The later commits after that validated code head update documentation and the weekly research-workflow schedule; no production calculation or bundled rating asset changed. The newest standard CI cycle after those documentation/workflow edits was also green for event-population, Android, expected-aces, lower-tier and surface-specific checks. Its duplicate deep-calculation run was still executing at the latest inspection; the completed #266 result uses the same deep-audit script and test files. PR #2 remains open and unmerged; PR #1's base branch is unchanged. The repository remains public.
+
 
 ## Reproduction
 
