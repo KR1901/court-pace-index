@@ -621,11 +621,11 @@ def _normalise_profile_name(name):
 
 
 def ensure_event_profiles(event_rows, profiles, tour_rate):
-    """Resolve cross-source IDs by unique player name and supply explicit tour-prior fallbacks.
+    """Crosswalk names and prevent valid event sides from being dropped for missing profiles.
 
-    The fallback does not pretend to be a player-specific estimate. It gives a debutant
-    or otherwise unseen player the neutral season prior so a valid match side is not silently
-    dropped, while recording the number of neutral-prior assignments for auditability.
+    A unique normalized full name may bridge TML alphanumeric IDs to Sackmann numeric IDs.
+    If no trustworthy player-specific rate exists, use an explicit tour-average prior and
+    count that use. Ambiguous identities are never assigned another player's profile.
     """
     candidates = defaultdict(list)
     for profile in profiles.values():
@@ -639,12 +639,18 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
     coverage = {
         "tour_prior_server_profiles": 0,
         "tour_prior_returner_profiles": 0,
-        "career_history_server_profiles": 0,
-        "career_history_returner_profiles": 0,
+        "career_history_server_sides": 0,
+        "career_history_returner_sides": 0,
+        "missing_server_profile_before_fallback": 0,
+        "missing_returner_profile_before_fallback": 0,
+        "missing_both_profiles_before_fallback": 0,
         "tour_prior_sides": 0,
+        "rateable_server_sides": 0,
     }
     for row in event_rows:
         side_used_tour_prior = False
+        server_rate = None
+        returner_rate = None
         for player_id_key, player_name_key, role in (
             ("winner_id", "winner_name", "server"),
             ("loser_id", "loser_name", "returner"),
@@ -652,13 +658,22 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             player_id = row.get(player_id_key)
             player_name = row.get(player_name_key) or ""
             profile = profiles.get(player_id)
-            if profile is None:
-                candidate = unique_by_name.get(_normalise_profile_name(player_name))
-                if candidate is not None:
-                    profile = dict(candidate)
-                    profile["id"] = player_id
-                    profile["name"] = player_name or profile.get("name", "")
-                    profiles[player_id] = profile
+            rate_key = "serve_rate" if role == "server" else "concede_rate"
+            source_key = "serve_rate_source" if role == "server" else "concede_rate_source"
+
+            # If the current-source ID has a partial profile, try a unique full-name
+            # alias to recover the missing role tendency from the historical archive.
+            candidate = unique_by_name.get(_normalise_profile_name(player_name))
+            if candidate is not None and (
+                profile is None or profile.get(rate_key) is None
+            ):
+                merged = dict(candidate)
+                if profile is not None:
+                    merged.update({key: value for key, value in profile.items() if value is not None})
+                merged["id"] = player_id
+                merged["name"] = player_name or merged.get("name", "")
+                profile = merged
+                profiles[player_id] = profile
 
             if profile is None:
                 profile = {
@@ -675,18 +690,40 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                 }
                 profiles[player_id] = profile
 
-            rate_key = "serve_rate" if role == "server" else "concede_rate"
-            source_key = "serve_rate_source" if role == "server" else "concede_rate_source"
-            if profile.get(rate_key) is None:
+            original_rate = profile.get(rate_key)
+            if original_rate is None:
+                coverage[f"missing_{role}_profile_before_fallback"] += 1
                 profile[rate_key] = tour_rate
                 profile[source_key] = "tour-average-prior-only"
                 coverage[f"tour_prior_{role}_profiles"] += 1
                 side_used_tour_prior = True
             elif str(profile.get(source_key) or "").startswith("career-history"):
-                coverage[f"career_history_{role}_profiles"] += 1
+                coverage[f"career_history_{role}_sides"] += 1
+
+            if role == "server":
+                server_rate = profile.get(rate_key)
+            else:
+                returner_rate = profile.get(rate_key)
 
         if side_used_tour_prior:
             coverage["tour_prior_sides"] += 1
+        if (
+            server_rate is not None and returner_rate is not None
+            and math.isfinite(server_rate) and math.isfinite(returner_rate)
+            and 0.0 < server_rate < 1.0 and 0.0 < returner_rate < 1.0
+            and tour_rate is not None and 0.0 < tour_rate < 1.0
+        ):
+            expected = expected_calibrated_aces(
+                server_rate, returner_rate, tour_rate, number(row, "w_svpt")
+            )
+            # Each match has two server sides; count each side independently below.
+            if math.isfinite(expected) and expected > MIN_EXPECTED_ACES:
+                coverage["rateable_server_sides"] += 1
+            expected = expected_calibrated_aces(
+                returner_rate, server_rate, tour_rate, number(row, "l_svpt")
+            )
+            if math.isfinite(expected) and expected > MIN_EXPECTED_ACES:
+                coverage["rateable_server_sides"] += 1
 
     return coverage
 
