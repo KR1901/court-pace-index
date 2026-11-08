@@ -60,9 +60,42 @@ The current repository CPI table provides a limited show-court cross-check. It m
 
 A possible source for expanding the CPI comparison is [Court Speed / The Racquet ATP Court Speed Database](https://courtspeed.com/). Its public site reports CPI coverage for Grand Slams, Masters 1000s and ATP Finals from 2012–2026, transcribed from ATP/TennisTV CPI charts. It says values are usually centre/stadium-court readings, that source screenshots are linked where available, and that chart values can vary within a tournament as surface grit wears and weather changes. Its methodology uses tournament averages or averages across multiple day readings when charts disagree. The site also cautions that values from 2012–2015 are not widely available.
 
-This is a **candidate CPI dataset**, not an ITF-accredited CPR dataset. It may be useful for a larger show-court CPI comparison, but do not assume it is independent of existing repository CPI rows: first compare the 106 currently used overlaps by event, season, court, value, measurement timing and screenshot/provenance. Treat exact duplicates as the same observation, not new validation evidence. Do not fill missing values from generic event descriptions or treat a centre-court CPI reading as a measurement of every court at that tournament.
+This is a **candidate CPI dataset**, not an ITF-accredited CPR dataset. It is transcribed from ATP/TennisTV pace charts, and its author describes the readings as usually centre/stadium-court values. The website says chart values can drift within a tournament as grit wears and weather varies; where multiple charts disagree, it prefers a tournament average or averages several day readings. The disclaimer describes the database as an independent educational reference, makes no accuracy guarantee and says it is not affiliated with the ATP or TennisTV. See [current table](https://courtspeed.com/), [method notes](https://courtspeed.com/method-notes/) and [disclaimer](https://courtspeed.com/disclaimer/).
 
-Before integration, record:
+### 8 November 2026 source reconciliation
+
+The bundled CPI list was reconciled against the public Court Speed table updated 7 November 2026. The refreshed builder now contains **107 CPI readings**, compared with 106 previously. All 106 prior event-season keys still appear in the source; seven displayed values were revised and one new event-season reading was added:
+
+| Event / season | Bundled value | 7 Nov source value |
+|---|---:|---:|
+| Canadian Open 2019 | 42.8 | 43.4 |
+| Canadian Open 2025 | 44.6 | 44.7 |
+| Canadian Open 2026 | 35.4 | 36.5 |
+| Cincinnati 2025 | 43.0 | 43.7 |
+| Cincinnati 2026 | 39.0 | 40.4 |
+| Shanghai 2018 | 40.0 | 39.9 |
+| Paris Masters 2024 | 45.5 | 46.6 |
+| **Paris Masters 2026 (new)** | — | **50.0** |
+
+All seven revisions are hard-court readings. **No clay CPI value changed**, so this source refresh does not explain the negative clay association. The additional Paris 2026 reading has no corresponding computed 2026 Surface Speed in the checked-in CALC history at this reconciliation point, so it increases CPI coverage but not the matched-pair sample. Recheck the overlap after each CALC data refresh.
+
+Against the same 106 checked-in CALC event-season values, substituting the updated CPI numbers changes the descriptive correlation only slightly:
+
+| Sample | n | Pearson | Spearman |
+|---|---:|---:|---:|
+| All matched event-seasons | 106 | 0.660 | 0.693 |
+| Clay | 24 | −0.415 | −0.427 |
+| Hard | 81 | 0.512 | 0.506 |
+| Grass | 1 | Not estimable | Not estimable |
+| Within-surface centred, pooled | 106 | 0.402 before → 0.397 after | 0.354 before → 0.354 after |
+
+The clay subset covers only **four distinct tournament IDs** (Monte Carlo, Madrid, Rome and Roland Garros), repeated over several seasons. It is not 24 independent physical sites. A 2,000-draw event-ID cluster bootstrap gives exploratory clay intervals of approximately [−0.64, −0.20] for Pearson and [−0.67, −0.22] for Spearman, but four clusters are too few to treat these intervals as robust external validation. The correlation remains a reproducible warning signal, not evidence that a clay-specific formula correction is justified.
+
+The seven updated hard-court values move the hard-only correlation marginally (Pearson 0.518 to 0.512; Spearman 0.514 to 0.506); the clay values and their correlation are unchanged. The current source snapshot therefore resolves a source-staleness concern for some hard-court rows but **does not resolve the clay discrepancy**.
+
+The source's CPI readings are generally centre/stadium-court measurements, whereas CALC aggregates eligible main-draw match statistics across the event's playable courts. Matching an event-season is therefore not always a same-court comparison. It also pairs a live/broadcast chart-based measurement with match outcomes affected by balls, player styles, weather, altitude and court allocation. These are major measurement-population limitations, even before considering the small number of clay event clusters.
+
+Before using new rows in a stronger validation claim, record:
 - source page and individual chart/screenshot URL;
 - event, season and actual court identity;
 - whether the value is a single-day reading or tournament average;
@@ -89,6 +122,6 @@ References: [Court Speed CPI database](https://courtspeed.com/) · [Method and n
 
 ## Current status and limitations
 
-The current repository CPI audit contains 106 selected show-court overlaps overall and only 24 clay observations. The negative clay association is a reason to expand the sample and inspect measurement matching; it is not sufficient evidence for a clay-specific formula correction.
+The 7 November 2026 Court Speed source refresh now supplies 107 CPI readings. The checked-in CALC series has 106 matched event-season pairs, including only 24 clay pairs from four tournament IDs. The refreshed hard-court values do not change the clay observations or their negative association. A larger set of court-specific, independently measured clay CPR/CPI observations is still required before treating the anomaly as a formula defect.
 
 The 2026 ITF booklet provides a reproducible physical test protocol, but the publicly listed surface-product classifications are not a substitute for actual tournament court measurements. No new event-level CPR dataset has been acquired as part of this change. This document expands the acquisition standard and schema; it does not claim additional physical observations or completed physical validation.
