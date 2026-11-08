@@ -43,17 +43,20 @@ jobs:
             --season 2026 \
             --require-source "TennisMyLife ATP Match Database" \
             --out "$RUNNER_TEMP/event-population-audit"
-      - name: Sweep every mapped ATP event in 2024-2026
+      - name: Sweep every mapped ATP event from 1991 through the latest available season
         run: |
           set -euo pipefail
-          for season in 2024 2025 2026; do
+          latest_season="$(date -u +%Y)"
+          for season in $(seq 1991 "$latest_season"); do
             args=()
-            if [ "$season" = "2026" ]; then
+            if [ "$season" = "$latest_season" ]; then
               args+=(--require-source "TennisMyLife ATP Match Database")
             fi
+            echo "::group::All-event profile coverage — $season"
             python3 tools/audit_event_population.py \
               --all-events \
               --season "$season" \
               "${args[@]}" \
               --out "$RUNNER_TEMP/all-event-profile-coverage-$season"
+            echo "::endgroup::"
           done
