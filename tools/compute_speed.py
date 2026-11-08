@@ -1157,6 +1157,9 @@ def main():
                 "serveRateSampleServicePoints": int(round(profile["serve_rate_sample_points"])),
                 "serveRatePriorServicePoints": profile.get("serve_rate_prior_points"),
                 "concedeRateSeason": profile["concede_rate_season"],
+                "concedeRateSource": profile.get("concede_rate_source"),
+                "concedeRateSampleMatches": int(profile.get("concede_matches", 0)),
+                "concedeRateSampleServicePoints": int(round(profile.get("concede_service_points", 0.0))),
                 "concedeRatePriorServicePoints": profile.get("concede_rate_prior_points"),
             }
             for profile in unique_live_profiles
