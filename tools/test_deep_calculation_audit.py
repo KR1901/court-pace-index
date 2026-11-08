@@ -105,7 +105,7 @@ class PhysicalCpiDiagnosticsTests(unittest.TestCase):
         for bound in centered_bootstrap["pearson_95_interval"]:
             self.assertAlmostEqual(-1.0, bound, places=12)
         self.assertLess(centered_bootstrap["spearman_95_interval"][1], -0.95)
-        self.assertIn("event ID", bootstrap["resampling_unit"])
+        self.assertIn("tournament ID", bootstrap["resampling_unit"])
 
 
 class SufficientStatisticsTests(unittest.TestCase):
