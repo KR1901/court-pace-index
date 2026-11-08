@@ -67,7 +67,7 @@ class EventPopulationAuditTests(unittest.TestCase):
     def test_profile_coverage_reports_unknown_event_without_inventing_coverage(self):
         result = audit.model_profile_coverage([], None)
         self.assertIsNone(result["rateable_server_sides"])
-        self.assertIsNone(result["missing_server_profile"])
+        self.assertIsNone(result["missing_server_profile_before_fallback"])
 
     def test_profile_coverage_uses_long_history_profiles_for_both_event_sides(self):
         rows = [
