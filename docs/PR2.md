@@ -170,7 +170,7 @@ The refreshed CPI source and updated paired-cohort code do not modify the expect
 - **Montpellier 2026 production full-history CALC:** 1.664, 54/54 server sides, rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]. TA reference 1.49 lies inside the interval.
 - **Marrakech 2026 production full-history CALC:** 0.999, 52/52 server sides, rank 34/57; conditional match-cluster 95% interval [0.828, 1.182]. TA reference 0.93 lies inside the interval.
 - The separate deep-calculation sensitivity grid gives same-season-only values 1.600 for Montpellier and 1.049 for Marrakech, with 47 and 41 profile-supported sides respectively. Those intervals are not production 35-season full-history bootstrap intervals; see \`docs/FORMULATION_AUDIT.md\` for the distinction.
-- The CPI cross-check contains only 106 selected show-court overlaps; clay n=24 has negative association. This is a validation warning, not evidence for a clay-specific correction.
+- The refreshed CPI bundle contains 107 readings, of which 106 overlap a computed Surface Speed reading. The clay overlap is n=24 across only four tournament IDs and remains negatively associated; this is a validation warning, not evidence for a clay-specific correction.
 - Tennis Abstract is a behavioural reference, not physical ground truth. See `docs/PHYSICAL_VALIDATION.md` for the CPR/CPI dataset schema and protocol.
 - Exact TA match-population/stat-definition reconciliation still requires an authorized TA source or independently documented evidence.
 - Expanded independent physical CPR/CPI observations are still needed.
