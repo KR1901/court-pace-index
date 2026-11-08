@@ -195,6 +195,77 @@ fun TournamentScreen(
                     )
                     HairLine()
                     StatRow("Aces", liveAceRating.aces.toString())
+                    if (liveAceRating.totalServicePoints > 0) {
+                        HairLine()
+                        StatRow("Total service points", liveAceRating.totalServicePoints.toString())
+                        HairLine()
+                        StatRow(
+                            "Tour-average ace rate",
+                            liveAceRating.tourAceRate?.let { String.format(java.util.Locale.US, "%.3f%%", it * 100.0) } ?: "—",
+                        )
+                        HairLine()
+                        StatRow(
+                            "Raw adjusted event score",
+                            String.format(java.util.Locale.US, "%.5f", liveAceRating.rawEventScore),
+                        )
+                        HairLine()
+                        StatRow(
+                            "Season normalisation",
+                            String.format(java.util.Locale.US, "%.6f", liveAceRating.normalisation),
+                        )
+                        HairLine()
+                        StatRow("Server profiles matched", "${liveAceRating.serverProfilesMatched}/${liveAceRating.totalServerSides}")
+                        HairLine()
+                        StatRow("Returner profiles matched", "${liveAceRating.returnerProfilesMatched}/${liveAceRating.totalServerSides}")
+                        Spacer(Modifier.height(10.dp))
+                        SectionLabel("Largest adjusted side ratios")
+                        Text(
+                            text = "Actual aces ÷ expected aces. Highest and lowest ten sides are shown to identify influential matchups.",
+                            style = TextStyle(fontSize = 11.sp),
+                            color = colors.textDim,
+                        )
+                        val influentialSides = liveAceRating.sideDiagnostics
+                            .sortedByDescending { it.actualExpectedRatio }
+                            .take(10)
+                        val lowSides = liveAceRating.sideDiagnostics
+                            .sortedBy { it.actualExpectedRatio }
+                            .take(10)
+                        val displayedSides = (influentialSides + lowSides)
+                            .distinctBy { it.matchId to it.server }
+                        displayedSides.forEach { side ->
+                            HairLine()
+                            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                Text(
+                                    text = "${side.server} vs ${side.returner}" +
+                                        (side.matchId?.let { " · $it" } ?: ""),
+                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+                                    color = colors.text,
+                                )
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                ) {
+                                    Text(
+                                        text = "${side.actualAces} actual / ${String.format(java.util.Locale.US, "%.2f", side.expectedAces)} expected · ${side.servicePoints} service points",
+                                        style = TextStyle(fontSize = 10.sp),
+                                        color = colors.textDim,
+                                    )
+                                    Text(
+                                        text = String.format(java.util.Locale.US, "%.2f×", side.actualExpectedRatio),
+                                        style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.SemiBold),
+                                        color = colors.text,
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = "Detailed calculation inputs will appear after a fresh live refresh. Cached ratings contain only summary diagnostics.",
+                            style = TextStyle(fontSize = 11.sp),
+                            color = colors.textDim,
+                        )
+                    }
                     if (liveAceRating.inProgressMatches > 0 || liveAceRating.walkoversExcluded > 0) {
                         HairLine()
                         StatRow("In-progress matches", liveAceRating.inProgressMatches.toString())
