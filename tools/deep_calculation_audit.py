@@ -67,7 +67,7 @@ def event_id(name):
 def ensure_player(container, player_id):
     if player_id not in container:
         container[player_id] = {
-            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
+            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")}
             for role in ("serve", "return")
         }
     return container[player_id]
@@ -82,7 +82,7 @@ def ensure_event_player(container, tournament_id, player_id):
 def ensure_event_stats(container, tournament_id):
     if tournament_id not in container:
         container[tournament_id] = {
-            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
+            role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")}
             for role in ("serve", "return")
         }
     return container[tournament_id]
@@ -99,13 +99,18 @@ def surface_bucket(surface):
     return None
 
 
+def exact_surface_bucket(surface):
+    surface = (surface or "").strip().casefold()
+    return surface if surface in ("clay", "hard", "grass", "carpet") else None
+
+
 def aggregate_season(rows):
     """Aggregate player/event sufficient statistics, retaining unnamed rows for priors."""
     usable = compute_speed.valid_rows(rows)
     players = {}
     by_event_players = {}
     global_stats = {
-        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
+        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")}
         for role in ("serve", "return")
     }
     event_stats = {}
@@ -121,6 +126,7 @@ def aggregate_season(rows):
         else:
             surface = (row.get("surface") or "").strip()
         bucket = surface_bucket(surface)
+        exact_bucket = exact_surface_bucket(surface)
 
         w_id, l_id = row["winner_id"], row["loser_id"]
         w_sv, l_sv = compute_speed.num(row["w_svpt"]), compute_speed.num(row["l_svpt"])
@@ -156,6 +162,18 @@ def aggregate_season(rows):
                     add_stats(event_total["serve"][bucket], aces, points)
                     add_stats(event_player["return"][bucket], conceded_aces, conceded_points)
                     add_stats(event_total["return"][bucket], conceded_aces, conceded_points)
+
+            # Preserve hard and grass separately for an explicit sensitivity experiment.
+            if exact_bucket in ("hard", "grass"):
+                add_stats(player["serve"][exact_bucket], aces, points)
+                add_stats(global_stats["serve"][exact_bucket], aces, points)
+                add_stats(player["return"][exact_bucket], conceded_aces, conceded_points)
+                add_stats(global_stats["return"][exact_bucket], conceded_aces, conceded_points)
+                if event_player is not None:
+                    add_stats(event_player["serve"][exact_bucket], aces, points)
+                    add_stats(event_total["serve"][exact_bucket], aces, points)
+                    add_stats(event_player["return"][exact_bucket], conceded_aces, conceded_points)
+                    add_stats(event_total["return"][exact_bucket], conceded_aces, conceded_points)
 
     return usable, event_rows, event_surfaces, players, by_event_players, global_stats, event_stats
 
@@ -198,7 +216,7 @@ def estimate_empirical_bayes_prior_points(players, event_players, prior_players,
     for role in ("serve", "return"):
         result[role] = {}
         diagnostics[role] = {}
-        for bucket in ("clay", "hard_grass", "carpet", "pooled"):
+        for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled"):
             aggregate = prior_players[role][bucket]
             mean_rate = (
                 aggregate["aces"] / aggregate["points"]
@@ -273,13 +291,13 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
         if player_id not in excluded_players:
             ensure_player(excluded_players, player_id)
     excluded_totals = event_stats.get(tid, {
-        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
+        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")}
         for role in ("serve", "return")
     })
     prior_players = {
         role: {
             bucket: subtract_stats(global_stats[role][bucket], excluded_totals[role][bucket])
-            for bucket in ("clay", "hard_grass", "carpet", "pooled")
+            for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")
         }
         for role in ("serve", "return")
     }
@@ -299,6 +317,10 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
         config.get("carpet_specific")
         and (event_surface or "").strip().casefold() == "carpet"
     )
+    grass_specific = (
+        config.get("grass_specific")
+        and (event_surface or "").strip().casefold() == "grass"
+    )
 
     for player_id, event_player in excluded_players.items():
         total_player = players.get(player_id)
@@ -310,12 +332,35 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
                     total_player[role][bucket],
                     event_player.get(role, {}).get(bucket),
                 )
-                for bucket in ("clay", "hard_grass", "carpet", "pooled")
+                for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")
             }
             for role in ("serve", "return")
         }
 
-        if carpet_pooled:
+        if grass_specific:
+            serve_rate = posterior_rate(
+                training_player["serve"]["grass"], prior_players["serve"]["grass"],
+                prior_points, config["min_matches"],
+            )
+            concede_rate = posterior_rate(
+                training_player["return"]["grass"], prior_players["return"]["grass"],
+                prior_points, config["min_matches"],
+            )
+            # Without enough grass history, retain the normal neutral hard/grass + clay profile.
+            if serve_rate is None:
+                serve_rate = weighted_profile(
+                    training_player, "serve", prior_players,
+                    config["clay_weight"], prior_points, config["min_matches"],
+                    config.get("pooled_serve_fallback", False),
+                )
+            if concede_rate is None:
+                concede_rate = weighted_profile(
+                    training_player, "return", prior_players,
+                    config["clay_weight"], prior_points, config["min_matches"],
+                    config.get("pooled_return_fallback", True),
+                    config.get("pooled_return_min_matches", 1),
+                )
+        elif carpet_pooled:
             serve_rate = posterior_rate(
                 training_player["serve"]["pooled"], prior_players["serve"]["pooled"],
                 prior_points, config["min_matches"],
@@ -370,7 +415,7 @@ def build_event_profiles(tid, event_surface, players, event_players, global_stat
 def tour_rate_excluding_event(tid, global_stats, event_stats):
     """Season ace probability after subtracting all matches from the target event."""
     excluded = event_stats.get(tid, {
-        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "carpet", "pooled")}
+        role: {bucket: empty_stats() for bucket in ("clay", "hard_grass", "hard", "grass", "carpet", "pooled")}
         for role in ("serve", "return")
     })
     tour = subtract_stats(
@@ -427,6 +472,11 @@ def config_grid():
             "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
             "pooled_return_fallback": True, "pooled_return_min_matches": 1,
             "carpet_specific": True,
+        },
+        "loeo_grass_specific_shrink_150": {
+            "clay_weight": 1.0 / 3.0, "prior_points": 150.0, "min_matches": 3,
+            "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+            "grass_specific": True,
         },
         "loeo_empirical_bayes_1_3": {
             "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 1,

@@ -350,6 +350,7 @@ class UncertaintyTests(unittest.TestCase):
         self.assertIn("loeo_current_1_3", configs)
         self.assertIn("loeo_carpet_pooled", configs)
         self.assertIn("loeo_carpet_specific", configs)
+        self.assertIn("loeo_grass_specific_shrink_150", configs)
         self.assertIn("loeo_empirical_bayes_1_3", configs)
         self.assertIn("shrink_100_min3", configs)
         self.assertIn("shrink_150_min3", configs)
@@ -407,6 +408,37 @@ class UncertaintyTests(unittest.TestCase):
         self.assertEqual({}, dict(event_rows))
         self.assertEqual(15.0, global_stats["serve"]["pooled"]["aces"])
         self.assertEqual(200.0, global_stats["serve"]["pooled"]["points"])
+
+
+    def test_grass_specific_profiles_use_grass_only_when_three_grass_matches_qualify(self):
+        rows = (
+            [match("Grass Event A", 10, 5, surface="Grass") for _ in range(3)]
+            + [match("Hard Event A", 20, 10, surface="Hard") for _ in range(3)]
+            + [match("Queens Club", 15, 7, surface="Grass") for _ in range(10)]
+        )
+        (_usable, event_rows, surfaces, players, event_players,
+         global_stats, event_stats) = audit.aggregate_season(rows)
+        target = audit.event_id("Queens Club")
+        config = audit.config_grid()["loeo_grass_specific_shrink_150"]
+        profiles, _ = audit.build_event_profiles(
+            target, surfaces[target], players, event_players,
+            global_stats, event_stats, config,
+        )
+        target_serve = event_players[target]["p1"]["serve"]["grass"]
+        target_event_serve = event_stats[target]["serve"]["grass"]
+        training_serve = audit.subtract_stats(
+            players["p1"]["serve"]["grass"], target_serve
+        )
+        training_grass_prior = audit.subtract_stats(
+            global_stats["serve"]["grass"], target_event_serve
+        )
+        expected_serve = audit.posterior_rate(
+            training_serve, training_grass_prior,
+            prior_points=150.0,
+            min_matches=3,
+        )
+        self.assertIsNotNone(expected_serve)
+        self.assertAlmostEqual(expected_serve, profiles["p1"]["serve_rate"])
 
 
 if __name__ == "__main__":
