@@ -187,18 +187,17 @@ The refreshed CPI source and updated paired-cohort code do not modify the expect
 
 ## Verification
 
-Latest research/code changes include the CPI refresh, paired-cohort divergence calculation and regression tests. The dataset refresh completed successfully in [Refresh dataset #103](https://github.com/KR1901/court-pace-index/actions/runs/42499365532): it recomputed data/speed_history.json, rebuilt the 107-reading CPI bundle and data/latest.json, verified both assets carry the same baseline, and passed :app:testDebugUnitTest in the refreshed working tree. The refresh workflow committed the generated dataset as 64332a80388fc041f89a9db99dada457278b028c.
+The 2026 dataset refresh completed successfully in [Refresh dataset #103](https://github.com/KR1901/court-pace-index/actions/runs/42499365532). It recomputed \`data/speed_history.json\`, rebuilt the 107-reading CPI bundle and \`data/latest.json\`, verified both generated datasets have the same Git blob SHA, and passed Android unit tests in the refreshed workspace. The generated dataset commit is \`64332a80388fc041f89a9db99dada457278b028c\`.
 
-- [Deep calculation audit #243](https://github.com/KR1901/court-pace-index/actions/runs/42497787750): **passed**, including LOEO, shrinkage and weight sensitivity, 2,000 paired season-stratified resamples, event/profile/full-pipeline bootstrap and the physical CPI cross-check. It used the immediately preceding CPI snapshot; a fresh run is triggered by the current source/asset update.
-- [Lower-tier profile backfill audit #41](https://github.com/KR1901/court-pace-index/actions/runs/42497787708): **passed**, including the corrected 2026 source extension and chronological match-day profile tests.
-- [Event population audit #182](https://github.com/KR1901/court-pace-index/actions/runs/42497787799): **passed**, including Montpellier reconciliation and the 1991–2026 all-event sweep.
-- [Android CI #684](https://github.com/KR1901/court-pace-index/actions/runs/42497240662): **passed** on the prior validated code head.
-- [Expected-aces formula comparison #313](https://github.com/KR1901/court-pace-index/actions/runs/42497619705): **passed**.
-- [Surface-specific lower-tier backfill audit #31](https://github.com/KR1901/court-pace-index/actions/runs/42497787796): **passed**.
+On the latest PR code/documentation head \`d0f0503e89e473acd51b2555207c833fb19f6cd1\`, five of six checks have completed successfully:
+- [Android CI #700](https://github.com/KR1901/court-pace-index/actions/runs/42500501077): **passed**, unit tests and debug APK assembly.
+- [Event population audit #195](https://github.com/KR1901/court-pace-index/actions/runs/42500501172): **passed**, including the 1991–2026 all-event sweep.
+- [Expected-aces formula comparison #326](https://github.com/KR1901/court-pace-index/actions/runs/42500501091): **passed**.
+- [Lower-tier profile backfill audit #54](https://github.com/KR1901/court-pace-index/actions/runs/42500501147): **passed**, including full available-to-date 2026 data and chronological same-season tests.
+- [Surface-specific lower-tier backfill audit #44](https://github.com/KR1901/court-pace-index/actions/runs/42500501093): **passed**.
+- [Deep calculation audit #256](https://github.com/KR1901/court-pace-index/actions/runs/42500501162): still running at the latest check. The immediately preceding full deep audit [#253](https://github.com/KR1901/court-pace-index/actions/runs/42500065380) **passed** against the refreshed CPI dataset and the same calculation/app code; only later documentation edits differ.
 
-The ordinary PR checks are being rerun against the refreshed dataset and the updated paired-cohort analytics code. No lower-tier backfill has been introduced into production. The 150-service-point production prior and existing expected-aces formulation remain unchanged.
-
-PR #2 remains open and unmerged. PR #1's base branch is unchanged. The repository remains public; no visibility or access-permission changes were made.
+The passing Android run exercises the paired-event percentile fix and its synthetic regression test. The physical CPI snapshot regression tests also passed in the dataset-refresh workflow. No production expected-aces formula, 150-point prior, player profiles or lower-tier policy has been changed. PR #2 remains open and unmerged; PR #1's base branch is unchanged. The repository remains public.
 
 ## Reproduction
 
