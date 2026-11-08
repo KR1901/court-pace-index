@@ -127,6 +127,27 @@ object AceRating {
         val adjustmentIssues: List<AdjustmentIssue> = emptyList(),
         val inProgressMatches: Int = 0,
         val walkoversExcluded: Int = 0,
+        /** Raw mean actual/expected ratio before season normalisation. */
+        val rawEventScore: Double = 0.0,
+        val normalisation: Double = 1.0,
+        val tourAceRate: Double? = null,
+        val totalServicePoints: Int = 0,
+        val serverProfilesMatched: Int = 0,
+        val returnerProfilesMatched: Int = 0,
+        /** Included server-side observations, one record per adjusted side. */
+        val sideDiagnostics: List<SideDiagnostic> = emptyList(),
+    )
+
+    data class SideDiagnostic(
+        val matchId: String?,
+        val server: String,
+        val returner: String,
+        val actualAces: Int,
+        val servicePoints: Int,
+        val serveRate: Double,
+        val returnerConcedeRate: Double,
+        val expectedAces: Double,
+        val actualExpectedRatio: Double,
     )
 
     /** Preserve the historical pipeline's minimum event sample: twenty server-side observations. */
@@ -282,6 +303,7 @@ object AceRating {
         val totalPoints: Int,
         val ratios: List<Double>,
         val coverage: Coverage,
+        val sideDiagnostics: List<SideDiagnostic>,
     )
 
     private fun evaluate(
@@ -290,7 +312,7 @@ object AceRating {
     ): Evaluation {
         val totalSides = matches.size * 2
         if (baseline.normalisation <= 0.0 || !baseline.normalisation.isFinite()) {
-            return Evaluation(0, 0, emptyList(), Coverage(totalSides, 0, 0, 0))
+            return Evaluation(0, 0, emptyList(), Coverage(totalSides, 0, 0, 0), emptyList())
         }
 
         val profiles = profileIndex(baseline.profiles)
@@ -301,6 +323,7 @@ object AceRating {
         var returnerProfilesMatched = 0
         val ratios = mutableListOf<Double>()
         val issues = mutableListOf<AdjustmentIssue>()
+        val sideDiagnostics = mutableListOf<SideDiagnostic>()
 
         fun addSide(serverName: String, returnerName: String, aces: Int, servicePoints: Int, matchId: String?) {
             totalAces += aces
@@ -366,7 +389,20 @@ object AceRating {
                 exclude("zero or invalid calibrated expected aces (server=$serveRate, returner=$concedeRate)")
                 return
             }
-            ratios += aces.toDouble() / maxOf(expected, EXPECTED_ACES_FLOOR)
+            val adjustedExpected = maxOf(expected, EXPECTED_ACES_FLOOR)
+            val actualExpectedRatio = aces.toDouble() / adjustedExpected
+            ratios += actualExpectedRatio
+            sideDiagnostics += SideDiagnostic(
+                matchId = matchId,
+                server = serverName,
+                returner = returnerName,
+                actualAces = aces,
+                servicePoints = servicePoints,
+                serveRate = serveRate,
+                returnerConcedeRate = concedeRate,
+                expectedAces = adjustedExpected,
+                actualExpectedRatio = actualExpectedRatio,
+            )
         }
 
         matches.forEach { match ->
@@ -385,6 +421,7 @@ object AceRating {
                 adjustedServerSides = ratios.size,
                 issues = issues.toList(),
             ),
+            sideDiagnostics = sideDiagnostics.toList(),
         )
     }
 
@@ -423,6 +460,13 @@ object AceRating {
             adjustedServerSides = evaluation.coverage.adjustedServerSides,
             totalServerSides = evaluation.coverage.totalServerSides,
             adjustmentIssues = evaluation.coverage.issues,
+            rawEventScore = rawEventScore,
+            normalisation = baseline.normalisation,
+            tourAceRate = baseline.tourAceRate,
+            totalServicePoints = evaluation.totalPoints,
+            serverProfilesMatched = evaluation.coverage.serverProfilesMatched,
+            returnerProfilesMatched = evaluation.coverage.returnerProfilesMatched,
+            sideDiagnostics = evaluation.sideDiagnostics,
         )
     }
 
