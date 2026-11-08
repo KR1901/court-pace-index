@@ -132,14 +132,21 @@ class AtpStatsParserTest {
     }
 
     @Test
-    fun `a rating needs enough matches and adjusted server observations`() {
+    fun `a rating needs enough matches and uses an explicit prior for missing player profiles`() {
         assertNull(AceRating.rate(sampleMatches(1), baseline))
-        assertNull(
-            AceRating.rate(
-                sampleMatches(10),
-                baseline.copy(profiles = baseline.profiles.filterNot { it.name == "B. Returner" }),
-            ),
+        val reducedBaseline = baseline.copy(
+            profiles = baseline.profiles.filterNot { it.name == "B. Returner" },
         )
+        val coverage = AceRating.coverage(sampleMatches(10), reducedBaseline)
+        val result = AceRating.rate(sampleMatches(10), reducedBaseline)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(10, coverage.serverProfilesMatched)
+        assertEquals(10, coverage.returnerProfilesMatched)
+        assertEquals(10, coverage.serverProfilesFallback)
+        assertEquals(10, coverage.returnerProfilesFallback)
+        assertEquals(20, result.adjustedServerSides)
     }
 
     @Test
