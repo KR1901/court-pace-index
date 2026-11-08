@@ -111,8 +111,8 @@ fun MethodScreen(data: PaceData) {
             Text(
                 text = "A behavioural reading. Count the aces at an event, adjust for which servers and " +
                     "which returners were actually on court, and compare with what those same players " +
-                    "would have produced on a tour-average surface. 1.00 is average; the usual range " +
-                    "across ATP events is about 0.50 to 1.50.",
+                    "would have produced on a tour-average surface. 1.00 is the season mean; " +
+                    "individual event ratings can fall outside any illustrative range.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
@@ -126,11 +126,11 @@ fun MethodScreen(data: PaceData) {
                     "that rate is used. A returner without a qualified surface profile uses a pooled " +
                     "ace-concession rate shrunk toward the tour-wide average with the same prior. Positive " +
                     "expected-ace counts below 0.5 are floored at 0.5. The event score is the equal-weight " +
-                    "mean of actual/expected ace ratios, then season-normalised to 1.00. Live ratings use " +
-                    "the same calibrated odds equation but a season-wide player baseline: current and " +
-                    "recent-season qualified profiles are preferred, with a 150-point prior; an unqualified " +
-                    "server's available observations can be shrunk with a 300-point low-sample prior. Live " +
-                    "profiles retain source season, role, and sample provenance.",
+                    "mean of actual/expected ace ratios, then season-normalised to a mean of 1.00. Live " +
+                    "baselines exclude active tournament matches when a fresh event manifest is available; " +
+                    "if that manifest is stale or unavailable, the previous completed season is used. " +
+                    "Live low-sample profiles use the same 150-service-point prior. The 1.00 scale is a " +
+                    "relative behavioural measure, not an absolute physical court-speed measurement.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
