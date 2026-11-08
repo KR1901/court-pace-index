@@ -24,6 +24,22 @@ class EventPopulationAuditTests(unittest.TestCase):
             bool(audit.compute_speed.valid_rows([row])),
         )
 
+    def test_merge_match_rows_appends_only_new_event_match_pairs(self):
+        existing = [
+            self.row(tourney_id="2026-352", tourney_date="20261102", match_num="1"),
+            self.row(tourney_id="2026-352", tourney_date="20261102", match_num="2"),
+        ]
+        incoming = [
+            self.row(tourney_id="2026-352", tourney_date="20261102", match_num="2"),
+            self.row(tourney_id="2026-352", tourney_date="20261103", match_num="3"),
+        ]
+
+        merged, counts = audit.merge_match_rows(existing, incoming)
+
+        self.assertEqual(3, len(merged))
+        self.assertEqual(1, counts["appended_rows"])
+        self.assertEqual(1, counts["duplicate_rows"])
+
     def test_valid_main_draw_match_is_eligible(self):
         row = self.row()
         self.assertIsNone(audit.reason(row))
