@@ -240,6 +240,42 @@ class ChronologicalProfileTests(unittest.TestCase):
             augmented["predicted_aces"],
         )
 
+    def test_all_match_days_are_accumulated_into_one_tournament_cluster(self):
+        target_rows = [
+            row(
+                tournament_id="2026-999", tournament_name="Multi-day ATP",
+                date="20260601", winner="T1", loser="T2",
+                winner_aces=20, loser_aces=5,
+            ),
+            row(
+                tournament_id="2026-999", tournament_name="Multi-day ATP",
+                date="20260602", match_num="2", winner="T3", loser="T4",
+                winner_aces=15, loser_aces=7,
+            ),
+        ]
+        current_main = [
+            row(
+                tournament_id="2026-100", tournament_name="Earlier ATP",
+                date="20260105", winner="T1", loser="T2",
+                winner_aces=12, loser_aces=6,
+            ),
+            *target_rows,
+        ]
+        result, post = forward.evaluate_tml_target_rows(
+            target_rows,
+            self.crosswalk,
+            self.main_by_year,
+            self.lower_by_year,
+            current_main,
+            [],
+            [],
+            0.0,
+            0.0,
+        )
+        self.assertEqual(4, result["2026-999"]["sides"])
+        self.assertEqual(4, post["2026-999"]["sides"])
+        self.assertEqual(400.0, post["2026-999"]["points"])
+
     def test_target_event_rows_are_not_used_in_its_own_profile(self):
         baseline, _ = forward.evaluate_tml_target_rows(
             self.target,
