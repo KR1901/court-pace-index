@@ -81,7 +81,9 @@ TOURNAMENTS = [
     ("athens",     "Athens Open",          "Athens",       "GRE", "HARD",  True,  "ATP250",   None),
 ]
 
-# CPI readings: (tournament id, season, value). Source: courtspeed.com database.
+# CPI readings: (tournament id, season, value). Source: Court Speed / The Racquet ATP Court Speed Database,
+# refreshed from the public table updated 7 November 2026. Seven corrected existing values and
+# the new Paris 2026 reading are reconciled in docs/PHYSICAL_VALIDATION.md.
 CPI = [
     ("ausopen", 2017, 42.0), ("ausopen", 2020, 43.0), ("ausopen", 2021, 50.0),
     ("indianwells", 2016, 30.0), ("indianwells", 2017, 27.4), ("indianwells", 2018, 27.9),
@@ -99,21 +101,21 @@ CPI = [
     ("rome", 2024, 29.3), ("rome", 2025, 28.9), ("rome", 2026, 25.4),
     ("rolandgarros", 2017, 21.0),
     ("wimbledon", 2017, 37.0),
-    ("canada", 2016, 35.2), ("canada", 2017, 36.3), ("canada", 2018, 28.8), ("canada", 2019, 42.8),
+    ("canada", 2016, 35.2), ("canada", 2017, 36.3), ("canada", 2018, 28.8), ("canada", 2019, 43.4),
     ("canada", 2021, 42.4), ("canada", 2022, 39.5), ("canada", 2023, 41.2), ("canada", 2024, 37.8),
-    ("canada", 2025, 44.6), ("canada", 2026, 35.4),
+    ("canada", 2025, 44.7), ("canada", 2026, 36.5),
     ("cincinnati", 2016, 35.1), ("cincinnati", 2017, 33.6), ("cincinnati", 2018, 31.6),
     ("cincinnati", 2019, 37.4), ("cincinnati", 2021, 43.0), ("cincinnati", 2022, 38.6),
-    ("cincinnati", 2023, 33.2), ("cincinnati", 2024, 42.5), ("cincinnati", 2025, 43.0),
-    ("cincinnati", 2026, 39.0),
+    ("cincinnati", 2023, 33.2), ("cincinnati", 2024, 42.5), ("cincinnati", 2025, 43.7),
+    ("cincinnati", 2026, 40.4),
     ("usopen", 2017, 35.7), ("usopen", 2020, 43.0), ("usopen", 2024, 42.8),
-    ("shanghai", 2016, 44.1), ("shanghai", 2017, 42.9), ("shanghai", 2018, 40.0),
+    ("shanghai", 2016, 44.1), ("shanghai", 2017, 42.9), ("shanghai", 2018, 39.9),
     ("shanghai", 2019, 40.9), ("shanghai", 2023, 40.1), ("shanghai", 2024, 40.8),
     ("shanghai", 2025, 32.8), ("shanghai", 2026, 43.3),
     ("paris", 2012, 32.2), ("paris", 2013, 31.2), ("paris", 2014, 31.8), ("paris", 2015, 29.9),
     ("paris", 2016, 39.1), ("paris", 2017, 37.5), ("paris", 2018, 34.6), ("paris", 2019, 40.6),
-    ("paris", 2021, 37.1), ("paris", 2022, 37.1), ("paris", 2023, 40.4), ("paris", 2024, 45.5),
-    ("paris", 2025, 35.1),
+    ("paris", 2021, 37.1), ("paris", 2022, 37.1), ("paris", 2023, 40.4), ("paris", 2024, 46.6),
+    ("paris", 2025, 35.1), ("paris", 2026, 50.0),
     ("atpfinals", 2012, 34.1), ("atpfinals", 2013, 33.9), ("atpfinals", 2014, 34.0),
     ("atpfinals", 2015, 34.6), ("atpfinals", 2016, 42.1), ("atpfinals", 2017, 42.1),
     ("atpfinals", 2018, 40.3), ("atpfinals", 2019, 41.6), ("atpfinals", 2020, 36.7),
