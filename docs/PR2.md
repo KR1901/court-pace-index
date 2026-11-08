@@ -99,14 +99,16 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Verification
 
-The latest implementation/code head is \`05a8cf83f3022782563ad4abeff1391cd78f9f36\`. Its CI status:
+The ambiguity-aware audit/profile implementation passed its full validation set on code head \`05a8cf83f3022782563ad4abeff1391cd78f9f36\`:
 
-- [Event population audit #92](https://github.com/KR1901/court-pace-index/actions/runs/42480868160): passed. Unit tests, Montpellier source reconciliation, 1991–2026 all-event sweep, aggregation and 90-day artifact upload completed.
+- [Event population audit #92](https://github.com/KR1901/court-pace-index/actions/runs/42480868160): passed, including 36 annual all-event sweeps (1991–2026), fallback diagnostics, aggregation and 90-day artifact upload.
 - [Expected-aces formula comparison #223](https://github.com/KR1901/court-pace-index/actions/runs/42480868104): passed.
 - [Android CI #597](https://github.com/KR1901/court-pace-index/actions/runs/42480868071): passed, including debug APK assembly and upload.
-- [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): still running when this update was prepared; do not describe the entire four-workflow set as green until its final conclusion is confirmed.
+- [Deep calculation audit #153](https://github.com/KR1901/court-pace-index/actions/runs/42480868223): passed, including 250 successful bootstrap resamples per selected event and full-audit artifact upload.
 
-The retained audit artifact is \`all-event-profile-coverage-1991-2026\`, expires 6 February 2027, and contains aggregate JSON/CSV/README files only. Subsequent PR commits in this batch are documentation-only and preserve the same calculation implementation. PR #2 remains open and unmerged; PR #1's code branch has not been modified.
+Subsequent commits added the dataset consistency guard in \`refresh-data.yml\` and documentation updates. On the later PR head \`1409e38b22fc52848e9ea3be3599bf30581912bc\`, GitHub reported all four PR checks as \`action_required\` before jobs were created; no code-level failure was reported, but those later-head checks have not executed. The refresh-data run and resulting bundled-asset regeneration are therefore **not yet verified**. The previous readable asset snapshot still had the earlier same-season values; do not assume the installed APK/asset has picked up the new full-history values until the refresh job publishes and the asset parity check passes.
+
+PR #2 remains open and unmerged. PR #1's branch has not been modified.
 
 ## Reproduction
 
