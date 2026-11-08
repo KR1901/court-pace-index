@@ -582,9 +582,11 @@ def build_live_profiles(profile_year, current_profiles):
             )
             profile["serve_rate_sample_matches"] = int(
                 source["clay_matches"] + source["hard_grass_matches"]
+                or source["pooled_serve_matches"]
             )
             profile["serve_rate_sample_points"] = int(round(
                 source["clay_service_points"] + source["hard_grass_service_points"]
+                or source["pooled_serve_points"]
             ))
             profile["serve_rate_prior_points"] = LIVE_PROFILE_PRIOR_SERVICE_POINTS
 
@@ -757,8 +759,10 @@ def dedupe_live_profiles_with_diagnostics(profiles):
     as display names, not stable player IDs. Across seasons, the newest/strongest record wins.
     """
     source_priority = {
-        "current-season-qualified": 4,
+        "current-season-qualified": 5,
+        "career-history-surface-shrunk": 4,
         "prior-season-qualified": 3,
+        "career-history-pooled-shrunk": 2,
         "current-season-shrunk": 2,
         "prior-season-shrunk": 1,
     }
@@ -771,7 +775,13 @@ def dedupe_live_profiles_with_diagnostics(profiles):
     result = []
     ambiguous = 0
     collapsed = 0
-    concede_priority = {"surface-qualified": 2, "pooled-fallback": 1}
+    concede_priority = {
+        "surface-qualified": 4,
+        "career-history-surface-shrunk": 3,
+        "pooled-fallback": 2,
+        "career-history-pooled-shrunk": 1,
+        "tour-average-prior-only": 0,
+    }
 
     for key, group in groups.items():
         collapsed += max(0, len(group) - 1)
