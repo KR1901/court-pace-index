@@ -202,13 +202,24 @@ if os.path.exists(COMPUTED):
         values = computed_by_key.get((reading["t"], reading["s"]))
         if values is None:
             continue
-        reading["publishedSpeed"] = reading["speed"]
-        reading["speed"] = round(values["speed"], 2)
-        reading["ace"] = round(values["ace"], 1)
-        reading["matches"] = values.get("matches")
-        reading["src"] = "computed"
-        computed_n += 1
-        published_overlap_n += 1
+        if values.get("speed") is not None:
+            reading["publishedSpeed"] = reading["speed"]
+            reading["speed"] = round(values["speed"], 3)
+            reading["ace"] = round(values["ace"], 1)
+            reading["matches"] = values.get("matches")
+            reading["adjustedServerSides"] = values.get("adjustedServerSides")
+            reading["speedCiLow"] = values.get("speedCiLow")
+            reading["speedCiHigh"] = values.get("speedCiHigh")
+            reading["speedCiMethod"] = values.get("speedCiMethod")
+            reading["src"] = "computed"
+            computed_n += 1
+            published_overlap_n += 1
+        elif values.get("provisionalSpeed") is not None:
+            reading["provisionalSpeed"] = round(values["provisionalSpeed"], 3)
+            reading["provisionalCiLow"] = values.get("provisionalCiLow")
+            reading["provisionalCiHigh"] = values.get("provisionalCiHigh")
+            reading["provisionalServerSides"] = values.get("provisionalServerSides")
+            reading["provisionalMatches"] = values.get("provisionalMatches")
 
     # Add archive calculations where the published table has no event-season value.
     for season, events in hist["seasons"].items():
@@ -216,14 +227,28 @@ if os.path.exists(COMPUTED):
         for tid, values in events.items():
             if tid not in known or (tid, year) in published_keys:
                 continue
-            readings.append({
-                "t": tid, "s": year,
-                "speed": round(values["speed"], 2),
-                "ace": round(values["ace"], 1),
-                "matches": values.get("matches"),
-                "src": "computed",
-            })
-            computed_n += 1
+            if values.get("speed") is not None:
+                readings.append({
+                    "t": tid, "s": year,
+                    "speed": round(values["speed"], 3),
+                    "ace": round(values["ace"], 1),
+                    "matches": values.get("matches"),
+                    "adjustedServerSides": values.get("adjustedServerSides"),
+                    "speedCiLow": values.get("speedCiLow"),
+                    "speedCiHigh": values.get("speedCiHigh"),
+                    "speedCiMethod": values.get("speedCiMethod"),
+                    "src": "computed",
+                })
+                computed_n += 1
+            elif values.get("provisionalSpeed") is not None:
+                readings.append({
+                    "t": tid, "s": year, "src": "provisional",
+                    "provisionalSpeed": round(values["provisionalSpeed"], 3),
+                    "provisionalCiLow": values.get("provisionalCiLow"),
+                    "provisionalCiHigh": values.get("provisionalCiHigh"),
+                    "provisionalServerSides": values.get("provisionalServerSides"),
+                    "provisionalMatches": values.get("provisionalMatches"),
+                })
 else:
     print("no computed history found; run tools/compute_speed.py --write first")
 
