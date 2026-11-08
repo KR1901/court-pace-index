@@ -345,6 +345,41 @@ class BuildLiveProfilesTests(unittest.TestCase):
         self.assertEqual(1, coverage["tour_prior_returner_profiles"])
         self.assertEqual(2, coverage["tour_prior_sides"])
 
+    def test_counts_every_side_that_uses_a_reused_neutral_profile(self):
+        rows = [
+            {
+                "winner_id": "known", "winner_name": "Known Player",
+                "loser_id": "debut", "loser_name": "Debut Player",
+                "w_svpt": 80, "l_svpt": 82, "w_ace": 8, "l_ace": 7,
+            },
+            {
+                "winner_id": "known", "winner_name": "Known Player",
+                "loser_id": "debut", "loser_name": "Debut Player",
+                "w_svpt": 81, "l_svpt": 83, "w_ace": 8, "l_ace": 7,
+            },
+        ]
+        profiles = {
+            "known": {
+                "id": "known", "name": "Known Player",
+                "serve_rate": 0.10, "concede_rate": 0.08,
+                "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate_source": "career-history-pooled-shrunk",
+            },
+        }
+
+        coverage = compute_speed.ensure_event_profiles(rows, profiles, 0.08)
+
+        # The debut player is the server once and the returner once per match.
+        # Count all four side uses, but retain one fallback assignment per role.
+        self.assertEqual(4, coverage["tour_prior_sides"])
+        self.assertEqual(2, coverage["tour_prior_server_side_uses"])
+        self.assertEqual(2, coverage["tour_prior_returner_side_uses"])
+        self.assertEqual(1, coverage["tour_prior_server_profiles"])
+        self.assertEqual(1, coverage["tour_prior_returner_profiles"])
+        self.assertEqual(1, coverage["missing_server_profile_before_fallback"])
+        self.assertEqual(1, coverage["missing_returner_profile_before_fallback"])
+        self.assertEqual(2, len(coverage["tour_prior_fallback_details"]))
+
     def test_tour_average_rate_is_computed_from_all_usable_service_points(self):
         rows = [
             {"w_ace": 6, "l_ace": 6, "w_svpt": 80, "l_svpt": 80},
