@@ -131,6 +131,52 @@ class EventPopulationAuditTests(unittest.TestCase):
         self.assertEqual(2, result["tour_prior_returner_profiles"])
         self.assertEqual(2, result["missing_server_profile_before_fallback"])
         self.assertEqual(2, result["missing_returner_profile_before_fallback"])
+        details = result["tour_prior_fallback_details"]
+        self.assertEqual(4, len(details))
+        self.assertEqual(
+            {"no_player_profile_in_history"},
+            {item["reason"] for item in details},
+        )
+
+    def test_profile_record_without_role_rate_is_distinguished_from_no_profile(self):
+        rows = [
+            {
+                "tourney_name": "Montpellier", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "winner", "winner_name": "Taylor Fritz",
+                "loser_id": "loser", "loser_name": "Hubert Hurkacz",
+                "w_svpt": "80", "l_svpt": "82", "w_ace": "10", "l_ace": "8",
+            },
+            {
+                "tourney_name": "Adelaide", "tourney_level": "250", "surface": "Hard",
+                "winner_id": "other1", "winner_name": "Other Player One",
+                "loser_id": "other2", "loser_name": "Other Player Two",
+                "w_svpt": "100", "l_svpt": "100", "w_ace": "10", "l_ace": "10",
+            },
+        ]
+        profiles = {
+            "winner": {
+                "id": "winner", "name": "Taylor Fritz",
+                "serve_rate": None, "concede_rate": None,
+            },
+            "loser": {
+                "id": "loser", "name": "Hubert Hurkacz",
+                "serve_rate": None, "concede_rate": None,
+            },
+        }
+        with patch.object(audit.compute_speed, "build_live_profiles", return_value=profiles):
+            result = audit.model_profile_coverage(rows, "montpellier", 2026)
+
+        self.assertEqual(2, result["rateable_server_sides"])
+        self.assertEqual(2, result["tour_prior_sides"])
+        self.assertEqual(2, result["missing_server_profile_before_fallback"])
+        self.assertEqual(2, result["missing_returner_profile_before_fallback"])
+        details = result["tour_prior_fallback_details"]
+        self.assertEqual(4, len(details))
+        self.assertTrue(all(item["had_player_profile"] for item in details))
+        self.assertEqual(
+            {"player_profile_exists_without_rate"},
+            {item["reason"] for item in details},
+        )
 
 
 if __name__ == "__main__":
