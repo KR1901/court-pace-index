@@ -347,8 +347,9 @@ def clip_probability(value):
     return min(1.0 - EPSILON, max(EPSILON, float(value)))
 
 
-def empty_cluster():
+def empty_cluster(surface=None):
     return {
+        "surface": surface,
         "sides": 0,
         "points": 0.0,
         "aces": 0.0,
@@ -365,6 +366,8 @@ def empty_cluster():
 
 def merge_cluster(target, source):
     for key in target:
+        if key == "surface":
+            continue
         target[key] += source.get(key, 0)
 
 
@@ -388,13 +391,19 @@ def evaluate_target_season(year, target_rows, main_by_year, lower_by_year,
             f"No valid ATP-only tour prior for held-out season {year}; refusing fallback."
         )
 
-    by_event = defaultdict(empty_cluster)
+    by_event = {}
     for row in target_rows:
         event_key = str(
             row.get("tourney_id")
             or row.get("tourney_name")
             or "unknown-event"
         )
+        raw_surface = (row.get("surface") or "").strip().casefold()
+        surface_label = raw_surface if raw_surface in {"clay", "hard", "grass", "carpet"} else "unknown"
+        if event_key not in by_event:
+            by_event[event_key] = empty_cluster(surface_label)
+        elif by_event[event_key]["surface"] != surface_label:
+            by_event[event_key]["surface"] = "mixed"
         for server_key, returner_key, points_key, aces_key in (
             ("winner_id", "loser_id", "w_svpt", "w_ace"),
             ("loser_id", "winner_id", "l_svpt", "l_ace"),
@@ -632,6 +641,24 @@ def render_markdown(report):
         )
     lines.extend([
         "",
+        "## Validation by surface (descriptive; locked holdout)",
+        "",
+        "| Surface | ATP-only log loss | Selected log loss | ATP-only profile coverage (%) | Selected coverage (%) |",
+        "|---|---:|---:|---:|---:|",
+    ])
+    for surface, item in sorted(validation["by_surface"].items()):
+        base_surface = item["atp_only"]
+        candidate_surface = item[selected]
+        lines.append(
+            f"| {surface} | {base_surface['binomial_log_loss_per_point']:.6f} | "
+            f"{candidate_surface['binomial_log_loss_per_point']:.6f} | "
+            f"{base_surface['both_personal_profile_pct']:.2f} | "
+            f"{candidate_surface['both_personal_profile_pct']:.2f} |"
+        )
+    lines.extend([
+        "",
+        "The surface table is descriptive only; the lower-tier arm was selected on the earlier development window and was not retuned by surface on this holdout.",
+        "",
         "## Source, controls and limitations",
         "",
         f"- Source archive: {ARCHIVE_REPOSITORY}.",
@@ -749,6 +776,26 @@ def run_experiment(start_season, end_season, development_end, bootstrap,
             for name in ("atp_only", selected_arm)
         }
 
+    # Descriptive surface check on the locked holdout. The candidate and its tier
+    # weights remain fixed from the development window; holdout surfaces do not retune it.
+    validation_surfaces = sorted({
+        cluster.get("surface", "unknown")
+        for name in ("atp_only", selected_arm)
+        for year in validation_years
+        for cluster in year_results[name].get(year, {}).values()
+    })
+    by_surface = {}
+    for surface in validation_surfaces:
+        by_surface[surface] = {}
+        for name in ("atp_only", selected_arm):
+            selected_clusters = [
+                cluster
+                for year in validation_years
+                for cluster in year_results[name].get(year, {}).values()
+                if cluster.get("surface", "unknown") == surface
+            ]
+            by_surface[surface][name] = metrics_from_clusters(selected_clusters)
+
     source_coverage = {
         "challenger_source_matches": sum(
             item["selected_challenger_matches"] for item in lower_manifests
@@ -814,6 +861,11 @@ def run_experiment(start_season, end_season, development_end, bootstrap,
             selected_arm: validation_metrics[selected_arm],
             "bootstrap_delta": bootstrap_delta,
             "by_season": by_season,
+            "by_surface": by_surface,
+            "surface_analysis_note": (
+                "Descriptive locked-holdout stratification only; selected arm and tier weights "
+                "were fixed using development seasons and were not retuned by surface."
+            ),
         },
         "season_source_coverage": {
             str(year): {
