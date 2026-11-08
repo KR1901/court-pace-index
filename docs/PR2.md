@@ -75,7 +75,7 @@ For 2026 specifically, the audit covered 58 mapped events, 2,519 matches and 5,0
 
 A promising next research input is Sackmann's separate qualifying/Challenger match archive. Its upstream documentation states that serve statistics are generally available from 2008 for Challenger matches and 2011 for tour-level qualifying. This data has different competition-level context and is licensed CC BY-NC-SA 4.0. It is **not** folded into production profiles by this PR: a safe next experiment must match only unique identities, keep the target tournament excluded, quantify actual gap recovery, and calibrate the lower-tier observations with out-of-sample evidence before they can influence ATP-level ratings. [Archive documentation](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/atp/UPSTREAM_README.md) · [Archive licence](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE).
 
-This is the mapped event population in the selected source files, not a claim that every ATP event or every match is present and not proof that the source population equals Tennis Abstract's population. The consolidated workflow is configured to retain aggregate season/event CSVs and a machine-readable report while excluding raw source CSVs, player names and player IDs.
+This is the mapped event population in the selected source files, not a claim that every ATP event or every match is present and not proof that the source population equals Tennis Abstract's population. The consolidated workflow retains aggregate season/event CSVs, a machine-readable report and a README as a GitHub Actions artifact for 90 days; it excludes raw source CSVs, player names and player IDs. The completed report is attached to [Event population audit run #42479832106](https://github.com/KR1901/court-pace-index/actions/runs/42479832106).
 
 ## Other findings and remaining validation
 
@@ -96,13 +96,14 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Verification
 
-On source/profile-audit code head `461272379dc3e69a4b444111b022bf0721f340ef`:
-- [Event population audit](https://github.com/KR1901/court-pace-index/actions/runs/42469683324): passed, including the source-required Montpellier report.
-- [Expected-aces formula comparison](https://github.com/KR1901/court-pace-index/actions/runs/42469683149): passed.
-- [Android CI](https://github.com/KR1901/court-pace-index/actions/runs/42469683108): passed.
-- [Deep calculation audit](https://github.com/KR1901/court-pace-index/actions/runs/42469683166): passed; the 1991–2026 LOEO, shrinkage, weighting and physical cross-check audit completed and its report artifact was uploaded.
+On code head \`9042c2201c6902c15d79ad302fe84824a61d771e\`:
 
-The preceding code head `d01025706a754a292445b7dbcbdf5f6b1bf0573c` passed all four workflows, including the deep audit. The documentation-only updates after `4612723` do not alter the calculation code.
+- [Event population audit #79](https://github.com/KR1901/court-pace-index/actions/runs/42479832106): passed. It ran the Montpellier source reconciliation, swept all mapped events from 1991 through 2026, aggregated the report and uploaded the 90-day artifact \`all-event-profile-coverage-1991-2026\`.
+- [Expected-aces formula comparison #210](https://github.com/KR1901/court-pace-index/actions/runs/42479833008): passed.
+- [Android CI #584](https://github.com/KR1901/court-pace-index/actions/runs/42479832112): passed.
+- [Deep calculation audit #140](https://github.com/KR1901/court-pace-index/actions/runs/42479832179): in progress when this record was written; its completed result must be checked before claiming the full four-workflow set is green.
+
+The documentation-only updates after this code head preserve the same calculation implementation. PR #2 remains open and unmerged; PR #1's branch has not been modified.
 
 ## Reproduction
 
