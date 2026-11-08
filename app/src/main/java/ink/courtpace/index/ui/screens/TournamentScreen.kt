@@ -62,6 +62,7 @@ fun TournamentScreen(
     val speed = data.value(tournament.id, season, Metric.SPEED)
     val speedSource = data.speedSource(tournament.id, season)
     val publishedSpeed = data.publishedSpeed(tournament.id, season)
+    val seasonReading = data.seasonRows(tournament.id).firstOrNull { it.season == season }
     val latestCpiSeason = data.latestSeason(tournament.id, Metric.CPI)
     val shownCpi = cpi ?: latestCpiSeason?.let { data.value(tournament.id, it, Metric.CPI) }
     val shownCpiSeason = if (cpi != null) season else latestCpiSeason
@@ -175,7 +176,31 @@ fun TournamentScreen(
                         )
                     }
                 }
-                if (shownCpi == null && speed == null) {
+                if (speed != null && seasonReading?.speedCiLow != null && seasonReading.speedCiHigh != null) {
+                    Spacer(Modifier.height(10.dp))
+                    GlassNote(
+                        "95% match-cluster interval: " +
+                            String.format(java.util.Locale.US, "%.2f–%.2f",
+                                seasonReading.speedCiLow, seasonReading.speedCiHigh) +
+                            ". Whole matches are resampled; fitted player profiles and the season normaliser are held fixed.",
+                    )
+                }
+                if (seasonReading?.provisionalSpeed != null &&
+                    seasonReading.provisionalCiLow != null && seasonReading.provisionalCiHigh != null
+                ) {
+                    Spacer(Modifier.height(10.dp))
+                    GlassNote(
+                        "Provisional CALC (not ranked): " +
+                            String.format(java.util.Locale.US, "%.2f", seasonReading.provisionalSpeed) +
+                            " · 95% match-cluster interval " +
+                            String.format(java.util.Locale.US, "%.2f–%.2f",
+                                seasonReading.provisionalCiLow, seasonReading.provisionalCiHigh) +
+                            " · ${seasonReading.provisionalMatches ?: "?"} matches / " +
+                            "${seasonReading.provisionalServerSides ?: "?"} eligible server sides. " +
+                            "The standard rating requires at least 20 sides.",
+                    )
+                }
+                if (shownCpi == null && speed == null && seasonReading?.provisionalSpeed == null) {
                     Text(
                         text = "No reading for $season.",
                         style = TextStyle(fontSize = 13.sp),
@@ -251,6 +276,7 @@ fun TournamentScreen(
                                 Text(
                                     text = reading.cpi?.let { PaceAnalytics.format(it, Metric.CPI) }
                                         ?: reading.speed?.let { PaceAnalytics.format(it, Metric.SPEED) }
+                                        ?: reading.provisionalSpeed?.let { PaceAnalytics.format(it, Metric.SPEED) }
                                         ?: "–",
                                     style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
                                     color = colors.text,
@@ -259,7 +285,12 @@ fun TournamentScreen(
                                 // CPI and speed are different scales; never let the reader
                                 // assume a bare number is the same thing.
                                 Text(
-                                    text = if (reading.cpi != null) "CPI" else "SPD",
+                                    text = when {
+                                        reading.cpi != null -> "CPI"
+                                        reading.speed != null -> "SPD"
+                                        reading.provisionalSpeed != null -> "PROV"
+                                        else -> "–"
+                                    },
                                     style = TextStyle(fontSize = 8.5.sp, fontWeight = FontWeight.SemiBold),
                                     color = colors.textFaint,
                                 )
@@ -283,6 +314,17 @@ fun TournamentScreen(
                                                 append(PaceAnalytics.format(published, Metric.SPEED))
                                             }
                                         }
+                                        if (reading.speedCiLow != null && reading.speedCiHigh != null) {
+                                            append(" · 95% CI ")
+                                            append(String.format(java.util.Locale.US, "%.2f–%.2f",
+                                                reading.speedCiLow, reading.speedCiHigh))
+                                        }
+                                    }
+                                    reading.provisionalSpeed?.let { provisional ->
+                                        if (isNotEmpty()) append(" · ")
+                                        append("provisional CALC ")
+                                        append(PaceAnalytics.format(provisional, Metric.SPEED))
+                                        reading.provisionalServerSides?.let { append(" · $it sides") }
                                     }
                                 },
                                 style = TextStyle(fontSize = 11.5.sp),
