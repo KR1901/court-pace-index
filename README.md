@@ -1,142 +1,87 @@
 # Court Pace
 
-Court pace data, stats and analysis for the ATP tour. How fast every event plays, how that
-has moved season by season, and where the two public ways of measuring a court disagree.
-
-This is a reading app, not a measuring one: it ships a curated dataset built from public
-sources and analyses it. No microphone, no sensors. The only permission is internet access,
-used solely by the optional "check for updates" action, which reads a JSON file this project
-publishes — nothing is sent anywhere.
+Court Pace is an ATP court-speed research and reading app. It compares a physical court measurement (CPI) with a behavioural, ace-based Surface Speed estimate. The app bundles historical readings for offline use and optionally fetches live ATP match results while open.
 
 | | |
 |---|---|
-| Language | Kotlin, Jetpack Compose |
-| Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21, Compose BOM 2026.09.00 |
+| Platform | Android, Kotlin, Jetpack Compose |
+| Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21 |
 | SDK | compileSdk 37, targetSdk 37, minSdk 26 |
-| UI | Liquid Glass — translucent layered surfaces, specular rims, spring motion, drifting mesh |
-| Data | 63 events, 106 CPI readings (2012–2026), 716 ace-based speed readings (2012–2026), bundled offline |
-| Permissions | Internet, used only by the optional "check for updates" action |
+| Data | Bundled CPI and CALC/TA speed readings, 2012–2026; see the generated dataset for exact counts |
+| Network | Optional HTTPS access for live ATP results/statistics and manual dataset updates |
 
-## The two metrics
+## The two measurements
 
-**Court Pace Index (CPI)** — a physical reading of the bounce, derived from Hawk-Eye on the
-show courts. The published combination is
+**Court Pace Index (CPI)** is a physical reading derived from ball-surface interaction on instrumented show courts. The published combination is:
 
 ```
 CPI = 100(1 − μ) + 150(0.81 − e)
 ```
 
-where μ is the coefficient of friction, e the coefficient of restitution, 0.81 the mean
-restitution across surfaces and 150 a pace-perception constant. Higher is faster. It covers
-only the courts with Hawk-Eye installed, and it drifts upward through a tournament as shoe
-rubber wears the grit off the surface.
+where μ is coefficient of friction and e is coefficient of restitution. Coverage is limited to measured courts; it is not a complete tournament-wide court census.
 
-**Surface speed** — a behavioural reading. Count the aces at an event, adjust for the servers
-and returners who were actually on court, and compare with what those same players would have
-produced on a tour-average surface. Expected-ace odds are calculated as server odds × returner
-ace-concession odds ÷ tour-average ace odds. 1.00 is average; the usual range across ATP events
-is 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
+**Surface Speed** is a behavioural reading based on aces. It adjusts each server's actual aces for the server's serve tendency and the returner's ace-concession tendency, compares that with expected aces on a neutral tour-average surface, averages valid server-side ratios and season-normalises the event. 1.00 is the season tour average. The metric also responds to balls, weather, altitude and player tactics; it is not a pure physical surface measurement.
 
-The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
+The calibrated expected-aces odds ratio is:
 
-The calibrated server/returner odds-ratio method is recomputed from the public ATP match archive
-where match data is available. When a calculated event-season overlaps a published Tennis Abstract
-figure, the calibrated value drives the ranking and the original TA number remains visible beside it.
-Where no calculation is available, the published figure is retained as a clearly labelled TA fallback.
-The 1991–2026 formula comparison is documented separately in PR #2.
+```
+O = (serverOdds × returnerConcessionOdds) / tourAverageAceOdds
+expectedAceRate = O / (1 + O)
+expectedAces = servicePoints × expectedAceRate
+```
 
-## What the app does with them
+Historical ratings use leave-one-tournament-out player profiles and tour anchor. Live ratings use the same calibrated equation and season normalisation, with a separately documented profile-backfill policy. The 0.5 expected-aces floor is applied as a small-denominator safeguard; it does not remove a valid server side from coverage.
 
-- **Pace board** — every event ranked for a season, filterable by surface, with the change
-  against the previous edition and a noise threshold applied before a move is called real.
-- **Tournament detail** — CPI history from 2012 with gaps left as gaps, every season's
-  reading, ace rate where published, altitude notes, and the two metrics side by side.
-- **Compare** — up to three events on one chart, plus a percentile dumbbell for each event
-  that has both metrics, which is where the physical reading and the ace rate part company.
-- **Surfaces** — field averages per surface, the season-by-season trend, and the fastest and
-  slowest event on each surface.
-- **Method** — the formulas, the banding, the provenance of every series and the known gaps.
-- **Live now** — discovers active ATP 1000, 500 and 250 events from the ATP current-scores page on the device, then rates their completed singles matches. It rechecks the live slate every five minutes while the app is open.
+## App features
 
-## Data
+- **Pace board:** season rankings with surface filters and like-for-like changes.
+- **Tournament detail:** CPI and Surface Speed histories, source labels and comparisons.
+- **Compare:** event comparisons and CPI/Speed percentile divergence.
+- **Surfaces:** surface-level distributions and trends.
+- **Method:** formulas, bands, source provenance and limitations.
+- **Live now:** discovers active ATP 1000/500/250 events on-device, parses completed singles results and rates available match statistics. Live diagnostics expose raw score, normalisation, tour ace rate, service-point totals, profile matches and influential side ratios.
 
-`app/src/main/assets/pace_dataset.json`, generated by `tools/build_dataset.py` from:
+The live pipeline excludes walkovers, no-play, doubles and in-progress matches; played retirements remain eligible when valid statistics exist. Missing data stays visible rather than being fabricated. ATP/Infosys can block datacentre clients, so CI cannot replace real-device acceptance testing.
 
-1. **courtspeed.com** — Court Pace Index database 2012–2026 for the Grand Slams, Masters
-   1000s and ATP Finals, compiled from ATP / Tennis TV broadcast data.
-2. **Tennis Abstract** — ATP Surface Speed Ratings, ace rate adjusted for the field, last
-   updated 2026-11-02. Its published values are retained as side-by-side references wherever
-   the calibrated archive calculation overlaps, and as labelled fallbacks otherwise.
-3. **ATP match archive compiled by Jeff Sackmann** (CC BY-NC-SA 4.0) — every tour-level match
-   with serve stats, used by `tools/compute_speed.py` to calculate the primary speed series
-   back to 2012 wherever the archive has sufficient event coverage.
+## Calculation evidence and decisions
 
-### Live Surface Speed coverage
+PR #2's 1991–2026 comparison covers 1,289 common event-seasons across 36 seasons with 5,000 season-stratified paired bootstrap resamples. The calibrated surface-returner variant had the best overall rank agreement and MAE among tested variants (Pearson 0.925, Spearman 0.926, MAE 0.052 against the Tennis Abstract reference series). This is reference-series agreement, not proof of physical accuracy.
 
-The live ATP result row shows two separate coverage fractions:
+The full calculation audit also tested shrinkage, surface weighting, uncertainty and a limited CPI cross-check. The current production formula is retained; Montpellier source-population reconciliation and expanded independent physical validation remain open research tasks. See [PR #2 methodology record](docs/PR2.md) and [physical validation plan](docs/PHYSICAL_VALIDATION.md).
 
-- `matches / discoveredMatches`: completed eligible singles matches with usable Infosys statistics, divided by completed eligible singles matches discovered from ATP.
-- `adjustedServerSides / totalServerSides`: server-side observations that entered the opponent-adjusted mean, divided by `2 × discoveredMatches`. The denominator grows as more completed matches are discovered; it is not a fixed tournament constant.
+## Data and provenance
 
-Each completed match contributes two possible server-side observations. A side is included when the server has a usable serve-rate profile, the returner has a usable ace-concession profile, service statistics are valid, and the calibrated expected-ace value is positive. Calibration uses the season's overall ace/service-point rate as its neutral odds anchor. Expected-ace values below 0.5 are floored to 0.5 when calculating the actual/expected ratio; they are **not** discarded from coverage. Therefore, when all 49 completed matches have usable Stats Plus statistics and both players have valid profiles, the expected coverage is 98/98. Lower coverage must be accounted for by missing match-stat payloads and/or visible per-side exclusion diagnostics; it must not result from the floor.
+- CPI: courtspeed.com published CPI data.
+- Tennis Abstract: published ATP Surface Speed figures, retained as comparison values and labelled fallbacks.
+- Historical match archive: Jeff Sackmann ATP archive mirror, used to calculate CALC ratings.
+- Current season: TennisMyLife ATP match CSV when available; a hash-verified cache is reused only after a failed refresh and only within the documented freshness window.
+- Live match statistics: ATP/Infosys Stats Plus, fetched by the Android app.
 
-The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. It also carries the tour-average ace rate used to calibrate expected-ace odds. Each profile records its source season and sample size. Historical and live ratings use the same calibrated formula.
+Tennis Abstract is not physical ground truth. TennisMyLife's public terms restrict use to personal, educational and non-commercial research; do not commit or redistribute its raw CSV. Confirm current terms and obtain written permission before commercial use or broader redistribution. See [Data provenance](docs/DATA.md).
 
-### Refreshing
+## PR records
 
-`data/latest.json` is the file the app's refresh button reads. A scheduled workflow
-(`.github/workflows/refresh-data.yml`) re-runs the pipeline weekly and commits the new dataset
-plus a fresh `latest.json` when anything changed. The app fetches it over HTTPS, validates it
-with `DatasetPolicy` (shape, ranges, no orphan readings, never smaller than what is installed)
-and caches it locally; a bad or truncated download is discarded and the installed data stays.
+- [PR #1 — live ATP match discovery, parsing and coverage](docs/PR1.md)
+- [PR #2 — expected-aces formulation, calculation audit and provenance](docs/PR2.md)
 
-Every Speed value carries its source: LIVE, CALC, or TA. Where both estimates exist, CALC is
-primary and TA is shown alongside; TA-only rows are labelled fallbacks. The dataset is guarded
-by unit tests for unique ids, no orphan readings, plausible values, duplicate keys, preserved
-published comparisons, and expected coverage.
+PR #2 is stacked on PR #1. Changes in this workstream are committed only to PR #2's branch; neither PR is to be merged as part of this work.
 
-The ATP publishes no downloadable court pace feed. Both series are reproductions of published
-measurements, not new measurements. See [docs/DATA.md](docs/DATA.md).
-
-## Build
+## Build and tests
 
 ```bash
-./gradlew :app:testDebugUnitTest      # 22 tests: analytics and dataset integrity
+./gradlew :app:testDebugUnitTest
 ./gradlew :app:assembleDebug
-./gradlew :app:assembleRelease        # signed when the env vars below are present
-python3 tools/compute_speed.py --write # regenerate history + live player baseline
-python3 tools/build_dataset.py        # bundle the source tables and live baseline
+./gradlew :app:assembleRelease
+python3 -m unittest discover -s tools -p "test_*.py" -v
+python3 tools/compute_speed.py --write
+python3 tools/build_dataset.py
+python3 tools/audit_event_population.py --event Montpellier --season 2026
 ```
 
-Release signing reads four environment variables and falls back to debug signing without them:
+The event-population audit writes a local CSV and JSON summary under `build/event-population-audit/`. It does not copy the raw source CSV into the repository. The output describes the source loaded by the calculation pipeline and does not establish Tennis Abstract's match population.
 
-```
-COURT_PACE_KEYSTORE=/path/to/release.jks
-COURT_PACE_KEYSTORE_PASSWORD=...
-COURT_PACE_KEY_ALIAS=...
-COURT_PACE_KEY_PASSWORD=...
-```
+## Limitations
 
-R8 is on by default; pass `-Pcourtpace.minify=false` on a machine too small to finish it.
+CPI is available for a limited set of instrumented courts. Surface Speed is behavioural and noisy for small draws. The current CPI cross-check is sparse, particularly on clay. A broader, independently measured CPR/CPI dataset with court identity, measurement date and environmental metadata is needed before claiming physical validation. See [PHYSICAL_VALIDATION.md](docs/PHYSICAL_VALIDATION.md).
 
-## Honest limits
-
-CPI is measured on a handful of show courts and has no altitude adjustment. The ace-based
-rating needs matches to have been played and is noisy at small draws. Neither is a
-certification, the two disagree by design, and the app says so wherever a number appears.
-Court Pace is not affiliated with, endorsed by or connected to the ATP or the ITF.
-
-## Licence
-
-Code: MIT.
-
-The bundled dataset mixes three sources and carries the licence each requires:
-
-| Part | Licence |
-|---|---|
-| Court Pace Index values | as published by courtspeed.com |
-| 2025–26 speed ratings | as published by Tennis Abstract |
-| Recomputed speed history | CC BY-NC-SA 4.0, derived from Jeff Sackmann's ATP archive |
-
-Because the derived series is CC BY-NC-SA 4.0, **the bundled data may not be used
-commercially**. Attribute Jeff Sackmann and Tennis Abstract if you reuse it.
+Court Pace is not affiliated with, endorsed by or connected to the ATP or ITF.
