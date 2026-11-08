@@ -101,6 +101,13 @@ class PaceData(val dataset: PaceDataset) {
         val speedSource: String? = null,
         /** Original published Tennis Abstract value, where one is available. */
         val publishedSpeed: Double? = null,
+        val speedCiLow: Double? = null,
+        val speedCiHigh: Double? = null,
+        val provisionalSpeed: Double? = null,
+        val provisionalCiLow: Double? = null,
+        val provisionalCiHigh: Double? = null,
+        val provisionalServerSides: Int? = null,
+        val provisionalMatches: Int? = null,
     )
 
     fun seasonRows(id: String): List<SeasonRow> =
@@ -118,6 +125,13 @@ class PaceData(val dataset: PaceDataset) {
                     speedSource = speedReading?.src,
                     publishedSpeed = rows.firstNotNullOfOrNull { it.publishedSpeed }
                         ?: rows.firstOrNull { it.src == "tennisabstract" && it.speed != null }?.speed,
+                    speedCiLow = speedReading?.speedCiLow,
+                    speedCiHigh = speedReading?.speedCiHigh,
+                    provisionalSpeed = rows.firstNotNullOfOrNull { it.provisionalSpeed },
+                    provisionalCiLow = rows.firstNotNullOfOrNull { it.provisionalCiLow },
+                    provisionalCiHigh = rows.firstNotNullOfOrNull { it.provisionalCiHigh },
+                    provisionalServerSides = rows.firstNotNullOfOrNull { it.provisionalServerSides },
+                    provisionalMatches = rows.firstNotNullOfOrNull { it.provisionalMatches },
                 )
             }
             .sortedByDescending { it.season }
