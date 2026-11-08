@@ -85,9 +85,9 @@ The full all-event profile-coverage audit swept 1991–2026:
 | Eligible server sides | 142,300 |
 | Rateable server sides | 142,300 |
 | Unrateable server sides | 0 |
-| Sides using at least one neutral tour-average prior | Corrected per-side total pending the rerun below |
+| Sides using at least one neutral tour-average prior | 1,930 (1.356%) |
 
-All sides received finite calculation inputs, but a neutral prior is not the same thing as an individual player's serve/return history. The earlier 1991–2026 run found 1,610 unique missing player-role assignments (805 server-role and 805 returner-role), with zero ambiguous normalized-name collisions and zero existing profiles lacking a usable role rate. Its 1,584 figure was not a valid total of all affected sides: the audit mutated a missing role to a neutral prior on first use and failed to count later sides reusing that role. The corrected audit now records server-role and returner-role prior uses on every side separately; corrected totals are pending. Reports omit player names and IDs.
+All sides received finite calculation inputs, but a neutral prior is not the same thing as an individual player's serve/return history. The corrected 1991–2026 sweep records 1,930 sides using at least one prior (1.356%), with 980 server-role and 980 returner-role uses. Those 1,960 role uses exceed the side count because 30 sides required a prior for both roles. The 1,610 unique missing player-role assignments (805 server-role, 805 returner-role) were all due to no player profile in the selected history window; there were zero ambiguous normalized-name collisions and zero existing profiles without a usable role rate. Reports omit player names and IDs.
 
 Montpellier 2026 production full-history CALC is 1.664 (rank 1/57), compared with TA's published 1.49; the conditional match-cluster 95% interval is [1.465, 1.862]. Marrakech 2026 production CALC is 0.999 (rank 34/57), compared with TA's 0.93; its conditional interval is [0.828, 1.182]. Both TA reference points fall inside the corresponding production intervals. The separate \`deep_calculation_audit.py\` variant/bootstrap results (Montpellier 1.600 at 47 sides; Marrakech 1.049 at 41 sides) use same-season-only profiles and are not the production 35-season profile method.
 
