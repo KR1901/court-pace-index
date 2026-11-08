@@ -54,7 +54,7 @@ jobs:
       - name: Validate the generated season baseline
         run: |
           python3 - <<'PY'
-          import json, math, unicodedata
+          import hashlib, json, math, unicodedata
           from datetime import date, datetime, timezone
           from pathlib import Path
 
@@ -95,6 +95,13 @@ jobs:
                     f"{source_metadata.get('latestMatchDate')}, SHA-256: {source_metadata.get('sha256')}")
               assert source_metadata.get("latestMatchDate"), "source snapshot has no dated match observations"
               assert source_metadata.get("matchRows", 0) > 0, "source snapshot is empty"
+              csv_path = Path(f".cache/atp/tml_atp_matches_{season}.csv")
+              assert csv_path.is_file(), "TML source CSV is missing from the refresh workspace"
+              source_bytes = csv_path.read_bytes()
+              assert len(source_bytes) == source_metadata.get("bytes"), "TML source byte count mismatch"
+              assert hashlib.sha256(source_bytes).hexdigest() == source_metadata.get("sha256"), (
+                  "TML source SHA-256 does not match the recorded source manifest"
+              )
           coverage = baseline.get("profileCoverage") or {}
           assert coverage.get("playerProfiles") == len(profiles), "profile coverage count does not match the baseline"
           assert coverage.get("ambiguousNameCollisionsExcluded", 0) >= 0, (

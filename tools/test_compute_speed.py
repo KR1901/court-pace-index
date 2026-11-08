@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sys
 import tempfile
@@ -99,17 +100,28 @@ class BuildLiveProfilesTests(unittest.TestCase):
     def test_tml_cache_requires_recent_successful_fetch_manifest(self):
         now = datetime(2026, 11, 8, 12, 0, tzinfo=timezone.utc)
         with tempfile.TemporaryDirectory() as directory:
-            metadata_path = Path(directory) / "tml.csv.meta.json"
+            csv_path = Path(directory) / "tml.csv"
+            metadata_path = Path(str(csv_path) + ".meta.json")
+            payload = b"tourney_id,w_svpt\\n123,75\\n"
+            csv_path.write_bytes(payload)
+            manifest = {
+                "fetchedAtUtc": (now - timedelta(days=3)).isoformat(),
+                "bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+            }
+
             self.assertFalse(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
 
-            metadata_path.write_text(json.dumps({
-                "fetchedAtUtc": (now - timedelta(days=3)).isoformat()
-            }), encoding="utf-8")
+            metadata_path.write_text(json.dumps(manifest), encoding="utf-8")
             self.assertTrue(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
 
-            metadata_path.write_text(json.dumps({
-                "fetchedAtUtc": (now - timedelta(days=8)).isoformat()
-            }), encoding="utf-8")
+            expired = dict(manifest)
+            expired["fetchedAtUtc"] = (now - timedelta(days=8)).isoformat()
+            metadata_path.write_text(json.dumps(expired), encoding="utf-8")
+            self.assertFalse(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
+
+            metadata_path.write_text(json.dumps(manifest), encoding="utf-8")
+            csv_path.write_bytes(payload + b"tampered")
             self.assertFalse(compute_speed.tml_cache_is_fresh(metadata_path, now=now))
 
 

@@ -59,7 +59,7 @@ NAMES = {
 
 
 def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_DAYS):
-    """A cached current-season CSV is trusted only with a recent successful-fetch manifest."""
+    """A cached current-season CSV needs a recent manifest and a matching content hash."""
     try:
         with open(metadata_path, encoding="utf-8") as source:
             metadata = json.load(source)
@@ -70,7 +70,23 @@ def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_D
         if current.tzinfo is None:
             current = current.replace(tzinfo=timezone.utc)
         age = current - fetched
-        return timedelta(seconds=-900) <= age <= timedelta(days=max_age_days)
+        if not timedelta(seconds=-900) <= age <= timedelta(days=max_age_days):
+            return False
+
+        metadata_name = os.fspath(metadata_path)
+        suffix = ".meta.json"
+        if not metadata_name.endswith(suffix):
+            return False
+        csv_path = metadata_name[:-len(suffix)]
+        expected_bytes = int(metadata["bytes"])
+        expected_sha256 = str(metadata["sha256"])
+        if not os.path.isfile(csv_path) or os.path.getsize(csv_path) != expected_bytes:
+            return False
+        digest = hashlib.sha256()
+        with open(csv_path, "rb") as cached:
+            for chunk in iter(lambda: cached.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest() == expected_sha256
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
         return False
 
