@@ -165,6 +165,8 @@ A new unpaired CPI-only record (Paris 2026) exposed a separate app analytics iss
 
 The negative clay association remains after subtracting each tournament's own multi-season mean: within-event-centred Pearson is −0.400 and Spearman is −0.348. Madrid (n=8; r=−0.341), Rome (n=7; r=−0.546) and Monte Carlo (n=8; r=−0.244) each show negative descriptive within-event correlations; Roland Garros has one observation. These are small repeated-year samples, not independent court-level tests.
 
+The deep calculation audit now reproduces these physical diagnostics from the versioned CPI/CALC snapshot instead of leaving them as one-off calculations. It reports each tournament's repeated-year correlation, the pooled association after subtracting each event's own multi-season mean, and two separate 2,000-resample cluster bootstraps: raw clay event-season association and within-event-centred clay association. Both resample tournament IDs while retaining all years for each selected event. This makes the four-event sample limitation explicit; it does not turn repeated seasons into independent court measurements. See [the physical validation protocol](PHYSICAL_VALIDATION.md) for the exact definitions and the CPI-versus-ITF-CPR temperature comparability limitation.
+
 The refreshed CPI source and updated paired-cohort code do not modify the expected-aces formula, player profiles or lower-tier production policy. The full physical-source comparison and limitations are documented in the [physical validation protocol](PHYSICAL_VALIDATION.md).
 
 ## Other findings and remaining validation
