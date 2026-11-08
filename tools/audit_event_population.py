@@ -52,7 +52,13 @@ def reason(row):
 def model_profile_coverage(all_rows, event_id, season=None):
     """Use the production long-history profile builder and explicit neutral prior fallback."""
     if not event_id:
-        return {"rateable_server_sides": None, "tour_prior_sides": None}
+        return {
+            "rateable_server_sides": None,
+            "tour_prior_sides": None,
+            "missing_server_profile_before_fallback": None,
+            "missing_returner_profile_before_fallback": None,
+            "missing_both_profiles_before_fallback": None,
+        }
 
     usable = compute_speed.valid_rows(all_rows)
     target_rows = [
