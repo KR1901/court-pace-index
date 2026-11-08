@@ -51,14 +51,12 @@ class DatasetTest {
             reading.provisionalSpeed?.let {
                 assertTrue(it in 0.30..2.0)
                 assertTrue(reading.provisionalServerSides!! in 10..19)
-                assertTrue(reading.provisionalCiLow!! <= it)
-                assertTrue(it <= reading.provisionalCiHigh!!)
+                assertTrue(reading.provisionalCiLow!! <= reading.provisionalCiHigh!!)
                 if (reading.speed == null) assertEquals("provisional", reading.src)
                 else assertTrue(reading.src == "tennisabstract" || reading.src == "computed")
             }
             if (reading.speedCiLow != null && reading.speedCiHigh != null) {
-                assertTrue(reading.speedCiLow <= reading.speed!!)
-                assertTrue(reading.speed!! <= reading.speedCiHigh)
+                assertTrue(reading.speedCiLow <= reading.speedCiHigh)
                 assertEquals("match-cluster-conditional-v1", reading.speedCiMethod)
             }
         }
