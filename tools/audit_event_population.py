@@ -49,7 +49,7 @@ def reason(row):
     return None
 
 
-def model_profile_coverage(all_rows, event_id, season):
+def model_profile_coverage(all_rows, event_id, season=None):
     """Use the production long-history profile builder and explicit neutral prior fallback."""
     if not event_id:
         return {"rateable_server_sides": None, "tour_prior_sides": None}
@@ -63,6 +63,7 @@ def model_profile_coverage(all_rows, event_id, season):
         row for row in usable
         if compute_speed.NAMES.get((row.get("tourney_name") or "").strip()) != event_id
     ]
+    season = season or datetime.now().year
     current_profiles = compute_speed.player_rates(
         training_rows,
         prior_points=compute_speed.PROFILE_PRIOR_SERVICE_POINTS,
