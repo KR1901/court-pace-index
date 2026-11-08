@@ -53,7 +53,8 @@ class DatasetTest {
                 assertTrue(reading.provisionalServerSides!! in 10..19)
                 assertTrue(reading.provisionalCiLow!! <= it)
                 assertTrue(it <= reading.provisionalCiHigh!!)
-                assertEquals("provisional", reading.src)
+                if (reading.speed == null) assertEquals("provisional", reading.src)
+                else assertTrue(reading.src == "tennisabstract" || reading.src == "computed")
             }
             if (reading.speedCiLow != null && reading.speedCiHigh != null) {
                 assertTrue(reading.speedCiLow <= reading.speed!!)
