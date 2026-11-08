@@ -46,15 +46,20 @@ The live diagnostics expose raw adjusted event score, season normalisation, tour
 - Historical data: Jeff Sackmann ATP archive mirror.
 - Current season: TennisMyLife ATP match CSV when available, with a seven-day hash-verified cache fallback and logged source fallback.
 - Tennis Abstract is a comparison/reference series, not physical ground truth.
-- TML public terms restrict use to personal, educational and non-commercial research. Do not commit or redistribute its raw CSV. Confirm current terms and obtain written permission before commercial use or broader redistribution.
-- Match-population audits should run locally and emit derived reports, not raw source files.
+- TML public terms restrict use to personal, educational and non-commercial research; raw CSV redistribution/resale is not authorized by the public terms. Obtain written permission for commercial use or broader redistribution where required. See [DATA-LICENSES.md](../DATA-LICENSES.md).
+- `tools/audit_event_population.py` now uses the same eligibility tests and ordering as `compute_speed.valid_rows`; the unit tests compare both paths directly. `--require-source` makes a current-season report fail closed unless the selected source is explicitly TennisMyLife.
+- The dedicated event-population workflow now runs the Montpellier 2026 report with the TML source requirement. Its completed job output is the acceptance record; a unit-test-only pass is not an exact source-population reconciliation. Reports remain on the runner and raw source CSVs are not committed.
 - Physical validation should use independently measured court pace (ITF CPR/CPI) with measurement date, court identity, surface, environmental and ball metadata. Do not tune the formula against the same observations used to report validation.
 
-## Verification recorded for the previous PR #2 head
+## Verification
+
+Latest completed four-workflow run on the preceding head `d01025706a754a292445b7dbcbdf5f6b1bf0573c` passed Event population audit (unit tests and CLI syntax), formula comparison, Android CI and deep calculation audit. The event-population workflow has since been strengthened to execute the real Montpellier 2026 reconciliation against a source-verified TML snapshot; that newer invocation is not considered complete until its own run succeeds and its summary is inspected.
+
+Historical run records:
 
 - Android CI passed on `24c4331101b0aca8d299a0cb9df88b239bc61beb`.
 - Formula comparison: [workflow run 42462414601](https://github.com/KR1901/court-pace-index/actions/runs/42462414601).
 - Deep calculation audit: [workflow run 42462414602](https://github.com/KR1901/court-pace-index/actions/runs/42462414602).
 - Android CI: [workflow run 42462414587](https://github.com/KR1901/court-pace-index/actions/runs/42462414587).
 
-These are historical run records, not claims that new workflows triggered by this documentation commit have passed.
+These historical runs do not verify the newer source-required Montpellier reconciliation. Check the latest PR #2 head and its event-population job before treating that reconciliation as complete.
