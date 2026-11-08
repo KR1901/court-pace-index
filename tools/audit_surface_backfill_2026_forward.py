@@ -401,16 +401,6 @@ def aggregate_2026_event_groups(rows):
     return result
 
 
-def event_recency_weight(source_date, target_date):
-    """Fractional-year form of the historical 0.90-per-year decay."""
-    if not source_date or not target_date or source_date >= target_date:
-        return 0.0
-    source = datetime.strptime(source_date, "%Y%m%d").date()
-    target = datetime.strptime(target_date, "%Y%m%d").date()
-    years = max(0.0, (target - source).days / 365.25)
-    return backfill.RECENCY_DECAY ** years
-
-
 def merge_player_history(target_players, source_players, weight):
     if weight <= 0.0:
         return
@@ -759,9 +749,9 @@ def render_markdown(report):
         "The incomplete Sackmann 2026 match file is not used as the 2026 target. The full",
         "TennisMyLife 2026 ATP season CSV is used instead, supplemented by completed rows",
         "from the ongoing ATP feed. All 2026 Challenger and qualifying files are also fetched.",
-        "For each ATP target event, current-season ATP, Challenger and qualifying matches are",
-        "admitted only if their match date is strictly earlier than the target event.",
-        "Same-day and later events are excluded to prevent look-ahead.",
+        "For each ATP target match-day, current-season ATP, Challenger and qualifying matches",
+        "are admitted only if their recorded match date is strictly earlier than the target.",
+        "All same-day and later matches are excluded to prevent look-ahead.",
         "",
         "| Population | Valid rows in available-to-date 2026 snapshot | Match date on/after 18 May |",
         "|---|---:|---:|",
@@ -854,7 +844,7 @@ def render_markdown(report):
         f"- TML IDs with no historical name match: {report['identity_crosswalk']['without_historical_name_match']:,}.",
         "- Crosswalk rule: exact Unicode-normalised full name; all aliases must resolve to one historical archive ID. No fuzzy matching.",
         "- The ATP population prior is built from ATP main-draw rows only. Challenger / qualifying affect only individual player-role estimates.",
-        "- Current-season 2026 rows are used only when their match date is strictly earlier than the ATP target event. Same-day and future rows are excluded.",
+        "- Current-season 2026 rows are used only when their recorded match date is strictly earlier than the ATP target match date. All same-day and future rows are excluded.",
         "- The ATP population prior uses historical and earlier 2026 ATP main-draw rows only. Challenger / qualifying observations affect individual player-role profiles only.",
         "- All raw TML files are downloaded to an ephemeral temporary directory and deleted on exit. They are not committed, cached or uploaded.",
         "- Output artifacts contain aggregate metrics, source-file hashes and source metadata only; no match rows, player names or player IDs.",
@@ -986,7 +976,7 @@ def run_forward_test(archive_cache_dir, output_dir, bootstrap_iterations):
             "controls": {
                 "same_season_rows_are_strictly_prior_event_only": True,
                 "lower_tier_2026_rows_used_for_2026_prediction": (
-                    "only when match-day date is strictly earlier than the ATP target event"
+                    "only when recorded match date is strictly earlier than the ATP target match date"
                 ),
                 "atp_main_draw_only_population_prior": True,
                 "surface_weights_selected_without_2026_holdout": True,
