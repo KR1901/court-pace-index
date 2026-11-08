@@ -1145,6 +1145,7 @@ def main():
         current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
         profiles = build_live_profiles(profile_year, current_profiles)
         tour_rate = tour_average_ace_rate(profile_rows)
+        profile_fit_coverage = ensure_event_profiles(profile_rows, profiles, tour_rate)
         raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
         if len(raw_events) < 5 and profile_year == current_year:
             profile_year = current_year - 1
@@ -1154,6 +1155,7 @@ def main():
             current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
             profiles = build_live_profiles(profile_year, current_profiles)
             tour_rate = tour_average_ace_rate(profile_rows)
+            profile_fit_coverage = ensure_event_profiles(profile_rows, profiles, tour_rate)
             raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
         if not raw_events:
             raise RuntimeError(f"cannot build live opponent-adjustment baseline for {current_year}: no rated events in current or previous season")
@@ -1237,6 +1239,12 @@ def main():
                 "currentSeasonMatchRows": len(profile_rows),
                 "historicalProfileYears": len(history_years_loaded),
                 "historicalProfileMatches": history_player_matches,
+                "historicalServerSidesRateableAfterFallback": profile_fit_coverage["rateable_server_sides"],
+                "tourPriorServerSides": profile_fit_coverage["tour_prior_server_profiles"],
+                "tourPriorReturnerSides": profile_fit_coverage["tour_prior_returner_profiles"],
+                "tourPriorSides": profile_fit_coverage["tour_prior_sides"],
+                "careerHistoryServerSides": profile_fit_coverage["career_history_server_sides"],
+                "careerHistoryReturnerSides": profile_fit_coverage["career_history_returner_sides"],
                 **identity_diagnostics,
                 **source_counts,
             },
