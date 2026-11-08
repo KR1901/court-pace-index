@@ -99,31 +99,29 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Verification
 
-### Completed calculation and audit validations
+### Latest validated calculation-code head
 
-- [Event population audit #122](https://github.com/KR1901/court-pace-index/actions/runs/42483108359): passed. All 36 annual all-event sweeps (1991–2026), source-required Montpellier reconciliation, corrected fallback-use accounting and aggregate artifact upload completed.
-- [Expected-aces formula comparison #253](https://github.com/KR1901/court-pace-index/actions/runs/42483108399): passed.
-- [Android CI #627](https://github.com/KR1901/court-pace-index/actions/runs/42483108406): passed, including unit tests and debug APK artifact upload.
-- [Deep calculation audit #183](https://github.com/KR1901/court-pace-index/actions/runs/42483108360): passed, including bootstrap and full-audit artifact upload.
-- [Global lower-tier backfill audit #16](https://github.com/KR1901/court-pace-index/actions/runs/42487515867): passed. Its pinned-source rolling-origin analysis and aggregate-only report completed.
-- [Surface-specific lower-tier backfill audit #6](https://github.com/KR1901/court-pace-index/actions/runs/42487515817): passed. Unit tests, development weight selection, 2026 forward test, paired 2,000-event bootstrap and aggregate-only report completed.
+Calculation and research code head: `89648e798f98a7b3a5d9af4d8e47d60ee394071a`. Five of six workflows have completed successfully; the deep calculation audit is still running.
 
-### Research decision
+- [Surface-specific lower-tier backfill audit #10](https://github.com/KR1901/court-pace-index/actions/runs/42490461457): **passed**. Includes surface-weight selection on 2012–2018, the 2026 forward test, 2,000 overall event-cluster bootstrap resamples, separate 2,000-resample within-surface intervals and aggregate-only artifact upload.
+- [Global lower-tier profile backfill audit #20](https://github.com/KR1901/court-pace-index/actions/runs/42490461393): **passed**.
+- [Expected-aces formula comparison #292](https://github.com/KR1901/court-pace-index/actions/runs/42490461417): **passed**.
+- [Event population audit #161](https://github.com/KR1901/court-pace-index/actions/runs/42490461423): **passed**, including the 1991–2026 all-event sweep and source-required Montpellier reconciliation.
+- [Android CI #666](https://github.com/KR1901/court-pace-index/actions/runs/42490461401): **passed**, including unit tests and debug APK assembly/upload.
+- [Deep calculation audit #222](https://github.com/KR1901/court-pace-index/actions/runs/42490461420): Python tests passed; its full leave-one-tournament-out, shrinkage, weighting and physical cross-check stage is still running.
 
-Neither lower-tier experiment justifies production adoption. The 2019–2025 holdout and the new 2026 partial-season forward test show substantial coverage gains but inconclusive predictive-loss improvements, worse calibration and mixed surface effects. ATP-only profiles remain the production policy. See [LOWER_TIER_BACKFILL_AUDIT.md](LOWER_TIER_BACKFILL_AUDIT.md) and [SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md](SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md).
+### Lower-tier research decision
 
-The newest PR head is a documentation-only update after the validated calculation-code head. The current documentation head has a fresh six-workflow validation set running:
+Neither lower-tier experiment justifies production adoption. The global 2019–2025 holdout and the new 2026 partial-season forward test both show substantial profile-coverage gains, but predictive effects are heterogeneous and calibration worsens.
 
-- [Surface-specific backfill audit #7](https://github.com/KR1901/court-pace-index/actions/runs/42487589348)
-- [Global lower-tier backfill audit #17](https://github.com/KR1901/court-pace-index/actions/runs/42487589349)
-- [Deep calculation audit #219](https://github.com/KR1901/court-pace-index/actions/runs/42487589350)
-- [Android CI #663](https://github.com/KR1901/court-pace-index/actions/runs/42487589352)
-- [Event population audit #158](https://github.com/KR1901/court-pace-index/actions/runs/42487589357)
-- [Expected-aces formula comparison #289](https://github.com/KR1901/court-pace-index/actions/runs/42487589364)
+On the 2026 surface test, the paired within-surface intervals are:
+- Clay (13 events): log-loss difference **[-0.001526, -0.000732]** and point-weighted MAE difference **[-0.002473, -0.001208]** (both improve); calibration-bias difference **[+0.000760, +0.003407]** (worsens).
+- Hard (15 events): log-loss difference **[+0.000314, +0.001123]** (worsens); point-weighted MAE difference **[-0.000022, +0.001138]** (inconclusive); calibration-bias difference **[+0.002958, +0.003771]** (worsens).
+- Grass: no 2026 target matches were present in the archive snapshot dated through 17 May 2026.
 
-The six runs above were in progress at the time of this documentation update; they must be checked before describing the latest documentation head as fully green.
+These surface intervals describe the same locked 2026 holdout; they are not a second independent validation set. **ATP-only profiles remain the production policy.** A fuller independent 2027 season is required before reconsidering lower-tier weighting.
 
-PR #2 remains open and unmerged. PR #1's base branch is unchanged. The repository remains public.
+The PR's current documentation head contains only report / verification updates after the validated calculation-code head above. PR #2 remains open and unmerged; PR #1's base branch is unchanged. The repository remains public, with no visibility or permission changes.
 
 ## Reproduction
 
