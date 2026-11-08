@@ -44,15 +44,18 @@ Source snapshot: retrieved 8 November 2026 at 10:02:19 UTC; latest match date 1 
 | Montpellier raw event rows | 27 |
 | Source-stat eligible matches | 27 |
 | Statistically complete server sides | 54 |
-| LOEO-profile-rateable sides | 47 |
-| Missing server profile | 5 |
-| Missing returner profile | 1 |
-| Both profiles missing | 1 |
-| Invalid expected-aces values after profile match | 0 |
+| LOEO-profile-rateable sides after expansion | 54 |
+| Neutral tour-prior sides | 0 |
 | Aces / service points | 545 / 3,839 |
 | Source ace rate | 14.1964% |
 
-This fully accounts for the 54-versus-47 CALC coverage gap: seven source-stat-complete sides lack the profile inputs required to estimate expected aces. It does not establish Tennis Abstract's match population or explain its published 19.8% ace rate. No qualifying-scope explanation is assumed. [Source-required workflow run #42469683324](https://github.com/KR1901/court-pace-index/actions/runs/42469683324).
+The 35-season history and unique-name TML/Sackmann crosswalk recover all seven previously missing sides using personal player-history rates. Montpellier requires no neutral tour-prior side. This explains the prior 54-versus-47 profile-coverage discrepancy. It does not establish Tennis Abstract's match population or explain its published 19.8% ace rate. No qualifying-scope explanation is assumed.
+
+## Season-wide profile coverage
+
+The all-event 2026 source sweep covered 58 mapped tournaments, 2,519 eligible matches and 5,038 statistically eligible server sides. All 5,038 sides were rateable (100%); no tournament had an unrateable side. Seventy sides across 25 events used at least one explicitly labelled tour-average prior, while 4,968 sides used player-specific rates. The audit did not assign an ambiguous name match to any player. [All-event workflow run #42473954065](https://github.com/KR1901/court-pace-index/actions/runs/42473954065).
+
+This completeness guarantee is about having a defined, auditable expected-aces input for every valid source-stat side. A neutral-prior fallback is not the same evidence quality as a player's own multi-season serve/return history; its use remains visible and should be interpreted as lower player-specific information, not as a recovered individual statistic.
 
 ## Other findings and remaining validation
 
