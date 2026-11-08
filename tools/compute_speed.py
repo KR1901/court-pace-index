@@ -650,8 +650,10 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
         "rateable_server_sides": 0,
         "tour_prior_fallback_details": [],
     }
+
     for row in event_rows:
         profiles_by_role = {}
+        profile_identity = {}
         for player_id_key, player_name_key in (
             ("winner_id", "winner_name"),
             ("loser_id", "loser_name"),
@@ -661,6 +663,8 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
             profile = profiles.get(player_id)
             candidate = unique_by_name.get(_normalise_profile_name(player_name))
             had_player_profile = profile is not None or candidate is not None
+
+            # Crosswalk current TML IDs to historical archive IDs by unique full name.
             if candidate is not None and profile is None:
                 profile = dict(candidate)
                 profile["id"] = player_id
@@ -677,8 +681,7 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                 }
                 profiles[player_id] = profile
 
-            # A current-ID record may exist but have one missing role; merge only that
-            # role from a unique full-name crosswalk before falling back to the tour prior.
+            # Fill only missing roles from a unique alias profile; current-source values win.
             if candidate is not None and candidate is not profile:
                 for field in (
                     "serve_rate", "serve_rate_source", "concede_rate",
@@ -689,74 +692,81 @@ def ensure_event_profiles(event_rows, profiles, tour_rate):
                 ):
                     if profile.get(field) is None and candidate.get(field) is not None:
                         profile[field] = candidate[field]
-            profiles_by_role[player_id_key] = profile
 
-        side_fallbacks = []
-        for player_id_key, player_role in (
-            ("winner_id", "server"),
-            ("loser_id", "returner"),
-            ("loser_id", "server"),
-            ("winner_id", "returner"),
-        ):
-            profile = profiles_by_role[player_id_key]
-            rate_key = "serve_rate" if player_role == "server" else "concede_rate"
-            source_key = "serve_rate_source" if player_role == "server" else "concede_rate_source"
-            if profile.get(rate_key) is None:
-                coverage[f"missing_{player_role}_profile_before_fallback"] += 1
-                profile[rate_key] = tour_rate
-                profile[source_key] = "tour-average-prior-only"
-                coverage[f"tour_prior_{player_role}_profiles"] += 1
+            profiles_by_role[player_id_key] = profile
+            profile_identity[player_id_key] = {
+                "player_id": player_id,
+                "player_name": player_name,
+                "had_player_profile": had_player_profile,
+            }
+
+        sides = (
+            ("winner_id", "loser_id", "w_svpt"),
+            ("loser_id", "winner_id", "l_svpt"),
+        )
+        for server_id_key, returner_id_key, service_points_key in sides:
+            server_profile = profiles_by_role[server_id_key]
+            returner_profile = profiles_by_role[returner_id_key]
+            serve_rate = server_profile.get("serve_rate")
+            concede_rate = returner_profile.get("concede_rate")
+            server_fallback = serve_rate is None
+            returner_fallback = concede_rate is None
+
+            if server_fallback:
+                coverage["missing_server_profile_before_fallback"] += 1
+                server_profile["serve_rate"] = tour_rate
+                server_profile["serve_rate_source"] = "tour-average-prior-only"
+                coverage["tour_prior_server_profiles"] += 1
+                identity = profile_identity[server_id_key]
                 coverage["tour_prior_fallback_details"].append({
-                    "player_id": player_id,
-                    "player_name": player_name,
-                    "role": player_role,
+                    **identity,
+                    "role": "server",
                     "reason": (
                         "player_profile_exists_without_rate"
-                        if had_player_profile else "no_player_profile_in_history"
+                        if identity["had_player_profile"] else "no_player_profile_in_history"
                     ),
                 })
-                side_fallbacks.append((player_id_key, player_role))
-            elif str(profile.get(source_key) or "").startswith("career-history"):
-                coverage[f"career_history_{player_role}_sides"] += 1
+                serve_rate = tour_rate
 
-        # Rate each actual server side with the right two player-role parameters.
-        winner = profiles_by_role["winner_id"]
-        loser = profiles_by_role["loser_id"]
-        sides = (
-            (
-                winner.get("serve_rate"), loser.get("concede_rate"),
-                number(row, "w_svpt"),
-            ),
-            (
-                loser.get("serve_rate"), winner.get("concede_rate"),
-                number(row, "l_svpt"),
-            ),
-        )
-        for server_rate, concede_rate, service_points in sides:
+            if returner_fallback:
+                coverage["missing_returner_profile_before_fallback"] += 1
+                returner_profile["concede_rate"] = tour_rate
+                returner_profile["concede_rate_source"] = "tour-average-prior-only"
+                coverage["tour_prior_returner_profiles"] += 1
+                identity = profile_identity[returner_id_key]
+                coverage["tour_prior_fallback_details"].append({
+                    **identity,
+                    "role": "returner",
+                    "reason": (
+                        "player_profile_exists_without_rate"
+                        if identity["had_player_profile"] else "no_player_profile_in_history"
+                    ),
+                })
+                concede_rate = tour_rate
+
+            if server_fallback and returner_fallback:
+                coverage["missing_both_profiles_before_fallback"] += 1
+            if server_fallback or returner_fallback:
+                coverage["tour_prior_sides"] += 1
+            if str(server_profile.get("serve_rate_source") or "").startswith("career-history"):
+                coverage["career_history_server_sides"] += 1
+            if str(returner_profile.get("concede_rate_source") or "").startswith("career-history"):
+                coverage["career_history_returner_sides"] += 1
+
+            service_points = number(row, service_points_key)
             if (
-                server_rate is not None and concede_rate is not None
-                and math.isfinite(server_rate) and math.isfinite(concede_rate)
-                and 0.0 < server_rate < 1.0 and 0.0 < concede_rate < 1.0
-                and tour_rate is not None and 0.0 < tour_rate < 1.0
-                and service_points is not None and service_points > 0
+                serve_rate is None or concede_rate is None
+                or not math.isfinite(serve_rate) or not math.isfinite(concede_rate)
+                or not 0.0 < serve_rate < 1.0 or not 0.0 < concede_rate < 1.0
+                or tour_rate is None or not 0.0 < tour_rate < 1.0
+                or service_points is None or service_points <= 0
             ):
-                expected = expected_calibrated_aces(
-                    server_rate, concede_rate, tour_rate, service_points
-                )
-                if math.isfinite(expected) and expected > MIN_EXPECTED_ACES:
-                    coverage["rateable_server_sides"] += 1
-        if side_fallbacks:
-            # Count the number of server sides that used at least one tour-prior rate.
-            for side_index, (server_rate, concede_rate, _points) in enumerate(sides):
-                server_id_key = "winner_id" if side_index == 0 else "loser_id"
-                returner_id_key = "loser_id" if side_index == 0 else "winner_id"
-                server_profile = profiles_by_role[server_id_key]
-                returner_profile = profiles_by_role[returner_id_key]
-                if (
-                    server_profile.get("serve_rate_source") == "tour-average-prior-only"
-                    or returner_profile.get("concede_rate_source") == "tour-average-prior-only"
-                ):
-                    coverage["tour_prior_sides"] += 1
+                continue
+            expected = expected_calibrated_aces(
+                serve_rate, concede_rate, tour_rate, service_points
+            )
+            if math.isfinite(expected) and expected > MIN_EXPECTED_ACES:
+                coverage["rateable_server_sides"] += 1
 
     return coverage
 
