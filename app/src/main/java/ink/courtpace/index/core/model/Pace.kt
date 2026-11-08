@@ -158,12 +158,16 @@ data class LiveSpeedPlayerProfile(
     val concedeRate: Double? = null,
     /** Season supplying the serve tendency; can differ from the baseline's normalisation season. */
     val serveRateSeason: Int? = null,
-    /** current-season-qualified, prior-season-qualified, current-season-shrunk, or prior-season-shrunk. */
+    /** current-season-qualified, career-history-surface-shrunk, career-history-pooled-shrunk, or tour-average-prior-only. */
     val serveRateSource: String? = null,
     val serveRateSampleMatches: Int? = null,
     val serveRateSampleServicePoints: Int? = null,
     val serveRatePriorServicePoints: Double? = null,
     val concedeRateSeason: Int? = null,
+    val concedeRateSource: String? = null,
+    val concedeRateSampleMatches: Int? = null,
+    val concedeRateSampleServicePoints: Int? = null,
+    val concedeRatePriorServicePoints: Double? = null,
 )
 
 /** Season-wide player tendencies and normaliser for historical-method live Speed calculations. */
