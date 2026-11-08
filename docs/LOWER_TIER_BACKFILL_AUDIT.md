@@ -82,6 +82,37 @@ python3 tools/audit_lower_tier_profile_backfill.py \\
 
 The result is written to summary.json and README.md. Raw caches remain outside the report directory.
 
+## First completed experiment (8 November 2026)
+
+Run: [Lower-tier profile backfill audit #6](https://github.com/KR1901/court-pace-index/actions/runs/42485844666). The pinned-archive experiment completed successfully on the PR branch. The candidate selected on the 2012–2018 development window was Challenger-only history with an exposure weight of **0.25**.
+
+On the locked 2019–2025 holdout (34,594 server sides), compared with ATP-only profiles:
+
+| Metric | ATP-only | Challenger 0.25 |
+|---|---:|---:|
+| Both player roles have personal histories | 94.81% | 99.62% |
+| Server-role personal history | 97.32% | 99.81% |
+| Returner-role personal history | 97.32% | 99.81% |
+| Point-weighted ace-rate MAE | 0.034117 | 0.033607 |
+| Binomial log loss / service point | 0.265734 | 0.265596 |
+| Calibration bias (actual − predicted) | +0.004971 | +0.008953 |
+
+Paired event-season bootstrap differences (candidate minus ATP-only): point-weighted MAE 95% interval **[-0.000719, -0.000301]** (improvement); binomial log-loss 95% interval **[-0.000293, +0.000018]** (includes zero, therefore inconclusive). Calibration bias increased, indicating more underprediction of aces overall.
+
+### Descriptive surface breakdown of the same locked holdout
+
+| Surface | Server sides | ATP-only log loss | Challenger 0.25 log loss | ATP-only point MAE | Challenger 0.25 point MAE |
+|---|---:|---:|---:|---:|---:|
+| Clay | 10,374 | 0.200186 | 0.198830 | 0.030450 | 0.028422 |
+| Hard | 20,468 | 0.290860 | 0.291207 | 0.035558 | 0.035681 |
+| Grass | 3,752 | 0.305103 | 0.305611 | 0.036146 | 0.036307 |
+
+The descriptive result is heterogeneous: the Challenger 0.25 arm improves both loss and point-weighted MAE on clay, but worsens both metrics on hard and grass. Coverage rises on all three surfaces. This surface breakdown was not used to tune or reselect the candidate; it is a diagnostic on the already-locked holdout.
+
+**Decision: do not promote lower-tier backfill to production.** The experiment shows that modest Challenger evidence can materially improve player-role coverage, and it improves point-weighted MAE overall, but the primary log-loss uncertainty includes zero, calibration worsens overall, and the surface response is not uniform. A single global lower-tier weight is not established. Any surface-specific tier weighting requires a new development and genuinely untouched holdout; the 2019–2025 results must not be reused to tune a follow-on model and then presented as independent validation.
+
+The run artifact contains only aggregate metrics and pinned-source hashes, not match-level rows, names or player IDs. The workflow's next run also includes explicit Jeff Sackmann / Tennis Abstract attribution in the generated README.
+
 ## Decision gate
 
 No lower-tier profile contribution should enter production unless:
