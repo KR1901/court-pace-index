@@ -182,7 +182,8 @@ fun TournamentScreen(
                         "95% match-cluster interval: " +
                             String.format(java.util.Locale.US, "%.2f–%.2f",
                                 seasonReading.speedCiLow, seasonReading.speedCiHigh) +
-                            ". Whole matches are resampled; fitted player profiles and the season normaliser are held fixed.",
+                            " · ${seasonReading.adjustedServerSides ?: "?"} eligible server sides. Whole matches are resampled; " +
+                            "fitted player profiles and the season normaliser are held fixed.",
                     )
                 }
                 if (seasonReading?.provisionalSpeed != null &&
@@ -318,6 +319,7 @@ fun TournamentScreen(
                                             append(" · 95% CI ")
                                             append(String.format(java.util.Locale.US, "%.2f–%.2f",
                                                 reading.speedCiLow, reading.speedCiHigh))
+                                            reading.adjustedServerSides?.let { append(" · $it sides") }
                                         }
                                     }
                                     reading.provisionalSpeed?.let { provisional ->
