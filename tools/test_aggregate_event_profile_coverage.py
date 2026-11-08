@@ -24,6 +24,7 @@ class AggregateEventProfileCoverageTests(unittest.TestCase):
             "events_with_tour_prior_sides": int(priors > 0),
             "fallback_diagnostics": {
                 "profile_exists_without_rate_occurrences": 1,
+                "ambiguous_name_match_occurrences": 1,
                 "no_player_profile_in_history_occurrences": 1,
                 "server_role_fallback_occurrences": 1,
                 "returner_role_fallback_occurrences": 1,
@@ -61,6 +62,7 @@ class AggregateEventProfileCoverageTests(unittest.TestCase):
             self.assertEqual(10, report["totals"]["eligible_server_sides"])
             self.assertEqual(9, report["totals"]["rateable_server_sides"])
             self.assertEqual(3, report["totals"]["tour_prior_sides"])
+            self.assertEqual(2, report["fallback_diagnostics"]["ambiguous_name_match_occurrences"])
             self.assertAlmostEqual(90.0, report["totals"]["rateable_pct"])
             self.assertEqual(2, len(report["events"]))
             self.assertTrue((output / "summary.json").is_file())
