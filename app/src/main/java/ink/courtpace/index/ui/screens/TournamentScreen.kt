@@ -217,6 +217,10 @@ fun TournamentScreen(
                         StatRow("Server profiles matched", "${liveAceRating.serverProfilesMatched}/${liveAceRating.totalServerSides}")
                         HairLine()
                         StatRow("Returner profiles matched", "${liveAceRating.returnerProfilesMatched}/${liveAceRating.totalServerSides}")
+                        HairLine()
+                        StatRow("Server tour-prior fallbacks", liveAceRating.serverProfilesFallback.toString())
+                        HairLine()
+                        StatRow("Returner tour-prior fallbacks", liveAceRating.returnerProfilesFallback.toString())
                         Spacer(Modifier.height(10.dp))
                         SectionLabel("Largest adjusted side ratios")
                         Text(
@@ -240,6 +244,21 @@ fun TournamentScreen(
                                         (side.matchId?.let { " · $it" } ?: ""),
                                     style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
                                     color = colors.text,
+                                )
+                                val serverSourceLabel = when {
+                                    side.serverProfileSource == "tour-average-prior-only" -> "tour-average prior"
+                                    side.serverProfileSource.startsWith("career-history") -> "career-history profile"
+                                    else -> "player profile"
+                                }
+                                val returnerSourceLabel = when {
+                                    side.returnerProfileSource == "tour-average-prior-only" -> "tour-average prior"
+                                    side.returnerProfileSource.startsWith("career-history") -> "career-history profile"
+                                    else -> "player profile"
+                                }
+                                Text(
+                                    text = "Server: $serverSourceLabel · Returner: $returnerSourceLabel",
+                                    style = TextStyle(fontSize = 9.sp),
+                                    color = colors.textDim,
                                 )
                                 Row(
                                     Modifier.fillMaxWidth(),
