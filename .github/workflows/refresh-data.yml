@@ -152,6 +152,12 @@ jobs:
           from pathlib import Path
 
           baseline = json.loads(Path("data/live_speed_baseline.json").read_text())
+          history = json.loads(Path("data/speed_history.json").read_text())
+          initial = json.loads(Path("app/src/main/assets/pace_dataset.json").read_text())
+          known = {item["id"] for item in initial["tournaments"]}
+          dataset_bytes = Path("app/src/main/assets/pace_dataset.json").read_bytes()
+          assert Path("data/latest.json").read_bytes() == dataset_bytes, "data/latest.json differs from the bundled dataset"
+
           for filename in ("app/src/main/assets/pace_dataset.json", "data/latest.json"):
               dataset = json.loads(Path(filename).read_text())
               embedded = dataset.get("speedBaseline")
@@ -161,7 +167,29 @@ jobs:
               assert embedded["generated"] == baseline["generated"]
               assert embedded["tourAceRate"] == baseline["tourAceRate"]
               assert len(embedded["profiles"]) == len(baseline["profiles"])
-          print("Bundled and downloadable datasets contain the validated current-season baseline.")
+
+              indexed = {(row["t"], int(row["s"])): row for row in dataset["readings"]}
+              checked = 0
+              for season, events in history["seasons"].items():
+                  for tournament_id, values in events.items():
+                      if tournament_id not in known:
+                          continue
+                      row = indexed.get((tournament_id, int(season)))
+                      if values.get("speed") is not None:
+                          assert row is not None, f"{filename} missing CALC {season}/{tournament_id}"
+                          assert row.get("src") == "computed", f"{filename} has stale/non-CALC source for {season}/{tournament_id}"
+                          assert row.get("speed") == round(values["speed"], 3), f"{filename} stale CALC speed for {season}/{tournament_id}"
+                          assert row.get("adjustedServerSides") == values.get("adjustedServerSides"), f"{filename} stale side coverage for {season}/{tournament_id}"
+                          assert row.get("matches") == values.get("matches"), f"{filename} stale match count for {season}/{tournament_id}"
+                          assert row.get("speedCiLow") == values.get("speedCiLow"), f"{filename} stale lower interval for {season}/{tournament_id}"
+                          assert row.get("speedCiHigh") == values.get("speedCiHigh"), f"{filename} stale upper interval for {season}/{tournament_id}"
+                          checked += 1
+                      elif values.get("provisionalSpeed") is not None:
+                          assert row is not None, f"{filename} missing provisional {season}/{tournament_id}"
+                          assert row.get("provisionalSpeed") == round(values["provisionalSpeed"], 3), f"{filename} stale provisional speed for {season}/{tournament_id}"
+                          assert row.get("provisionalServerSides") == values.get("provisionalServerSides"), f"{filename} stale provisional coverage for {season}/{tournament_id}"
+              assert checked > 0, f"{filename} has no calculated readings"
+          print(f"Bundled and downloadable datasets contain the validated baseline and {checked} current CALC rows match speed_history.json.")
           PY
 
       - name: Verify
