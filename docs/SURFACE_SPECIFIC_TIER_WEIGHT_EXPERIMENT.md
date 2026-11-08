@@ -54,6 +54,42 @@ Because 2026 is a partial-season snapshot and may have relatively few grass even
 - Source CSVs are downloaded to an ephemeral runner working directory. They are not committed, uploaded as artifacts, or persisted in a GitHub Actions cache.
 - The artifact contains aggregate metrics and file hashes only. It excludes raw match rows, player names and player IDs.
 
+## First completed 2026 forward test (8 November 2026)
+
+Run: https://github.com/KR1901/court-pace-index/actions/runs/42487321622. Unit tests, the full surface-weight selection, 2026 forward scoring and aggregate-only artifact upload all passed.
+
+The 2012–2018 development window selected the combined Challenger + qualifying arm with:
+- Pooled lower-tier fallback weight: 0.25 for each tier.
+- Clay surface-qualified lower-tier weight: 0.00.
+- Hard/grass surface-qualified lower-tier weight: 0.25.
+
+The 2026 archive snapshot contains 1,186 eligible ATP main-draw matches (2,372 server sides), 181,256 service points and 28 events, from 4 January through 17 May 2026. It is a partial-season snapshot. The observed target surfaces are clay (1,054 sides) and hard (1,318 sides); there are no grass target matches in this file.
+
+| Metric | ATP-only | Selected surface-weight arm |
+|---|---:|---:|
+| Both-role personal-profile coverage | 96.12% | 99.92% |
+| Server-role personal-profile coverage | 98.06% | 99.96% |
+| Returner-role personal-profile coverage | 98.06% | 99.96% |
+| Point-weighted ace-rate MAE | 0.037139 | 0.036645 |
+| Binomial log loss / service point | 0.277418 | 0.277328 |
+| Calibration bias (actual − predicted) | +0.006665 | +0.009596 |
+
+Paired 2,000-resample event-cluster bootstrap, selected minus ATP-only:
+- Log-loss difference: 95% interval **[-0.000626, +0.000368]** (includes zero).
+- Point-weighted MAE difference: 95% interval **[-0.001199, +0.000106]** (includes zero).
+- Calibration-bias difference: 95% interval **[+0.002272, +0.003458]** (worsens significantly).
+
+Surface breakdown:
+| Surface | Sides | ATP-only log loss | Selected log loss | ATP-only point MAE | Selected point MAE |
+|---|---:|---:|---:|---:|---:|
+| Clay | 1,054 | 0.210499 | 0.209334 | 0.032908 | 0.031035 |
+| Hard | 1,318 | 0.325732 | 0.326417 | 0.040193 | 0.040695 |
+| Grass | 0 | Not available | Not available | Not available | Not available |
+
+The candidate materially increases coverage and modestly lowers aggregate MAE and log loss, but both loss intervals include zero, calibration bias worsens, and the surface response remains mixed: clay improves while hard worsens. There is no grass holdout evidence. **Do not promote this candidate to production.** A 2026 partial-season result with 28 events is a useful new forward check but is not enough to establish stable surface-specific tier weights. Wait for a fuller independent 2027 season or a separately approved prospective dataset; do not retune using this 2026 holdout and then report it as untouched validation.
+
+The workflow report and aggregate source manifest are available from the linked run. It contains no raw CSVs, player names or player IDs.
+
 ## Decision gate
 
 Do not promote lower-tier data into production unless the 2026 forward test shows credible out-of-sample improvements in predictive loss, acceptable calibration, meaningful profile-coverage gains, and no material surface regression. A partial-year test with wide intervals is inconclusive. A candidate that improves development fit but fails the 2026 forward test must be rejected.
