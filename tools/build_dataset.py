@@ -295,8 +295,9 @@ doc = {
                 "name": "Court Pace Index database (courtspeed.com)",
                 "metric": "CPI",
                 "detail": "Court Pace Index readings 2012-2026 for the Grand Slams, Masters 1000s and "
-                          "ATP Finals, compiled from ATP / Tennis TV broadcast data. Centre-court "
-                          "readings; no altitude adjustment.",
+                          "ATP Finals, compiled from ATP / Tennis TV broadcast data. CPI table "
+                          "reconciled to the public 7 November 2026 snapshot (107 readings); "
+                          "centre-court readings; no altitude adjustment.",
                 "url": "https://courtspeed.com/",
             },
             {
