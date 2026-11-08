@@ -22,6 +22,8 @@ COUNT_FIELDS = (
     "unrateable_server_sides",
     "events_with_unrateable_sides",
     "tour_prior_sides",
+    "tour_prior_server_side_uses",
+    "tour_prior_returner_side_uses",
     "events_with_tour_prior_sides",
 )
 FALLBACK_FIELDS = (
@@ -197,6 +199,8 @@ def render_markdown(report):
         f"| Server-role fallback occurrences | {fallback['server_role_fallback_occurrences']:,} |",
         f"| Returner-role fallback occurrences | {fallback['returner_role_fallback_occurrences']:,} |",
         f"| Distinct fallback player IDs (per season, summed) | {fallback['distinct_fallback_player_ids']:,} |",
+        f"| Server-role neutral-prior uses across sides | {totals['tour_prior_server_side_uses']:,} |",
+        f"| Returner-role neutral-prior uses across sides | {totals['tour_prior_returner_side_uses']:,} |",
         "",
         "These fallback counts are role occurrences, not necessarily unique people across seasons. The report deliberately omits player names and IDs.",
         "",
