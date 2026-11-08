@@ -27,6 +27,12 @@ def profile(
     hard_grass_points=0.0,
     hard_grass_matches=0,
     serve_matches=0,
+    pooled_serve_aces=None,
+    pooled_serve_points=None,
+    pooled_serve_matches=None,
+    pooled_return_aces=None,
+    pooled_return_points=None,
+    pooled_return_matches=None,
 ):
     return {
         "id": player_id,
@@ -44,6 +50,33 @@ def profile(
         "clay_service_points": clay_points,
         "hard_grass_aces": hard_grass_aces,
         "hard_grass_service_points": hard_grass_points,
+        "pooled_serve_aces": (
+            clay_aces + hard_grass_aces if pooled_serve_aces is None else pooled_serve_aces
+        ),
+        "pooled_serve_points": (
+            clay_points + hard_grass_points if pooled_serve_points is None else pooled_serve_points
+        ),
+        "pooled_serve_matches": (
+            clay_matches + hard_grass_matches if pooled_serve_matches is None else pooled_serve_matches
+        ),
+        "pooled_return_aces": (
+            concede_rate * concede_service_points
+            if pooled_return_aces is None else pooled_return_aces
+        ),
+        "pooled_return_points": (
+            concede_service_points
+            if pooled_return_points is None else pooled_return_points
+        ),
+        "pooled_return_matches": (
+            concede_matches
+            if pooled_return_matches is None else pooled_return_matches
+        ),
+        "clay_return_aces": 0.0,
+        "clay_return_points": 0.0,
+        "clay_return_matches": 0,
+        "hard_grass_return_aces": 0.0,
+        "hard_grass_return_points": 0.0,
+        "hard_grass_return_matches": 0,
     }
 
 
