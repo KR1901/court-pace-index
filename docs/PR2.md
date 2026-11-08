@@ -99,16 +99,31 @@ This is the mapped event population in the selected source files, not a claim th
 
 ## Verification
 
-The neutral-prior side-use accounting correction and its regression test are on code head `ee41ac36b719acb4235e81477d2d34f8307a6fd4`. The latest validation runs on that code head are:
+### Completed calculation and audit validations
 
-- [Event population audit #122](https://github.com/KR1901/court-pace-index/actions/runs/42483108359): **passed**. Unit tests, CLI check, source-required Montpellier reconciliation, all 36 annual all-event sweeps (1991–2026), aggregate report generation and 90-day artifact upload completed. The corrected report records 1,930 prior-affected sides (1.356%), with 980 server-role and 980 returner-role uses; 2026 records 84 sides (1.667%), with 43 uses for each role.
-- [Expected-aces formula comparison #253](https://github.com/KR1901/court-pace-index/actions/runs/42483108399): **passed**.
-- [Android CI #627](https://github.com/KR1901/court-pace-index/actions/runs/42483108406): **passed**, including unit tests, debug APK assembly and artifact upload.
-- [Deep calculation audit #183](https://github.com/KR1901/court-pace-index/actions/runs/42483108360): **passed**, including the leave-one-tournament-out, shrinkage, weighting and physical cross-check audit, 250 successful bootstrap resamples per selected event and full-audit artifact upload.
+- [Event population audit #122](https://github.com/KR1901/court-pace-index/actions/runs/42483108359): passed. All 36 annual all-event sweeps (1991–2026), source-required Montpellier reconciliation, corrected fallback-use accounting and aggregate artifact upload completed.
+- [Expected-aces formula comparison #253](https://github.com/KR1901/court-pace-index/actions/runs/42483108399): passed.
+- [Android CI #627](https://github.com/KR1901/court-pace-index/actions/runs/42483108406): passed, including unit tests and debug APK artifact upload.
+- [Deep calculation audit #183](https://github.com/KR1901/court-pace-index/actions/runs/42483108360): passed, including bootstrap and full-audit artifact upload.
+- [Global lower-tier backfill audit #16](https://github.com/KR1901/court-pace-index/actions/runs/42487515867): passed. Its pinned-source rolling-origin analysis and aggregate-only report completed.
+- [Surface-specific lower-tier backfill audit #6](https://github.com/KR1901/court-pace-index/actions/runs/42487515817): passed. Unit tests, development weight selection, 2026 forward test, paired 2,000-event bootstrap and aggregate-only report completed.
 
-The Event population audit artifact is [all-event-profile-coverage-1991-2026](https://github.com/KR1901/court-pace-index/actions/runs/42483108359). The corrected audit reporting change does not alter expected-aces rates, tournament ratings or rankings; it fixes the accounting of repeated neutral-prior use.
+### Research decision
 
-PR #2 remains open and unmerged. PR #1's code branch has not been modified. The documentation-only commits after the validated code head update these audit findings and do not change calculation code.
+Neither lower-tier experiment justifies production adoption. The 2019–2025 holdout and the new 2026 partial-season forward test show substantial coverage gains but inconclusive predictive-loss improvements, worse calibration and mixed surface effects. ATP-only profiles remain the production policy. See [LOWER_TIER_BACKFILL_AUDIT.md](LOWER_TIER_BACKFILL_AUDIT.md) and [SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md](SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md).
+
+The newest PR head is a documentation-only update after the validated calculation-code head. The current documentation head has a fresh six-workflow validation set running:
+
+- [Surface-specific backfill audit #7](https://github.com/KR1901/court-pace-index/actions/runs/42487589348)
+- [Global lower-tier backfill audit #17](https://github.com/KR1901/court-pace-index/actions/runs/42487589349)
+- [Deep calculation audit #219](https://github.com/KR1901/court-pace-index/actions/runs/42487589350)
+- [Android CI #663](https://github.com/KR1901/court-pace-index/actions/runs/42487589352)
+- [Event population audit #158](https://github.com/KR1901/court-pace-index/actions/runs/42487589357)
+- [Expected-aces formula comparison #289](https://github.com/KR1901/court-pace-index/actions/runs/42487589364)
+
+The six runs above were in progress at the time of this documentation update; they must be checked before describing the latest documentation head as fully green.
+
+PR #2 remains open and unmerged. PR #1's base branch is unchanged. The repository remains public.
 
 ## Reproduction
 
