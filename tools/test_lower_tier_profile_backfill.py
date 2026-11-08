@@ -247,6 +247,36 @@ class ProfileAndScoringTests(unittest.TestCase):
             tour_rate,
         )
 
+    def test_surface_metadata_is_excluded_from_numeric_cluster_aggregation(self):
+        clay = audit.empty_cluster("clay")
+        clay["sides"] = 2
+        clay["points"] = 200.0
+        clay["aces"] = 14.0
+        clay["predicted_aces"] = 15.0
+        clay["side_abs_error"] = 0.02
+        clay["point_abs_error"] = 2.0
+        clay["binomial_log_loss"] = 80.0
+        clay["server_profile_sides"] = 2
+        clay["returner_profile_sides"] = 2
+        clay["both_profile_sides"] = 2
+
+        hard = audit.empty_cluster("hard")
+        hard["sides"] = 2
+        hard["points"] = 200.0
+        hard["aces"] = 16.0
+        hard["predicted_aces"] = 16.0
+        hard["side_abs_error"] = 0.01
+        hard["point_abs_error"] = 1.0
+        hard["binomial_log_loss"] = 70.0
+        hard["server_profile_sides"] = 2
+        hard["returner_profile_sides"] = 2
+        hard["both_profile_sides"] = 2
+
+        metrics = audit.metrics_from_clusters([clay, hard])
+        self.assertEqual(4, metrics["server_sides"])
+        self.assertAlmostEqual(0.1775, metrics["binomial_log_loss_per_point"])
+        self.assertAlmostEqual(0.0075, metrics["point_weighted_mae"])
+
     def test_cluster_metrics_and_bootstrap_delta_are_finite(self):
         clusters = {
             "event-one": {
