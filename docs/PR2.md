@@ -33,7 +33,7 @@ The 150-service-point shrinkage configuration improved historical out-of-sample 
 
 ## Event findings
 
-- **Montpellier 2026:** CALC 1.60 versus TA 1.49. The TA value lies inside the full-pipeline CALC 95% interval [1.370, 1.986]. CALC ace rate (14.2%) differs materially from TA's published 19.8%; exact match-population and source-stat reconciliation remains outstanding. Do not assume qualifying scope explains the difference.
+- **Montpellier 2026:** CALC 1.60 versus TA 1.49. The TA value lies inside the full-pipeline CALC 95% interval [1.370, 1.986]. A source-required CI audit against TennisMyLife reconciled 27 event rows, 27 eligible matches, 54 stats-complete sides, 545 aces and 3,839 service points (14.1964% ace rate). Using the production leave-one-event-out profiles, 47 sides were rateable: five lacked a server profile, one lacked a returner profile and one lacked both. This reconciles the source-stat population with the production 47-side rating coverage. It does not establish Tennis Abstract's match population or explain TA's published 19.8% ace rate; qualifying-scope attribution remains unsupported.
 - **Marrakech 2026:** CALC 1.049 with full-pipeline 95% interval [0.866, 1.304]. The point estimate is uncertain; no formula change is justified by its ranking alone.
 - **Clay:** CALC-to-TA agreement is strong in the historical surface-stratified comparison, but the small CPI clay cross-check (24 events) has a negative association. CPI coverage is sparse and selected; this is a validation warning, not sufficient evidence for a clay-specific formula.
 
@@ -47,8 +47,8 @@ The live diagnostics expose raw adjusted event score, season normalisation, tour
 - Current season: TennisMyLife ATP match CSV when available, with a seven-day hash-verified cache fallback and logged source fallback.
 - Tennis Abstract is a comparison/reference series, not physical ground truth.
 - TML public terms restrict use to personal, educational and non-commercial research; raw CSV redistribution/resale is not authorized by the public terms. Obtain written permission for commercial use or broader redistribution where required. See [DATA-LICENSES.md](../DATA-LICENSES.md).
-- `tools/audit_event_population.py` now uses the same eligibility tests and ordering as `compute_speed.valid_rows`; the unit tests compare both paths directly. `--require-source` makes a current-season report fail closed unless the selected source is explicitly TennisMyLife.
-- The dedicated event-population workflow now runs the Montpellier 2026 report with the TML source requirement. Its completed job output is the acceptance record; a unit-test-only pass is not an exact source-population reconciliation. Reports remain on the runner and raw source CSVs are not committed.
+- `tools/audit_event_population.py` uses the same eligibility tests/order as `compute_speed.valid_rows`; tests compare the two paths. It also computes leave-one-event-out profile coverage using the production player-profile and expected-aces functions. `--require-source` fails closed unless the loader's source is explicitly TennisMyLife.
+- The dedicated workflow completed a source-required Montpellier 2026 audit on PR #2 head `461272379dc3e69a4b444111b022bf0721f340ef`: 27/27 eligible matches, 54/54 source-stat sides, 47/54 model-rateable sides; the seven profile gaps are classified in the event report. Summary: 545 aces, 3,839 service points, 14.1964% ace rate. [Workflow run #42469683324](https://github.com/KR1901/court-pace-index/actions/runs/42469683324). The job report remains in its logs/runner; the TML raw CSV and match-level report are not committed or published as repository artifacts.
 - Physical validation should use independently measured court pace (ITF CPR/CPI) with measurement date, court identity, surface, environmental and ball metadata. Do not tune the formula against the same observations used to report validation.
 
 ## Verification
