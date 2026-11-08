@@ -60,6 +60,45 @@ The current repository CPI table provides a limited show-court cross-check. It m
 
 This is a **candidate CPI dataset**, not an ITF-accredited CPR dataset. It is transcribed from ATP/TennisTV pace charts, and its author describes the readings as usually centre/stadium-court values. The website says chart values can drift within a tournament as grit wears and weather varies; where multiple charts disagree, it prefers a tournament average or averages several day readings. The disclaimer describes the database as an independent educational reference, makes no accuracy guarantee and says it is not affiliated with the ATP or TennisTV. See [current table](https://courtspeed.com/), [method notes](https://courtspeed.com/method-notes/) and [disclaimer](https://courtspeed.com/disclaimer/).
 
+### CPI-to-ITF-CPR comparability and temperature term
+
+The Court Speed method page documents its displayed CPI as:
+
+\`\`\`
+CPI = 100 * (1 - mu) + 150 * (0.81 - e)
+\`\`\`
+
+The 2026 ITF method uses temperature-adjusted restitution:
+
+\`\`\`
+e_T = e + 0.003 * (23 - T)
+CPR = 100 * (1 - mu) + 150 * (0.81 - e_T)
+\`\`\`
+
+For otherwise identical friction, unadjusted restitution and measurement conditions, the formula-only difference is:
+
+\`\`\`
+CPR_ITF - CPI_CourtSpeed = 0.45 * (T - 23) points
+\`\`\`
+
+For example, the formula term alone differs by −2.25 points at a mean test-ball temperature of 18°C and +2.25 points at 28°C. These are algebraic illustrations, not measured corrections to any Court Speed row. The current CPI table does not contain mean ball temperature or the raw per-impact velocity observations needed to recompute the ITF value.
+
+**Do not temperature-correct the existing CPI observations by using ambient weather or a guessed ball temperature.** Court Speed values are transcriptions of charted readings, usually for a centre/stadium court, and not raw ITF laboratory reports. Keep them under a distinct \`CPI\` metric/source label. Do not silently relabel them as official ITF CPR, and do not compare them as though their temperature treatment is known to be identical.
+
+References: [Court Speed method & notes](https://courtspeed.com/method-notes/) · [ITF 2026 Technical Booklet](https://www.itftennis.com/media/15639/2026-technical-booklet.pdf).
+
+### What the public ITF court records add — and what they do not
+
+The ITF's [Recognised Courts listing](https://www.world.tennis/en/about-us/tennis-tech/recognised-courts/) provides a useful discovery source because Two-Star entries can identify a venue, court(s), surface material, pace **category** and test date. ITF says Two-Star recognition requires the average court CPR to be within five points of the ITF-classified value for the product. However, the public listing exposes the pace class rather than the numeric measured CPR and its impact-level report. One-Star entries do not provide a pace category.
+
+These rows can support an explicitly ordinal, court-specific cross-check only when venue/court identity and test date genuinely match the tournament court. They must not be converted into numeric midpoints (for example, treating “Medium-fast” as 42), and must not be used as a numeric CPR observation. Product classification alone is weaker still and remains contextual metadata.
+
+A 2016 field-study paper, *Measuring the court pace rating of tennis courts using low-cost portable devices*, reports measurements on a Plexicushion Prestige hard court and a sand-filled artificial-grass court using 20 sample points on half a court. It reports mean CPR estimates of 47 and 68, respectively, but also explains that the devices do not reproduce every feature of the ITF impact test. Importantly, the paper states that the actual CPR for professional surfaces was not publicly available to its authors, only the category. Its measured courts are useful as a physical-method / surface-consistency reference, not as ATP event-season observations.
+
+Reference: [Espinosa et al. (2016), JSME Sports Engineering and Human Dynamics](https://www.jstage.jst.go.jp/article/jsmeshd/2016/0/2016_B-8/_pdf).
+
+**Acquisition consequence:** seek numeric, court-specific reports from ITF-accredited laboratories or tournament court operators. A public venue/court pace category is useful only as a separate ordinal record. The current public sources do not provide a sufficiently large set of numeric CPR observations for the same professional tournament courts and seasons represented in CALC.
+
 ### 8 November 2026 source reconciliation
 
 The bundled CPI list was reconciled against the public Court Speed table updated 7 November 2026. The refreshed builder now contains **107 CPI readings**, compared with 106 previously. All 106 prior event-season keys still appear in the source; seven displayed values were revised and one new event-season reading was added:
