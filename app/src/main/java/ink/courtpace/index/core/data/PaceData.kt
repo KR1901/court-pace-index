@@ -37,7 +37,9 @@ class PaceData(val dataset: PaceDataset) {
         // has nothing to say about the physical CPI.
         if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
         return dataset.live
-            .filter { it.s == season && value(it.t, it.s, metric) == null }
+            // Published/computed season ratings are not a current live calculation. An active
+            // event remains pending until its own ATP match-feed rating is written.
+            .filter { it.s == season && liveReading(it.t, it.s) == null }
             .mapNotNull { event -> byId[event.t]?.let { it to event } }
             .sortedBy { it.first.name }
     }
