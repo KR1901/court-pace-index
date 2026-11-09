@@ -12,6 +12,7 @@ import time
 import unicodedata
 from pathlib import Path
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD_DATASET = ROOT / "tools" / "build_dataset.py"
@@ -19,7 +20,7 @@ TA_OUTPUT = ROOT / "data" / "tennis_abstract_history.json"
 CPI_OUTPUT = ROOT / "data" / "courtspeed_cpi.json"
 TA_URL = "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year={year}"
 CPI_URL = "https://courtspeed.com/"
-USER_AGENT = "CourtPace-ReferenceRefresh/1.0 (+https://github.com/KR1901/court-pace-index)"
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 
 class TableParser(HTMLParser):
@@ -148,11 +149,33 @@ def resolve_tournament(label: str, aliases: dict[str, str], exact: dict[str, set
 
 
 def fetch(url: str, timeout: int = 40) -> str:
-    request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/html"})
-    with urlopen(request, timeout=timeout) as response:
-        if response.status != 200:
-            raise RuntimeError(f"{url} returned HTTP {response.status}")
-        return response.read().decode("utf-8", "replace")
+    request = Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://tennisabstract.com/",
+        },
+    )
+    last_error = None
+    for attempt in range(3):
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                if response.status != 200:
+                    raise RuntimeError(f"{url} returned HTTP {response.status}")
+                return response.read().decode("utf-8", "replace")
+        except HTTPError as error:
+            last_error = error
+            if error.code not in (429, 500, 502, 503, 504) or attempt == 2:
+                raise
+            retry_after = error.headers.get("Retry-After")
+            try:
+                wait_seconds = int(retry_after) if retry_after else 5 * (attempt + 1)
+            except ValueError:
+                wait_seconds = 5 * (attempt + 1)
+            time.sleep(min(30, max(2, wait_seconds)))
+    raise RuntimeError(f"Could not fetch {url}: {last_error}")
 
 
 def parse_ta_year(html: str, season: int, aliases, exact) -> tuple[list[dict], list[str]]:
@@ -265,44 +288,60 @@ def write_json(path: Path, payload: dict) -> None:
 
 def refresh(start_year: int, end_year: int) -> None:
     aliases, exact = tournament_lookup()
+
+    # Older seasons are stable. Recheck only the previous and current season, retaining the
+    # rest of the last-known snapshot so the source isn't hammered with 36 requests every run.
     seasons: dict[str, list[dict]] = {}
     unmapped: dict[str, list[str]] = {}
-    for year in range(start_year, end_year + 1):
-        rows, missing = parse_ta_year(fetch(TA_URL.format(year=year)), year, aliases, exact)
-        if year in (end_year, end_year - 1) and len(rows) < 30:
-            raise RuntimeError(
-                f"Only {len(rows)} mapped rows parsed from Tennis Abstract {year}; refusing to replace snapshot"
-            )
-        seasons[str(year)] = rows
-        if missing:
-            unmapped[str(year)] = missing
-        time.sleep(0.15)
+    if TA_OUTPUT.exists():
+        try:
+            previous = json.loads(TA_OUTPUT.read_text(encoding="utf-8"))
+            seasons.update(previous.get("seasons", {}))
+            unmapped.update(previous.get("unmapped", {}))
+        except (OSError, json.JSONDecodeError, TypeError):
+            print("WARNING: existing Tennis Abstract snapshot unreadable; use the bundled fallback.")
+    update_start = max(start_year, end_year - 1)
+    ta_updated = False
+    for year in range(update_start, end_year + 1):
+        try:
+            html = fetch(TA_URL.format(year=year))
+            rows, missing = parse_ta_year(html, year, aliases, exact)
+            if len(rows) < 30:
+                raise RuntimeError(f"only {len(rows)} mapped rows parsed from Tennis Abstract {year}")
+            seasons[str(year)] = rows
+            if missing:
+                unmapped[str(year)] = missing
+            else:
+                unmapped.pop(str(year), None)
+            ta_updated = True
+        except Exception as error:
+            print(f"WARNING: Tennis Abstract {year} refresh skipped: {error}")
+        time.sleep(2)
 
-    cpi_rows = parse_cpi_page(fetch(CPI_URL), aliases, exact)
-    current_cpi = [row for row in cpi_rows if row["s"] == end_year]
-    if len(cpi_rows) < 50 or len(current_cpi) < 5:
-        raise RuntimeError(
-            f"Court Speed parsed {len(cpi_rows)} CPI rows ({len(current_cpi)} for {end_year}); refusing to replace snapshot"
-        )
+    if ta_updated:
+        generated = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        write_json(TA_OUTPUT, {
+            "generated": generated,
+            "source": TA_URL.format(year=end_year),
+            "seasonPolicy": "Tennis Abstract year selector",
+            "seasons": seasons,
+            "unmapped": unmapped,
+        })
+        print(f"Updated Tennis Abstract snapshot: {sum(len(rows) for rows in seasons.values())} mapped event-seasons.")
+    else:
+        print("WARNING: Tennis Abstract unavailable; keep the bundled/last-known calendar-year rows.")
 
-    generated = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    write_json(TA_OUTPUT, {
-        "generated": generated,
-        "source": TA_URL.format(year=end_year),
-        "seasonPolicy": "Tennis Abstract year selector",
-        "seasons": seasons,
-        "unmapped": unmapped,
-    })
-    write_json(CPI_OUTPUT, {
-        "generated": generated,
-        "source": CPI_URL,
-        "readings": cpi_rows,
-    })
-    total_ta = sum(len(rows) for rows in seasons.values())
-    print(
-        f"Updated reference snapshots: Tennis Abstract {total_ta} mapped event-seasons; "
-        f"Court Speed {len(cpi_rows)} CPI readings."
-    )
+    try:
+        cpi_rows = parse_cpi_page(fetch(CPI_URL), aliases, exact)
+        current_cpi = [row for row in cpi_rows if row["s"] == end_year]
+        if len(cpi_rows) < 50 or len(current_cpi) < 5:
+            raise RuntimeError(f"only {len(cpi_rows)} CPI rows ({len(current_cpi)} for {end_year}) parsed")
+        generated = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        write_json(CPI_OUTPUT, {"generated": generated, "source": CPI_URL, "readings": cpi_rows})
+        print(f"Updated Court Speed snapshot: {len(cpi_rows)} CPI readings.")
+    except Exception as error:
+        print(f"WARNING: Court Speed refresh skipped: {error}")
+        print("The reviewed bundled CPI table remains in use.")
 
 
 def main() -> None:
