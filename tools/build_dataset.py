@@ -12,6 +12,7 @@ The refresh workflow verifies every generated CALC reading against speed_history
 before publishing both the bundled asset and data/latest.json.
 """
 import json, os
+from datetime import date
 
 # id, name, city, country, surface, indoor, level, altitude
 TOURNAMENTS = [
@@ -280,13 +281,15 @@ for t in TOURNAMENTS:
 known = {t["id"] for t in tournaments}
 readings = []
 
-cpi_rows = CPI
+cpi_by_key = {(tid, int(season)): float(value) for tid, season, value in CPI}
 if os.path.exists(CPI_HISTORY):
     cpi_source = json.load(open(CPI_HISTORY))
-    cpi_rows = [
-        (row["t"], int(row["s"]), float(row["cpi"]))
-        for row in cpi_source.get("readings", [])
-    ] or CPI
+    for row in cpi_source.get("readings", []):
+        cpi_by_key[(row["t"], int(row["s"]))] = float(row["cpi"])
+cpi_rows = [
+    (tid, season, value)
+    for (tid, season), value in sorted(cpi_by_key.items(), key=lambda item: item[0])
+]
 for tid, season, value in cpi_rows:
     assert tid in known, tid
     readings.append({"t": tid, "s": season, "cpi": value, "src": "courtspeed"})
@@ -385,6 +388,15 @@ if os.path.exists(LIVE_FEED):
     feed = json.load(open(LIVE_FEED))
     for event in feed.get("events", []):
         if event.get("t") not in known:
+            continue
+        end_date = event.get("end")
+        if end_date:
+            try:
+                if date.fromisoformat(end_date) < date.today():
+                    continue
+            except ValueError:
+                pass
+        if str(event.get("status", "")).lower() in {"completed", "complete", "finished", "final", "cancelled"}:
             continue
         live_events.append(event)
         # Never publish an unversioned/legacy pooled-rate live reading as if it used the
