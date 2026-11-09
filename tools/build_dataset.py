@@ -12,7 +12,7 @@ The refresh workflow verifies every generated CALC reading against speed_history
 before publishing both the bundled asset and data/latest.json.
 """
 import json, os
-from datetime import date
+from datetime import date as datetime_date
 
 # id, name, city, country, surface, indoor, level, altitude
 TOURNAMENTS = [
@@ -392,7 +392,7 @@ if os.path.exists(LIVE_FEED):
         end_date = event.get("end")
         if end_date:
             try:
-                if date.fromisoformat(end_date) < date.today():
+                if datetime_date.fromisoformat(end_date) < date.today():
                     continue
             except ValueError:
                 pass
