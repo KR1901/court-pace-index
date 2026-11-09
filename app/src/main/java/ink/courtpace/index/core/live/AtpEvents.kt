@@ -18,6 +18,8 @@ object AtpEvents {
     data class Discovery(
         val events: List<Ref>,
         val pageBytes: Int,
+        /** True when the current-scores hub returned a readable page, even if no event is active. */
+        val hubReadable: Boolean,
     )
 
     private val legacyRefs = mapOf(

@@ -79,6 +79,8 @@ TOURNAMENTS = [
     ("basel",      "Swiss Indoors",        "Basel",        "SUI", "HARD",  True,  "ATP500",   None),
     ("metz",       "Moselle Open",         "Metz",         "FRA", "HARD",  True,  "ATP250",   None),
     ("athens",     "Athens Open",          "Athens",       "GRE", "HARD",  True,  "ATP250",   None),
+    ("marseille",  "Open 13 Provence",     "Marseille",    "FRA", "HARD",  True,  "ATP250",   None),
+    ("stockholm",  "Stockholm Open",       "Stockholm",    "SWE", "HARD",  True,  "ATP250",   None),
 ]
 
 # CPI readings: (tournament id, season, value). Source: Court Speed / The Racquet ATP Court Speed Database,
@@ -165,6 +167,8 @@ COMPUTED = os.path.join(os.path.dirname(__file__), "..", "data", "speed_history.
 
 # Events in progress. Carried in the bundled asset so the app shows them without a refresh.
 LIVE_FEED = os.path.join(os.path.dirname(__file__), "..", "data", "live.json")
+CPI_HISTORY = os.path.join(os.path.dirname(__file__), "..", "data", "courtspeed_cpi.json")
+TA_HISTORY = os.path.join(os.path.dirname(__file__), "..", "data", "tennis_abstract_history.json")
 
 # dedupe tournaments by id, keeping the first definition
 seen, tournaments = set(), []
@@ -180,13 +184,33 @@ for t in TOURNAMENTS:
 known = {t["id"] for t in tournaments}
 readings = []
 
-for tid, season, value in CPI:
+cpi_rows = CPI
+if os.path.exists(CPI_HISTORY):
+    cpi_source = json.load(open(CPI_HISTORY))
+    cpi_rows = [
+        (row["t"], int(row["s"]), float(row["cpi"]))
+        for row in cpi_source.get("readings", [])
+    ] or CPI
+for tid, season, value in cpi_rows:
     assert tid in known, tid
     readings.append({"t": tid, "s": season, "cpi": value, "src": "courtspeed"})
 
-for tid, date, speed, ace in SPEED:
-    assert tid in known, tid
-    readings.append({"t": tid, "s": int(date[:4]), "speed": speed, "ace": ace,
+# Use the season requested from Tennis Abstract's year selector. Do not infer it from
+# the first match date: some events assigned to the 2025 season begin on 30-Dec-2024.
+if os.path.exists(TA_HISTORY):
+    ta_source = json.load(open(TA_HISTORY))
+    ta_rows = [row for year_rows in ta_source.get("seasons", {}).values() for row in year_rows]
+    speed_rows = [
+        (row["t"], int(row["s"]), row.get("date"), float(row["speed"]), float(row["ace"]))
+        for row in ta_rows
+    ]
+else:
+    speed_rows = [(tid, int(date[:4]), date, speed, ace) for tid, date, speed, ace in SPEED]
+
+for tid, season, date, speed, ace in speed_rows:
+    if tid not in known:
+        continue
+    readings.append({"t": tid, "s": season, "speed": speed, "ace": ace,
                      "date": date, "src": "tennisabstract"})
 
 computed_n = 0

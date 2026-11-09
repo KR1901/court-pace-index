@@ -12,9 +12,11 @@ on:
       - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetTest.kt'
       - 'tools/build_dataset.py'
+      - 'tools/fetch_reference_data.py'
+      - 'tools/test_fetch_reference_data.py'
       - '.github/workflows/refresh-data.yml'
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -47,6 +49,9 @@ jobs:
 
       - name: Test live player profile fallback
         run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+
+      - name: Refresh calendar-year TA and CPI source tables
+        run: python3 tools/fetch_reference_data.py --start-year 1991 --end-year "$(date -u +%Y)"
 
       - name: Recompute the speed series from the match archive
         run: python3 tools/compute_speed.py --write

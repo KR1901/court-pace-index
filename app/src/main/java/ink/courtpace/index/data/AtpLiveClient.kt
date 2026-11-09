@@ -40,10 +40,15 @@ class AtpLiveClient(context: Context) {
         val source = web.readPageSource(CURRENT_SCORES_URL)
         val html = source.orEmpty()
         val discovered = AtpEvents.fromCurrentScoresPage(html, tournaments, year)
-        val events = discovered.ifEmpty { AtpEvents.fallback(fallback, year) }
+        val hubReadable = html.isNotBlank() &&
+            !html.contains(AtpWebReader.BLOCKED, ignoreCase = true)
+        // A readable hub with no active routes is authoritative; dated fallback rows are only
+        // used when the ATP page failed to load or was blocked.
+        val events = if (hubReadable) discovered else AtpEvents.fallback(fallback, year)
         return AtpEvents.Discovery(
             events = events,
             pageBytes = html.toByteArray(Charsets.UTF_8).size,
+            hubReadable = hubReadable,
         )
     }
 

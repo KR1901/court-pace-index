@@ -66,7 +66,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val atpClient = ink.courtpace.index.data.AtpLiveClient(application)
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
     private val liveRefreshMutex = Mutex()
+    private val datasetRefreshMutex = Mutex()
     private var livePollingStarted = false
+    private var datasetPollingStarted = false
 
     init {
         viewModelScope.launch {
@@ -75,6 +77,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     val cached = runCatching { updater.cached() }.getOrNull()
                     publish(PaceData(DatasetPolicy.choose(bundled.dataset, cached?.dataset)))
                     showCachedLiveRatings()
+                    startDatasetPolling()
+                    viewModelScope.launch {
+                        refreshPublishedDataset(reportStatus = false)
+                        refreshLivePace()
+                    }
                     refreshLivePace()
                     startLivePolling()
                 }
@@ -97,11 +104,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun seasonsWithData(data: PaceData, metric: Metric): List<Int> =
         data.seasons.filter { data.entries(it, metric).isNotEmpty() }
 
-    /** Checks the project's published copy for a newer historical dataset. */
-    fun refresh() {
-        if (refreshState is RefreshState.Running) return
-        refreshState = RefreshState.Running
-        viewModelScope.launch {
+    /** Refresh the published CPI/CALC/TA dataset, preserving the selected season. */
+    private suspend fun refreshPublishedDataset(reportStatus: Boolean) {
+        datasetRefreshMutex.lock()
+        try {
             when (val result = updater.refresh()) {
                 is RefreshResult.Success -> {
                     val current = _data.value
@@ -110,17 +116,45 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         PaceData(DatasetPolicy.choose(current.dataset, result.dataset))
                     }
-                    publish(merged, keepSeason = true)
-                    refreshState = RefreshState.Done(
-                        "Updated to the ${result.dataset.meta.generated} dataset · " +
-                            "${result.dataset.readings.size} readings",
-                    )
+                    publish(merged, keepSeason = current != null)
+                    if (reportStatus) {
+                        refreshState = RefreshState.Done(
+                            "Updated to the ${result.dataset.meta.generated} dataset · " +
+                                "${result.dataset.readings.size} readings",
+                        )
+                    }
                 }
-
-                RefreshResult.Unchanged -> refreshState = RefreshState.Done("Already up to date.")
-                is RefreshResult.Failure -> refreshState = RefreshState.Failed(result.message)
+                RefreshResult.Unchanged -> {
+                    if (reportStatus) refreshState = RefreshState.Done("Already up to date.")
+                }
+                is RefreshResult.Failure -> {
+                    if (reportStatus) refreshState = RefreshState.Failed(result.message)
+                }
             }
+        } finally {
+            datasetRefreshMutex.unlock()
+        }
+    }
+
+    /** Manual refresh and automatic polling share the same validated download path. */
+    fun refresh() {
+        if (refreshState is RefreshState.Running) return
+        refreshState = RefreshState.Running
+        viewModelScope.launch {
+            refreshPublishedDataset(reportStatus = true)
             refreshLivePace()
+        }
+    }
+
+    /** Poll the published source while the app is open; CI refreshes the source snapshots. */
+    private fun startDatasetPolling() {
+        if (datasetPollingStarted) return
+        datasetPollingStarted = true
+        viewModelScope.launch {
+            while (isActive) {
+                delay(DATASET_REFRESH_INTERVAL_MS)
+                refreshPublishedDataset(reportStatus = false)
+            }
         }
     }
 
@@ -204,12 +238,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 year = year,
             )
             val refs = discovery.events
-            if (refs.isEmpty()) {
-                return status(
-                    "no active ATP 1000/500/250 links · ${discovery.pageBytes}B current page",
-                )
-            }
-
             val existing = _data.value?.dataset?.live.orEmpty()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
@@ -226,11 +254,23 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
             val latest = _data.value ?: initial
+            val activeKeys = refs.map { it.tournamentId to it.year }.toSet()
+            val retainedReadings = latest.dataset.readings.filterNot { reading ->
+                reading.src == "live" && (reading.t to reading.s) !in activeKeys
+            }
             publish(
-                PaceData(latest.dataset.copy(live = refreshedEvents)),
+                PaceData(latest.dataset.copy(live = refreshedEvents, readings = retainedReadings)),
                 keepSeason = true,
             )
             liveAceByEvent = emptyMap()
+            if (refs.isEmpty()) {
+                val note = if (discovery.hubReadable) {
+                    "current ATP hub has no active events"
+                } else {
+                    "no dated active fallback events"
+                }
+                return status("$note · ${discovery.pageBytes}B current page")
+            }
 
             // Restore cached figures for the events still active; they remain visible while the
             // fresh match pages render, and each row reads only its own cached value.
@@ -377,6 +417,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
         /** Bound each event walk while retaining partial results. */
         const val WALK_TIMEOUT_MS = 900_000L
+
+        /** Refresh the published CPI/CALC/TA payload while the app is open. */
+        const val DATASET_REFRESH_INTERVAL_MS = 60 * 60 * 1_000L
 
         /** Keep the event slate and ace-based reading current while the app is open. */
         const val LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1_000L

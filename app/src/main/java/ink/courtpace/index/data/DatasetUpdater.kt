@@ -55,9 +55,7 @@ class DatasetUpdater(private val context: Context) {
         }
 
         val previous = cached()
-        if (previous != null && previous.dataset.readings.size == dataset.readings.size &&
-            previous.dataset.meta.generated == dataset.meta.generated
-        ) {
+        if (previous != null && previous.dataset == dataset) {
             return@withContext RefreshResult.Unchanged
         }
 
@@ -77,7 +75,7 @@ class DatasetUpdater(private val context: Context) {
     }
 
     private fun download(): String {
-        val connection = (URL(SOURCE_URL).openConnection() as HttpURLConnection).apply {
+        val connection = (URL(if (BuildConfig.DEBUG) DEBUG_SOURCE_URL else SOURCE_URL).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 20_000
