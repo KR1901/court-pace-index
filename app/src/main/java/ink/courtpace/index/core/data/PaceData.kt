@@ -27,7 +27,7 @@ class PaceData(val dataset: PaceDataset) {
         if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
         return dataset.live
             .filter { it.s == season }
-            .mapNotNull { event -> byId[event.t]?.let { it to event } }
+            .mapNotNull { event -> tournament(event.t, season)?.let { it to event } }
             .sortedBy { it.first.name }
     }
 
@@ -40,7 +40,7 @@ class PaceData(val dataset: PaceDataset) {
             // Published/computed season ratings are not a current live calculation. An active
             // event remains pending until its own ATP match-feed rating is written.
             .filter { it.s == season && liveReading(it.t, it.s) == null }
-            .mapNotNull { event -> byId[event.t]?.let { it to event } }
+            .mapNotNull { event -> tournament(event.t, season)?.let { it to event } }
             .sortedBy { it.first.name }
     }
 
@@ -156,6 +156,17 @@ class PaceData(val dataset: PaceDataset) {
         readingsFor(id).lastOrNull { it.value(metric) != null }?.s
 
     fun tournament(id: String): Tournament? = byId[id]
+
+    /** Resolve rotating venues against the selected tournament edition, not a global default. */
+    fun tournament(id: String, season: Int): Tournament? {
+        val base = byId[id] ?: return null
+        val venue = byTournament[id].orEmpty().firstOrNull { it.s == season } ?: return base
+        if (venue.venueCity == null && venue.venueCountry == null) return base
+        return base.copy(
+            city = venue.venueCity ?: base.city,
+            country = venue.venueCountry ?: base.country,
+        )
+    }
 
     /** Tournaments that have any CPI history, longest series first. */
     fun withHistory(metric: Metric = Metric.CPI): List<Tournament> =
