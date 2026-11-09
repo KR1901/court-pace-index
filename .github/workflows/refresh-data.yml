@@ -1,7 +1,7 @@
 name: Refresh dataset
 
-# Regenerates the bundled dataset from the public match archive and publishes it for the
-# app's optional "check for updates" action. Weekly, plus on demand.
+# Regenerates the bundled dataset from the public match archive and source year tables,
+# then publishes the validated payload consumed by the app. Runs every six hours and on demand.
 
 on:
   push:
@@ -11,6 +11,9 @@ on:
       - 'tools/test_compute_speed.py'
       - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetTest.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/LiveFeedTest.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/PaceAnalyticsTest.kt'
+      - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'tools/test_fetch_reference_data.py'
