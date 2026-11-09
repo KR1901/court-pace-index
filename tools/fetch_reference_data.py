@@ -114,10 +114,20 @@ def resolve_tournament(label: str, aliases: dict[str, str], exact: dict[str, set
     if len(candidates) == 1:
         return next(iter(candidates))
 
+    # Explicit aliases take precedence over generic city labels. This matters for
+    # "Paris Hard indoor": the city Paris also belongs to Roland Garros.
+    preferred = [
+        (len(alias), tid)
+        for alias, tid in aliases.items()
+        if len(alias) >= 4 and alias in key
+    ]
+    if preferred:
+        longest = max(length for length, _ in preferred)
+        ids = {tid for length, tid in preferred if length == longest}
+        if len(ids) == 1:
+            return next(iter(ids))
+
     possible: set[str] = set()
-    for alias, tid in aliases.items():
-        if len(alias) >= 4 and alias in key:
-            possible.add(tid)
     for alias, ids in exact.items():
         if len(alias) >= 5 and alias in key:
             possible.update(ids)

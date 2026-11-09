@@ -101,6 +101,8 @@ class DatasetUpdater(private val context: Context) {
         private const val CACHE_NAME = "dataset_cache.json"
         const val SOURCE_URL =
             "https://raw.githubusercontent.com/KR1901/court-pace-index/main/data/latest.json"
+        const val DEBUG_SOURCE_URL =
+            "https://raw.githubusercontent.com/KR1901/court-pace-index/analysis/expected-aces-formula-comparison/data/latest.json"
     }
 }
 
