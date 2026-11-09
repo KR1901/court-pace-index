@@ -46,7 +46,7 @@ The expected-aces floor of 0.5 protects the actual/expected ratio from very smal
 The app discovers active ATP 1000/500/250 events from the ATP current-scores/results pages on-device. It reads singles match links and distinguishes completed archive links from live/in-progress links. Result-card markers identify walkovers and retirements generically, not through tournament-specific ID lists.
 
 - Played completed singles with valid statistics are eligible. Both historical CALC and live ratings are published as soon as at least one server-side observation can be opponent-adjusted; neither has a minimum match-count or adjusted-side eligibility floor.
-- Completed CALC events below the 20-side stable-sample cohort remain ranked, but are labelled with their match and adjusted-side counts. Their small samples do not enter the season normaliser when a 20-side cohort exists.
+- Completed CALC events below the 20-side stable-sample cohort remain ranked, but are labelled with their match and adjusted-side counts. Their small samples do not enter the season normaliser when a 20-side cohort exists. For example, the refreshed 2026 Laver Cup row is CALC 0.47 from seven matches and 14 adjusted sides, with Tennis Abstract's 0.44 retained alongside it.
 - Live samples below eight completed matches are labelled as early samples in the Live now row. This is a caution label only, not a calculation gate.
 - Match-cluster confidence intervals are only emitted when at least five independent completed-match clusters are available; very small samples still receive a CALC point estimate but not a misleading degenerate interval.
 - Retirements with played-set statistics are eligible.
