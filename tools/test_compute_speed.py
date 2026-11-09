@@ -806,7 +806,7 @@ class LiveEventExclusionTests(unittest.TestCase):
         self.assertEqual(["Rome Masters"], [row["tourney_name"] for row in filtered])
 
 
-class ProductionIntervalAndProvisionalTests(unittest.TestCase):
+class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
     def test_match_cluster_interval_is_reproducible(self):
         clusters = [[0.3, 0.5], [1.5, 1.7], [0.6, 0.8], [1.2, 1.4]]
         first = compute_speed.bootstrap_event_interval(clusters, 1.0, iterations=200, seed=17)
@@ -815,7 +815,7 @@ class ProductionIntervalAndProvisionalTests(unittest.TestCase):
         self.assertLess(first["low"], 1.0)
         self.assertGreater(first["high"], 1.0)
 
-    def test_ten_to_nineteen_server_sides_are_provisional_not_primary(self):
+    def test_ten_to_nineteen_server_sides_are_primary_calc_but_not_normaliser_events(self):
         rows = []
         for event, count in (("Paris Masters", 5), ("Rome Masters", 5), ("Madrid Masters", 10)):
             for _ in range(count):
@@ -824,18 +824,71 @@ class ProductionIntervalAndProvisionalTests(unittest.TestCase):
                     "winner_id": "p1", "loser_id": "p2",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
                 })
-        ratings = compute_speed.season_ratings(2026, rows)
+
+        def fake_clusters(event_rows, profiles, tour_rate):
+            event = event_rows[0]["tourney_name"]
+            ratio = {"Paris Masters": 4.0, "Rome Masters": 2.0, "Madrid Masters": 1.0}[event]
+            return [[ratio, ratio] for _ in event_rows]
+
+        coverage = {
+            "tour_prior_sides": 0,
+            "career_history_server_sides": 0,
+            "career_history_returner_sides": 0,
+            "tour_prior_server_profiles": 0,
+            "tour_prior_returner_profiles": 0,
+        }
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+             patch.object(compute_speed, "event_match_ratio_clusters", side_effect=fake_clusters), \
+             patch.object(compute_speed, "ensure_event_profiles", return_value=coverage):
+            ratings = compute_speed.season_ratings(2026, rows)
+
         self.assertEqual({"paris", "rome", "madrid"}, set(ratings))
         for event in ("paris", "rome"):
-            self.assertNotIn("speed", ratings[event])
-            self.assertEqual(10, ratings[event]["provisionalServerSides"])
-            self.assertIn("provisionalSpeed", ratings[event])
-            self.assertIn("provisionalCiLow", ratings[event])
-            self.assertIn("provisionalCiHigh", ratings[event])
-        self.assertIn("speed", ratings["madrid"])
+            self.assertIn("speed", ratings[event])
+            self.assertNotIn("provisionalSpeed", ratings[event])
+            self.assertEqual(10, ratings[event]["adjustedServerSides"])
+            self.assertIsNotNone(ratings[event]["speedCiLow"])
+            self.assertIsNotNone(ratings[event]["speedCiHigh"])
+        self.assertEqual(4.0, ratings["paris"]["speed"])
+        self.assertEqual(2.0, ratings["rome"]["speed"])
+        # The twenty-side Madrid event alone supplies the normaliser.
+        self.assertEqual(1.0, ratings["madrid"]["speed"])
         self.assertEqual(20, ratings["madrid"]["adjustedServerSides"])
-        self.assertIn("speedCiLow", ratings["madrid"])
-        self.assertIn("speedCiHigh", ratings["madrid"])
+
+    def test_one_adjusted_server_side_is_enough_for_a_completed_event_calc(self):
+        rows = []
+        for event in ("Paris Masters", "Rome Masters"):
+            rows.append({
+                "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "winner_id": "p1", "loser_id": "p2",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+            })
+
+        def one_side(event_rows, profiles, tour_rate):
+            return [[1.5 if event_rows[0]["tourney_name"] == "Paris Masters" else 0.5]]
+
+        coverage = {
+            "tour_prior_sides": 0,
+            "career_history_server_sides": 0,
+            "career_history_returner_sides": 0,
+            "tour_prior_server_profiles": 0,
+            "tour_prior_returner_profiles": 0,
+        }
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+             patch.object(compute_speed, "event_match_ratio_clusters", side_effect=one_side), \
+             patch.object(compute_speed, "ensure_event_profiles", return_value=coverage):
+            ratings = compute_speed.season_ratings(2026, rows)
+
+        self.assertEqual({"paris", "rome"}, set(ratings))
+        self.assertEqual(1, ratings["paris"]["adjustedServerSides"])
+        self.assertEqual(1, ratings["rome"]["adjustedServerSides"])
+        self.assertEqual(1.5, ratings["paris"]["speed"])
+        self.assertEqual(0.5, ratings["rome"]["speed"])
+        # Do not publish a degenerate confidence interval from a single match cluster.
+        self.assertIsNone(ratings["paris"]["speedCiLow"])
+        self.assertIsNone(ratings["paris"]["speedCiHigh"])
 
 
 

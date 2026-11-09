@@ -25,8 +25,9 @@ LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Fina
 SOURCE_BY_YEAR = {}
 SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
-MIN_EVENT_SERVER_SIDES = 20
-PROVISIONAL_EVENT_SERVER_SIDES = 10
+MIN_EVENT_RATING_SERVER_SIDES = 1
+MIN_NORMALISER_SERVER_SIDES = 20
+MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
 TML_CACHE_MAX_AGE_DAYS = 7
@@ -941,7 +942,11 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
             expected = max(expected, EXPECTED_ACES_FLOOR)
             per_event[tid].append(ac / expected)
 
-    raw = {t: sum(v) / len(v) for t, v in per_event.items() if len(v) >= 20}
+    raw = {
+        t: sum(v) / len(v)
+        for t, v in per_event.items()
+        if len(v) >= MIN_NORMALISER_SERVER_SIDES
+    }
     return raw, event_aces, event_sv, event_matches
 
 
@@ -1021,7 +1026,7 @@ def season_ratings(year, rows):
         clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
         ratios = [ratio for cluster in clusters for ratio in cluster]
         sides = len(ratios)
-        if sides < PROVISIONAL_EVENT_SERVER_SIDES:
+        if sides < MIN_EVENT_RATING_SERVER_SIDES:
             continue
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
@@ -1034,14 +1039,27 @@ def season_ratings(year, rows):
             "profile_coverage": profile_coverage,
         }
 
-    standard = {tid: item for tid, item in details.items() if item["sides"] >= MIN_EVENT_SERVER_SIDES}
-    if not standard:
+    # Small events receive a CALC rating too, but do not move the season anchor. Prefer
+    # events with at least twenty adjusted sides for the normaliser. If an entire season has
+    # no such event, fall back to all rateable events rather than suppressing the season.
+    normaliser_events = {
+        tid: item for tid, item in details.items()
+        if item["sides"] >= MIN_NORMALISER_SERVER_SIDES
+    }
+    if not normaliser_events:
+        normaliser_events = details
+    if not normaliser_events:
         return {}
-    mean_raw = sum(item["raw"] for item in standard.values()) / len(standard)
+    mean_raw = sum(item["raw"] for item in normaliser_events.values()) / len(normaliser_events)
     output = {}
     for tid, item in details.items():
         seed = int(hashlib.sha256(f"{year}:{tid}:match-cluster-ci-v1".encode()).hexdigest()[:8], 16)
-        interval = bootstrap_event_interval(item["clusters"], mean_raw, seed=seed)
+        # A match-cluster interval is not meaningful for fewer than five independent matches.
+        interval = (
+            bootstrap_event_interval(item["clusters"], mean_raw, seed=seed)
+            if len(item["clusters"]) >= MIN_EVENT_CI_MATCH_CLUSTERS
+            else None
+        )
         ci = {
             "low": round(interval["low"], 3), "high": round(interval["high"], 3),
             "method": "match-cluster-conditional-v1",
@@ -1056,25 +1074,14 @@ def season_ratings(year, rows):
             "tourPriorServerSides": item["profile_coverage"]["tour_prior_server_profiles"],
             "tourPriorReturnerSides": item["profile_coverage"]["tour_prior_returner_profiles"],
         }
-        if item["sides"] >= MIN_EVENT_SERVER_SIDES:
-            output[tid] = {
-                **common,
-                "speed": item["raw"] / mean_raw,
-                "adjustedServerSides": item["sides"],
-                "speedCiLow": ci.get("low"),
-                "speedCiHigh": ci.get("high"),
-                "speedCiMethod": ci.get("method"),
-            }
-        else:
-            output[tid] = {
-                **common,
-                "provisionalSpeed": item["raw"] / mean_raw,
-                "provisionalServerSides": item["sides"],
-                "provisionalMatches": item["matches"],
-                "provisionalCiLow": ci.get("low"),
-                "provisionalCiHigh": ci.get("high"),
-                "provisionalCiMethod": ci.get("method"),
-            }
+        output[tid] = {
+            **common,
+            "speed": item["raw"] / mean_raw,
+            "adjustedServerSides": item["sides"],
+            "speedCiLow": ci.get("low"),
+            "speedCiHigh": ci.get("high"),
+            "speedCiMethod": ci.get("method"),
+        }
     return output
 
 

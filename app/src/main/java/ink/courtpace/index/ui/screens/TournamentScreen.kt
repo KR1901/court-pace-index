@@ -300,6 +300,19 @@ fun TournamentScreen(
                         )
                     }
                 }
+                if (
+                    speed != null &&
+                    speedSource == "computed" &&
+                    seasonReading?.adjustedServerSides != null &&
+                    seasonReading.adjustedServerSides in 1 until PaceAnalytics.STABLE_SPEED_SAMPLE_SERVER_SIDES
+                ) {
+                    Spacer(Modifier.height(10.dp))
+                    GlassNote(
+                        "Small-sample CALC: ${seasonReading.matches ?: "?"} completed matches · " +
+                            "${seasonReading.adjustedServerSides} adjusted server sides. " +
+                            "This event is included in the ranking; small samples carry wider uncertainty.",
+                    )
+                }
                 if (speed != null && seasonReading?.speedCiLow != null && seasonReading.speedCiHigh != null) {
                     Spacer(Modifier.height(10.dp))
                     GlassNote(
@@ -315,14 +328,14 @@ fun TournamentScreen(
                 ) {
                     Spacer(Modifier.height(10.dp))
                     GlassNote(
-                        "Provisional CALC (not ranked): " +
+                        "Stored provisional CALC: " +
                             String.format(java.util.Locale.US, "%.2f", seasonReading.provisionalSpeed) +
                             " · 95% match-cluster interval " +
                             String.format(java.util.Locale.US, "%.2f–%.2f",
                                 seasonReading.provisionalCiLow, seasonReading.provisionalCiHigh) +
                             " · ${seasonReading.provisionalMatches ?: "?"} matches / " +
                             "${seasonReading.provisionalServerSides ?: "?"} eligible server sides. " +
-                            "The standard rating requires at least 20 sides.",
+                            "This row predates the current no-minimum CALC eligibility rule; refresh the dataset to promote it.",
                     )
                 }
                 if (shownCpi == null && speed == null && seasonReading?.provisionalSpeed == null) {

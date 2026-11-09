@@ -37,6 +37,9 @@ data class Divergence(
  */
 object PaceAnalytics {
 
+    /** Below this size a CALC rating remains visible but is explicitly labelled small-sample. */
+    const val STABLE_SPEED_SAMPLE_SERVER_SIDES = 20
+
     fun category(cpi: Double): PaceCategory = PaceCategory.of(cpi)
 
     fun speedBand(speed: Double): SpeedBand = SpeedBand.of(speed)

@@ -33,7 +33,7 @@ expected_aces = service_points × expected_ace_rate
 side_ratio = actual_aces / max(expected_aces, 0.5)
 ```
 
-The event raw score is the mean of valid server-side ratios. The season normaliser is the mean raw score across eligible events; dividing by it centres the season around 1.00.
+The event raw score is the mean of valid server-side ratios. A completed event receives a CALC reading as soon as at least one valid opponent-adjusted server side exists; there is no 10- or 20-side eligibility floor. The season normaliser remains anchored to the mean raw score of events with at least 20 adjusted sides when that cohort exists, so a tiny draw does not move the 1.00 tour reference for every event. If a season has no such events, all rateable events form the fallback normaliser cohort.
 
 Historical ratings use leave-one-tournament-out player profiles and remove the target event from the current-season tour-average anchor. Player tendencies are aggregated from up to 35 prior ATP seasons beginning in 1991, plus current-season training rows; older season samples receive a 0.90 per-year recency weight. Historical player IDs and current TML IDs are crosswalked only through unique normalised full names, with ambiguous names left unmatched. Qualified clay and hard/grass rates require three matches in a surface bucket and use a 150-service-point prior toward the corresponding surface tour rate, then blend one third to two thirds. When no surface-qualified estimate exists, pooled career serve/return samples are shrunk toward the pooled tour rate. A truly missing personal rate is finally filled with the current leave-one-event-out tour-average rate; this is recorded as `tour-average-prior-only`, not misrepresented as an individual player profile.
 
@@ -45,8 +45,10 @@ The expected-aces floor of 0.5 protects the actual/expected ratio from very smal
 
 The app discovers active ATP 1000/500/250 events from the ATP current-scores/results pages on-device. It reads singles match links and distinguishes completed archive links from live/in-progress links. Result-card markers identify walkovers and retirements generically, not through tournament-specific ID lists.
 
-- Played completed singles with valid statistics are eligible. A live reading is published as soon as at least one server-side observation from the first completed match can be opponent-adjusted; no minimum of eight matches or twenty adjusted sides is imposed.
-- Samples below eight completed matches are labelled as early samples in the Live now row. This is a caution label only, not a calculation gate.
+- Played completed singles with valid statistics are eligible. Both historical CALC and live ratings are published as soon as at least one server-side observation can be opponent-adjusted; neither has a minimum match-count or adjusted-side eligibility floor.
+- Completed CALC events below the 20-side stable-sample cohort remain ranked, but are labelled with their match and adjusted-side counts. Their small samples do not enter the season normaliser when a 20-side cohort exists.
+- Live samples below eight completed matches are labelled as early samples in the Live now row. This is a caution label only, not a calculation gate.
+- Match-cluster confidence intervals are only emitted when at least five independent completed-match clusters are available; very small samples still receive a CALC point estimate but not a misleading degenerate interval.
 - Retirements with played-set statistics are eligible.
 - Walkovers and confirmed no-play matches are excluded.
 - Doubles and in-progress matches are excluded.

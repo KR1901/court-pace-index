@@ -280,14 +280,28 @@ fun BoardScreen(
             val min = ranking.minOf { it.value }
             val max = ranking.maxOf { it.value }
             ranking.forEach { row ->
+                val source = if (metric == Metric.SPEED) data.speedSource(row.tournament.id, season) else null
+                val reading = if (metric == Metric.SPEED) data.reading(row.tournament.id, season) else null
+                val adjustedSides = reading?.adjustedServerSides
+                val smallSampleNote = if (
+                    reading != null &&
+                    source == "computed" &&
+                    adjustedSides != null &&
+                    adjustedSides in 1 until PaceAnalytics.STABLE_SPEED_SAMPLE_SERVER_SIDES
+                ) {
+                    "${reading.matches ?: "?"} matches · $adjustedSides adjusted sides"
+                } else {
+                    null
+                }
                 RankRow(
                     row = row,
                     metric = metric,
                     min = min,
                     max = max,
-                    live = metric == Metric.SPEED && data.speedSource(row.tournament.id, season) == "live",
-                    speedSource = if (metric == Metric.SPEED) data.speedSource(row.tournament.id, season) else null,
+                    live = metric == Metric.SPEED && source == "live",
+                    speedSource = source,
                     publishedSpeed = if (metric == Metric.SPEED) data.publishedSpeed(row.tournament.id, season) else null,
+                    sampleNote = smallSampleNote,
                     onClick = { onOpen(row.tournament) },
                 )
                 Spacer(Modifier.height(8.dp))
@@ -315,6 +329,7 @@ fun BoardScreen(
                     live = false,
                     speedSource = "tennisabstract",
                     publishedSpeed = null,
+                    sampleNote = null,
                     onClick = { onOpen(row.tournament) },
                 )
                 Spacer(Modifier.height(8.dp))
@@ -600,6 +615,7 @@ private fun RankRow(
     live: Boolean,
     speedSource: String?,
     publishedSpeed: Double?,
+    sampleNote: String?,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -659,6 +675,15 @@ private fun RankRow(
                         modifier = Modifier.weight(1f),
                     )
                     DeltaBadge(delta = row.delta, metric = metric)
+                }
+                if (sampleNote != null) {
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        text = "SMALL SAMPLE · $sampleNote",
+                        style = TextStyle(fontSize = 8.5.sp, fontWeight = FontWeight.Medium),
+                        color = colors.textFaint,
+                        maxLines = 1,
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
                 AnimatedBar(fraction = fraction, color = accent)

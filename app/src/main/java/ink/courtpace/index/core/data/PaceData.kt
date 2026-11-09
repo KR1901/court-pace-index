@@ -101,6 +101,7 @@ class PaceData(val dataset: PaceDataset) {
         val ace: Double?,
         /** live, computed, or tennisabstract; identifies the primary Speed value. */
         val speedSource: String? = null,
+        val matches: Int? = null,
         /** Original published Tennis Abstract value, where one is available. */
         val publishedSpeed: Double? = null,
         val speedCiLow: Double? = null,
@@ -126,6 +127,7 @@ class PaceData(val dataset: PaceDataset) {
                     speed = speedReading?.speed,
                     ace = speedReading?.ace,
                     speedSource = speedReading?.src,
+                    matches = speedReading?.matches,
                     publishedSpeed = rows.firstNotNullOfOrNull { it.publishedSpeed }
                         ?: rows.firstOrNull { it.src == "tennisabstract" && it.speed != null }?.speed,
                     speedCiLow = speedReading?.speedCiLow,
