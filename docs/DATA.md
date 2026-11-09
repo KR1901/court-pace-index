@@ -45,7 +45,8 @@ The expected-aces floor of 0.5 protects the actual/expected ratio from very smal
 
 The app discovers active ATP 1000/500/250 events from the ATP current-scores/results pages on-device. It reads singles match links and distinguishes completed archive links from live/in-progress links. Result-card markers identify walkovers and retirements generically, not through tournament-specific ID lists.
 
-- Played completed singles with valid statistics are eligible.
+- Played completed singles with valid statistics are eligible. A live reading is published as soon as at least one server-side observation from the first completed match can be opponent-adjusted; no minimum of eight matches or twenty adjusted sides is imposed.
+- Samples below eight completed matches are labelled as early samples in the Live now row. This is a caution label only, not a calculation gate.
 - Retirements with played-set statistics are eligible.
 - Walkovers and confirmed no-play matches are excluded.
 - Doubles and in-progress matches are excluded.

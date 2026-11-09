@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.Role
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.analytics.Ranked
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Surface
@@ -434,6 +435,9 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.totalServerSides)
                                 append(" server sides adjusted")
+                                if (ace.matches < AceRating.EARLY_SAMPLE_MATCH_THRESHOLD) {
+                                    append(" · early sample")
+                                }
                                 if (ace.adjustmentIssues.isNotEmpty()) {
                                     append("\nNot adjusted: ")
                                     append(

@@ -226,14 +226,13 @@ class AtpLiveClient(context: Context) {
         val rating = AceRating.rate(found, baseline) ?: error(
             when {
                 found.isNotEmpty() -> {
-                    "usable Infosys stats for ${found.size}/${eligibleIds.size} played singles matches; " +
-                        "opponent adjustment matched ${adjustmentCoverage.adjustedServerSides}/" +
-                        "${adjustmentCoverage.totalServerSides} server sides " +
+                    "usable Infosys stats for ${found.size}/${eligibleIds.size} played singles matches, " +
+                        "but no server side could be opponent-adjusted; coverage " +
+                        "${adjustmentCoverage.adjustedServerSides}/${adjustmentCoverage.totalServerSides} " +
                         "(serve profiles ${adjustmentCoverage.serverProfilesMatched}/" +
                         "${adjustmentCoverage.totalServerSides}, returner profiles " +
                         "${adjustmentCoverage.returnerProfilesMatched}/" +
-                        "${adjustmentCoverage.totalServerSides}); at least " +
-                        "${AceRating.MIN_ADJUSTED_SERVER_SIDES} adjusted server sides are required"
+                        "${adjustmentCoverage.totalServerSides})"
                 }
                 payloads.get() == 0 -> {
                     val sample = samples.peek()?.let { " · ${it}" }.orEmpty()

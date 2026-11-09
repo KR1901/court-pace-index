@@ -156,9 +156,11 @@ object AceRating {
         val returnerProfileSource: String = "player-profile",
     )
 
-    /** Preserve the historical pipeline's minimum event sample: twenty server-side observations. */
-    const val MIN_MATCHES = 8
-    const val MIN_ADJUSTED_SERVER_SIDES = 20
+    /**
+     * Display-only hint for small live samples. It never suppresses a rating.
+     * The live calculation starts as soon as one completed match yields a valid server side.
+     */
+    const val EARLY_SAMPLE_MATCH_THRESHOLD = 8
     const val MIN_EXPECTED_ACES = 0.0
     const val EXPECTED_ACES_FLOOR = 0.5
 
@@ -460,11 +462,11 @@ object AceRating {
         matches: List<AtpMatchStats>,
         baseline: ink.courtpace.index.core.model.LiveSpeedBaseline,
     ): Result? {
-        if (matches.size < MIN_MATCHES) return null
+        if (matches.isEmpty()) return null
         val evaluation = evaluate(matches, baseline)
-        if (evaluation.totalPoints <= 0 ||
-            evaluation.ratios.size < MIN_ADJUSTED_SERVER_SIDES
-        ) return null
+        // No arbitrary match-count or adjusted-side floor: even one valid server side from the
+        // first completed match is enough to publish an explicitly early live reading.
+        if (evaluation.totalPoints <= 0 || evaluation.ratios.isEmpty()) return null
 
         val rawEventScore = evaluation.ratios.average()
         val pooledAceRate = evaluation.totalAces.toDouble() / evaluation.totalPoints

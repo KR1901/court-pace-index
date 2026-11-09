@@ -132,8 +132,27 @@ class AtpStatsParserTest {
     }
 
     @Test
-    fun `a rating needs enough matches and uses an explicit prior for missing player profiles`() {
-        assertNull(AceRating.rate(sampleMatches(1), baseline))
+    fun `live rating starts with the first completed match`() {
+        assertNull(AceRating.rate(emptyList(), baseline))
+
+        val firstMatch = sampleMatches(1)
+        val firstCoverage = AceRating.coverage(firstMatch, baseline)
+        val firstRating = AceRating.rate(firstMatch, baseline)!!
+
+        assertEquals(1, firstRating.matches)
+        assertEquals(2, firstRating.totalServerSides)
+        assertEquals(2, firstRating.adjustedServerSides)
+        assertEquals(2, firstRating.sideDiagnostics.size)
+        assertEquals(2, firstCoverage.serverProfilesMatched)
+        assertEquals(2, firstCoverage.returnerProfilesMatched)
+
+        // Six completed matches (12 adjusted sides) must also be rateable; this was the
+        // exact situation that previously displayed the obsolete twenty-side requirement.
+        val sixMatchRating = AceRating.rate(sampleMatches(6), baseline)!!
+        assertEquals(6, sixMatchRating.matches)
+        assertEquals(12, sixMatchRating.totalServerSides)
+        assertEquals(12, sixMatchRating.adjustedServerSides)
+
         val reducedBaseline = baseline.copy(
             profiles = baseline.profiles.filterNot { it.name == "B. Returner" },
         )
