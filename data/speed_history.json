@@ -23,7 +23,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-09T16:44:16.587334+00:00",
+   "fetchedAtUtc": "2026-11-09T17:26:19.732634+00:00",
    "latestMatchDate": "20261108",
    "matchRows": 2774,
    "bytes": 587122,
@@ -8366,12 +8366,11 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "provisionalSpeed": 0.789,
-    "provisionalServerSides": 18,
-    "provisionalMatches": 9,
-    "provisionalCiLow": 0.661,
-    "provisionalCiHigh": 0.923,
-    "provisionalCiMethod": "match-cluster-conditional-v1"
+    "speed": 0.789,
+    "adjustedServerSides": 18,
+    "speedCiLow": 0.661,
+    "speedCiHigh": 0.923,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
     "ace": 9.2,
@@ -9181,12 +9180,11 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "provisionalSpeed": 0.549,
-    "provisionalServerSides": 18,
-    "provisionalMatches": 9,
-    "provisionalCiLow": 0.364,
-    "provisionalCiHigh": 0.748,
-    "provisionalCiMethod": "match-cluster-conditional-v1"
+    "speed": 0.549,
+    "adjustedServerSides": 18,
+    "speedCiLow": 0.364,
+    "speedCiHigh": 0.748,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
     "ace": 9.4,
@@ -10038,12 +10036,11 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "provisionalSpeed": 0.47,
-    "provisionalServerSides": 14,
-    "provisionalMatches": 7,
-    "provisionalCiLow": 0.273,
-    "provisionalCiHigh": 0.701,
-    "provisionalCiMethod": "match-cluster-conditional-v1"
+    "speed": 0.47,
+    "adjustedServerSides": 14,
+    "speedCiLow": 0.273,
+    "speedCiHigh": 0.701,
+    "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
     "ace": 7.5,
