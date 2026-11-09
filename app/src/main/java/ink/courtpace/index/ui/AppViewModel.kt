@@ -59,7 +59,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var liveAceByEvent by mutableStateOf<Map<String, ink.courtpace.index.core.live.AceRating.Result>>(emptyMap())
         private set
 
-    /** Retained for the live-row progress/diagnostic text. */
+    /** Event progress is keyed by tournament; one event cannot write into another row. */
+    var liveProgressByEvent by mutableStateOf<Map<String, String>>(emptyMap())
+        private set
+
+    /** Overall refresh diagnostic, not attached to individual event rows. */
     var livePaceNote by mutableStateOf<String?>(null)
     var liveAceProgress by mutableStateOf<String?>(null)
 
@@ -236,8 +240,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 tournaments = initial.dataset.tournaments,
                 fallback = initial.dataset.live,
                 year = year,
+                liveSchedule = initial.dataset.liveSchedule,
             )
             val refs = discovery.events
+            liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" }
             val existing = _data.value?.dataset?.live.orEmpty()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
@@ -264,6 +270,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
             liveAceByEvent = emptyMap()
             if (refs.isEmpty()) {
+                liveProgressByEvent = emptyMap()
                 val note = if (discovery.hubReadable) {
                     "current ATP hub has no active events"
                 } else {
@@ -287,6 +294,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             for (ref in refs) {
                 val name = _data.value?.tournament(ref.tournamentId)?.name ?: ref.slug
+                fun eventStatus(text: String) {
+                    liveProgressByEvent = liveProgressByEvent + (ref.tournamentId to text)
+                }
+                eventStatus("Reading completed singles links")
                 status("$name · reading completed singles links")
                 val baseline = _data.value?.dataset?.speedBaseline
                     ?.takeIf { it.season == ref.year }
@@ -300,11 +311,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         event = ref,
                         baseline = baseline,
                         onProgress = { found, tried ->
-                            status(
-                                "$name · $discoveryLine · " +
-                                    if (found > 0) "$found matches from $tried pages"
-                                    else "page $tried",
-                            )
+                            val detail = if (found > 0) {
+                                "$found matches from $tried pages"
+                            } else {
+                                "page $tried"
+                            }
+                            eventStatus("$discoveryLine · $detail")
+                            status("$name · $discoveryLine · $detail")
                         },
                         onDiscovery = { ids, bytes ->
                             discoveryLine = if (ids > 0) {
@@ -312,6 +325,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             } else {
                                 "no links, $bytes B page"
                             }
+                            eventStatus(discoveryLine)
                             status("$name · $discoveryLine")
                         },
                     )
@@ -344,12 +358,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             adjustmentIssues = rating.adjustmentIssues,
                         ),
                     )
+                    eventStatus("Updated · ${rating.matches} completed matches")
                     status(
                         "$name · live speed ${"%.2f".format(rating.rating)} " +
                             "from ${rating.matches} completed matches",
                     )
                 }.onFailure { error ->
-                    status("$name · ${error.message ?: "match stats unavailable"}")
+                    val message = error.message ?: "match stats unavailable"
+                    eventStatus(message)
+                    status("$name · $message")
                 }
             }
         } catch (error: CancellationException) {

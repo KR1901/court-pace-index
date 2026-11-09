@@ -201,8 +201,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     refreshing = vm.refreshState is RefreshState.Running,
                                     onRefresh = { vm.refresh() },
                                     liveAceByEvent = vm.liveAceByEvent,
-                                    liveProgress = vm.liveAceProgress,
-                                    liveNote = vm.livePaceNote,
+                                    liveProgressByEvent = vm.liveProgressByEvent,
                                     statusNote = when (val state = vm.refreshState) {
                                         is RefreshState.Done -> state.message
                                         is RefreshState.Failed -> state.message

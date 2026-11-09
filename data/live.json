@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-04T14:40:00Z",
-  "note": "Live feed. Refreshed by .github/workflows/refresh-live.yml from the configured match-stat source. An event appears here as soon as it is in progress; its rating appears once per-match ace data exists for it.",
+  "generated": "2026-11-09T16:00:00Z",
+  "note": "Event windows are retained for stale-route rejection; only current events are included in the app's Live now list.",
   "events": [
     {
       "t": "paris",
@@ -13,6 +13,18 @@
       "asOf": "2026-11-04T14:40:00Z",
       "atpId": 352,
       "slug": "paris"
+    },
+    {
+      "t": "stockholm",
+      "s": 2026,
+      "status": "in_progress",
+      "start": "2026-11-08",
+      "end": "2026-11-14",
+      "round": null,
+      "matches": null,
+      "asOf": "2026-11-09T16:00:00Z",
+      "atpId": 429,
+      "slug": "stockholm"
     }
   ]
 }

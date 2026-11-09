@@ -89,8 +89,7 @@ fun BoardScreen(
     onRefresh: () -> Unit,
     statusNote: String?,
     liveAceByEvent: Map<String, ink.courtpace.index.core.live.AceRating.Result> = emptyMap(),
-    liveProgress: String? = null,
-    liveNote: String? = null,
+    liveProgressByEvent: Map<String, String> = emptyMap(),
     scrollState: ScrollState = rememberScrollState(),
 ) {
     val colors = PaceTheme.colors
@@ -241,8 +240,8 @@ fun BoardScreen(
                         datasetMatches = liveReading?.matches,
                         pace = null,
                         ace = liveAceByEvent[tournament.id],
-                        progress = liveProgress,
-                        note = liveNote,
+                        progress = liveProgressByEvent[tournament.id],
+                        note = null,
                         onClick = { onOpen(tournament) },
                     )
                     Spacer(Modifier.height(8.dp))

@@ -382,13 +382,17 @@ if os.path.exists(COMPUTED):
 else:
     print("no computed history found; run tools/compute_speed.py --write first")
 
-# live events: status always, rating only when the feed has one
+# Retain all event windows so Android can reject completed routes that the ATP hub
+# still exposes. Only not-yet-expired rows are published in the visible live list.
+live_schedule = []
 live_events = []
 if os.path.exists(LIVE_FEED):
     feed = json.load(open(LIVE_FEED))
-    for event in feed.get("events", []):
-        if event.get("t") not in known:
-            continue
+    live_schedule = [
+        event for event in feed.get("events", [])
+        if event.get("t") in known
+    ]
+    for event in live_schedule:
         end_date = event.get("end")
         if end_date:
             try:
@@ -461,6 +465,7 @@ doc = {
     "tournaments": tournaments,
     "readings": readings,
     "live": live_events,
+    "liveSchedule": live_schedule,
     "speedBaseline": (
         json.load(open(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json")))
         if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "data", "live_speed_baseline.json"))
