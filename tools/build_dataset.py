@@ -392,7 +392,7 @@ if os.path.exists(LIVE_FEED):
         end_date = event.get("end")
         if end_date:
             try:
-                if datetime_date.fromisoformat(end_date) < date.today():
+                if datetime_date.fromisoformat(end_date) < datetime_date.today():
                     continue
             except ValueError:
                 pass
