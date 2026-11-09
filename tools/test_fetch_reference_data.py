@@ -41,10 +41,10 @@ class ReferenceRefreshTests(unittest.TestCase):
     def test_courtspeed_year_columns_are_parsed(self):
         html = """
         <table>
-          <tr><th>Tournament</th><th>'24</th><th>'25</th><th>'26</th></tr>
-          <tr><td>◆Australian Open Aus Open Hard</td><td>–</td><td>–</td><td>50</td></tr>
-          <tr><td>Indian Wells Hard</td><td>36.9</td><td>30.9</td><td>39.3</td></tr>
-          <tr><td>Paris Hard indoor</td><td>46.6</td><td>35.1</td><td>50</td></tr>
+          <tr><th>Tournament</th><th>'19</th><th>'20</th><th>'21</th><th>'22</th><th>'23</th><th>'24</th><th>'25</th><th>'26</th></tr>
+          <tr><td>◆Australian Open Aus Open Hard</td><td>–</td><td>–</td><td>50</td><td>–</td><td>–</td><td>–</td><td>–</td><td>50</td></tr>
+          <tr><td>Indian Wells Hard</td><td>32.1</td><td>COVID</td><td>32</td><td>–</td><td>35.4</td><td>36.9</td><td>30.9</td><td>39.3</td></tr>
+          <tr><td>Paris Hard indoor</td><td>40.6</td><td>–</td><td>37.1</td><td>37.1</td><td>40.4</td><td>46.6</td><td>35.1</td><td>50</td></tr>
         </table>
         """
         rows = parse_cpi_page(html, self.aliases, self.exact)
