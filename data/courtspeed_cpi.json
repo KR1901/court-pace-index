@@ -1,0 +1,606 @@
+{
+  "generated": "2026-11-09T15:55:44+00:00",
+  "source": "https://courtspeed.com/",
+  "readings": [
+    {
+      "t": "atpfinals",
+      "s": 2012,
+      "cpi": 34.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2012,
+      "cpi": 32.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2013,
+      "cpi": 33.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2013,
+      "cpi": 31.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2013,
+      "cpi": 31.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2014,
+      "cpi": 34.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2014,
+      "cpi": 29.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2014,
+      "cpi": 31.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2015,
+      "cpi": 34.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2015,
+      "cpi": 31.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2015,
+      "cpi": 29.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2016,
+      "cpi": 42.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2016,
+      "cpi": 35.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2016,
+      "cpi": 35.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2016,
+      "cpi": 30.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2016,
+      "cpi": 22.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2016,
+      "cpi": 33.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2016,
+      "cpi": 23.7,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2016,
+      "cpi": 39.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2016,
+      "cpi": 44.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2017,
+      "cpi": 42.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "ausopen",
+      "s": 2017,
+      "cpi": 42.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2017,
+      "cpi": 36.3,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2017,
+      "cpi": 33.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2017,
+      "cpi": 27.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2017,
+      "cpi": 20.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2017,
+      "cpi": 33.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2017,
+      "cpi": 24.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2017,
+      "cpi": 37.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "rolandgarros",
+      "s": 2017,
+      "cpi": 21.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2017,
+      "cpi": 42.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "usopen",
+      "s": 2017,
+      "cpi": 35.7,
+      "src": "courtspeed"
+    },
+    {
+      "t": "wimbledon",
+      "s": 2017,
+      "cpi": 37.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2018,
+      "cpi": 40.3,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2018,
+      "cpi": 28.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2018,
+      "cpi": 31.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2018,
+      "cpi": 27.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2018,
+      "cpi": 21.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2018,
+      "cpi": 30.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2018,
+      "cpi": 22.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2018,
+      "cpi": 34.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2018,
+      "cpi": 39.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2019,
+      "cpi": 41.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2019,
+      "cpi": 43.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2019,
+      "cpi": 37.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2019,
+      "cpi": 32.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2019,
+      "cpi": 27.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2019,
+      "cpi": 36.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2019,
+      "cpi": 30.3,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2019,
+      "cpi": 40.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2019,
+      "cpi": 40.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2020,
+      "cpi": 36.7,
+      "src": "courtspeed"
+    },
+    {
+      "t": "ausopen",
+      "s": 2020,
+      "cpi": 43.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "usopen",
+      "s": 2020,
+      "cpi": 43.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2021,
+      "cpi": 39.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "ausopen",
+      "s": 2021,
+      "cpi": 50.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2021,
+      "cpi": 42.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2021,
+      "cpi": 43.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2021,
+      "cpi": 32.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2021,
+      "cpi": 37.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2022,
+      "cpi": 43.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2022,
+      "cpi": 39.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2022,
+      "cpi": 38.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2022,
+      "cpi": 37.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2023,
+      "cpi": 43.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2023,
+      "cpi": 41.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2023,
+      "cpi": 33.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2023,
+      "cpi": 35.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2023,
+      "cpi": 26.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2023,
+      "cpi": 40.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2023,
+      "cpi": 30.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2023,
+      "cpi": 40.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2023,
+      "cpi": 40.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2024,
+      "cpi": 39.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2024,
+      "cpi": 37.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2024,
+      "cpi": 42.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2024,
+      "cpi": 36.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2024,
+      "cpi": 27.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2024,
+      "cpi": 35.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2024,
+      "cpi": 29.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2024,
+      "cpi": 46.6,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2024,
+      "cpi": 40.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "usopen",
+      "s": 2024,
+      "cpi": 42.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2025,
+      "cpi": 40.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2025,
+      "cpi": 44.7,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2025,
+      "cpi": 43.7,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2025,
+      "cpi": 30.9,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2025,
+      "cpi": 26.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2025,
+      "cpi": 40.7,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2025,
+      "cpi": 29.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2025,
+      "cpi": 35.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2025,
+      "cpi": 32.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "canada",
+      "s": 2026,
+      "cpi": 36.5,
+      "src": "courtspeed"
+    },
+    {
+      "t": "cincinnati",
+      "s": 2026,
+      "cpi": 40.4,
+      "src": "courtspeed"
+    },
+    {
+      "t": "indianwells",
+      "s": 2026,
+      "cpi": 39.3,
+      "src": "courtspeed"
+    },
+    {
+      "t": "madrid",
+      "s": 2026,
+      "cpi": 29.8,
+      "src": "courtspeed"
+    },
+    {
+      "t": "miami",
+      "s": 2026,
+      "cpi": 39.2,
+      "src": "courtspeed"
+    },
+    {
+      "t": "montecarlo",
+      "s": 2026,
+      "cpi": 27.1,
+      "src": "courtspeed"
+    },
+    {
+      "t": "paris",
+      "s": 2026,
+      "cpi": 50.0,
+      "src": "courtspeed"
+    },
+    {
+      "t": "shanghai",
+      "s": 2026,
+      "cpi": 43.3,
+      "src": "courtspeed"
+    }
+  ]
+}

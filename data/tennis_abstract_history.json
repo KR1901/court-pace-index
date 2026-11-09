@@ -1,0 +1,980 @@
+{
+  "generated": "2026-11-09T15:55:44+00:00",
+  "source": "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year=2026",
+  "seasonPolicy": "Tennis Abstract year selector",
+  "seasons": {
+    "2025": [
+      {
+        "t": "acapulco",
+        "s": 2025,
+        "date": "2025-02-24",
+        "speed": 0.81,
+        "ace": 8.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "adelaide",
+        "s": 2025,
+        "date": "2025-01-06",
+        "speed": 1.1,
+        "ace": 12.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "almaty",
+        "s": 2025,
+        "date": "2025-10-13",
+        "speed": 1.16,
+        "ace": 10.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "athens",
+        "s": 2025,
+        "date": "2025-11-02",
+        "speed": 1.45,
+        "ace": 14.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "atpfinals",
+        "s": 2025,
+        "date": "2025-11-09",
+        "speed": 1.4,
+        "ace": 12.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "auckland",
+        "s": 2025,
+        "date": "2025-01-06",
+        "speed": 0.93,
+        "ace": 8.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "ausopen",
+        "s": 2025,
+        "date": "2025-01-13",
+        "speed": 1.07,
+        "ace": 10.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "barcelona",
+        "s": 2025,
+        "date": "2025-04-14",
+        "speed": 0.57,
+        "ace": 4.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "basel",
+        "s": 2025,
+        "date": "2025-10-20",
+        "speed": 1.44,
+        "ace": 14.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "bastad",
+        "s": 2025,
+        "date": "2025-07-14",
+        "speed": 0.85,
+        "ace": 6.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "beijing",
+        "s": 2025,
+        "date": "2025-09-25",
+        "speed": 1.05,
+        "ace": 9.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "brisbane",
+        "s": 2025,
+        "date": "2024-12-30",
+        "speed": 1.27,
+        "ace": 15.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "brussels",
+        "s": 2025,
+        "date": "2025-10-13",
+        "speed": 1.34,
+        "ace": 13.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "bucharest",
+        "s": 2025,
+        "date": "2025-03-31",
+        "speed": 0.43,
+        "ace": 3.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "buenosaires",
+        "s": 2025,
+        "date": "2025-02-10",
+        "speed": 0.9,
+        "ace": 6.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "canada",
+        "s": 2025,
+        "date": "2025-07-27",
+        "speed": 1.02,
+        "ace": 11.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "chengdu",
+        "s": 2025,
+        "date": "2025-09-17",
+        "speed": 1.18,
+        "ace": 13.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "cincinnati",
+        "s": 2025,
+        "date": "2025-08-07",
+        "speed": 1.19,
+        "ace": 12.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "dallas",
+        "s": 2025,
+        "date": "2025-02-03",
+        "speed": 1.2,
+        "ace": 11.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "delraybeach",
+        "s": 2025,
+        "date": "2025-02-10",
+        "speed": 1.09,
+        "ace": 11.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "doha",
+        "s": 2025,
+        "date": "2025-02-17",
+        "speed": 1.07,
+        "ace": 12.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "dubai",
+        "s": 2025,
+        "date": "2025-02-24",
+        "speed": 1.0,
+        "ace": 10.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "eastbourne",
+        "s": 2025,
+        "date": "2025-06-23",
+        "speed": 0.75,
+        "ace": 8.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "geneva",
+        "s": 2025,
+        "date": "2025-05-18",
+        "speed": 0.71,
+        "ace": 8.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "gstaad",
+        "s": 2025,
+        "date": "2025-07-14",
+        "speed": 1.06,
+        "ace": 13.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "halle",
+        "s": 2025,
+        "date": "2025-06-16",
+        "speed": 1.24,
+        "ace": 13.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "hamburg",
+        "s": 2025,
+        "date": "2025-05-18",
+        "speed": 0.57,
+        "ace": 6.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "hangzhou",
+        "s": 2025,
+        "date": "2025-09-17",
+        "speed": 1.38,
+        "ace": 13.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "hongkong",
+        "s": 2025,
+        "date": "2024-12-30",
+        "speed": 1.31,
+        "ace": 9.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "houston",
+        "s": 2025,
+        "date": "2025-03-31",
+        "speed": 0.76,
+        "ace": 7.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "indianwells",
+        "s": 2025,
+        "date": "2025-03-05",
+        "speed": 0.73,
+        "ace": 7.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "kitzbuhel",
+        "s": 2025,
+        "date": "2025-07-21",
+        "speed": 0.8,
+        "ace": 10.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "lavercup",
+        "s": 2025,
+        "date": "2025-09-19",
+        "speed": 0.55,
+        "ace": 5.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "losCabos",
+        "s": 2025,
+        "date": "2025-07-14",
+        "speed": 1.01,
+        "ace": 11.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "madrid",
+        "s": 2025,
+        "date": "2025-04-23",
+        "speed": 0.78,
+        "ace": 8.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "mallorca",
+        "s": 2025,
+        "date": "2025-06-22",
+        "speed": 1.07,
+        "ace": 10.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "marrakech",
+        "s": 2025,
+        "date": "2025-03-31",
+        "speed": 0.78,
+        "ace": 7.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "marseille",
+        "s": 2025,
+        "date": "2025-02-10",
+        "speed": 1.05,
+        "ace": 12.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "metz",
+        "s": 2025,
+        "date": "2025-11-02",
+        "speed": 1.34,
+        "ace": 13.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "miami",
+        "s": 2025,
+        "date": "2025-03-19",
+        "speed": 1.17,
+        "ace": 12.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "montecarlo",
+        "s": 2025,
+        "date": "2025-04-07",
+        "speed": 0.55,
+        "ace": 5.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "montpellier",
+        "s": 2025,
+        "date": "2025-01-27",
+        "speed": 1.09,
+        "ace": 14.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "munich",
+        "s": 2025,
+        "date": "2025-04-14",
+        "speed": 0.64,
+        "ace": 7.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "nextgen",
+        "s": 2025,
+        "date": "2025-12-17",
+        "speed": 0.81,
+        "ace": 10.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "paris",
+        "s": 2025,
+        "date": "2025-10-27",
+        "speed": 0.99,
+        "ace": 10.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "queens",
+        "s": 2025,
+        "date": "2025-06-16",
+        "speed": 1.35,
+        "ace": 14.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rio",
+        "s": 2025,
+        "date": "2025-02-17",
+        "speed": 0.91,
+        "ace": 6.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rolandgarros",
+        "s": 2025,
+        "date": "2025-05-26",
+        "speed": 0.68,
+        "ace": 7.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rome",
+        "s": 2025,
+        "date": "2025-05-07",
+        "speed": 0.6,
+        "ace": 6.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rotterdam",
+        "s": 2025,
+        "date": "2025-02-03",
+        "speed": 0.77,
+        "ace": 8.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "santiago",
+        "s": 2025,
+        "date": "2025-02-24",
+        "speed": 0.71,
+        "ace": 6.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "shanghai",
+        "s": 2025,
+        "date": "2025-10-01",
+        "speed": 1.08,
+        "ace": 11.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "shertogenbosch",
+        "s": 2025,
+        "date": "2025-06-09",
+        "speed": 0.99,
+        "ace": 13.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "stockholm",
+        "s": 2025,
+        "date": "2025-10-13",
+        "speed": 0.9,
+        "ace": 9.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "stuttgart",
+        "s": 2025,
+        "date": "2025-06-09",
+        "speed": 1.38,
+        "ace": 15.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "tokyo",
+        "s": 2025,
+        "date": "2025-09-24",
+        "speed": 1.18,
+        "ace": 11.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "umag",
+        "s": 2025,
+        "date": "2025-07-20",
+        "speed": 0.8,
+        "ace": 7.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "unitedcup",
+        "s": 2025,
+        "date": "2024-12-27",
+        "speed": 1.17,
+        "ace": 14.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "usopen",
+        "s": 2025,
+        "date": "2025-08-25",
+        "speed": 0.96,
+        "ace": 10.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "vienna",
+        "s": 2025,
+        "date": "2025-10-20",
+        "speed": 1.25,
+        "ace": 12.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "washington",
+        "s": 2025,
+        "date": "2025-07-21",
+        "speed": 1.17,
+        "ace": 12.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "wimbledon",
+        "s": 2025,
+        "date": "2025-06-30",
+        "speed": 1.09,
+        "ace": 11.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "winstonsalem",
+        "s": 2025,
+        "date": "2025-08-17",
+        "speed": 1.1,
+        "ace": 11.4,
+        "src": "tennisabstract"
+      }
+    ],
+    "2026": [
+      {
+        "t": "acapulco",
+        "s": 2026,
+        "date": "2026-02-23",
+        "speed": 1.11,
+        "ace": 12.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "adelaide",
+        "s": 2026,
+        "date": "2026-01-12",
+        "speed": 1.04,
+        "ace": 9.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "almaty",
+        "s": 2026,
+        "date": "2026-10-19",
+        "speed": 1.13,
+        "ace": 14.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "auckland",
+        "s": 2026,
+        "date": "2026-01-12",
+        "speed": 1.11,
+        "ace": 11.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "ausopen",
+        "s": 2026,
+        "date": "2026-01-19",
+        "speed": 1.12,
+        "ace": 11.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "barcelona",
+        "s": 2026,
+        "date": "2026-04-13",
+        "speed": 0.55,
+        "ace": 5.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "basel",
+        "s": 2026,
+        "date": "2026-10-26",
+        "speed": 1.2,
+        "ace": 15.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "bastad",
+        "s": 2026,
+        "date": "2026-07-13",
+        "speed": 0.68,
+        "ace": 7.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "beijing",
+        "s": 2026,
+        "date": "2026-09-30",
+        "speed": 1.07,
+        "ace": 11.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "brisbane",
+        "s": 2026,
+        "date": "2026-01-04",
+        "speed": 1.17,
+        "ace": 14.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "brussels",
+        "s": 2026,
+        "date": "2026-10-19",
+        "speed": 1.14,
+        "ace": 13.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "bucharest",
+        "s": 2026,
+        "date": "2026-03-30",
+        "speed": 0.55,
+        "ace": 4.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "buenosaires",
+        "s": 2026,
+        "date": "2026-02-09",
+        "speed": 0.54,
+        "ace": 4.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "canada",
+        "s": 2026,
+        "date": "2026-08-02",
+        "speed": 0.87,
+        "ace": 9.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "chengdu",
+        "s": 2026,
+        "date": "2026-09-23",
+        "speed": 1.45,
+        "ace": 13.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "cincinnati",
+        "s": 2026,
+        "date": "2026-08-13",
+        "speed": 1.12,
+        "ace": 11.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "dallas",
+        "s": 2026,
+        "date": "2026-02-09",
+        "speed": 1.45,
+        "ace": 16.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "delraybeach",
+        "s": 2026,
+        "date": "2026-02-16",
+        "speed": 1.32,
+        "ace": 13.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "doha",
+        "s": 2026,
+        "date": "2026-02-16",
+        "speed": 0.88,
+        "ace": 9.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "dubai",
+        "s": 2026,
+        "date": "2026-02-23",
+        "speed": 1.29,
+        "ace": 15.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "eastbourne",
+        "s": 2026,
+        "date": "2026-06-22",
+        "speed": 1.17,
+        "ace": 11.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "estoril",
+        "s": 2026,
+        "date": "2026-07-20",
+        "speed": 0.55,
+        "ace": 5.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "geneva",
+        "s": 2026,
+        "date": "2026-05-17",
+        "speed": 0.64,
+        "ace": 6.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "gstaad",
+        "s": 2026,
+        "date": "2026-07-13",
+        "speed": 0.9,
+        "ace": 11.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "halle",
+        "s": 2026,
+        "date": "2026-06-15",
+        "speed": 1.19,
+        "ace": 13.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "hamburg",
+        "s": 2026,
+        "date": "2026-05-17",
+        "speed": 0.51,
+        "ace": 5.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "hangzhou",
+        "s": 2026,
+        "date": "2026-09-23",
+        "speed": 1.36,
+        "ace": 14.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "hongkong",
+        "s": 2026,
+        "date": "2026-01-05",
+        "speed": 1.12,
+        "ace": 11.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "houston",
+        "s": 2026,
+        "date": "2026-03-30",
+        "speed": 0.67,
+        "ace": 9.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "indianwells",
+        "s": 2026,
+        "date": "2026-03-04",
+        "speed": 1.16,
+        "ace": 11.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "kitzbuhel",
+        "s": 2026,
+        "date": "2026-07-20",
+        "speed": 0.75,
+        "ace": 9.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "lavercup",
+        "s": 2026,
+        "date": "2026-09-25",
+        "speed": 0.44,
+        "ace": 4.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "losCabos",
+        "s": 2026,
+        "date": "2026-07-27",
+        "speed": 0.54,
+        "ace": 5.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "lyon",
+        "s": 2026,
+        "date": "2026-10-19",
+        "speed": 1.19,
+        "ace": 12.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "madrid",
+        "s": 2026,
+        "date": "2026-04-22",
+        "speed": 0.86,
+        "ace": 8.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "mallorca",
+        "s": 2026,
+        "date": "2026-06-21",
+        "speed": 1.19,
+        "ace": 11.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "marrakech",
+        "s": 2026,
+        "date": "2026-03-30",
+        "speed": 0.92,
+        "ace": 8.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "miami",
+        "s": 2026,
+        "date": "2026-03-18",
+        "speed": 1.19,
+        "ace": 12.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "montecarlo",
+        "s": 2026,
+        "date": "2026-04-05",
+        "speed": 0.57,
+        "ace": 5.9,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "montpellier",
+        "s": 2026,
+        "date": "2026-02-02",
+        "speed": 1.53,
+        "ace": 20.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "munich",
+        "s": 2026,
+        "date": "2026-04-13",
+        "speed": 0.69,
+        "ace": 7.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "paris",
+        "s": 2026,
+        "date": "2026-11-02",
+        "speed": 1.48,
+        "ace": 13.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "queens",
+        "s": 2026,
+        "date": "2026-06-15",
+        "speed": 1.03,
+        "ace": 10.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rio",
+        "s": 2026,
+        "date": "2026-02-16",
+        "speed": 0.95,
+        "ace": 8.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rome",
+        "s": 2026,
+        "date": "2026-05-06",
+        "speed": 0.67,
+        "ace": 6.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "rotterdam",
+        "s": 2026,
+        "date": "2026-02-09",
+        "speed": 0.9,
+        "ace": 11.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "santiago",
+        "s": 2026,
+        "date": "2026-02-23",
+        "speed": 0.81,
+        "ace": 7.6,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "shanghai",
+        "s": 2026,
+        "date": "2026-10-07",
+        "speed": 1.29,
+        "ace": 12.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "shertogenbosch",
+        "s": 2026,
+        "date": "2026-06-08",
+        "speed": 0.96,
+        "ace": 11.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "stuttgart",
+        "s": 2026,
+        "date": "2026-06-08",
+        "speed": 1.31,
+        "ace": 17.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "tokyo",
+        "s": 2026,
+        "date": "2026-09-30",
+        "speed": 0.93,
+        "ace": 9.3,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "umag",
+        "s": 2026,
+        "date": "2026-07-13",
+        "speed": 0.69,
+        "ace": 5.2,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "unitedcup",
+        "s": 2026,
+        "date": "2026-01-02",
+        "speed": 1.08,
+        "ace": 14.0,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "usopen",
+        "s": 2026,
+        "date": "2026-08-31",
+        "speed": 0.95,
+        "ace": 10.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "vienna",
+        "s": 2026,
+        "date": "2026-10-26",
+        "speed": 1.09,
+        "ace": 9.7,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "washington",
+        "s": 2026,
+        "date": "2026-07-27",
+        "speed": 1.14,
+        "ace": 12.5,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "wimbledon",
+        "s": 2026,
+        "date": "2026-06-29",
+        "speed": 1.09,
+        "ace": 11.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "winstonsalem",
+        "s": 2026,
+        "date": "2026-08-23",
+        "speed": 1.05,
+        "ace": 10.9,
+        "src": "tennisabstract"
+      }
+    ]
+  },
+  "unmapped": {}
+}
