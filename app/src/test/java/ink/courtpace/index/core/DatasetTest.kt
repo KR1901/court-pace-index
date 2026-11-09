@@ -106,12 +106,18 @@ class DatasetTest {
         assertEquals(montpellier.publishedSpeed!!, data.publishedSpeed("montpellier", 2026)!!, 0.001)
         assertEquals(1.53, montpellier.publishedSpeed!!, 0.001)
         assertEquals("computed", data.speedSource("montpellier", 2026))
-        val taOnly = data.dataset.readings.first {
-            it.s == 2026 && it.src == "tennisabstract" && it.speed != null
+        // Laver Cup's 2026 seven-match draw has fourteen valid adjusted server sides.
+        // It now receives a ranked CALC point estimate, with the 2026 TA value retained.
+        val laverCup = data.dataset.readings.first {
+            it.t == "lavercup" && it.s == 2026
         }
-        assertEquals("tennisabstract", data.speedSource(taOnly.t, taOnly.s))
-        assertEquals(taOnly.speed, data.value(taOnly.t, taOnly.s, Metric.SPEED))
-        assertEquals(taOnly.speed, data.publishedSpeed(taOnly.t, taOnly.s))
+        assertEquals("computed", laverCup.src)
+        assertEquals(7, laverCup.matches)
+        assertEquals(14, laverCup.adjustedServerSides)
+        assertEquals(0.44, laverCup.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("lavercup", 2026))
+        assertEquals(laverCup.speed, data.value("lavercup", 2026, Metric.SPEED))
+        assertEquals(laverCup.publishedSpeed, data.publishedSpeed("lavercup", 2026))
     }
 
     @Test
