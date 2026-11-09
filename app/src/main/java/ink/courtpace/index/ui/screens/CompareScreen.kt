@@ -67,7 +67,7 @@ fun CompareScreen(
 ) {
     val colors = PaceTheme.colors
     val candidates = data.withHistory(Metric.CPI)
-    val chosen = selected.mapNotNull { data.tournament(it) }
+    val chosen = selected.mapNotNull { data.tournament(it, season) }
     val points = chosen.mapIndexed { index, tournament ->
         ChartSeries(
             label = tournament.name,

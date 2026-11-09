@@ -121,6 +121,19 @@ class DatasetTest {
     }
 
     @Test
+    fun `Laver Cup host city is resolved per edition without rewriting history`() {
+        val edition2025 = data.tournament("lavercup", 2025)!!
+        val edition2026 = data.tournament("lavercup", 2026)!!
+
+        assertEquals("San Francisco", edition2025.city)
+        assertEquals("USA", edition2025.country)
+        assertEquals("London", edition2026.city)
+        assertEquals("GBR", edition2026.country)
+        assertEquals("London", data.entries(2026, Metric.SPEED)
+            .first { it.first.id == "lavercup" }.first.city)
+    }
+
+    @Test
     fun `computed history covers most of the tour in a middle season`() {
         val events2019 = data.tournaments.count { data.value(it.id, 2019, Metric.SPEED) != null }
         assertTrue("only $events2019 events rated in 2019", events2019 >= 30)

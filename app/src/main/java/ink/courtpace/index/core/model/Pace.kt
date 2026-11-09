@@ -117,6 +117,10 @@ data class PaceReading(
     val matches: Int? = null,
     /** Original published Tennis Abstract rating when a calibrated calculation also exists. */
     val publishedSpeed: Double? = null,
+    /** Venue city for this specific tournament edition when the event moves between cities. */
+    val venueCity: String? = null,
+    /** Venue country code for this specific tournament edition. */
+    val venueCountry: String? = null,
     /** Conditional 95% match-cluster interval; profiles and normaliser are held fixed. */
     val speedCiLow: Double? = null,
     val speedCiHigh: Double? = null,

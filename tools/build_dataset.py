@@ -32,7 +32,7 @@ TOURNAMENTS = [
     ("atpfinals",  "ATP Finals",           "Turin",        "ITA", "HARD",  True,  "FINALS",   None),
     ("nextgen",    "Next Gen Finals",      "Jeddah",       "SAU", "HARD",  True,  "SPECIAL",  None),
     ("unitedcup",  "United Cup",           "Perth",        "AUS", "HARD",  False, "SPECIAL",  None),
-    ("lavercup",   "Laver Cup",            "San Francisco","USA", "HARD",  True,  "SPECIAL",  None),
+    ("lavercup",   "Laver Cup",            "London",       "GBR", "HARD",  True,  "SPECIAL",  None),
     ("brisbane",   "Brisbane International","Brisbane",    "AUS", "HARD",  False, "ATP250",   None),
     ("hongkong",   "Hong Kong Open",       "Hong Kong",    "HKG", "HARD",  False, "ATP250",   None),
     ("auckland",   "Auckland Classic",     "Auckland",     "NZL", "HARD",  False, "ATP250",   None),
@@ -83,6 +83,20 @@ TOURNAMENTS = [
     ("marseille",  "Open 13 Provence",     "Marseille",    "FRA", "HARD",  True,  "ATP250",   None),
     ("stockholm",  "Stockholm Open",       "Stockholm",    "SWE", "HARD",  True,  "ATP250",   None),
 ]
+
+# Host city and country for travelling Laver Cup editions. 2020 was not held.
+# Sources: official Laver Cup history and ATP media guide; see docs/DATA.md.
+SEASON_VENUES = {
+    ("lavercup", 2017): ("Prague", "CZE"),
+    ("lavercup", 2018): ("Chicago", "USA"),
+    ("lavercup", 2019): ("Geneva", "SUI"),
+    ("lavercup", 2021): ("Boston", "USA"),
+    ("lavercup", 2022): ("London", "GBR"),
+    ("lavercup", 2023): ("Vancouver", "CAN"),
+    ("lavercup", 2024): ("Berlin", "GER"),
+    ("lavercup", 2025): ("San Francisco", "USA"),
+    ("lavercup", 2026): ("London", "GBR"),
+}
 
 # CPI readings: (tournament id, season, value). Source: Court Speed / The Racquet ATP Court Speed Database,
 # refreshed from the public table updated 7 November 2026. Seven corrected existing values and
@@ -412,6 +426,13 @@ if os.path.exists(LIVE_FEED):
                 "live": True, "asOf": event.get("asOf"), "matches": event.get("matches"),
             })
 
+
+# Apply edition-specific venue metadata to every source reading for rotating events.
+# This covers both published-TA-only records and CALC/combined records.
+for reading in readings:
+    venue = SEASON_VENUES.get((reading["t"], int(reading["s"])))
+    if venue is not None:
+        reading["venueCity"], reading["venueCountry"] = venue
 
 doc = {
     "meta": {

@@ -145,7 +145,10 @@ class PaceData(val dataset: PaceDataset) {
     /** Every tournament that has a value for [metric] in [season]. */
     fun entries(season: Int, metric: Metric): List<Pair<Tournament, Double>> =
         tournaments.mapNotNull { tournament ->
-            value(tournament.id, season, metric)?.let { tournament to it }
+            value(tournament.id, season, metric)?.let { readingValue ->
+                val edition = this.tournament(tournament.id, season) ?: tournament
+                edition to readingValue
+            }
         }
 
     /** Latest season with a reading for this tournament and metric. */

@@ -227,7 +227,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                             }
 
                             is Route.Detail -> {
-                                val tournament = data.tournament(current.tournamentId)
+                                val tournament = data.tournament(current.tournamentId, vm.season)
                                 if (tournament == null) {
                                     pop()
                                 } else {
