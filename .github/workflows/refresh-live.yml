@@ -1,4 +1,4 @@
-name: Refresh live feed
+name: Publish app dataset snapshot
 
 on:
   schedule:
@@ -18,39 +18,36 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install the browser
-        run: |
-          python -m pip install --quiet playwright
-          python -m playwright install --with-deps chromium
-
-      - name: Probe a free, keyless source
+      - name: Probe ATP results-page reachability (diagnostic only)
         run: python tools/probe_sofascore.py
 
-      - name: Rebuild the bundled dataset
+      - name: Rebuild the app dataset snapshot
         run: python tools/build_dataset.py
 
-      - name: Publish the payload the app refreshes from
+      - name: Publish the payload used by app dataset refresh
         run: cp app/src/main/assets/pace_dataset.json data/latest.json
 
-      - name: Show the result
+      - name: Report visible events and retained schedule windows
         run: |
-          python - <<'EOF'
+          python - <<'PY'
           import json
-          live = json.load(open("data/live.json"))
-          for e in live.get("events", []):
-              print(e.get("t"), "speed=", e.get("speed"), "ace=", e.get("ace"), "matches=", e.get("matches"))
-          EOF
-
-      - name: Note whether the site served us
-        run: |
-          python - <<'EOF'
-          import json
-          live = json.load(open("data/live.json"))
-          for e in live.get("events", []):
-              if e.get("speed") is None:
-                  print("No rating: the ATP site refuses datacentre addresses, so this job "
-                        "cannot read the stats pages. The app reads them on the device instead.")
-          EOF
+          with open("app/src/main/assets/pace_dataset.json", encoding="utf-8") as stream:
+              dataset = json.load(stream)
+          visible = dataset.get("live", [])
+          schedule = dataset.get("liveSchedule", [])
+          visible_ids = {(event.get("t"), event.get("s")) for event in visible}
+          retained_only = [
+              event for event in schedule
+              if (event.get("t"), event.get("s")) not in visible_ids
+          ]
+          print(f"visible fallback events: {len(visible)}")
+          for event in visible:
+              print("LIVE", event.get("t"), event.get("status"), event.get("start"), event.get("end"))
+          print(f"retained schedule-only rows (stale-route guards): {len(retained_only)}")
+          for event in retained_only:
+              print("SCHEDULE ONLY", event.get("t"), event.get("status"), event.get("end"))
+          print("Live Surface Speed is computed on-device; this workflow does not request Infosys match statistics.")
+          PY
 
       - name: Commit if anything changed
         run: |
@@ -60,6 +57,6 @@ jobs:
           if git diff --quiet --cached; then
             echo "No change."
           else
-            git commit -m "chore: refresh live rating from the ATP stats pages"
+            git commit -m "chore: publish refreshed app dataset snapshot"
             git push
           fi
