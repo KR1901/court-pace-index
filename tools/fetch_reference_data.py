@@ -91,6 +91,8 @@ def tournament_lookup() -> tuple[dict[str, str], dict[str, set[str]]]:
         "parismasters": "paris",
         "tourfinals": "atpfinals",
         "atpfinals": "atpfinals",
+        "masterscup": "atpfinals",
+        "tennismasterscup": "atpfinals",
         "nextgenfinals": "nextgen",
         "nextgenerationfinals": "nextgen",
         "canadamaster": "canada",
@@ -290,8 +292,11 @@ def ta_years_to_refresh(
     start_year: int,
     end_year: int,
     existing_seasons: dict[str, list[dict]],
+    existing_unmapped: dict[str, list[str]] | None = None,
+    aliases: dict[str, str] | None = None,
+    exact: dict[str, set[str]] | None = None,
 ) -> list[int]:
-    """Backfill missing TA seasons once, while rechecking the latest two each run."""
+    """Backfill missing TA seasons and revisit only seasons with newly resolvable labels."""
     existing = {
         int(year)
         for year, rows in existing_seasons.items()
@@ -303,7 +308,15 @@ def ta_years_to_refresh(
         for year in (end_year - 1, end_year)
         if start_year <= year <= end_year
     }
-    return sorted(missing | recent)
+    newly_resolvable = set()
+    if existing_unmapped and aliases is not None and exact is not None:
+        for year, labels in existing_unmapped.items():
+            if any(resolve_tournament(label, aliases, exact) is not None for label in labels):
+                newly_resolvable.add(int(year))
+    return sorted(
+        year for year in (missing | recent | newly_resolvable)
+        if start_year <= year <= end_year
+    )
 
 
 def refresh(start_year: int, end_year: int) -> None:
@@ -321,7 +334,9 @@ def refresh(start_year: int, end_year: int) -> None:
             unmapped.update(previous.get("unmapped", {}))
         except (OSError, json.JSONDecodeError, TypeError):
             print("WARNING: existing Tennis Abstract snapshot unreadable; backfill requested seasons.")
-    years_to_update = ta_years_to_refresh(start_year, end_year, seasons)
+    years_to_update = ta_years_to_refresh(
+        start_year, end_year, seasons, unmapped, aliases, exact
+    )
     print(f"Tennis Abstract seasons to fetch: {years_to_update}")
     ta_updated = False
     for year in years_to_update:
