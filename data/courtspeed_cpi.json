@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-10T13:08:50+00:00",
+  "generated": "2026-11-10T22:45:04+00:00",
   "source": "https://courtspeed.com/",
   "readings": [
     {
@@ -492,12 +492,6 @@
       "t": "shanghai",
       "s": 2024,
       "cpi": 40.8,
-      "src": "courtspeed"
-    },
-    {
-      "t": "usopen",
-      "s": 2024,
-      "cpi": 42.8,
       "src": "courtspeed"
     },
     {
