@@ -221,6 +221,18 @@ On the validated calculation / research-code head \`a81f3de90327bc871e25e88ae214
 The later commits after that validated code head update documentation and the weekly research-workflow schedule; no production calculation or bundled rating asset changed. The newest standard CI cycle after those documentation/workflow edits was also green for event-population, Android, expected-aces, lower-tier and surface-specific checks. Its duplicate deep-calculation run was still executing at the latest inspection; the completed #266 result uses the same deep-audit script and test files. PR #2 remains open and unmerged; PR #1's base branch is unchanged. The repository remains public.
 
 
+### 10 November 2026 — tournament CALC restoration and refreshed dataset
+
+On code/test revision `62e58950e6cd730c0a19c1ba28bcab38fde12d09`, the refreshed history and bundled-data tests verify the restored target estimates:
+- Next Gen 2024: CALC 2.146, 15 completed matches, 30 adjusted server sides, conditional 95% match-cluster interval [1.659, 2.669].
+- Next Gen 2025: CALC 1.303, 15 completed matches, 30 adjusted server sides, conditional interval [1.009, 1.690].
+- Rio 2026: CALC 0.932; TA reference 0.95.
+- Adelaide 2026: CALC 1.134; TA reference 1.04.
+
+[Refresh dataset #42790086118](https://github.com/KR1901/court-pace-index/actions/runs/42790086118) completed successfully. It recomputed the history and live baseline, rebuilt the 65-tournament / 107-CPI-reading dataset, verified **759 CALC rows** against `data/speed_history.json`, and passed the Android unit-test step in the refreshed workspace. The generated dataset commit is [`4b77c38`](https://github.com/KR1901/court-pace-index/commit/4b77c381bde3f26f65c6bbcbc490178fe2097019).
+
+The same source/test revision passed [Android CI #42790096557](https://github.com/KR1901/court-pace-index/actions/runs/42790096557), [formula comparison #42790096680](https://github.com/KR1901/court-pace-index/actions/runs/42790096680), [event population audit #42790096497](https://github.com/KR1901/court-pace-index/actions/runs/42790096497), [surface-specific backfill audit #42790096424](https://github.com/KR1901/court-pace-index/actions/runs/42790096424) and [lower-tier backfill audit #42790096897](https://github.com/KR1901/court-pace-index/actions/runs/42790096897). The deep calculation audit was still running at the time of this record ([#42790096572](https://github.com/KR1901/court-pace-index/actions/runs/42790096572)). These checks were on the code/test revision before the later documentation-only edits. PR #2 remains open and unmerged; PR #1 remains its unchanged base branch.
+
 ## Reproduction
 
 ```bash
