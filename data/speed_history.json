@@ -23,7 +23,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-10T06:12:33.824545+00:00",
+   "fetchedAtUtc": "2026-11-10T09:13:38.266664+00:00",
    "latestMatchDate": "20261108",
    "matchRows": 2774,
    "bytes": 587122,
@@ -4171,6 +4171,20 @@
     "speedCiLow": 0.697,
     "speedCiHigh": 1.051,
     "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "nextgen": {
+    "ace": 5.5,
+    "matches": 15,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 3,
+    "careerHistoryReturnerSides": 3,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 0.723,
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.559,
+    "speedCiHigh": 0.883,
+    "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
   "2018": {
@@ -4886,6 +4900,20 @@
     "adjustedServerSides": 90,
     "speedCiLow": 0.956,
     "speedCiHigh": 1.174,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "nextgen": {
+    "ace": 10.0,
+    "matches": 16,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 3,
+    "careerHistoryReturnerSides": 3,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 1.416,
+    "adjustedServerSides": 32,
+    "speedCiLow": 1.24,
+    "speedCiHigh": 1.582,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
@@ -5630,6 +5658,20 @@
     "adjustedServerSides": 30,
     "speedCiLow": 1.209,
     "speedCiHigh": 1.589,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "nextgen": {
+    "ace": 7.9,
+    "matches": 15,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 0,
+    "careerHistoryReturnerSides": 0,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 1.407,
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.152,
+    "speedCiHigh": 1.65,
     "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
@@ -6504,6 +6546,20 @@
     "speedCiHigh": 1.035,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
+   "nextgen": {
+    "ace": 6.3,
+    "matches": 15,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 4,
+    "careerHistoryReturnerSides": 4,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 1.667,
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.315,
+    "speedCiHigh": 2.101,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
    "mallorca": {
     "ace": 11.3,
     "matches": 26,
@@ -7220,6 +7276,20 @@
     "speedCiHigh": 1.292,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
+   "nextgen": {
+    "ace": 9.7,
+    "matches": 15,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 3,
+    "careerHistoryReturnerSides": 3,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 1.165,
+    "adjustedServerSides": 30,
+    "speedCiLow": 0.943,
+    "speedCiHigh": 1.396,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
    "atpfinals": {
     "ace": 13.1,
     "matches": 15,
@@ -7244,10 +7314,10 @@
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 2,
     "tourPriorReturnerSides": 2,
-    "speed": 1.107,
+    "speed": 1.111,
     "adjustedServerSides": 96,
-    "speedCiLow": 0.988,
-    "speedCiHigh": 1.222,
+    "speedCiLow": 0.992,
+    "speedCiHigh": 1.227,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
@@ -7258,10 +7328,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.119,
+    "speed": 1.124,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.937,
-    "speedCiHigh": 1.313,
+    "speedCiLow": 0.941,
+    "speedCiHigh": 1.318,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
@@ -7272,10 +7342,10 @@
     "careerHistoryReturnerSides": 16,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.055,
+    "speed": 1.059,
     "adjustedServerSides": 254,
-    "speedCiLow": 0.987,
-    "speedCiHigh": 1.121,
+    "speedCiLow": 0.991,
+    "speedCiHigh": 1.125,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
@@ -7286,10 +7356,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
     "tourPriorReturnerSides": 2,
-    "speed": 1.483,
+    "speed": 1.489,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.326,
-    "speedCiHigh": 1.633,
+    "speedCiLow": 1.331,
+    "speedCiHigh": 1.64,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
@@ -7300,10 +7370,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.998,
+    "speed": 1.002,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.839,
-    "speedCiHigh": 1.169,
+    "speedCiLow": 0.842,
+    "speedCiHigh": 1.173,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
@@ -7314,10 +7384,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.885,
+    "speed": 0.888,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.733,
-    "speedCiHigh": 1.039,
+    "speedCiLow": 0.736,
+    "speedCiHigh": 1.043,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
@@ -7328,10 +7398,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.609,
+    "speed": 0.611,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.469,
-    "speedCiHigh": 0.762,
+    "speedCiLow": 0.471,
+    "speedCiHigh": 0.765,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
@@ -7342,10 +7412,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.007,
+    "speed": 1.011,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.886,
-    "speedCiHigh": 1.131,
+    "speedCiLow": 0.889,
+    "speedCiHigh": 1.135,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
@@ -7356,10 +7426,24 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.023,
+    "speed": 1.027,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.885,
-    "speedCiHigh": 1.173,
+    "speedCiLow": 0.889,
+    "speedCiHigh": 1.178,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "rio": {
+    "ace": 4.5,
+    "matches": 31,
+    "tourPriorSides": 4,
+    "careerHistoryServerSides": 1,
+    "careerHistoryReturnerSides": 1,
+    "tourPriorServerSides": 2,
+    "tourPriorReturnerSides": 2,
+    "speed": 0.792,
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.667,
+    "speedCiHigh": 0.927,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marseille": {
@@ -7370,10 +7454,10 @@
     "careerHistoryReturnerSides": 6,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.217,
+    "speed": 1.222,
     "adjustedServerSides": 50,
-    "speedCiLow": 1.078,
-    "speedCiHigh": 1.371,
+    "speedCiLow": 1.082,
+    "speedCiHigh": 1.376,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
@@ -7384,10 +7468,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.769,
+    "speed": 0.772,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.625,
-    "speedCiHigh": 0.956,
+    "speedCiLow": 0.627,
+    "speedCiHigh": 0.96,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
@@ -7398,10 +7482,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.25,
+    "speed": 1.255,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.075,
-    "speedCiHigh": 1.442,
+    "speedCiLow": 1.079,
+    "speedCiHigh": 1.448,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
@@ -7412,10 +7496,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.842,
+    "speed": 0.846,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.706,
-    "speedCiHigh": 0.962,
+    "speedCiLow": 0.709,
+    "speedCiHigh": 0.966,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
@@ -7426,10 +7510,10 @@
     "careerHistoryReturnerSides": 6,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.882,
+    "speed": 0.885,
     "adjustedServerSides": 190,
-    "speedCiLow": 0.815,
-    "speedCiHigh": 0.951,
+    "speedCiLow": 0.818,
+    "speedCiHigh": 0.954,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
@@ -7440,10 +7524,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.219,
+    "speed": 1.224,
     "adjustedServerSides": 186,
-    "speedCiLow": 1.115,
-    "speedCiHigh": 1.327,
+    "speedCiLow": 1.119,
+    "speedCiHigh": 1.332,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
@@ -7454,10 +7538,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.673,
+    "speed": 0.676,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.539,
-    "speedCiHigh": 0.809,
+    "speedCiLow": 0.542,
+    "speedCiHigh": 0.812,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
@@ -7468,10 +7552,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.922,
+    "speed": 0.925,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.815,
-    "speedCiHigh": 1.026,
+    "speedCiLow": 0.819,
+    "speedCiHigh": 1.03,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
@@ -7482,10 +7566,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 2,
     "tourPriorReturnerSides": 2,
-    "speed": 0.671,
+    "speed": 0.674,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.518,
-    "speedCiHigh": 0.842,
+    "speedCiLow": 0.52,
+    "speedCiHigh": 0.845,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
@@ -7496,10 +7580,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.636,
+    "speed": 0.638,
     "adjustedServerSides": 108,
-    "speedCiLow": 0.567,
-    "speedCiHigh": 0.717,
+    "speedCiLow": 0.569,
+    "speedCiHigh": 0.72,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
@@ -7510,10 +7594,10 @@
     "careerHistoryReturnerSides": 6,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.636,
+    "speed": 0.639,
     "adjustedServerSides": 90,
-    "speedCiLow": 0.484,
-    "speedCiHigh": 0.825,
+    "speedCiLow": 0.486,
+    "speedCiHigh": 0.828,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
@@ -7524,10 +7608,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.73,
+    "speed": 0.733,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.603,
-    "speedCiHigh": 0.854,
+    "speedCiLow": 0.605,
+    "speedCiHigh": 0.857,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
@@ -7538,10 +7622,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.995,
+    "speed": 0.998,
     "adjustedServerSides": 190,
-    "speedCiLow": 0.903,
-    "speedCiHigh": 1.087,
+    "speedCiLow": 0.906,
+    "speedCiHigh": 1.092,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
@@ -7552,10 +7636,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.725,
+    "speed": 0.728,
     "adjustedServerSides": 190,
-    "speedCiLow": 0.657,
-    "speedCiHigh": 0.79,
+    "speedCiLow": 0.66,
+    "speedCiHigh": 0.793,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
@@ -7566,10 +7650,10 @@
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.882,
+    "speed": 0.885,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.77,
-    "speedCiHigh": 0.997,
+    "speedCiLow": 0.773,
+    "speedCiHigh": 1.0,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
@@ -7580,10 +7664,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 2,
     "tourPriorReturnerSides": 2,
-    "speed": 0.65,
+    "speed": 0.652,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.534,
-    "speedCiHigh": 0.773,
+    "speedCiLow": 0.536,
+    "speedCiHigh": 0.776,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
@@ -7594,10 +7678,10 @@
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.646,
+    "speed": 0.649,
     "adjustedServerSides": 252,
-    "speedCiLow": 0.599,
-    "speedCiHigh": 0.701,
+    "speedCiLow": 0.601,
+    "speedCiHigh": 0.704,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
@@ -7608,10 +7692,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.227,
+    "speed": 1.232,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.069,
-    "speedCiHigh": 1.383,
+    "speedCiLow": 1.074,
+    "speedCiHigh": 1.389,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
@@ -7622,10 +7706,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.543,
+    "speed": 1.549,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.413,
-    "speedCiHigh": 1.673,
+    "speedCiLow": 1.418,
+    "speedCiHigh": 1.68,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
@@ -7636,10 +7720,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.329,
+    "speed": 1.334,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.177,
-    "speedCiHigh": 1.5,
+    "speedCiLow": 1.182,
+    "speedCiHigh": 1.506,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
@@ -7650,10 +7734,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.106,
+    "speed": 1.11,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.977,
-    "speedCiHigh": 1.227,
+    "speedCiLow": 0.981,
+    "speedCiHigh": 1.232,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
@@ -7664,10 +7748,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.155,
+    "speed": 1.16,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.023,
-    "speedCiHigh": 1.29,
+    "speedCiLow": 1.027,
+    "speedCiHigh": 1.295,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
@@ -7678,10 +7762,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.078,
+    "speed": 1.082,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.928,
-    "speedCiHigh": 1.228,
+    "speedCiLow": 0.932,
+    "speedCiHigh": 1.233,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
@@ -7692,10 +7776,10 @@
     "careerHistoryReturnerSides": 7,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.088,
+    "speed": 1.092,
     "adjustedServerSides": 254,
-    "speedCiLow": 1.029,
-    "speedCiHigh": 1.145,
+    "speedCiLow": 1.033,
+    "speedCiHigh": 1.149,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
@@ -7706,10 +7790,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.791,
+    "speed": 0.794,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.656,
-    "speedCiHigh": 0.947,
+    "speedCiLow": 0.659,
+    "speedCiHigh": 0.95,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
@@ -7720,10 +7804,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.846,
+    "speed": 0.849,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.685,
-    "speedCiHigh": 1.033,
+    "speedCiLow": 0.687,
+    "speedCiHigh": 1.037,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
@@ -7734,10 +7818,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.761,
+    "speed": 0.764,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.629,
-    "speedCiHigh": 0.909,
+    "speedCiLow": 0.631,
+    "speedCiHigh": 0.913,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
@@ -7748,10 +7832,10 @@
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.68,
+    "speed": 0.682,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.541,
-    "speedCiHigh": 0.837,
+    "speedCiLow": 0.543,
+    "speedCiHigh": 0.84,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
@@ -7762,10 +7846,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.963,
+    "speed": 0.967,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.824,
-    "speedCiHigh": 1.099,
+    "speedCiLow": 0.827,
+    "speedCiHigh": 1.104,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
@@ -7776,10 +7860,10 @@
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.875,
+    "speed": 0.878,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.742,
-    "speedCiHigh": 1.002,
+    "speedCiLow": 0.745,
+    "speedCiHigh": 1.006,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
@@ -7790,10 +7874,10 @@
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.044,
+    "speed": 1.048,
     "adjustedServerSides": 92,
-    "speedCiLow": 0.922,
-    "speedCiHigh": 1.163,
+    "speedCiLow": 0.926,
+    "speedCiHigh": 1.167,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
@@ -7804,10 +7888,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.137,
+    "speed": 1.142,
     "adjustedServerSides": 108,
-    "speedCiLow": 1.033,
-    "speedCiHigh": 1.251,
+    "speedCiLow": 1.037,
+    "speedCiHigh": 1.256,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
@@ -7818,10 +7902,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.835,
+    "speed": 0.838,
     "adjustedServerSides": 108,
-    "speedCiLow": 0.736,
-    "speedCiHigh": 0.94,
+    "speedCiLow": 0.739,
+    "speedCiHigh": 0.944,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
@@ -7832,10 +7916,10 @@
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.089,
+    "speed": 1.094,
     "adjustedServerSides": 92,
-    "speedCiLow": 0.977,
-    "speedCiHigh": 1.209,
+    "speedCiLow": 0.981,
+    "speedCiHigh": 1.214,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
@@ -7846,10 +7930,10 @@
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 2,
     "tourPriorReturnerSides": 2,
-    "speed": 0.998,
+    "speed": 1.002,
     "adjustedServerSides": 254,
-    "speedCiLow": 0.949,
-    "speedCiHigh": 1.046,
+    "speedCiLow": 0.953,
+    "speedCiHigh": 1.05,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
@@ -7860,10 +7944,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 3,
     "tourPriorReturnerSides": 3,
-    "speed": 1.023,
+    "speed": 1.027,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.882,
-    "speedCiHigh": 1.154,
+    "speedCiLow": 0.885,
+    "speedCiHigh": 1.159,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
@@ -7874,10 +7958,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.952,
+    "speed": 0.956,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.813,
-    "speedCiHigh": 1.094,
+    "speedCiLow": 0.816,
+    "speedCiHigh": 1.098,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
@@ -7888,10 +7972,10 @@
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 3,
     "tourPriorReturnerSides": 3,
-    "speed": 1.102,
+    "speed": 1.106,
     "adjustedServerSides": 190,
-    "speedCiLow": 1.002,
-    "speedCiHigh": 1.214,
+    "speedCiLow": 1.006,
+    "speedCiHigh": 1.219,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stockholm": {
@@ -7902,10 +7986,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.987,
+    "speed": 0.991,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.811,
-    "speedCiHigh": 1.189,
+    "speedCiLow": 0.814,
+    "speedCiHigh": 1.193,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
@@ -7916,10 +8000,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.096,
+    "speed": 1.101,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.965,
-    "speedCiHigh": 1.232,
+    "speedCiLow": 0.969,
+    "speedCiHigh": 1.237,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
@@ -7930,10 +8014,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.151,
+    "speed": 1.155,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.996,
-    "speedCiHigh": 1.319,
+    "speedCiLow": 1.0,
+    "speedCiHigh": 1.324,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
@@ -7944,10 +8028,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.202,
+    "speed": 1.206,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.119,
-    "speedCiHigh": 1.295,
+    "speedCiLow": 1.123,
+    "speedCiHigh": 1.3,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
@@ -7958,10 +8042,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.137,
+    "speed": 1.141,
     "adjustedServerSides": 106,
-    "speedCiLow": 1.045,
-    "speedCiHigh": 1.223,
+    "speedCiLow": 1.049,
+    "speedCiHigh": 1.228,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
@@ -7972,10 +8056,10 @@
     "careerHistoryReturnerSides": 12,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.292,
+    "speed": 1.297,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.126,
-    "speedCiHigh": 1.485,
+    "speedCiLow": 1.131,
+    "speedCiHigh": 1.491,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
@@ -7986,10 +8070,24 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.882,
+    "speed": 1.889,
     "adjustedServerSides": 30,
-    "speedCiLow": 1.63,
-    "speedCiHigh": 2.138,
+    "speedCiLow": 1.636,
+    "speedCiHigh": 2.146,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "nextgen": {
+    "ace": 9.8,
+    "matches": 15,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 0,
+    "careerHistoryReturnerSides": 0,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 1.521,
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.282,
+    "speedCiHigh": 1.756,
     "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
@@ -8002,10 +8100,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.346,
+    "speed": 1.352,
     "adjustedServerSides": 60,
-    "speedCiLow": 1.222,
-    "speedCiHigh": 1.487,
+    "speedCiLow": 1.227,
+    "speedCiHigh": 1.494,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "unitedcup": {
@@ -8016,10 +8114,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.978,
+    "speed": 0.982,
     "adjustedServerSides": 50,
-    "speedCiLow": 0.835,
-    "speedCiHigh": 1.12,
+    "speedCiLow": 0.838,
+    "speedCiHigh": 1.125,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hongkong": {
@@ -8030,10 +8128,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.015,
+    "speed": 1.019,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.898,
-    "speedCiHigh": 1.146,
+    "speedCiLow": 0.902,
+    "speedCiHigh": 1.151,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "adelaide": {
@@ -8044,10 +8142,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.068,
+    "speed": 1.073,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.895,
-    "speedCiHigh": 1.257,
+    "speedCiLow": 0.898,
+    "speedCiHigh": 1.262,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "auckland": {
@@ -8058,10 +8156,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.053,
+    "speed": 1.057,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.929,
-    "speedCiHigh": 1.174,
+    "speedCiLow": 0.933,
+    "speedCiHigh": 1.179,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "ausopen": {
@@ -8072,10 +8170,10 @@
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.143,
+    "speed": 1.148,
     "adjustedServerSides": 254,
-    "speedCiLow": 1.081,
-    "speedCiHigh": 1.213,
+    "speedCiLow": 1.086,
+    "speedCiHigh": 1.218,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montpellier": {
@@ -8086,10 +8184,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.033,
+    "speed": 1.038,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.862,
-    "speedCiHigh": 1.186,
+    "speedCiLow": 0.865,
+    "speedCiHigh": 1.191,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dallas": {
@@ -8100,10 +8198,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.167,
+    "speed": 1.172,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.971,
-    "speedCiHigh": 1.372,
+    "speedCiLow": 0.975,
+    "speedCiHigh": 1.378,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marseille": {
@@ -8114,10 +8212,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.253,
+    "speed": 1.259,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.094,
-    "speedCiHigh": 1.423,
+    "speedCiLow": 1.099,
+    "speedCiHigh": 1.429,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "delraybeach": {
@@ -8128,10 +8226,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.033,
+    "speed": 1.038,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.922,
-    "speedCiHigh": 1.139,
+    "speedCiLow": 0.926,
+    "speedCiHigh": 1.144,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "buenosaires": {
@@ -8142,10 +8240,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.576,
+    "speed": 0.578,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.471,
-    "speedCiHigh": 0.677,
+    "speedCiLow": 0.473,
+    "speedCiHigh": 0.68,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rotterdam": {
@@ -8156,10 +8254,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.257,
+    "speed": 1.262,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.148,
-    "speedCiHigh": 1.388,
+    "speedCiLow": 1.152,
+    "speedCiHigh": 1.393,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "doha": {
@@ -8170,10 +8268,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.721,
+    "speed": 0.724,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.607,
-    "speedCiHigh": 0.834,
+    "speedCiLow": 0.609,
+    "speedCiHigh": 0.838,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "losCabos": {
@@ -8184,10 +8282,24 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.701,
+    "speed": 0.704,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.577,
-    "speedCiHigh": 0.831,
+    "speedCiLow": 0.579,
+    "speedCiHigh": 0.834,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "rio": {
+    "ace": 3.7,
+    "matches": 31,
+    "tourPriorSides": 0,
+    "careerHistoryServerSides": 2,
+    "careerHistoryReturnerSides": 2,
+    "tourPriorServerSides": 0,
+    "tourPriorReturnerSides": 0,
+    "speed": 0.75,
+    "adjustedServerSides": 62,
+    "speedCiLow": 0.603,
+    "speedCiHigh": 0.899,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "acapulco": {
@@ -8198,10 +8310,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.89,
+    "speed": 0.894,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.791,
-    "speedCiHigh": 1.0,
+    "speedCiLow": 0.795,
+    "speedCiHigh": 1.004,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "dubai": {
@@ -8212,10 +8324,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.137,
+    "speed": 1.142,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.987,
-    "speedCiHigh": 1.308,
+    "speedCiLow": 0.991,
+    "speedCiHigh": 1.313,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "santiago": {
@@ -8226,10 +8338,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.022,
+    "speed": 1.026,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.852,
-    "speedCiHigh": 1.19,
+    "speedCiLow": 0.856,
+    "speedCiHigh": 1.195,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "indianwells": {
@@ -8240,10 +8352,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.815,
+    "speed": 0.819,
     "adjustedServerSides": 188,
-    "speedCiLow": 0.753,
-    "speedCiHigh": 0.878,
+    "speedCiLow": 0.756,
+    "speedCiHigh": 0.882,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "miami": {
@@ -8254,10 +8366,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.129,
+    "speed": 1.134,
     "adjustedServerSides": 190,
-    "speedCiLow": 1.043,
-    "speedCiHigh": 1.216,
+    "speedCiLow": 1.048,
+    "speedCiHigh": 1.221,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "estoril": {
@@ -8268,10 +8380,10 @@
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.608,
+    "speed": 0.611,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.503,
-    "speedCiHigh": 0.724,
+    "speedCiLow": 0.506,
+    "speedCiHigh": 0.727,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "houston": {
@@ -8282,10 +8394,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.923,
+    "speed": 0.927,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.81,
-    "speedCiHigh": 1.034,
+    "speedCiLow": 0.813,
+    "speedCiHigh": 1.039,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "marrakech": {
@@ -8296,10 +8408,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 0.836,
+    "speed": 0.84,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.677,
-    "speedCiHigh": 1.008,
+    "speedCiLow": 0.68,
+    "speedCiHigh": 1.012,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "montecarlo": {
@@ -8310,10 +8422,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.606,
+    "speed": 0.608,
     "adjustedServerSides": 110,
-    "speedCiLow": 0.541,
-    "speedCiHigh": 0.67,
+    "speedCiLow": 0.543,
+    "speedCiHigh": 0.673,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "barcelona": {
@@ -8324,10 +8436,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.62,
+    "speed": 0.622,
     "adjustedServerSides": 92,
-    "speedCiLow": 0.522,
-    "speedCiHigh": 0.722,
+    "speedCiLow": 0.524,
+    "speedCiHigh": 0.725,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "munich": {
@@ -8338,10 +8450,10 @@
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.726,
+    "speed": 0.73,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.578,
-    "speedCiHigh": 0.877,
+    "speedCiLow": 0.58,
+    "speedCiHigh": 0.881,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bucharest": {
@@ -8352,10 +8464,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.639,
+    "speed": 0.642,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.464,
-    "speedCiHigh": 0.805,
+    "speedCiLow": 0.466,
+    "speedCiHigh": 0.808,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "madrid": {
@@ -8366,10 +8478,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.776,
+    "speed": 0.779,
     "adjustedServerSides": 188,
-    "speedCiLow": 0.71,
-    "speedCiHigh": 0.844,
+    "speedCiLow": 0.713,
+    "speedCiHigh": 0.847,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rome": {
@@ -8380,10 +8492,10 @@
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.739,
+    "speed": 0.742,
     "adjustedServerSides": 190,
-    "speedCiLow": 0.664,
-    "speedCiHigh": 0.817,
+    "speedCiLow": 0.667,
+    "speedCiHigh": 0.82,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "geneva": {
@@ -8394,10 +8506,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.697,
+    "speed": 0.7,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.575,
-    "speedCiHigh": 0.847,
+    "speedCiLow": 0.577,
+    "speedCiHigh": 0.85,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lyon": {
@@ -8408,10 +8520,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 3,
     "tourPriorReturnerSides": 3,
-    "speed": 0.72,
+    "speed": 0.723,
     "adjustedServerSides": 50,
-    "speedCiLow": 0.591,
-    "speedCiHigh": 0.855,
+    "speedCiLow": 0.593,
+    "speedCiHigh": 0.858,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "rolandgarros": {
@@ -8422,10 +8534,10 @@
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.691,
+    "speed": 0.694,
     "adjustedServerSides": 252,
-    "speedCiLow": 0.643,
-    "speedCiHigh": 0.75,
+    "speedCiLow": 0.646,
+    "speedCiHigh": 0.753,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shertogenbosch": {
@@ -8436,10 +8548,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.935,
+    "speed": 0.939,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.823,
-    "speedCiHigh": 1.061,
+    "speedCiLow": 0.826,
+    "speedCiHigh": 1.065,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stuttgart": {
@@ -8450,10 +8562,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.381,
+    "speed": 1.387,
     "adjustedServerSides": 52,
-    "speedCiLow": 1.226,
-    "speedCiHigh": 1.53,
+    "speedCiLow": 1.232,
+    "speedCiHigh": 1.536,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "halle": {
@@ -8464,10 +8576,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.449,
+    "speed": 1.455,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.289,
-    "speedCiHigh": 1.615,
+    "speedCiLow": 1.294,
+    "speedCiHigh": 1.622,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "queens": {
@@ -8478,10 +8590,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.263,
+    "speed": 1.268,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.118,
-    "speedCiHigh": 1.417,
+    "speedCiLow": 1.123,
+    "speedCiHigh": 1.423,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "mallorca": {
@@ -8492,10 +8604,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.144,
+    "speed": 1.148,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.967,
-    "speedCiHigh": 1.334,
+    "speedCiLow": 0.971,
+    "speedCiHigh": 1.34,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "eastbourne": {
@@ -8506,10 +8618,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.094,
+    "speed": 1.099,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.925,
-    "speedCiHigh": 1.268,
+    "speedCiLow": 0.929,
+    "speedCiHigh": 1.273,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "wimbledon": {
@@ -8520,10 +8632,10 @@
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.17,
+    "speed": 1.175,
     "adjustedServerSides": 250,
-    "speedCiLow": 1.103,
-    "speedCiHigh": 1.238,
+    "speedCiLow": 1.108,
+    "speedCiHigh": 1.243,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "gstaad": {
@@ -8534,10 +8646,10 @@
     "careerHistoryReturnerSides": 3,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.95,
+    "speed": 0.954,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.8,
-    "speedCiHigh": 1.122,
+    "speedCiLow": 0.804,
+    "speedCiHigh": 1.127,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hamburg": {
@@ -8548,10 +8660,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.885,
+    "speed": 0.889,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.744,
-    "speedCiHigh": 1.032,
+    "speedCiLow": 0.747,
+    "speedCiHigh": 1.036,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "bastad": {
@@ -8562,10 +8674,10 @@
     "careerHistoryReturnerSides": 10,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.947,
+    "speed": 0.951,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.705,
-    "speedCiHigh": 1.209,
+    "speedCiLow": 0.708,
+    "speedCiHigh": 1.215,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "kitzbuhel": {
@@ -8576,10 +8688,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.914,
+    "speed": 0.918,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.734,
-    "speedCiHigh": 1.119,
+    "speedCiLow": 0.737,
+    "speedCiHigh": 1.124,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "umag": {
@@ -8590,10 +8702,10 @@
     "careerHistoryReturnerSides": 6,
     "tourPriorServerSides": 2,
     "tourPriorReturnerSides": 2,
-    "speed": 0.582,
+    "speed": 0.584,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.464,
-    "speedCiHigh": 0.717,
+    "speedCiLow": 0.466,
+    "speedCiHigh": 0.72,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "washington": {
@@ -8604,10 +8716,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.285,
+    "speed": 1.29,
     "adjustedServerSides": 94,
-    "speedCiLow": 1.117,
-    "speedCiHigh": 1.465,
+    "speedCiLow": 1.122,
+    "speedCiHigh": 1.471,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "canada": {
@@ -8618,10 +8730,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.778,
+    "speed": 0.782,
     "adjustedServerSides": 108,
-    "speedCiLow": 0.702,
-    "speedCiHigh": 0.854,
+    "speedCiLow": 0.705,
+    "speedCiHigh": 0.858,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "cincinnati": {
@@ -8632,10 +8744,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.148,
+    "speed": 1.152,
     "adjustedServerSides": 108,
-    "speedCiLow": 1.04,
-    "speedCiHigh": 1.263,
+    "speedCiLow": 1.045,
+    "speedCiHigh": 1.268,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "winstonsalem": {
@@ -8646,10 +8758,10 @@
     "careerHistoryReturnerSides": 7,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.887,
+    "speed": 0.89,
     "adjustedServerSides": 92,
-    "speedCiLow": 0.777,
-    "speedCiHigh": 0.992,
+    "speedCiLow": 0.78,
+    "speedCiHigh": 0.996,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "usopen": {
@@ -8660,10 +8772,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 3,
     "tourPriorReturnerSides": 3,
-    "speed": 0.992,
+    "speed": 0.997,
     "adjustedServerSides": 254,
-    "speedCiLow": 0.942,
-    "speedCiHigh": 1.05,
+    "speedCiLow": 0.946,
+    "speedCiHigh": 1.054,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "chengdu": {
@@ -8674,10 +8786,10 @@
     "careerHistoryReturnerSides": 7,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.559,
+    "speed": 1.565,
     "adjustedServerSides": 54,
-    "speedCiLow": 1.395,
-    "speedCiHigh": 1.722,
+    "speedCiLow": 1.4,
+    "speedCiHigh": 1.729,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "hangzhou": {
@@ -8688,10 +8800,10 @@
     "careerHistoryReturnerSides": 8,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.149,
+    "speed": 1.153,
     "adjustedServerSides": 52,
-    "speedCiLow": 1.002,
-    "speedCiHigh": 1.303,
+    "speedCiLow": 1.006,
+    "speedCiHigh": 1.308,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "lavercup": {
@@ -8702,10 +8814,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.781,
+    "speed": 0.784,
     "adjustedServerSides": 18,
-    "speedCiLow": 0.653,
-    "speedCiHigh": 0.913,
+    "speedCiLow": 0.656,
+    "speedCiHigh": 0.917,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "tokyo": {
@@ -8716,10 +8828,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.093,
+    "speed": 1.097,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.964,
-    "speedCiHigh": 1.218,
+    "speedCiLow": 0.968,
+    "speedCiHigh": 1.223,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "beijing": {
@@ -8730,10 +8842,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 0.844,
+    "speed": 0.848,
     "adjustedServerSides": 62,
-    "speedCiLow": 0.743,
-    "speedCiHigh": 0.953,
+    "speedCiLow": 0.747,
+    "speedCiHigh": 0.957,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "shanghai": {
@@ -8744,10 +8856,10 @@
     "careerHistoryReturnerSides": 9,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.102,
+    "speed": 1.107,
     "adjustedServerSides": 190,
-    "speedCiLow": 1.019,
-    "speedCiHigh": 1.187,
+    "speedCiLow": 1.023,
+    "speedCiHigh": 1.192,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "almaty": {
@@ -8758,10 +8870,10 @@
     "careerHistoryReturnerSides": 5,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.087,
+    "speed": 1.092,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.957,
-    "speedCiHigh": 1.225,
+    "speedCiLow": 0.961,
+    "speedCiHigh": 1.231,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "stockholm": {
@@ -8772,10 +8884,10 @@
     "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.119,
+    "speed": 1.123,
     "adjustedServerSides": 54,
-    "speedCiLow": 0.99,
-    "speedCiHigh": 1.251,
+    "speedCiLow": 0.994,
+    "speedCiHigh": 1.256,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "basel": {
@@ -8786,10 +8898,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.487,
+    "speed": 1.493,
     "adjustedServerSides": 62,
-    "speedCiLow": 1.352,
-    "speedCiHigh": 1.628,
+    "speedCiLow": 1.358,
+    "speedCiHigh": 1.635,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "vienna": {
@@ -8800,10 +8912,10 @@
     "careerHistoryReturnerSides": 1,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.126,
+    "speed": 1.13,
     "adjustedServerSides": 60,
-    "speedCiLow": 0.933,
-    "speedCiHigh": 1.36,
+    "speedCiLow": 0.937,
+    "speedCiHigh": 1.366,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "paris": {
@@ -8814,10 +8926,10 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.253,
+    "speed": 1.259,
     "adjustedServerSides": 110,
-    "speedCiLow": 1.143,
-    "speedCiHigh": 1.36,
+    "speedCiLow": 1.148,
+    "speedCiHigh": 1.366,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "metz": {
@@ -8828,10 +8940,10 @@
     "careerHistoryReturnerSides": 4,
     "tourPriorServerSides": 1,
     "tourPriorReturnerSides": 1,
-    "speed": 1.043,
+    "speed": 1.047,
     "adjustedServerSides": 52,
-    "speedCiLow": 0.923,
-    "speedCiHigh": 1.15,
+    "speedCiLow": 0.927,
+    "speedCiHigh": 1.154,
     "speedCiMethod": "match-cluster-conditional-v1"
    },
    "atpfinals": {
@@ -8842,10 +8954,24 @@
     "careerHistoryReturnerSides": 0,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.412,
+    "speed": 1.418,
     "adjustedServerSides": 30,
-    "speedCiLow": 1.219,
-    "speedCiHigh": 1.606,
+    "speedCiLow": 1.224,
+    "speedCiHigh": 1.613,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "nextgen": {
+    "ace": 10.3,
+    "matches": 15,
+    "tourPriorSides": 6,
+    "careerHistoryServerSides": 0,
+    "careerHistoryReturnerSides": 0,
+    "tourPriorServerSides": 1,
+    "tourPriorReturnerSides": 1,
+    "speed": 2.146,
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.659,
+    "speedCiHigh": 2.669,
     "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
@@ -9716,6 +9842,20 @@
     "adjustedServerSides": 30,
     "speedCiLow": 1.274,
     "speedCiHigh": 1.602,
+    "speedCiMethod": "match-cluster-conditional-v1"
+   },
+   "nextgen": {
+    "ace": 10.1,
+    "matches": 15,
+    "tourPriorSides": 6,
+    "careerHistoryServerSides": 4,
+    "careerHistoryReturnerSides": 4,
+    "tourPriorServerSides": 1,
+    "tourPriorReturnerSides": 1,
+    "speed": 1.303,
+    "adjustedServerSides": 30,
+    "speedCiLow": 1.009,
+    "speedCiHigh": 1.69,
     "speedCiMethod": "match-cluster-conditional-v1"
    }
   },
