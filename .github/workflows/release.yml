@@ -42,13 +42,13 @@ jobs:
           from pathlib import Path
 
           text = Path("app/build.gradle.kts").read_text(encoding="utf-8")
-          code = re.search(r"\\bversionCode\\s*=\\s*(\\d+)", text)
-          name = re.search(r'\\bversionName\\s*=\\s*"([^"]+)"', text)
+          code = re.search(r"\bversionCode\s*=\s*(\d+)", text)
+          name = re.search(r'\bversionName\s*=\s*"([^"]+)"', text)
           if not code or not name:
               raise SystemExit("Could not read Android versionCode/versionName")
           version_code = int(code.group(1))
           version_name = name.group(1)
-          if not re.fullmatch(r"\\d+\\.\\d+\\.\\d+", version_name):
+          if not re.fullmatch(r"\d+\.\d+\.\d+", version_name):
               raise SystemExit(f"Expected stable semantic version, got {version_name!r}")
           print(f"version={version_name}")
           print(f"version_code={version_code}")
