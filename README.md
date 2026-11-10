@@ -1,6 +1,6 @@
 # Court Pace
 
-Court Pace is an Android app and research project for comparing how tennis courts play. It brings together **physical Court Pace Index (CPI) readings** and **behavioural, ace-based ATP Surface Speed ratings**, with historical comparisons, tournament detail and a live-tournament view.
+Court Pace is an independent Android app and research toolkit for comparing how tennis courts play. It brings together **physical Court Pace Index (CPI) readings** and **behavioural, ace-based ATP Surface Speed ratings**, with historical comparisons, tournament detail and a live-tournament view.
 
 The app is a reader and analysis tool, not a court-measuring instrument. It does not use the microphone or phone sensors to estimate court pace. Bundled readings are available offline; internet access is used for optional dataset refreshes and live ATP match statistics.
 
@@ -49,9 +49,17 @@ Historical and live ratings use leave-one-tournament-out training, but player te
 - **Compare:** event comparisons and CPI/Speed percentile divergence.
 - **Surfaces:** surface-level distributions and trends.
 - **Method:** formulas, bands, source provenance and known limitations.
-- **Live now:** discovers active ATP 1000/500/250 events, reads completed singles results and rates available match statistics. Diagnostics expose the raw score, normalisation, tour ace rate, service-point totals, matched profiles and influential server-side ratios.
+- **Live now:** discovers active ATP 1000/500/250 events, reads completed singles results and computes opponent-adjusted Surface Speed from ATP/Infosys statistics on the device. Diagnostics expose the raw score, normalisation, tour ace rate, service-point totals, matched profiles and influential server-side ratios.
 
 The live pipeline excludes walkovers, confirmed no-play records, doubles and in-progress matches. Played retirements remain eligible when valid statistics exist. Missing data remains visible; the app must not invent statistics to complete a rating. ATP/Infosys access can be device-sensitive, so a green CI build is not a substitute for live handset acceptance.
+
+### Live data path and published snapshot
+
+The checked-in `data/live.json` is an **event-window metadata file**, not the production live-rating output. `tools/build_dataset.py` retains all known event windows in the dataset's `liveSchedule` array so the app can reject stale ATP score-hub routes. It separately publishes only non-expired, non-terminal rows in the visible `live` fallback list. An ended event may therefore remain in `liveSchedule` as a tombstone without appearing in Live now. Do not delete an ended schedule row merely because the source's old status label says `in_progress`: its tournament ID and end date help prevent a stale route from reviving it.
+
+The scheduled `refresh-live.yml` workflow rebuilds and publishes the dataset snapshot as `data/latest.json`; it does **not** fetch match statistics or calculate live Surface Speed. The `probe_sofascore.py` script is a reachability diagnostic only. The old `tools/live_update.py` script is a retired experiment and is not called by the app or scheduled workflows.
+
+Live ratings are calculated at runtime by the Android app: `AppViewModel` calls `AtpLiveClient`, which discovers completed singles links on ATP results pages, requests match statistics through `AtpInfosysStatsClient`, and passes them to the current opponent-adjusted `AceRating` method with the published season baseline. Ratings are cached locally on the device. This separation is intentional: a missing `speed` value in `data/live.json` or `data/latest.json` does not, by itself, mean the on-device live rating path is broken.
 
 ## Calculation evidence
 
@@ -61,7 +69,7 @@ That result measures agreement with a published behavioural reference, **not phy
 
 The current 2026 production full-history ratings are Montpellier **1.664** (54/54 sides; rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]) and Marrakech **0.999** (52/52 sides; rank 34/57; interval [0.828, 1.182]). The separate same-season sensitivity audit produces different figures and must not be confused with the production long-history calculation. Montpellier's 54-side source/profile gap is resolved, but its TML ace rate (14.2%) still differs from Tennis Abstract's published 19.8%; TA's exact population/statistic definition remains unresolved. The deep audit tested shrinkage, surface weighting, uncertainty and a limited CPI cross-check. Physical validation remains limited and does not justify a clay-specific correction.
 
-The checked-in bundled asset and downloadable `data/latest.json` have now been regenerated from the full-history calculation. Both contain Montpellier 1.664 (54/54 sides) and Marrakech 0.999 (52/52 sides), retain the Tennis Abstract values in `publishedSpeed`, and currently share the same Git blob SHA. The dataset-refresh workflow now checks every computed reading, match/side count and confidence interval against `data/speed_history.json` before publication.
+The bundled asset and downloadable `data/latest.json` are generated from the full-history calculation. The dataset-refresh workflow checks computed readings, match/side counts and confidence intervals against `data/speed_history.json` before publication. The dataset snapshot also carries the current season baseline and event-window metadata required by the on-device Live now path; it is not a server-computed live-rating feed.
 
 - [PR #1 — live ATP discovery, parsing and coverage](docs/PR1.md)
 - [PR #2 — formulation, statistical audit and diagnostics](docs/PR2.md)
@@ -112,6 +120,10 @@ Court Pace is an independent project. It is not affiliated with, endorsed by or 
 
 ## Licensing
 
-- Original software code: MIT; see [LICENSE](LICENSE).
-- Match data, published reference readings and generated data: source-specific rights and restrictions apply. See [DATA-LICENSES.md](DATA-LICENSES.md).
-- The repository's GitHub licence badge describes the code licence only; it does not imply that all data in the repository is MIT-licensed or freely reusable.
+- Original project code: MIT; see [LICENSE](LICENSE).
+- Jeff Sackmann historical match data: CC BY-NC-SA 4.0, including attribution, non-commercial and share-alike conditions.
+- TennisMyLife current-season data: its published terms limit use to personal, educational and non-commercial research; raw-database redistribution/resale is not authorised by those terms.
+- Tennis Abstract reference values and Court Speed CPI readings: no blanket open-data licence is asserted by this project.
+- ATP/Infosys content: ATP's terms restrict systematic retrieval of scores, statistics and rankings without prior express written permission.
+
+See [DATA-LICENSES.md](DATA-LICENSES.md) for source-specific details. The MIT licence covers only original project code; private repository visibility does not expand any third-party data rights.
