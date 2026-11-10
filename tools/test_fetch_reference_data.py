@@ -85,6 +85,38 @@ class ReferenceRefreshTests(unittest.TestCase):
         )
         self.assertEqual([], unmapped)
 
+    def test_masters_cup_is_mapped_to_the_atp_finals_tournament(self):
+        html = """
+        <table><tr><th>Date</th><th>Tournament</th><th>Surface</th><th>Ace%</th><th>Speed</th></tr>
+        <tr><td>16-Nov-2008</td><td>Masters Cup</td><td>Hard</td><td>7.2%</td><td>1.02</td></tr>
+        </table>
+        """
+        rows, unmapped = parse_ta_year(html, 2008, self.aliases, self.exact)
+        self.assertEqual("atpfinals", rows[0]["t"])
+        self.assertEqual(2008, rows[0]["s"])
+        self.assertEqual(1.02, rows[0]["speed"])
+        self.assertEqual([], unmapped)
+
+    def test_newly_resolvable_historical_labels_trigger_only_their_seasons(self):
+        existing = {str(year): [{"t": "brisbane"}] for year in range(1991, 2027)}
+        unmapped = {
+            "2000": ["Masters Cup"],
+            "2008": ["Masters Cup"],
+            "2012": ["Non-catalogue event"],
+        }
+        years = ta_years_to_refresh(
+            1991, 2026, existing, unmapped, self.aliases, self.exact
+        )
+        self.assertEqual([2000, 2008, 2025, 2026], years)
+
+    def test_new_aliases_are_not_refetched_after_their_labels_are_mapped(self):
+        existing = {str(year): [{"t": "brisbane"}] for year in range(1991, 2027)}
+        unmapped = {"2000": ["Other unmapped event"], "2008": ["Other unmapped event"]}
+        years = ta_years_to_refresh(
+            1991, 2026, existing, unmapped, self.aliases, self.exact
+        )
+        self.assertEqual([2025, 2026], years)
+
     def test_courtspeed_year_columns_are_parsed(self):
         html = """
         <table>
