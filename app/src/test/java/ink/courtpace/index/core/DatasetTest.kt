@@ -117,6 +117,13 @@ class DatasetTest {
         val nextGen2024 = computed.first { it.t == "nextgen" && it.s == 2024 }
         assertEquals("computed", nextGen2024.src)
         assertEquals(1.39, nextGen2024.publishedSpeed!!, 0.001)
+        assertEquals(2.146, nextGen2024.speed!!, 0.001)
+        assertTrue("Next Gen 2024 CALC above 2.0 must remain visible",
+            nextGen2024.speed!! > 2.0)
+        assertEquals(15, nextGen2024.matches)
+        assertEquals(30, nextGen2024.adjustedServerSides)
+        assertEquals(1.659, nextGen2024.speedCiLow!!, 0.001)
+        assertEquals(2.669, nextGen2024.speedCiHigh!!, 0.001)
 
         // The 2026 Rio and Adelaide CALC values exist in speed_history.json; make sure
         // the public dataset builder actually promotes those calculations over TA-only.
