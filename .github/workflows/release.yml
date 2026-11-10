@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "app/build.gradle.kts"
+      - "gradle.properties"
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: court-pace-release
@@ -81,6 +83,7 @@ jobs:
         id: signing
         shell: bash
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEYSTORE_BASE64: ${{ secrets.COURT_PACE_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.COURT_PACE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.COURT_PACE_KEY_ALIAS }}
@@ -89,50 +92,89 @@ jobs:
           set -euo pipefail
           keyfile="$RUNNER_TEMP/court-pace-release.jks"
           recovery="$RUNNER_TEMP/signing-recovery"
-          mkdir -p "$recovery"
+          download_dir="$RUNNER_TEMP/prior-signing-recovery"
+          mkdir -p "$recovery" "$download_dir"
           umask 077
+          generated=false
 
           if [[ -n "$KEYSTORE_BASE64" && -n "$KEYSTORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
             printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
             keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-            echo "generated=false" >> "$GITHUB_OUTPUT"
-            echo "Existing permanent signing key restored and validated."
+            echo "Existing permanent signing key restored from repository secrets."
           elif [[ -z "$KEYSTORE_BASE64" && -z "$KEYSTORE_PASSWORD" && -z "$KEY_ALIAS" && -z "$KEY_PASSWORD" ]]; then
-            KEYSTORE_PASSWORD="$(openssl rand -hex 32)"
-            KEY_PASSWORD="$(openssl rand -hex 32)"
-            KEY_ALIAS="courtpace"
-            keytool -genkeypair -v \
-              -keystore "$keyfile" \
-              -storetype JKS \
-              -storepass "$KEYSTORE_PASSWORD" \
-              -keypass "$KEY_PASSWORD" \
-              -alias "$KEY_ALIAS" \
-              -keyalg RSA -keysize 3072 -validity 10000 \
-              -dname "CN=Court Pace, OU=Personal, O=KR1901, L=Bilaspur, ST=Chhattisgarh, C=IN"
+            artifact_name="court-pace-release-signing-key-v3.2.0"
+            artifact_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq '.artifacts | map(select(.name == "court-pace-release-signing-key-v3.2.0" and .expired == false)) | sort_by(.created_at) | (last // {}) | .id // empty')"
+            recovery_run_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq '.artifacts | map(select(.name == "court-pace-release-signing-key-v3.2.0" and .expired == false)) | sort_by(.created_at) | (last // {}) | .workflow_run.id // empty')"
 
-            base64 -w 0 "$keyfile" > "$recovery/COURT_PACE_KEYSTORE_BASE64.txt"
+            recovered=false
+            if [[ -n "$artifact_id" && -n "$recovery_run_id" ]] && gh run download "$recovery_run_id" --repo "$GITHUB_REPOSITORY" --name "$artifact_name" --dir "$download_dir"; then
+              prior_keystore="$(find "$download_dir" -type f -name court-pace-signing-key.jks -print -quit)"
+              prior_secrets="$(find "$download_dir" -type f -name GITHUB_ACTIONS_SECRETS.txt -print -quit)"
+              if [[ -s "$prior_keystore" && -s "$prior_secrets" ]]; then
+                cp "$prior_keystore" "$keyfile"
+                while IFS= read -r line; do
+                  name="${line%%=*}"
+                  value="${line#*=}"
+                  case "$name" in
+                    COURT_PACE_KEYSTORE_PASSWORD) KEYSTORE_PASSWORD="$value" ;;
+                    COURT_PACE_KEY_ALIAS) KEY_ALIAS="$value" ;;
+                    COURT_PACE_KEY_PASSWORD) KEY_PASSWORD="$value" ;;
+                  esac
+                done < "$prior_secrets"
+                if [[ -n "$KEYSTORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
+                  keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+                  recovered=true
+                  generated=true
+                  echo "Recovered the previously generated permanent signing key from its private Actions artifact."
+                fi
+              fi
+            fi
+
+            if [[ "$recovered" != "true" ]]; then
+              KEYSTORE_PASSWORD="$(openssl rand -hex 32)"
+              KEY_PASSWORD="$(openssl rand -hex 32)"
+              KEY_ALIAS="courtpace"
+              keytool -genkeypair -v \
+                -keystore "$keyfile" \
+                -storetype JKS \
+                -storepass "$KEYSTORE_PASSWORD" \
+                -keypass "$KEY_PASSWORD" \
+                -alias "$KEY_ALIAS" \
+                -keyalg RSA -keysize 3072 -validity 10000 \
+                -dname "CN=Court Pace, OU=Personal, O=KR1901, L=Bilaspur, ST=Chhattisgarh, C=IN"
+              generated=true
+              echo "Generated a new permanent release signing key."
+            fi
+
+            KEYSTORE_BASE64="$(base64 -w 0 "$keyfile")"
+            printf '%s' "$KEYSTORE_BASE64" > "$recovery/COURT_PACE_KEYSTORE_BASE64.txt"
             cat > "$recovery/GITHUB_ACTIONS_SECRETS.txt" <<EOF
-          COURT_PACE_KEYSTORE_BASE64=$(cat "$recovery/COURT_PACE_KEYSTORE_BASE64.txt")
+          COURT_PACE_KEYSTORE_BASE64=$KEYSTORE_BASE64
           COURT_PACE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
           COURT_PACE_KEY_ALIAS=$KEY_ALIAS
           COURT_PACE_KEY_PASSWORD=$KEY_PASSWORD
           EOF
             cp "$keyfile" "$recovery/court-pace-signing-key.jks"
             chmod 600 "$recovery/"*
-            echo "generated=true" >> "$GITHUB_OUTPUT"
-            echo "New permanent signing key generated. A restricted private-repository recovery artifact will be uploaded."
           else
-            echo "::error::Signing secrets are partially configured. Configure all four COURT_PACE_* secrets or clear all four to let this private workflow generate a new key."
+            echo "::error::Signing secrets are partially configured. Configure all four COURT_PACE_* secrets or clear all four to recover the private artifact/new key."
             exit 1
           fi
+
+          # Mask every credential before GITHUB_ENV exposes it to later steps.
+          [[ -z "$KEYSTORE_BASE64" ]] || echo "::add-mask::$KEYSTORE_BASE64"
+          [[ -z "$KEYSTORE_PASSWORD" ]] || echo "::add-mask::$KEYSTORE_PASSWORD"
+          [[ -z "$KEY_ALIAS" ]] || echo "::add-mask::$KEY_ALIAS"
+          [[ -z "$KEY_PASSWORD" ]] || echo "::add-mask::$KEY_PASSWORD"
 
           {
             echo "COURT_PACE_KEYSTORE=$keyfile"
             echo "COURT_PACE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
             echo "COURT_PACE_KEY_ALIAS=$KEY_ALIAS"
             echo "COURT_PACE_KEY_PASSWORD=$KEY_PASSWORD"
+            echo "KEY_RECOVERY_DIR=$recovery"
           } >> "$GITHUB_ENV"
-          echo "KEY_RECOVERY_DIR=$recovery" >> "$GITHUB_ENV"
+          echo "generated=$generated" >> "$GITHUB_OUTPUT"
 
       - name: Retain new signing key for recovery
         if: steps.signing.outputs.generated == 'true'
@@ -146,10 +188,15 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      - name: Run unit tests and assemble signed production APK
+      - name: Run unit tests
         run: |
           set -euo pipefail
-          ./gradlew :app:testDebugUnitTest :app:assembleRelease --stacktrace
+          ./gradlew :app:testDebugUnitTest --no-daemon --max-workers=1 --stacktrace
+
+      - name: Assemble signed production APK
+        run: |
+          set -euo pipefail
+          ./gradlew :app:assembleRelease --no-daemon --max-workers=1 --stacktrace
 
       - name: Verify production package, version and APK signature
         id: verify
