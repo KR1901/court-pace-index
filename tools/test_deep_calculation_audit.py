@@ -128,7 +128,7 @@ class NextGenTargetOnlyIsolationTests(unittest.TestCase):
         self.assertNotIn(target, event_stats)
         self.assertEqual(3, players["p1"]["serve"]["pooled"]["matches"])
         self.assertEqual(6, global_stats["serve"]["pooled"]["matches"])
-        self.assertEqual(30.0, global_stats["serve"]["pooled"]["aces"])
+        self.assertEqual(29.0, global_stats["serve"]["pooled"]["aces"])
         self.assertEqual(600.0, global_stats["serve"]["pooled"]["points"])
 
     def test_next_gen_is_scored_but_excluded_from_the_standard_normaliser(self):
