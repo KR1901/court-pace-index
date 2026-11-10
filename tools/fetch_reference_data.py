@@ -286,11 +286,32 @@ def write_json(path: Path, payload: dict) -> None:
     temporary.replace(path)
 
 
+def ta_years_to_refresh(
+    start_year: int,
+    end_year: int,
+    existing_seasons: dict[str, list[dict]],
+) -> list[int]:
+    """Backfill missing TA seasons once, while rechecking the latest two each run."""
+    existing = {
+        int(year)
+        for year, rows in existing_seasons.items()
+        if rows
+    }
+    missing = set(range(start_year, end_year + 1)) - existing
+    recent = {
+        year
+        for year in (end_year - 1, end_year)
+        if start_year <= year <= end_year
+    }
+    return sorted(missing | recent)
+
+
 def refresh(start_year: int, end_year: int) -> None:
     aliases, exact = tournament_lookup()
 
-    # Older seasons are stable. Recheck only the previous and current season, retaining the
-    # rest of the last-known snapshot so the source isn't hammered with 36 requests every run.
+    # Populate every missing year in the requested window on the first run. Once a season
+    # has data, keep it as a stable historical snapshot and refresh only the previous/current
+    # season. Missing/empty years remain eligible for retry on the next run.
     seasons: dict[str, list[dict]] = {}
     unmapped: dict[str, list[str]] = {}
     if TA_OUTPUT.exists():
@@ -299,21 +320,26 @@ def refresh(start_year: int, end_year: int) -> None:
             seasons.update(previous.get("seasons", {}))
             unmapped.update(previous.get("unmapped", {}))
         except (OSError, json.JSONDecodeError, TypeError):
-            print("WARNING: existing Tennis Abstract snapshot unreadable; use the bundled fallback.")
-    update_start = max(start_year, end_year - 1)
+            print("WARNING: existing Tennis Abstract snapshot unreadable; backfill requested seasons.")
+    years_to_update = ta_years_to_refresh(start_year, end_year, seasons)
+    print(f"Tennis Abstract seasons to fetch: {years_to_update}")
     ta_updated = False
-    for year in range(update_start, end_year + 1):
+    for year in years_to_update:
         try:
             html = fetch(TA_URL.format(year=year))
             rows, missing = parse_ta_year(html, year, aliases, exact)
-            if len(rows) < 30:
-                raise RuntimeError(f"only {len(rows)} mapped rows parsed from Tennis Abstract {year}")
+            if len(rows) < 10:
+                raise RuntimeError(
+                    f"only {len(rows)} mapped rows parsed from Tennis Abstract {year}; "
+                    "refusing to replace the last-known season with a likely partial parse"
+                )
             seasons[str(year)] = rows
             if missing:
                 unmapped[str(year)] = missing
             else:
                 unmapped.pop(str(year), None)
             ta_updated = True
+            print(f"Tennis Abstract {year}: {len(rows)} mapped events; {len(missing)} unmapped labels.")
         except Exception as error:
             print(f"WARNING: Tennis Abstract {year} refresh skipped: {error}")
         time.sleep(2)

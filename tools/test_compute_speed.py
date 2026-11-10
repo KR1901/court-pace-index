@@ -575,6 +575,38 @@ class CurrentSeasonSourceTests(unittest.TestCase):
         self.assertEqual("shanghai", compute_speed.NAMES["Shanghai"])
         self.assertEqual("shertogenbosch", compute_speed.NAMES["'s-Hertogenbosch"])
         self.assertEqual("lavercup", compute_speed.NAMES["Laver Cup"])
+        self.assertEqual("marseille", compute_speed.NAMES["Marseille"])
+        self.assertEqual("marseille", compute_speed.NAMES["Open 13 Provence"])
+        self.assertEqual("stockholm", compute_speed.NAMES["Stockholm"])
+        self.assertEqual("stockholm", compute_speed.NAMES["Stockholm Open"])
+        self.assertEqual("nextgen", compute_speed.NAMES["Next Gen Finals"])
+        self.assertEqual("nextgen", compute_speed.NAMES["Next Gen ATP Finals"])
+        self.assertEqual("nextgen", compute_speed.NAMES["Next Generation ATP Finals"])
+
+    def test_2025_archive_levels_and_serve_stats_are_accepted_for_missing_events(self):
+        rows = []
+        for event, level in (
+            ("Marseille", "A"),
+            ("Stockholm", "A"),
+            ("Next Gen Finals", "F"),
+        ):
+            rows.append({
+                "tourney_name": event,
+                "tourney_level": level,
+                "surface": "Hard",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "w_svpt": "100",
+                "l_svpt": "100",
+                "w_ace": "8",
+                "l_ace": "7",
+            })
+        valid = compute_speed.valid_rows(rows)
+        self.assertEqual(3, len(valid))
+        self.assertEqual(
+            {"marseille", "stockholm", "nextgen"},
+            {compute_speed.NAMES[row["tourney_name"]] for row in valid},
+        )
 
 
 class SurfaceMatchedReturnerProfileTests(unittest.TestCase):

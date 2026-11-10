@@ -1,6 +1,11 @@
 import unittest
 
-from fetch_reference_data import parse_cpi_page, parse_ta_year, tournament_lookup
+from fetch_reference_data import (
+    parse_cpi_page,
+    parse_ta_year,
+    ta_years_to_refresh,
+    tournament_lookup,
+)
 
 
 class ReferenceRefreshTests(unittest.TestCase):
@@ -37,6 +42,45 @@ class ReferenceRefreshTests(unittest.TestCase):
         new, _ = parse_ta_year(html_2026, 2026, self.aliases, self.exact)
         self.assertEqual((2025, 0.55), (old[0]["s"], old[0]["speed"]))
         self.assertEqual((2026, 0.44), (new[0]["s"], new[0]["speed"]))
+
+    def test_missing_historical_ta_years_are_backfilled_once(self):
+        existing = {"2025": [{"t": "brisbane"}], "2026": [{"t": "brisbane"}]}
+        years = ta_years_to_refresh(2012, 2026, existing)
+        self.assertEqual(list(range(2012, 2027)), years)
+
+    def test_fully_backfilled_ta_snapshot_only_refreshes_recent_two_years(self):
+        existing = {str(year): [{"t": "brisbane"}] for year in range(1991, 2027)}
+        self.assertEqual([2025, 2026], ta_years_to_refresh(1991, 2026, existing))
+
+    def test_empty_historical_year_is_retried(self):
+        existing = {
+            "2012": [],
+            "2025": [{"t": "brisbane"}],
+            "2026": [{"t": "brisbane"}],
+        }
+        self.assertEqual([2012, 2025, 2026], ta_years_to_refresh(2012, 2026, existing))
+
+    def test_request_start_year_limits_the_backfill_window(self):
+        existing = {"2025": [{"t": "brisbane"}], "2026": [{"t": "brisbane"}]}
+        self.assertEqual(
+            list(range(2020, 2027)),
+            ta_years_to_refresh(2020, 2026, existing),
+        )
+
+    def test_historical_ta_event_aliases_are_resolved(self):
+        html = """
+        <table><tr><th>Date</th><th>Tournament</th><th>Surface</th><th>Ace%</th><th>Speed</th></tr>
+        <tr><td>10-Feb-2025</td><td>Marseille</td><td>Hard</td><td>12.3%</td><td>1.05</td></tr>
+        <tr><td>13-Oct-2025</td><td>Stockholm</td><td>Hard</td><td>9.1%</td><td>0.90</td></tr>
+        <tr><td>17-Dec-2025</td><td>Next Gen Finals</td><td>Hard</td><td>10.2%</td><td>0.81</td></tr>
+        </table>
+        """
+        rows, unmapped = parse_ta_year(html, 2025, self.aliases, self.exact)
+        self.assertEqual(
+            {"marseille", "stockholm", "nextgen"},
+            {row["t"] for row in rows},
+        )
+        self.assertEqual([], unmapped)
 
     def test_courtspeed_year_columns_are_parsed(self):
         html = """
