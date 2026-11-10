@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 concurrency:
   group: court-pace-release
@@ -23,18 +22,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Verify repository privacy before handling signing material
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          private="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.private')"
-          if [[ "$private" != "true" ]]; then
-            echo "::error::Release blocked: make this personal-use repository private before a new signing key is generated or stored as an Actions artifact."
-            exit 1
-          fi
-          echo "Repository is private; signing material can be handled safely."
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -78,8 +65,7 @@ jobs:
             exit 1
           fi
 
-      - name: Restore an existing signing key or create the new permanent key
-        id: signing
+      - name: Restore the permanent release signing key
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.COURT_PACE_KEYSTORE_BASE64 }}
@@ -88,41 +74,16 @@ jobs:
           KEY_PASSWORD: ${{ secrets.COURT_PACE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          keyfile="$RUNNER_TEMP/court-pace-release.jks"
-          recovery="$RUNNER_TEMP/signing-recovery"
-          mkdir -p "$recovery"
-
-          if [[ -n "$KEYSTORE_BASE64" && -n "$KEYSTORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
-            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
-            keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-            echo "generated=false" >> "$GITHUB_OUTPUT"
-            echo "Existing release signing key restored."
-          elif [[ -z "$KEYSTORE_BASE64" && -z "$KEYSTORE_PASSWORD" && -z "$KEY_ALIAS" && -z "$KEY_PASSWORD" ]]; then
-            KEYSTORE_PASSWORD="$(openssl rand -hex 32)"
-            KEY_PASSWORD="$(openssl rand -hex 32)"
-            KEY_ALIAS="courtpace"
-            keytool -genkeypair -v \
-              -keystore "$keyfile" \
-              -storetype JKS \
-              -storepass "$KEYSTORE_PASSWORD" \
-              -keypass "$KEY_PASSWORD" \
-              -alias "$KEY_ALIAS" \
-              -keyalg RSA -keysize 3072 -validity 10000 \
-              -dname "CN=Court Pace, OU=Personal, O=KR1901, L=Bilaspur, ST=Chhattisgarh, C=IN"
-            base64 -w 0 "$keyfile" > "$recovery/COURT_PACE_KEYSTORE_BASE64.txt"
-            cat > "$recovery/COURT_PACE_SIGNING_SECRETS.txt" <<EOF
-          COURT_PACE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
-          COURT_PACE_KEY_ALIAS=$KEY_ALIAS
-          COURT_PACE_KEY_PASSWORD=$KEY_PASSWORD
-          EOF
-            cp "$keyfile" "$recovery/court-pace-signing-key.jks"
-            chmod 600 "$recovery/"*
-            echo "generated=true" >> "$GITHUB_OUTPUT"
-            echo "A new permanent release signing key was generated. Save the private recovery artifact and configure repository secrets before the next release."
-          else
-            echo "::error::Signing secrets are only partially configured. Set all four COURT_PACE signing secrets or clear all four to generate a new key."
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" || -z "$KEY_ALIAS" || -z "$KEY_PASSWORD" ]]; then
+            echo "::error::Configure all four repository Actions secrets: COURT_PACE_KEYSTORE_BASE64, COURT_PACE_KEYSTORE_PASSWORD, COURT_PACE_KEY_ALIAS, COURT_PACE_KEY_PASSWORD."
             exit 1
           fi
+
+          keyfile="$RUNNER_TEMP/court-pace-release.jks"
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
+          test -s "$keyfile"
+          keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
 
           {
             echo "COURT_PACE_KEYSTORE=$keyfile"
@@ -130,7 +91,7 @@ jobs:
             echo "COURT_PACE_KEY_ALIAS=$KEY_ALIAS"
             echo "COURT_PACE_KEY_PASSWORD=$KEY_PASSWORD"
           } >> "$GITHUB_ENV"
-          echo "KEY_RECOVERY_DIR=$recovery" >> "$GITHUB_ENV"
+          echo "Permanent release key restored and validated."
 
       - name: Run unit tests and assemble signed production APK
         run: |
@@ -159,24 +120,11 @@ jobs:
           echo "apk=$RUNNER_TEMP/release/court-pace-$VERSION.apk" >> "$GITHUB_OUTPUT"
           echo "sha256=$(cut -d' ' -f1 "$RUNNER_TEMP/release/SHA256SUMS.txt")" >> "$GITHUB_OUTPUT"
 
-      - name: Retain the new signing key for recovery
-        if: steps.signing.outputs.generated == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: court-pace-release-signing-key-v${{ steps.meta.outputs.version }}
-          path: |
-            ${{ env.KEY_RECOVERY_DIR }}/court-pace-signing-key.jks
-            ${{ env.KEY_RECOVERY_DIR }}/COURT_PACE_KEYSTORE_BASE64.txt
-            ${{ env.KEY_RECOVERY_DIR }}/COURT_PACE_SIGNING_SECRETS.txt
-          if-no-files-found: error
-          retention-days: 90
-
       - name: Prepare release notes
         env:
           VERSION: ${{ steps.meta.outputs.version }}
           VERSION_CODE: ${{ steps.meta.outputs.version_code }}
           SHA256: ${{ steps.verify.outputs.sha256 }}
-          NEW_KEY: ${{ steps.signing.outputs.generated }}
         run: |
           cat > "$RUNNER_TEMP/RELEASE_NOTES.md" <<EOF
           ## Court Pace $VERSION
@@ -197,14 +145,14 @@ jobs:
           - SHA-256: `$SHA256`
 
           EOF
-          if [[ "$NEW_KEY" == "true" ]]; then
+          if [[ "$VERSION" == "3.2.0" ]]; then
             cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
-          ### Signing-key transition
-          The previous signing key was unavailable. This APK uses a newly generated permanent signing key. **Uninstall Court Pace 3.1.0 before installing this release**; Android will not accept an APK signed with a different certificate as an in-place update. A restricted 90-day Actions recovery artifact named `court-pace-release-signing-key-v$VERSION` contains the new key and its credentials. Download it and configure the four `COURT_PACE_*` repository secrets for future in-place upgrades. Store a separate offline backup.
+          ### One-time signing-key transition
+          The previous v3.1.0 signing key was unavailable and has been replaced. **Uninstall Court Pace 3.1.0 before installing this release**; Android will not accept an APK signed with a different certificate as an in-place update. Future releases use the retained replacement key and can update in place. Back up the signing keystore securely.
           EOF
           else
             cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
-          This APK uses the previously configured release signing key and should preserve Android update compatibility.
+          This APK was signed with the retained Court Pace release key and supports in-place updates from previous releases signed with that same key.
           EOF
           fi
 
