@@ -214,7 +214,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     season = vm.season,
                                     selected = vm.compareIds,
                                     onToggle = { vm.toggleCompare(it) },
-                                    onOpen = { push(Route.Detail(it.id)) },
+                                    onOpen = { push(Route.Detail(it.id, vm.season)) },
                                 )
 
                                 2 -> SurfacesScreen(
