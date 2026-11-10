@@ -1,6 +1,6 @@
 # Calculation and formulation audit
 
-**Current code-audit head:** `461272379dc3e69a4b444111b022bf0721f340ef`  
+**Current code/data audit head:** `4b77c381bde3f26f65c6bbcbc490178fe2097019` (10 November 2026 refresh; see `docs/PR2.md` verification)  
 **PR:** [#2 — Evaluate expected-aces formulas against 2025–26 reference data](https://github.com/KR1901/court-pace-index/pull/2)  
 **Status:** PR #2 is open and unmerged. This document is maintained on PR #2's branch.
 
