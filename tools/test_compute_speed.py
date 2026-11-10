@@ -826,6 +826,59 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             self.assertEqual(10, len(training_rows))
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
+    def test_next_gen_is_excluded_as_a_target_and_from_standard_event_training(self):
+        rows = []
+        for event, level in (
+            ("Paris Masters", "M"),
+            ("Rome Masters", "M"),
+            ("Next Gen Finals", "F"),
+        ):
+            for _ in range(10):
+                rows.append({
+                    "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "winner_id": "p1", "loser_id": "p2",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+                })
+
+        real_player_rates = compute_speed.player_rates
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+             patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+            ratings = compute_speed.season_ratings(2024, rows)
+
+        self.assertEqual({"paris", "rome"}, set(ratings))
+        self.assertEqual(2, profiles.call_count)
+        for call in profiles.call_args_list:
+            training_rows = call.args[0]
+            event_names = {row["tourney_name"] for row in training_rows}
+            self.assertNotIn("Next Gen Finals", event_names)
+            self.assertEqual(1, len(event_names))
+
+
+    def test_next_gen_is_excluded_from_historical_player_profile_training(self):
+        rows = [
+            {
+                "tourney_name": event,
+                "tourney_level": level,
+                "surface": "Hard",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "w_svpt": 100,
+                "l_svpt": 100,
+                "w_ace": 8,
+                "l_ace": 8,
+            }
+            for event, level in (("Next Gen Finals", "F"), ("Paris Masters", "M"))
+        ]
+        compute_speed._PROFILE_YEAR_CACHE.pop(2024, None)
+        with patch.object(compute_speed, "load", return_value=rows), \
+             patch.object(compute_speed, "player_rates", wraps=compute_speed.player_rates) as profiles:
+            compute_speed._profile_year_rates(2024)
+        self.assertEqual(1, profiles.call_count)
+        trained_rows = profiles.call_args.args[0]
+        self.assertEqual(["Paris Masters"], [row["tourney_name"] for row in trained_rows])
+        compute_speed._PROFILE_YEAR_CACHE.pop(2024, None)
+
 
 class SameSeasonIdentityCollisionTests(unittest.TestCase):
     def test_same_name_same_season_ids_are_excluded_even_when_rates_match(self):
