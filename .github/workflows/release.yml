@@ -71,17 +71,20 @@ jobs:
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.COURT_PACE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.COURT_PACE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.COURT_PACE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.COURT_PACE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          if [[ -z "$KEYSTORE_BASE64" ]]; then
-            echo "::error::Missing repository secret COURT_PACE_KEYSTORE_BASE64. Add the existing v3.1.0 signing keystore as base64; do not generate a replacement key."
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" || -z "$KEY_ALIAS" || -z "$KEY_PASSWORD" ]]; then
+            echo "::error::Missing one or more signing secrets. Configure COURT_PACE_KEYSTORE_BASE64, COURT_PACE_KEYSTORE_PASSWORD, COURT_PACE_KEY_ALIAS and COURT_PACE_KEY_PASSWORD."
             exit 1
           fi
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/court-pace-release.jks"
           test -s "$RUNNER_TEMP/court-pace-release.jks"
           keytool -list -keystore "$RUNNER_TEMP/court-pace-release.jks" \
-            -storepass "${{ secrets.COURT_PACE_KEYSTORE_PASSWORD }}" \
-            -alias "${{ secrets.COURT_PACE_KEY_ALIAS }}" >/dev/null
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS" >/dev/null
           echo "Release keystore restored and alias verified."
 
       - name: Run unit tests and assemble signed production APK
@@ -125,7 +128,7 @@ jobs:
           cat > "$RUNNER_TEMP/RELEASE_NOTES.md" <<EOF
           ## Court Pace $VERSION
 
-          Production release from the merged `main` branch.
+          Production release from the merged main branch.
 
           ### Included
           - More reliable live ATP 1000/500/250 match discovery and coverage diagnostics.
