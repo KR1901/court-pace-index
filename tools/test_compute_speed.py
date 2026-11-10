@@ -554,6 +554,45 @@ class PlayerRateEligibilityTests(unittest.TestCase):
 
 
 
+class SpecialFormatEventEligibilityTests(unittest.TestCase):
+    def test_next_gen_format_is_excluded_from_calc_population(self):
+        rows = [
+            {
+                "tourney_name": event,
+                "tourney_level": "F",
+                "surface": "Hard",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "w_svpt": "60",
+                "l_svpt": "65",
+                "w_ace": "8",
+                "l_ace": "7",
+            }
+            for event in (
+                "Next Gen Finals",
+                "Next Gen ATP Finals",
+                "Next Generation ATP Finals",
+            )
+        ]
+        self.assertEqual(3, len(compute_speed.valid_rows(rows)))
+        self.assertEqual([], compute_speed.calculation_eligible_rows(compute_speed.valid_rows(rows)))
+
+    def test_standard_atp_events_remain_in_calc_population(self):
+        rows = [{
+            "tourney_name": "Marseille",
+            "tourney_level": "A",
+            "surface": "Hard",
+            "winner_id": "p1",
+            "loser_id": "p2",
+            "w_svpt": "60",
+            "l_svpt": "65",
+            "w_ace": "8",
+            "l_ace": "7",
+        }]
+        eligible = compute_speed.calculation_eligible_rows(compute_speed.valid_rows(rows))
+        self.assertEqual(["Marseille"], [row["tourney_name"] for row in eligible])
+
+
 class CurrentSeasonSourceTests(unittest.TestCase):
     def test_tml_atp_250_and_500_levels_are_eligible(self):
         row = {
