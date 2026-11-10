@@ -1,0 +1,58 @@
+name: Next Gen sensitivity study
+
+on:
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/nextgen-sensitivity-study.yml"
+      - "tools/nextgen_sensitivity_study.py"
+      - "tools/test_nextgen_sensitivity_study.py"
+      - "tools/compute_speed.py"
+      - "tools/deep_calculation_audit.py"
+      - "tools/test_deep_calculation_audit.py"
+      - "data/speed_history.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sensitivity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out PR code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore ATP history cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/atp
+          key: nextgen-sensitivity-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py', 'tools/nextgen_sensitivity_study.py') }}
+          restore-keys: |
+            nextgen-sensitivity-${{ runner.os }}-
+            deep-calculation-audit-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
+      - name: Run Python unit tests
+        run: python3 -m unittest discover -s tools -p "test_*.py" -v
+      - name: Run 2024–2025 Next Gen sensitivity grid
+        run: |
+          set -euo pipefail
+          python3 tools/nextgen_sensitivity_study.py \
+            --seasons 2024 2025 \
+            --boot 10000 \
+            --output-dir nextgen-sensitivity-output | tee nextgen-sensitivity-study.txt
+          cat nextgen-sensitivity-study.txt >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload aggregate-only study outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: court-pace-nextgen-sensitivity-study
+          path: |
+            nextgen-sensitivity-output/
+            nextgen-sensitivity-study.txt
+          if-no-files-found: error
+          retention-days: 30
