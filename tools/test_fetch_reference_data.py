@@ -54,9 +54,12 @@ class ReferenceRefreshTests(unittest.TestCase):
 
     def test_empty_historical_year_is_retried(self):
         existing = {
+            **{
+                str(year): [{"t": "brisbane"}]
+                for year in range(2012, 2027)
+                if year != 2012
+            },
             "2012": [],
-            "2025": [{"t": "brisbane"}],
-            "2026": [{"t": "brisbane"}],
         }
         self.assertEqual([2012, 2025, 2026], ta_years_to_refresh(2012, 2026, existing))
 
