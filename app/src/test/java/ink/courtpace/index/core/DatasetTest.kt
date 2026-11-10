@@ -83,7 +83,7 @@ class DatasetTest {
         val speed = data.dataset.readings.count { it.speed != null }
         assertTrue("CPI coverage dropped below its 106-reading baseline: $cpi", cpi >= 106)
         assertTrue("Speed coverage dropped below its 716-reading baseline: $speed", speed >= 716)
-        assertEquals(2012, data.seasons.first())
+        assertEquals(1991, data.seasons.first())
         assertEquals(2026, data.seasons.last())
     }
 
@@ -95,7 +95,11 @@ class DatasetTest {
         val computed = data.dataset.readings.filter { it.speed != null && it.src == "computed" }
         assertTrue("published coverage unexpectedly shrank: ${published.size}", published.size >= 62)
         assertTrue("calculated coverage unexpectedly shrank: ${computed.size}", computed.size >= 685)
-        assertEquals(setOf(2025, 2026), published.map { it.s }.toSet())
+        val publishedYears = published.map { it.s }.toSet()
+        assertEquals((1991..2026).toSet(), publishedYears)
+        val calc2025Ids = computed.filter { it.s == 2025 }.map { it.t }.toSet()
+        assertTrue("2025 CALC is missing one or more restored events: $calc2025Ids",
+            calc2025Ids.containsAll(setOf("marseille", "stockholm", "nextgen")))
         assertTrue(computed.all { it.s in 2012..2026 })
         val comparisons = computed.filter { it.publishedSpeed != null }
         assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
