@@ -291,16 +291,18 @@ jobs:
                   "",
               ]
 
+          notes = "\\n".join(lines) + "\\n"
+          required = [
+              f"- Package: `{package}`",
+              f"- APK: `{asset}`",
+              f"- SHA-256: `{sha256}`",
+          ]
+          if any(item not in notes for item in required):
+              raise SystemExit("Release notes are missing package, APK, or checksum metadata.")
           Path(os.environ["RUNNER_TEMP"], "RELEASE_NOTES.md").write_text(
-              "\\n".join(lines), encoding="utf-8"
+              notes, encoding="utf-8"
           )
           PY
-
-          # Reject empty or unexpanded build metadata before publishing.
-          grep -F -- "- Package: `ink.courtpace.index`" "$RUNNER_TEMP/RELEASE_NOTES.md"
-          grep -F -- "- APK: `court-pace-$VERSION.apk`" "$RUNNER_TEMP/RELEASE_NOTES.md"
-          grep -F -- "- SHA-256: `$SHA256`" "$RUNNER_TEMP/RELEASE_NOTES.md"
-          ! grep -Eq '\\$\\{?(VERSION|VERSION_CODE|SHA256)' "$RUNNER_TEMP/RELEASE_NOTES.md"
 
       - name: Publish stable GitHub release and APK
         uses: softprops/action-gh-release@v2
