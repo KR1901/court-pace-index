@@ -108,6 +108,59 @@ class PhysicalCpiDiagnosticsTests(unittest.TestCase):
         self.assertIn("tournament ID", bootstrap["resampling_unit"])
 
 
+class NextGenTargetOnlyIsolationTests(unittest.TestCase):
+    def test_next_gen_rows_remain_targets_but_never_train_standard_profiles(self):
+        rows = [
+            match("Training Event", 5, 4, surface="Hard"),
+            match("Training Event", 6, 5, surface="Hard"),
+            match("Training Event", 4, 5, surface="Hard"),
+            match("Next Gen Finals", 20, 15, surface="Hard"),
+        ]
+        (
+            usable, event_rows, _surfaces, players, event_players,
+            global_stats, event_stats,
+        ) = audit.aggregate_season(rows)
+
+        target = audit.event_id("Next Gen Finals")
+        self.assertEqual(4, len(usable))
+        self.assertEqual(1, len(event_rows[target]))
+        self.assertNotIn(target, event_players)
+        self.assertNotIn(target, event_stats)
+        self.assertEqual(3, players["p1"]["serve"]["pooled"]["matches"])
+        self.assertEqual(6, global_stats["serve"]["pooled"]["matches"])
+        self.assertEqual(30.0, global_stats["serve"]["pooled"]["aces"])
+        self.assertEqual(600.0, global_stats["serve"]["pooled"]["points"])
+
+    def test_next_gen_is_scored_but_excluded_from_the_standard_normaliser(self):
+        rows = (
+            [match("Training Event A", 5, 4, surface="Hard") for _ in range(10)]
+            + [match("Training Event B", 10, 6, surface="Hard") for _ in range(10)]
+            + [match("Next Gen Finals", 20, 15, surface="Hard") for _ in range(10)]
+        )
+        config = {
+            "clay_weight": 1 / 3,
+            "prior_points": 150.0,
+            "min_matches": 3,
+            "pooled_return_fallback": True,
+            "pooled_return_min_matches": 1,
+        }
+        raw, normalisers, details, *_ = audit.score_season(
+            rows, {"standard": config}, {"nextgen"}
+        )
+
+        self.assertIn("nextgen", raw["standard"])
+        self.assertIn("nextgen", details["standard"])
+        standard_raw = [
+            value for event_id, value in raw["standard"].items()
+            if event_id != "nextgen"
+        ]
+        self.assertEqual(2, len(standard_raw))
+        self.assertAlmostEqual(
+            sum(standard_raw) / len(standard_raw),
+            normalisers["standard"],
+        )
+
+
 class SufficientStatisticsTests(unittest.TestCase):
     def test_subtract_stats_removes_the_entire_event_sample(self):
         total = {"aces": 18.0, "points": 300.0, "matches": 3}
