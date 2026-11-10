@@ -11,6 +11,7 @@ object DatasetPolicy {
 
     const val MIN_TOURNAMENTS = 20
     const val MIN_READINGS = 50
+    const val MIN_SPEED_BASELINE_PROFILES = 20
 
     fun isAcceptable(dataset: PaceDataset): Boolean {
         if (dataset.tournaments.size < MIN_TOURNAMENTS) return false
@@ -19,6 +20,43 @@ object DatasetPolicy {
         val ids = dataset.tournaments.map { it.id }.toSet()
         if (ids.size != dataset.tournaments.size) return false
         if (dataset.readings.any { it.t !in ids }) return false
+        dataset.speedBaseline?.let { baseline ->
+            if (baseline.season != dataset.meta.season ||
+                baseline.profileSeason !in (baseline.season - 1)..baseline.season ||
+                baseline.generated.isBlank() ||
+                baseline.profiles.size < MIN_SPEED_BASELINE_PROFILES
+            ) return false
+            if (!baseline.normalisation.isFinite() || baseline.normalisation <= 0.0) return false
+            // AceRating indexes profiles by normalized display name. Reject duplicate keys
+            // rather than allowing archive ID collisions to overwrite one player's tendencies.
+            val normalizedProfileNames = baseline.profiles.map { profile ->
+                java.text.Normalizer.normalize(profile.name, java.text.Normalizer.Form.NFD)
+                    .lowercase(java.util.Locale.ROOT)
+                    .filter { it.isLetterOrDigit() }
+            }
+            if (normalizedProfileNames.distinct().size != normalizedProfileNames.size) return false
+            if (baseline.profiles.any { profile ->
+                    profile.name.isBlank() ||
+                        (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
+                        (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0)) ||
+                        (profile.serveRateSeason != null && profile.serveRateSeason !in 2012..baseline.season) ||
+                        (profile.concedeRateSeason != null && profile.concedeRateSeason !in 2012..baseline.season) ||
+                        (profile.serveRateSampleMatches != null && profile.serveRateSampleMatches < 1) ||
+                        (profile.serveRateSampleServicePoints != null && profile.serveRateSampleServicePoints < 1) ||
+                        (profile.serveRatePriorServicePoints != null &&
+                            (!profile.serveRatePriorServicePoints.isFinite() || profile.serveRatePriorServicePoints <= 0.0)) ||
+                        (profile.serveRateSource != null && profile.serveRateSource !in setOf(
+                            "current-season-qualified",
+                            "prior-season-qualified",
+                            "current-season-shrunk",
+                            "prior-season-shrunk",
+                        ))
+                }) return false
+            val usableProfiles = baseline.profiles.count { profile ->
+                profile.serveRate != null || profile.concedeRate != null
+            }
+            if (usableProfiles < MIN_SPEED_BASELINE_PROFILES) return false
+        }
         return dataset.readings.all { reading ->
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
                 (reading.speed == null || reading.speed in 0.30..2.0) &&
@@ -48,6 +86,12 @@ object DatasetPolicy {
             else bundled.live.firstOrNull { it.t == event.t && it.s == event.s && it.atpId != null }
                 ?: event
         }
-        return chosen.copy(live = enriched)
+        val speedBaseline = chosen.speedBaseline
+            ?.takeIf { it.season == chosen.meta.season }
+            ?: bundled.speedBaseline?.takeIf { it.season == chosen.meta.season }
+        // Live readings are recomputed on-device from the current ATP match feed. Never
+        // trust a static-feed live number here: older builds wrote the pooled-rate method.
+        val safeReadings = chosen.readings.filterNot { it.src == "live" && it.speed != null }
+        return chosen.copy(live = enriched, readings = safeReadings, speedBaseline = speedBaseline)
     }
 }

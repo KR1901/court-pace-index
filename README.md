@@ -36,6 +36,8 @@ and returners who were actually on court, and compare with what those same playe
 produced on a tour-average surface. 1.00 is average; the usual range across ATP events is
 0.50–1.50. Because it is behavioural it absorbs heat, humidity, wind, altitude and the balls.
 
+The live card applies the same match-level server/returner adjustment and season-wide normalisation as the historical series. It combines current completed-match stats from ATP/Infosys with the season player profiles and normaliser generated from the ATP match archive. If the matching season baseline is unavailable, it withholds the rating rather than falling back to a different pooled-rate formula.
+
 The 2025–26 readings are the published Tennis Abstract figures. Earlier seasons are recomputed
 by this project from the public ATP match archive using the same method; the recomputation
 reproduces the published 2026 values with r = 0.93 and a mean absolute difference of 0.10. The
@@ -52,6 +54,7 @@ app labels and dims the computed seasons wherever it shows them.
 - **Surfaces** — field averages per surface, the season-by-season trend, and the fastest and
   slowest event on each surface.
 - **Method** — the formulas, the banding, the provenance of every series and the known gaps.
+- **Live now** — discovers active ATP 1000, 500 and 250 events from the ATP current-scores page on the device, then rates their completed singles matches. It rechecks the live slate every five minutes while the app is open.
 
 ## Data
 
@@ -64,6 +67,17 @@ app labels and dims the computed seasons wherever it shows them.
 3. **ATP match archive compiled by Jeff Sackmann** (CC BY-NC-SA 4.0) — every tour-level match
    with serve stats, used by `tools/compute_speed.py` to recompute the speed series back to
    2012. This is the only derived series in the app.
+
+### Live Surface Speed coverage
+
+The live ATP result row shows two separate coverage fractions:
+
+- `matches / discoveredMatches`: completed eligible singles matches with usable Infosys statistics, divided by completed eligible singles matches discovered from ATP.
+- `adjustedServerSides / totalServerSides`: server-side observations that entered the opponent-adjusted mean, divided by `2 × discoveredMatches`. The denominator grows as more completed matches are discovered; it is not a fixed tournament constant.
+
+Each completed match contributes two possible server-side observations. A side is included when the server has a usable serve-rate profile, the returner has a usable ace-concession profile, the service statistics are valid, and expected aces are positive. Expected-ace values below 0.5 are floored to 0.5 when calculating the actual/expected ratio; they are **not** discarded from coverage. Therefore, when all 49 completed matches have usable Stats Plus statistics and both players have valid profiles, the expected coverage is 98/98. Lower coverage must be accounted for by missing match-stat payloads and/or visible per-side exclusion diagnostics; it must not result from a 0.5-ace cutoff.
+
+The live baseline includes current-season qualified profiles, the most recent qualified profile from the preceding three seasons, and explicitly marked low-sample player-specific rates shrunk toward that season's surface average using a 300-service-point prior. Each profile records its source season and sample size. Historical ranked calculations and the season normaliser are unchanged.
 
 ### Refreshing
 
@@ -86,7 +100,8 @@ measurements, not new measurements. See [docs/DATA.md](docs/DATA.md).
 ./gradlew :app:testDebugUnitTest      # 22 tests: analytics and dataset integrity
 ./gradlew :app:assembleDebug
 ./gradlew :app:assembleRelease        # signed when the env vars below are present
-python3 tools/build_dataset.py        # regenerate the dataset from its source tables
+python3 tools/compute_speed.py --write # regenerate history + live player baseline
+python3 tools/build_dataset.py        # bundle the source tables and live baseline
 ```
 
 Release signing reads four environment variables and falls back to debug signing without them:

@@ -1,2037 +1,3112 @@
 {
  "generated": "2026-11-04",
- "method": "ace rate adjusted for the servers and returners in each match, normalised so a tour-average event of the season reads 1.00",
+ "method": "ace rate adjusted for the servers and returners in each match; positive expected-ace values are floored at 0.5 to retain valid low-ace sides, normalised so a tour-average event of the season reads 1.00",
  "source": "ATP match archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0)",
  "seasons": {
   "2012": {
+   "brisbane": {
+    "speed": 1.294,
+    "ace": 8.622,
+    "matches": 30
+   },
+   "doha": {
+    "speed": 0.89,
+    "ace": 6.069,
+    "matches": 29
+   },
+   "auckland": {
+    "speed": 0.899,
+    "ace": 6.379,
+    "matches": 27
+   },
    "ausopen": {
-    "speed": 0.961,
+    "speed": 1.116,
     "ace": 7.019,
     "matches": 126
    },
+   "montpellier": {
+    "speed": 1.488,
+    "ace": 9.997,
+    "matches": 27
+   },
+   "santiago": {
+    "speed": 0.436,
+    "ace": 2.95,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 0.961,
+    "ace": 6.97,
+    "matches": 30
+   },
+   "buenosaires": {
+    "speed": 0.694,
+    "ace": 4.449,
+    "matches": 31
+   },
+   "acapulco": {
+    "speed": 0.732,
+    "ace": 4.647,
+    "matches": 31
+   },
    "delraybeach": {
-    "speed": 0.853,
+    "speed": 0.984,
     "ace": 7.771,
     "matches": 31
    },
+   "dubai": {
+    "speed": 1.247,
+    "ace": 8.9,
+    "matches": 31
+   },
    "indianwells": {
-    "speed": 0.912,
+    "speed": 0.88,
     "ace": 6.14,
     "matches": 93
    },
    "miami": {
-    "speed": 0.974,
+    "speed": 0.912,
     "ace": 6.904,
     "matches": 93
    },
+   "houston": {
+    "speed": 0.721,
+    "ace": 6.415,
+    "matches": 27
+   },
    "montecarlo": {
-    "speed": 0.818,
+    "speed": 0.647,
     "ace": 4.444,
     "matches": 55
    },
    "barcelona": {
-    "speed": 0.811,
+    "speed": 0.724,
     "ace": 5.313,
     "matches": 55
    },
+   "bucharest": {
+    "speed": 0.674,
+    "ace": 4.159,
+    "matches": 27
+   },
+   "estoril": {
+    "speed": 0.593,
+    "ace": 3.702,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 1.009,
+    "ace": 7.107,
+    "matches": 27
+   },
    "madrid": {
-    "speed": 1.107,
+    "speed": 1.172,
     "ace": 8.046,
     "matches": 55
    },
    "rome": {
-    "speed": 0.595,
+    "speed": 0.582,
     "ace": 4.279,
     "matches": 55
    },
    "rolandgarros": {
-    "speed": 0.855,
+    "speed": 1.022,
     "ace": 5.933,
     "matches": 127
    },
+   "halle": {
+    "speed": 1.233,
+    "ace": 9.055,
+    "matches": 27
+   },
    "queens": {
-    "speed": 1.056,
+    "speed": 1.272,
     "ace": 9.656,
     "matches": 55
    },
+   "shertogenbosch": {
+    "speed": 0.882,
+    "ace": 7.772,
+    "matches": 30
+   },
+   "eastbourne": {
+    "speed": 0.996,
+    "ace": 6.318,
+    "matches": 27
+   },
    "wimbledon": {
-    "speed": 1.293,
+    "speed": 1.568,
     "ace": 9.495,
     "matches": 127
    },
+   "bastad": {
+    "speed": 0.751,
+    "ace": 4.405,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 0.858,
+    "ace": 5.672,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.668,
+    "ace": 4.036,
+    "matches": 27
+   },
    "gstaad": {
-    "speed": 1.001,
+    "speed": 1.033,
     "ace": 6.912,
     "matches": 27
    },
+   "hamburg": {
+    "speed": 0.653,
+    "ace": 3.986,
+    "matches": 31
+   },
+   "kitzbuhel": {
+    "speed": 0.725,
+    "ace": 5.391,
+    "matches": 27
+   },
    "washington": {
-    "speed": 1.074,
+    "speed": 1.403,
     "ace": 10.426,
     "matches": 31
    },
    "canada": {
-    "speed": 1.042,
+    "speed": 1.106,
     "ace": 7.704,
     "matches": 46
    },
    "cincinnati": {
-    "speed": 0.998,
+    "speed": 1.111,
     "ace": 8.524,
     "matches": 55
    },
    "winstonsalem": {
-    "speed": 1.074,
+    "speed": 1.161,
     "ace": 9.253,
     "matches": 47
    },
    "usopen": {
-    "speed": 1.076,
+    "speed": 1.338,
     "ace": 8.354,
     "matches": 126
    },
    "metz": {
-    "speed": 1.024,
+    "speed": 1.165,
     "ace": 9.741,
     "matches": 27
    },
+   "beijing": {
+    "speed": 1.106,
+    "ace": 8.417,
+    "matches": 30
+   },
+   "tokyo": {
+    "speed": 1.151,
+    "ace": 8.583,
+    "matches": 31
+   },
    "shanghai": {
-    "speed": 1.052,
+    "speed": 1.176,
     "ace": 8.678,
     "matches": 54
    },
    "vienna": {
-    "speed": 1.096,
+    "speed": 1.238,
     "ace": 10.471,
     "matches": 27
    },
    "basel": {
-    "speed": 1.137,
+    "speed": 1.296,
     "ace": 9.023,
     "matches": 31
    },
    "paris": {
-    "speed": 1.193,
+    "speed": 1.264,
     "ace": 9.703,
     "matches": 46
+   },
+   "atpfinals": {
+    "speed": 1.168,
+    "ace": 7.257,
+    "matches": 15
    }
   },
   "2013": {
+   "brisbane": {
+    "speed": 1.202,
+    "ace": 8.167,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 0.887,
+    "ace": 6.872,
+    "matches": 31
+   },
+   "auckland": {
+    "speed": 1.052,
+    "ace": 8.936,
+    "matches": 27
+   },
    "ausopen": {
-    "speed": 1.084,
+    "speed": 1.276,
     "ace": 8.131,
     "matches": 127
    },
    "montpellier": {
-    "speed": 0.968,
+    "speed": 1.073,
     "ace": 8.201,
     "matches": 27
    },
+   "santiago": {
+    "speed": 0.914,
+    "ace": 5.177,
+    "matches": 26
+   },
    "rotterdam": {
-    "speed": 1.19,
+    "speed": 1.242,
     "ace": 8.73,
     "matches": 31
    },
+   "buenosaires": {
+    "speed": 0.574,
+    "ace": 3.743,
+    "matches": 31
+   },
+   "acapulco": {
+    "speed": 0.662,
+    "ace": 4.35,
+    "matches": 31
+   },
    "delraybeach": {
-    "speed": 0.881,
+    "speed": 0.945,
     "ace": 8.574,
     "matches": 31
    },
+   "dubai": {
+    "speed": 0.928,
+    "ace": 6.837,
+    "matches": 31
+   },
    "indianwells": {
-    "speed": 0.777,
+    "speed": 0.823,
     "ace": 6.031,
     "matches": 93
    },
    "miami": {
-    "speed": 0.883,
+    "speed": 0.861,
     "ace": 6.667,
     "matches": 93
    },
    "houston": {
-    "speed": 0.725,
+    "speed": 0.683,
     "ace": 6.309,
     "matches": 27
    },
    "montecarlo": {
-    "speed": 0.743,
+    "speed": 0.629,
     "ace": 4.731,
     "matches": 55
    },
    "barcelona": {
-    "speed": 0.832,
+    "speed": 0.756,
     "ace": 5.329,
     "matches": 46
    },
+   "bucharest": {
+    "speed": 0.647,
+    "ace": 4.368,
+    "matches": 27
+   },
+   "estoril": {
+    "speed": 0.559,
+    "ace": 3.252,
+    "matches": 27
+   },
    "munich": {
-    "speed": 0.937,
+    "speed": 1.064,
     "ace": 7.565,
     "matches": 27
    },
    "madrid": {
-    "speed": 0.835,
+    "speed": 0.834,
     "ace": 5.815,
     "matches": 55
    },
    "rome": {
-    "speed": 0.882,
+    "speed": 0.789,
     "ace": 5.982,
     "matches": 53
    },
    "rolandgarros": {
-    "speed": 0.836,
+    "speed": 0.951,
     "ace": 5.756,
     "matches": 126
    },
+   "halle": {
+    "speed": 1.085,
+    "ace": 7.718,
+    "matches": 27
+   },
    "queens": {
-    "speed": 1.088,
+    "speed": 1.302,
     "ace": 10.191,
     "matches": 54
    },
+   "shertogenbosch": {
+    "speed": 1.097,
+    "ace": 8.364,
+    "matches": 31
+   },
    "eastbourne": {
-    "speed": 1.005,
+    "speed": 1.176,
     "ace": 8.604,
     "matches": 27
    },
    "wimbledon": {
-    "speed": 1.349,
+    "speed": 1.527,
     "ace": 10.073,
     "matches": 125
    },
+   "bastad": {
+    "speed": 0.655,
+    "ace": 4.331,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 0.845,
+    "ace": 5.467,
+    "matches": 27
+   },
    "hamburg": {
-    "speed": 0.689,
+    "speed": 0.814,
     "ace": 4.976,
     "matches": 47
    },
+   "gstaad": {
+    "speed": 1.163,
+    "ace": 7.865,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.723,
+    "ace": 4.818,
+    "matches": 27
+   },
+   "kitzbuhel": {
+    "speed": 0.896,
+    "ace": 5.4,
+    "matches": 27
+   },
    "washington": {
-    "speed": 1.108,
+    "speed": 1.22,
     "ace": 10.148,
     "matches": 47
    },
    "canada": {
-    "speed": 0.895,
-    "ace": 7.19,
-    "matches": 55
-   },
-   "cincinnati": {
-    "speed": 1.13,
-    "ace": 9.069,
-    "matches": 55
-   },
-   "winstonsalem": {
-    "speed": 1.115,
-    "ace": 8.266,
-    "matches": 47
-   },
-   "usopen": {
-    "speed": 1.092,
-    "ace": 7.794,
-    "matches": 127
-   },
-   "tokyo": {
-    "speed": 1.097,
-    "ace": 11.143,
-    "matches": 31
-   },
-   "shanghai": {
-    "speed": 1.28,
-    "ace": 10.701,
-    "matches": 54
-   },
-   "vienna": {
-    "speed": 1.255,
-    "ace": 9.769,
-    "matches": 27
-   },
-   "basel": {
-    "speed": 1.06,
-    "ace": 8.64,
-    "matches": 31
-   },
-   "paris": {
-    "speed": 1.265,
-    "ace": 9.413,
-    "matches": 47
-   }
-  },
-  "2014": {
-   "brisbane": {
-    "speed": 1.141,
-    "ace": 11.615,
-    "matches": 27
-   },
-   "doha": {
-    "speed": 0.764,
-    "ace": 6.531,
-    "matches": 31
-   },
-   "ausopen": {
-    "speed": 1.152,
-    "ace": 8.78,
-    "matches": 126
-   },
-   "montpellier": {
-    "speed": 1.128,
-    "ace": 10.023,
-    "matches": 27
-   },
-   "rotterdam": {
-    "speed": 1.081,
-    "ace": 9.818,
-    "matches": 31
-   },
-   "delraybeach": {
-    "speed": 0.895,
-    "ace": 9.047,
-    "matches": 31
-   },
-   "acapulco": {
-    "speed": 0.959,
-    "ace": 8.54,
-    "matches": 31
-   },
-   "dubai": {
-    "speed": 0.859,
-    "ace": 7.146,
-    "matches": 29
-   },
-   "indianwells": {
-    "speed": 0.881,
-    "ace": 7.073,
-    "matches": 95
-   },
-   "miami": {
-    "speed": 0.994,
-    "ace": 8.356,
-    "matches": 92
-   },
-   "montecarlo": {
-    "speed": 0.686,
-    "ace": 4.593,
-    "matches": 54
-   },
-   "barcelona": {
-    "speed": 0.767,
-    "ace": 4.893,
-    "matches": 47
-   },
-   "munich": {
-    "speed": 0.901,
-    "ace": 6.062,
-    "matches": 27
-   },
-   "madrid": {
-    "speed": 0.921,
-    "ace": 7.244,
-    "matches": 54
-   },
-   "rome": {
-    "speed": 0.759,
-    "ace": 5.931,
-    "matches": 55
-   },
-   "rolandgarros": {
-    "speed": 0.814,
-    "ace": 5.873,
-    "matches": 127
-   },
-   "halle": {
-    "speed": 1.149,
-    "ace": 10.625,
-    "matches": 25
-   },
-   "queens": {
-    "speed": 1.16,
-    "ace": 11.174,
-    "matches": 54
-   },
-   "shertogenbosch": {
-    "speed": 1.043,
-    "ace": 7.586,
-    "matches": 30
-   },
-   "eastbourne": {
-    "speed": 0.936,
-    "ace": 10.83,
-    "matches": 27
-   },
-   "wimbledon": {
-    "speed": 1.307,
-    "ace": 11.062,
-    "matches": 127
-   },
-   "washington": {
-    "speed": 0.977,
-    "ace": 9.802,
-    "matches": 47
-   },
-   "canada": {
-    "speed": 1.014,
-    "ace": 8.903,
-    "matches": 53
-   },
-   "cincinnati": {
-    "speed": 1.021,
-    "ace": 8.68,
-    "matches": 55
-   },
-   "winstonsalem": {
-    "speed": 0.99,
-    "ace": 8.67,
-    "matches": 46
-   },
-   "usopen": {
-    "speed": 1.076,
-    "ace": 8.575,
-    "matches": 125
-   },
-   "metz": {
-    "speed": 1.126,
-    "ace": 10.478,
-    "matches": 27
-   },
-   "beijing": {
-    "speed": 0.987,
-    "ace": 6.969,
-    "matches": 31
-   },
-   "tokyo": {
-    "speed": 0.875,
-    "ace": 8.953,
-    "matches": 31
-   },
-   "shanghai": {
-    "speed": 1.201,
-    "ace": 10.295,
-    "matches": 55
-   },
-   "vienna": {
-    "speed": 1.209,
-    "ace": 9.437,
-    "matches": 27
-   },
-   "basel": {
-    "speed": 1.169,
-    "ace": 11.451,
-    "matches": 31
-   },
-   "paris": {
-    "speed": 1.058,
-    "ace": 9.052,
-    "matches": 47
-   }
-  },
-  "2015": {
-   "brisbane": {
-    "speed": 1.043,
-    "ace": 11.623,
-    "matches": 27
-   },
-   "doha": {
-    "speed": 1.019,
-    "ace": 8.802,
-    "matches": 31
-   },
-   "ausopen": {
-    "speed": 1.177,
-    "ace": 9.602,
-    "matches": 127
-   },
-   "rotterdam": {
-    "speed": 1.125,
-    "ace": 9.571,
-    "matches": 31
-   },
-   "delraybeach": {
-    "speed": 0.81,
-    "ace": 8.883,
-    "matches": 31
-   },
-   "acapulco": {
-    "speed": 0.738,
-    "ace": 6.79,
-    "matches": 31
-   },
-   "dubai": {
-    "speed": 1.011,
-    "ace": 7.285,
-    "matches": 31
-   },
-   "indianwells": {
-    "speed": 0.994,
-    "ace": 8.088,
-    "matches": 94
-   },
-   "miami": {
-    "speed": 0.84,
-    "ace": 6.826,
-    "matches": 95
-   },
-   "houston": {
-    "speed": 0.763,
-    "ace": 7.676,
-    "matches": 27
-   },
-   "montecarlo": {
-    "speed": 0.664,
-    "ace": 5.007,
-    "matches": 55
-   },
-   "estoril": {
-    "speed": 0.667,
-    "ace": 5.247,
-    "matches": 27
-   },
-   "madrid": {
-    "speed": 0.844,
-    "ace": 7.814,
-    "matches": 55
-   },
-   "rome": {
-    "speed": 0.893,
-    "ace": 7.156,
-    "matches": 54
-   },
-   "rolandgarros": {
-    "speed": 0.788,
-    "ace": 5.752,
-    "matches": 125
-   },
-   "stuttgart": {
-    "speed": 1.323,
-    "ace": 11.401,
-    "matches": 27
-   },
-   "halle": {
-    "speed": 1.055,
-    "ace": 10.015,
-    "matches": 31
-   },
-   "queens": {
-    "speed": 1.372,
-    "ace": 14.075,
-    "matches": 31
-   },
-   "wimbledon": {
-    "speed": 1.219,
-    "ace": 10.404,
-    "matches": 126
-   },
-   "washington": {
-    "speed": 1.019,
-    "ace": 11.322,
-    "matches": 47
-   },
-   "canada": {
-    "speed": 0.957,
-    "ace": 9.645,
-    "matches": 55
-   },
-   "cincinnati": {
-    "speed": 1.041,
-    "ace": 9.6,
-    "matches": 55
-   },
-   "winstonsalem": {
-    "speed": 1.157,
-    "ace": 11.514,
-    "matches": 46
-   },
-   "usopen": {
-    "speed": 1.092,
-    "ace": 8.957,
-    "matches": 127
-   },
-   "metz": {
-    "speed": 1.247,
-    "ace": 9.734,
-    "matches": 26
-   },
-   "tokyo": {
-    "speed": 0.897,
-    "ace": 8.925,
-    "matches": 31
-   },
-   "shanghai": {
-    "speed": 1.021,
-    "ace": 9.709,
-    "matches": 55
-   },
-   "vienna": {
-    "speed": 1.193,
-    "ace": 12.435,
-    "matches": 31
-   },
-   "basel": {
-    "speed": 1.011,
-    "ace": 9.351,
-    "matches": 31
-   },
-   "paris": {
-    "speed": 1.02,
-    "ace": 8.755,
-    "matches": 47
-   }
-  },
-  "2016": {
-   "brisbane": {
-    "speed": 1.085,
-    "ace": 9.537,
-    "matches": 27
-   },
-   "auckland": {
-    "speed": 1.009,
-    "ace": 10.53,
-    "matches": 27
-   },
-   "ausopen": {
-    "speed": 1.248,
-    "ace": 9.71,
-    "matches": 127
-   },
-   "montpellier": {
-    "speed": 1.307,
-    "ace": 8.689,
-    "matches": 27
-   },
-   "rotterdam": {
-    "speed": 1.164,
-    "ace": 8.26,
-    "matches": 31
-   },
-   "delraybeach": {
-    "speed": 0.72,
-    "ace": 7.72,
-    "matches": 31
-   },
-   "acapulco": {
-    "speed": 0.827,
-    "ace": 8.341,
-    "matches": 31
-   },
-   "dubai": {
-    "speed": 0.739,
-    "ace": 7.38,
-    "matches": 31
-   },
-   "indianwells": {
-    "speed": 0.808,
-    "ace": 6.481,
-    "matches": 94
-   },
-   "miami": {
-    "speed": 1.039,
-    "ace": 7.478,
-    "matches": 94
-   },
-   "montecarlo": {
-    "speed": 0.715,
-    "ace": 5.063,
-    "matches": 55
-   },
-   "barcelona": {
-    "speed": 0.71,
-    "ace": 4.456,
-    "matches": 47
-   },
-   "madrid": {
-    "speed": 0.888,
-    "ace": 7.244,
-    "matches": 55
-   },
-   "rome": {
-    "speed": 0.708,
-    "ace": 5.551,
-    "matches": 54
-   },
-   "geneva": {
-    "speed": 0.745,
-    "ace": 6.878,
-    "matches": 27
-   },
-   "rolandgarros": {
-    "speed": 0.827,
-    "ace": 5.928,
-    "matches": 126
-   },
-   "shertogenbosch": {
-    "speed": 1.058,
-    "ace": 11.8,
-    "matches": 27
-   },
-   "stuttgart": {
-    "speed": 1.273,
-    "ace": 11.166,
-    "matches": 27
-   },
-   "halle": {
-    "speed": 1.154,
-    "ace": 9.505,
-    "matches": 29
-   },
-   "queens": {
-    "speed": 1.222,
-    "ace": 12.925,
-    "matches": 30
-   },
-   "wimbledon": {
-    "speed": 1.157,
-    "ace": 9.611,
-    "matches": 126
-   },
-   "washington": {
-    "speed": 1.072,
-    "ace": 11.821,
-    "matches": 47
-   },
-   "canada": {
-    "speed": 0.956,
-    "ace": 9.874,
-    "matches": 55
-   },
-   "losCabos": {
-    "speed": 0.782,
-    "ace": 8.743,
-    "matches": 27
-   },
-   "cincinnati": {
-    "speed": 1.123,
-    "ace": 10.813,
-    "matches": 54
-   },
-   "winstonsalem": {
-    "speed": 1.075,
-    "ace": 8.199,
-    "matches": 46
-   },
-   "usopen": {
-    "speed": 0.919,
-    "ace": 7.174,
-    "matches": 126
-   },
-   "metz": {
-    "speed": 1.245,
-    "ace": 11.061,
-    "matches": 27
-   },
-   "chengdu": {
-    "speed": 1.115,
-    "ace": 9.065,
-    "matches": 27
-   },
-   "tokyo": {
-    "speed": 1.095,
-    "ace": 10.419,
-    "matches": 30
-   },
-   "shanghai": {
-    "speed": 1.021,
-    "ace": 7.997,
-    "matches": 55
-   },
-   "vienna": {
-    "speed": 1.083,
-    "ace": 10.429,
-    "matches": 30
-   },
-   "paris": {
-    "speed": 1.114,
-    "ace": 10.607,
-    "matches": 46
-   }
-  },
-  "2017": {
-   "brisbane": {
-    "speed": 1.078,
-    "ace": 8.329,
-    "matches": 27
-   },
-   "doha": {
-    "speed": 1.096,
-    "ace": 8.661,
-    "matches": 31
-   },
-   "auckland": {
-    "speed": 1.292,
-    "ace": 10.279,
-    "matches": 26
-   },
-   "ausopen": {
-    "speed": 1.194,
-    "ace": 9.352,
-    "matches": 127
-   },
-   "montpellier": {
-    "speed": 0.898,
-    "ace": 9.027,
-    "matches": 27
-   },
-   "rotterdam": {
-    "speed": 1.029,
-    "ace": 8.972,
-    "matches": 31
-   },
-   "delraybeach": {
-    "speed": 0.921,
-    "ace": 8.258,
-    "matches": 29
-   },
-   "acapulco": {
-    "speed": 0.932,
-    "ace": 8.375,
-    "matches": 30
-   },
-   "indianwells": {
-    "speed": 0.961,
-    "ace": 7.356,
-    "matches": 93
-   },
-   "miami": {
-    "speed": 0.89,
-    "ace": 6.688,
-    "matches": 94
-   },
-   "houston": {
-    "speed": 0.905,
-    "ace": 8.009,
-    "matches": 27
-   },
-   "montecarlo": {
-    "speed": 0.583,
-    "ace": 3.92,
-    "matches": 55
-   },
-   "barcelona": {
-    "speed": 0.724,
-    "ace": 4.358,
-    "matches": 46
-   },
-   "munich": {
-    "speed": 1.003,
-    "ace": 6.988,
-    "matches": 27
-   },
-   "madrid": {
-    "speed": 0.892,
-    "ace": 7.703,
-    "matches": 53
-   },
-   "rome": {
-    "speed": 0.811,
-    "ace": 7.619,
-    "matches": 55
-   },
-   "geneva": {
-    "speed": 0.858,
-    "ace": 6.745,
-    "matches": 27
-   },
-   "rolandgarros": {
-    "speed": 0.824,
-    "ace": 6.15,
-    "matches": 127
-   },
-   "shertogenbosch": {
-    "speed": 1.021,
-    "ace": 11.669,
-    "matches": 27
-   },
-   "stuttgart": {
-    "speed": 1.257,
-    "ace": 12.992,
-    "matches": 27
-   },
-   "halle": {
-    "speed": 1.136,
-    "ace": 8.646,
-    "matches": 31
-   },
-   "queens": {
-    "speed": 1.161,
-    "ace": 13.325,
-    "matches": 31
-   },
-   "eastbourne": {
-    "speed": 1.025,
-    "ace": 8.482,
-    "matches": 27
-   },
-   "wimbledon": {
-    "speed": 1.047,
-    "ace": 9.259,
-    "matches": 127
-   },
-   "hamburg": {
-    "speed": 0.867,
-    "ace": 5.805,
-    "matches": 31
-   },
-   "losCabos": {
-    "speed": 0.852,
-    "ace": 8.277,
-    "matches": 27
-   },
-   "washington": {
-    "speed": 1.085,
-    "ace": 9.37,
-    "matches": 47
-   },
-   "canada": {
-    "speed": 0.956,
-    "ace": 7.694,
-    "matches": 55
-   },
-   "cincinnati": {
-    "speed": 1.049,
-    "ace": 11.167,
-    "matches": 55
-   },
-   "winstonsalem": {
-    "speed": 1.11,
-    "ace": 7.936,
-    "matches": 47
-   },
-   "usopen": {
-    "speed": 0.963,
-    "ace": 7.46,
-    "matches": 127
-   },
-   "metz": {
-    "speed": 1.17,
-    "ace": 9.556,
-    "matches": 27
-   },
-   "beijing": {
-    "speed": 1.011,
-    "ace": 8.03,
-    "matches": 31
-   },
-   "tokyo": {
-    "speed": 1.115,
-    "ace": 9.369,
-    "matches": 30
-   },
-   "shanghai": {
-    "speed": 1.29,
-    "ace": 12.38,
-    "matches": 55
-   },
-   "basel": {
-    "speed": 1.008,
-    "ace": 8.463,
-    "matches": 31
-   },
-   "vienna": {
-    "speed": 0.969,
-    "ace": 7.77,
-    "matches": 31
-   },
-   "paris": {
-    "speed": 1.017,
-    "ace": 9.915,
-    "matches": 46
-   }
-  },
-  "2018": {
-   "brisbane": {
-    "speed": 1.206,
-    "ace": 10.866,
-    "matches": 27
-   },
-   "doha": {
-    "speed": 0.927,
-    "ace": 7.632,
-    "matches": 29
-   },
-   "auckland": {
-    "speed": 1.076,
-    "ace": 9.417,
-    "matches": 27
-   },
-   "ausopen": {
-    "speed": 1.128,
-    "ace": 9.364,
-    "matches": 127
-   },
-   "montpellier": {
-    "speed": 1.15,
-    "ace": 8.526,
-    "matches": 27
-   },
-   "rotterdam": {
-    "speed": 1.129,
-    "ace": 9.605,
-    "matches": 30
-   },
-   "delraybeach": {
-    "speed": 0.978,
-    "ace": 10.308,
-    "matches": 31
-   },
-   "acapulco": {
-    "speed": 0.971,
-    "ace": 9.577,
-    "matches": 31
-   },
-   "dubai": {
-    "speed": 0.995,
-    "ace": 7.95,
-    "matches": 31
-   },
-   "indianwells": {
-    "speed": 0.888,
-    "ace": 7.445,
-    "matches": 94
-   },
-   "miami": {
-    "speed": 0.769,
-    "ace": 7.106,
-    "matches": 95
-   },
-   "houston": {
-    "speed": 0.746,
-    "ace": 8.884,
-    "matches": 27
-   },
-   "montecarlo": {
-    "speed": 0.584,
-    "ace": 4.8,
-    "matches": 54
-   },
-   "barcelona": {
-    "speed": 0.721,
-    "ace": 4.72,
-    "matches": 47
-   },
-   "madrid": {
     "speed": 0.902,
-    "ace": 7.623,
-    "matches": 55
-   },
-   "rome": {
-    "speed": 0.726,
-    "ace": 5.811,
-    "matches": 55
-   },
-   "geneva": {
-    "speed": 0.958,
-    "ace": 8.763,
-    "matches": 27
-   },
-   "rolandgarros": {
-    "speed": 0.827,
-    "ace": 5.965,
-    "matches": 127
-   },
-   "shertogenbosch": {
-    "speed": 1.082,
-    "ace": 10.221,
-    "matches": 27
-   },
-   "stuttgart": {
-    "speed": 1.244,
-    "ace": 13.46,
-    "matches": 27
-   },
-   "halle": {
-    "speed": 0.953,
-    "ace": 8.945,
-    "matches": 31
-   },
-   "queens": {
-    "speed": 1.191,
-    "ace": 13.441,
-    "matches": 30
-   },
-   "eastbourne": {
-    "speed": 0.904,
-    "ace": 6.872,
-    "matches": 27
-   },
-   "wimbledon": {
-    "speed": 1.138,
-    "ace": 10.382,
-    "matches": 126
-   },
-   "washington": {
-    "speed": 0.96,
-    "ace": 7.979,
-    "matches": 46
-   },
-   "canada": {
-    "speed": 1.21,
-    "ace": 9.865,
-    "matches": 55
-   },
-   "cincinnati": {
-    "speed": 1.037,
-    "ace": 10.024,
-    "matches": 55
-   },
-   "winstonsalem": {
-    "speed": 0.998,
-    "ace": 8.031,
-    "matches": 46
-   },
-   "usopen": {
-    "speed": 1.029,
-    "ace": 8.55,
-    "matches": 127
-   },
-   "chengdu": {
-    "speed": 1.019,
-    "ace": 9.173,
-    "matches": 27
-   },
-   "beijing": {
-    "speed": 0.95,
-    "ace": 7.699,
-    "matches": 30
-   },
-   "tokyo": {
-    "speed": 1.071,
-    "ace": 11.513,
-    "matches": 31
-   },
-   "shanghai": {
-    "speed": 1.146,
-    "ace": 10.325,
-    "matches": 55
-   },
-   "basel": {
-    "speed": 1.187,
-    "ace": 9.715,
-    "matches": 31
-   },
-   "vienna": {
-    "speed": 1.207,
-    "ace": 9.985,
-    "matches": 30
-   },
-   "paris": {
-    "speed": 0.993,
-    "ace": 9.022,
-    "matches": 45
-   }
-  },
-  "2019": {
-   "brisbane": {
-    "speed": 1.144,
-    "ace": 13.502,
-    "matches": 27
-   },
-   "doha": {
-    "speed": 1.067,
-    "ace": 7.866,
-    "matches": 30
-   },
-   "auckland": {
-    "speed": 1.067,
-    "ace": 9.359,
-    "matches": 27
-   },
-   "ausopen": {
-    "speed": 1.233,
-    "ace": 10.584,
-    "matches": 127
-   },
-   "montpellier": {
-    "speed": 1.19,
-    "ace": 9.822,
-    "matches": 27
-   },
-   "rotterdam": {
-    "speed": 0.904,
-    "ace": 6.878,
-    "matches": 31
-   },
-   "delraybeach": {
-    "speed": 0.867,
-    "ace": 10.489,
-    "matches": 31
-   },
-   "acapulco": {
-    "speed": 0.969,
-    "ace": 10.588,
-    "matches": 30
-   },
-   "dubai": {
-    "speed": 0.897,
-    "ace": 6.721,
-    "matches": 31
-   },
-   "indianwells": {
-    "speed": 0.697,
-    "ace": 6.79,
-    "matches": 93
-   },
-   "miami": {
-    "speed": 0.888,
-    "ace": 8.064,
-    "matches": 93
-   },
-   "houston": {
-    "speed": 0.7,
-    "ace": 7.026,
-    "matches": 27
-   },
-   "montecarlo": {
-    "speed": 0.466,
-    "ace": 3.628,
-    "matches": 54
-   },
-   "barcelona": {
-    "speed": 0.651,
-    "ace": 4.256,
-    "matches": 47
-   },
-   "madrid": {
-    "speed": 0.817,
-    "ace": 5.847,
-    "matches": 54
-   },
-   "rome": {
-    "speed": 0.769,
-    "ace": 5.735,
-    "matches": 54
-   },
-   "lyon": {
-    "speed": 0.906,
-    "ace": 7.309,
-    "matches": 26
-   },
-   "rolandgarros": {
-    "speed": 0.764,
-    "ace": 5.659,
-    "matches": 127
-   },
-   "shertogenbosch": {
-    "speed": 1.157,
-    "ace": 8.703,
-    "matches": 27
-   },
-   "stuttgart": {
-    "speed": 1.271,
-    "ace": 12.47,
-    "matches": 26
-   },
-   "halle": {
-    "speed": 1.101,
-    "ace": 10.466,
-    "matches": 31
-   },
-   "queens": {
-    "speed": 1.059,
-    "ace": 10.884,
-    "matches": 30
-   },
-   "eastbourne": {
-    "speed": 0.958,
-    "ace": 9.649,
-    "matches": 27
-   },
-   "wimbledon": {
-    "speed": 0.986,
-    "ace": 8.564,
-    "matches": 127
-   },
-   "hamburg": {
-    "speed": 0.798,
-    "ace": 6.352,
-    "matches": 31
-   },
-   "losCabos": {
-    "speed": 1.032,
-    "ace": 6.218,
-    "matches": 27
-   },
-   "washington": {
-    "speed": 1.006,
-    "ace": 11.909,
-    "matches": 47
-   },
-   "canada": {
-    "speed": 1.049,
-    "ace": 8.593,
-    "matches": 54
-   },
-   "cincinnati": {
-    "speed": 1.132,
-    "ace": 9.656,
-    "matches": 54
-   },
-   "winstonsalem": {
-    "speed": 1.24,
-    "ace": 9.231,
-    "matches": 47
-   },
-   "usopen": {
-    "speed": 1.037,
-    "ace": 8.029,
-    "matches": 125
-   },
-   "metz": {
-    "speed": 1.217,
-    "ace": 10.764,
-    "matches": 27
-   },
-   "beijing": {
-    "speed": 1.095,
-    "ace": 9.723,
-    "matches": 31
-   },
-   "tokyo": {
-    "speed": 1.026,
-    "ace": 9.59,
-    "matches": 31
-   },
-   "shanghai": {
-    "speed": 1.248,
-    "ace": 10.252,
-    "matches": 55
-   },
-   "basel": {
-    "speed": 1.298,
-    "ace": 11.158,
-    "matches": 30
-   },
-   "vienna": {
-    "speed": 1.189,
-    "ace": 8.885,
-    "matches": 31
-   },
-   "paris": {
-    "speed": 1.107,
-    "ace": 10.397,
-    "matches": 46
-   }
-  },
-  "2020": {
-   "ausopen": {
-    "speed": 1.127,
-    "ace": 8.986,
-    "matches": 126
-   },
-   "acapulco": {
-    "speed": 1.084,
-    "ace": 9.696,
-    "matches": 31
-   },
-   "dubai": {
-    "speed": 1.06,
     "ace": 7.19,
-    "matches": 31
-   },
-   "cincinnati": {
-    "speed": 0.894,
-    "ace": 9.511,
-    "matches": 55
-   },
-   "usopen": {
-    "speed": 1.19,
-    "ace": 8.311,
-    "matches": 127
-   },
-   "rome": {
-    "speed": 0.82,
-    "ace": 5.498,
-    "matches": 54
-   },
-   "hamburg": {
-    "speed": 0.718,
-    "ace": 4.745,
-    "matches": 31
-   },
-   "rolandgarros": {
-    "speed": 0.746,
-    "ace": 4.298,
-    "matches": 127
-   },
-   "paris": {
-    "speed": 1.362,
-    "ace": 9.873,
-    "matches": 54
-   }
-  },
-  "2021": {
-   "queens": {
-    "speed": 1.164,
-    "ace": 10.866,
-    "matches": 31
-   },
-   "stuttgart": {
-    "speed": 1.076,
-    "ace": 12.773,
-    "matches": 27
-   },
-   "vienna": {
-    "speed": 1.146,
-    "ace": 8.967,
-    "matches": 31
-   },
-   "metz": {
-    "speed": 1.036,
-    "ace": 8.859,
-    "matches": 27
-   },
-   "paris": {
-    "speed": 1.193,
-    "ace": 8.221,
-    "matches": 54
-   },
-   "miami": {
-    "speed": 0.926,
-    "ace": 7.45,
-    "matches": 94
-   },
-   "indianwells": {
-    "speed": 0.819,
-    "ace": 5.96,
-    "matches": 94
-   },
-   "rotterdam": {
-    "speed": 0.817,
-    "ace": 6.88,
-    "matches": 31
-   },
-   "montecarlo": {
-    "speed": 0.585,
-    "ace": 3.592,
-    "matches": 55
-   },
-   "rome": {
-    "speed": 0.789,
-    "ace": 5.943,
-    "matches": 54
-   },
-   "washington": {
-    "speed": 0.867,
-    "ace": 7.679,
-    "matches": 46
-   },
-   "canada": {
-    "speed": 1.066,
-    "ace": 10.774,
-    "matches": 46
-   },
-   "cincinnati": {
-    "speed": 1.157,
-    "ace": 10.296,
-    "matches": 55
-   },
-   "barcelona": {
-    "speed": 0.697,
-    "ace": 4.058,
-    "matches": 47
-   },
-   "doha": {
-    "speed": 0.945,
-    "ace": 8.024,
-    "matches": 25
-   },
-   "dubai": {
-    "speed": 1.22,
-    "ace": 9.408,
-    "matches": 45
-   },
-   "halle": {
-    "speed": 1.118,
-    "ace": 9.403,
-    "matches": 31
-   },
-   "madrid": {
-    "speed": 0.854,
-    "ace": 6.947,
-    "matches": 55
-   },
-   "rolandgarros": {
-    "speed": 0.838,
-    "ace": 5.703,
-    "matches": 126
-   },
-   "wimbledon": {
-    "speed": 1.111,
-    "ace": 8.454,
-    "matches": 126
-   },
-   "usopen": {
-    "speed": 1.239,
-    "ace": 10.046,
-    "matches": 127
-   },
-   "ausopen": {
-    "speed": 1.146,
-    "ace": 9.11,
-    "matches": 126
-   },
-   "winstonsalem": {
-    "speed": 1.172,
-    "ace": 8.39,
-    "matches": 47
-   },
-   "losCabos": {
-    "speed": 0.833,
-    "ace": 10.362,
-    "matches": 27
-   },
-   "mallorca": {
-    "speed": 1.183,
-    "ace": 11.322,
-    "matches": 26
-   }
-  },
-  "2022": {
-   "ausopen": {
-    "speed": 1.138,
-    "ace": 8.442,
-    "matches": 126
-   },
-   "dallas": {
-    "speed": 1.064,
-    "ace": 14.118,
-    "matches": 27
-   },
-   "delraybeach": {
-    "speed": 0.625,
-    "ace": 7.31,
-    "matches": 27
-   },
-   "acapulco": {
-    "speed": 0.925,
-    "ace": 6.888,
-    "matches": 30
-   },
-   "dubai": {
-    "speed": 1.107,
-    "ace": 10.186,
-    "matches": 31
-   },
-   "indianwells": {
-    "speed": 0.912,
-    "ace": 7.249,
-    "matches": 93
-   },
-   "miami": {
-    "speed": 0.986,
-    "ace": 7.239,
-    "matches": 95
-   },
-   "houston": {
-    "speed": 0.759,
-    "ace": 9.535,
-    "matches": 26
-   },
-   "montecarlo": {
-    "speed": 0.632,
-    "ace": 4.115,
-    "matches": 55
-   },
-   "madrid": {
-    "speed": 0.955,
-    "ace": 7.139,
-    "matches": 54
-   },
-   "rome": {
-    "speed": 0.768,
-    "ace": 5.163,
-    "matches": 55
-   },
-   "rolandgarros": {
-    "speed": 0.79,
-    "ace": 5.28,
-    "matches": 127
-   },
-   "shertogenbosch": {
-    "speed": 1.002,
-    "ace": 8.263,
-    "matches": 27
-   },
-   "stuttgart": {
-    "speed": 1.2,
-    "ace": 12.22,
-    "matches": 26
-   },
-   "halle": {
-    "speed": 1.223,
-    "ace": 11.259,
-    "matches": 31
-   },
-   "eastbourne": {
-    "speed": 0.954,
-    "ace": 8.36,
-    "matches": 27
-   },
-   "wimbledon": {
-    "speed": 1.11,
-    "ace": 8.275,
-    "matches": 125
-   },
-   "washington": {
-    "speed": 0.999,
-    "ace": 9.302,
-    "matches": 47
-   },
-   "canada": {
-    "speed": 1.016,
-    "ace": 8.276,
     "matches": 55
    },
    "cincinnati": {
     "speed": 1.174,
+    "ace": 9.069,
+    "matches": 55
+   },
+   "winstonsalem": {
+    "speed": 1.248,
+    "ace": 8.266,
+    "matches": 47
+   },
+   "usopen": {
+    "speed": 1.257,
+    "ace": 7.794,
+    "matches": 127
+   },
+   "metz": {
+    "speed": 0.959,
+    "ace": 8.989,
+    "matches": 27
+   },
+   "beijing": {
+    "speed": 0.862,
+    "ace": 6.713,
+    "matches": 30
+   },
+   "tokyo": {
+    "speed": 1.413,
+    "ace": 11.143,
+    "matches": 31
+   },
+   "shanghai": {
+    "speed": 1.336,
+    "ace": 10.701,
+    "matches": 54
+   },
+   "vienna": {
+    "speed": 1.454,
+    "ace": 9.769,
+    "matches": 27
+   },
+   "basel": {
+    "speed": 1.105,
+    "ace": 8.64,
+    "matches": 31
+   },
+   "paris": {
+    "speed": 1.211,
+    "ace": 9.413,
+    "matches": 47
+   },
+   "atpfinals": {
+    "speed": 1.224,
+    "ace": 7.784,
+    "matches": 15
+   }
+  },
+  "2014": {
+   "brisbane": {
+    "speed": 1.317,
+    "ace": 11.615,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 0.841,
+    "ace": 6.531,
+    "matches": 31
+   },
+   "auckland": {
+    "speed": 1.064,
+    "ace": 8.055,
+    "matches": 27
+   },
+   "ausopen": {
+    "speed": 1.358,
+    "ace": 8.78,
+    "matches": 126
+   },
+   "montpellier": {
+    "speed": 1.159,
+    "ace": 10.023,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.577,
+    "ace": 3.549,
+    "matches": 31
+   },
+   "rotterdam": {
+    "speed": 1.263,
+    "ace": 9.818,
+    "matches": 31
+   },
+   "delraybeach": {
+    "speed": 0.879,
+    "ace": 9.047,
+    "matches": 31
+   },
+   "rio": {
+    "speed": 0.743,
+    "ace": 4.705,
+    "matches": 30
+   },
+   "acapulco": {
+    "speed": 0.916,
+    "ace": 8.54,
+    "matches": 31
+   },
+   "dubai": {
+    "speed": 0.988,
+    "ace": 7.146,
+    "matches": 29
+   },
+   "indianwells": {
+    "speed": 0.933,
+    "ace": 7.073,
+    "matches": 95
+   },
+   "miami": {
+    "speed": 1.061,
+    "ace": 8.356,
+    "matches": 92
+   },
+   "houston": {
+    "speed": 0.645,
+    "ace": 6.033,
+    "matches": 26
+   },
+   "montecarlo": {
+    "speed": 0.655,
+    "ace": 4.593,
+    "matches": 54
+   },
+   "barcelona": {
+    "speed": 0.699,
+    "ace": 4.893,
+    "matches": 47
+   },
+   "bucharest": {
+    "speed": 0.583,
+    "ace": 3.93,
+    "matches": 27
+   },
+   "estoril": {
+    "speed": 0.612,
+    "ace": 3.925,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 0.923,
+    "ace": 6.062,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.897,
+    "ace": 7.244,
+    "matches": 54
+   },
+   "rome": {
+    "speed": 0.733,
+    "ace": 5.931,
+    "matches": 55
+   },
+   "rolandgarros": {
+    "speed": 0.888,
+    "ace": 5.873,
+    "matches": 127
+   },
+   "halle": {
+    "speed": 1.385,
+    "ace": 10.625,
+    "matches": 25
+   },
+   "queens": {
+    "speed": 1.389,
+    "ace": 11.174,
+    "matches": 54
+   },
+   "shertogenbosch": {
+    "speed": 1.062,
+    "ace": 7.586,
+    "matches": 30
+   },
+   "eastbourne": {
+    "speed": 1.242,
+    "ace": 10.83,
+    "matches": 27
+   },
+   "wimbledon": {
+    "speed": 1.603,
+    "ace": 11.062,
+    "matches": 127
+   },
+   "bastad": {
+    "speed": 0.702,
+    "ace": 4.568,
+    "matches": 26
+   },
+   "stuttgart": {
+    "speed": 0.941,
+    "ace": 5.68,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.699,
+    "ace": 4.739,
+    "matches": 46
+   },
+   "gstaad": {
+    "speed": 0.73,
+    "ace": 4.296,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.843,
+    "ace": 5.769,
+    "matches": 26
+   },
+   "kitzbuhel": {
+    "speed": 0.761,
+    "ace": 4.884,
+    "matches": 26
+   },
+   "washington": {
+    "speed": 1.114,
+    "ace": 9.802,
+    "matches": 47
+   },
+   "canada": {
+    "speed": 1.074,
+    "ace": 8.903,
+    "matches": 53
+   },
+   "cincinnati": {
+    "speed": 1.194,
+    "ace": 8.68,
+    "matches": 55
+   },
+   "winstonsalem": {
+    "speed": 1.188,
+    "ace": 8.67,
+    "matches": 46
+   },
+   "usopen": {
+    "speed": 1.312,
+    "ace": 8.575,
+    "matches": 125
+   },
+   "metz": {
+    "speed": 1.266,
+    "ace": 10.478,
+    "matches": 27
+   },
+   "beijing": {
+    "speed": 0.9,
+    "ace": 6.969,
+    "matches": 31
+   },
+   "tokyo": {
+    "speed": 1.022,
+    "ace": 8.953,
+    "matches": 31
+   },
+   "shanghai": {
+    "speed": 1.331,
+    "ace": 10.295,
+    "matches": 55
+   },
+   "vienna": {
+    "speed": 1.332,
+    "ace": 9.437,
+    "matches": 27
+   },
+   "basel": {
+    "speed": 1.246,
+    "ace": 11.451,
+    "matches": 31
+   },
+   "paris": {
+    "speed": 1.087,
+    "ace": 9.052,
+    "matches": 47
+   },
+   "atpfinals": {
+    "speed": 0.843,
+    "ace": 6.567,
+    "matches": 14
+   }
+  },
+  "2015": {
+   "brisbane": {
+    "speed": 1.201,
+    "ace": 11.623,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 1.03,
+    "ace": 8.802,
+    "matches": 31
+   },
+   "auckland": {
+    "speed": 1.189,
+    "ace": 9.567,
+    "matches": 27
+   },
+   "ausopen": {
+    "speed": 1.352,
+    "ace": 9.602,
+    "matches": 127
+   },
+   "montpellier": {
+    "speed": 1.177,
+    "ace": 8.16,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 1.196,
+    "ace": 9.571,
+    "matches": 31
+   },
+   "delraybeach": {
+    "speed": 0.84,
+    "ace": 8.883,
+    "matches": 31
+   },
+   "rio": {
+    "speed": 0.755,
+    "ace": 4.429,
+    "matches": 31
+   },
+   "acapulco": {
+    "speed": 0.756,
+    "ace": 6.79,
+    "matches": 31
+   },
+   "buenosaires": {
+    "speed": 0.672,
+    "ace": 4.23,
+    "matches": 27
+   },
+   "dubai": {
+    "speed": 0.956,
+    "ace": 7.285,
+    "matches": 31
+   },
+   "indianwells": {
+    "speed": 1.052,
+    "ace": 8.088,
+    "matches": 94
+   },
+   "miami": {
+    "speed": 0.898,
+    "ace": 6.826,
+    "matches": 95
+   },
+   "houston": {
+    "speed": 0.813,
+    "ace": 7.676,
+    "matches": 27
+   },
+   "montecarlo": {
+    "speed": 0.623,
+    "ace": 5.007,
+    "matches": 55
+   },
+   "barcelona": {
+    "speed": 0.641,
+    "ace": 4.363,
+    "matches": 47
+   },
+   "bucharest": {
+    "speed": 0.691,
+    "ace": 4.911,
+    "matches": 27
+   },
+   "estoril": {
+    "speed": 0.697,
+    "ace": 5.247,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 1.009,
+    "ace": 7.005,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.843,
+    "ace": 7.814,
+    "matches": 55
+   },
+   "rome": {
+    "speed": 0.933,
+    "ace": 7.156,
+    "matches": 54
+   },
+   "geneva": {
+    "speed": 0.761,
+    "ace": 4.724,
+    "matches": 27
+   },
+   "rolandgarros": {
+    "speed": 0.886,
+    "ace": 5.752,
+    "matches": 125
+   },
+   "shertogenbosch": {
+    "speed": 1.121,
+    "ace": 9.265,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.412,
+    "ace": 11.401,
+    "matches": 27
+   },
+   "halle": {
+    "speed": 1.184,
+    "ace": 10.015,
+    "matches": 31
+   },
+   "queens": {
+    "speed": 1.399,
+    "ace": 14.075,
+    "matches": 31
+   },
+   "wimbledon": {
+    "speed": 1.394,
+    "ace": 10.404,
+    "matches": 126
+   },
+   "bastad": {
+    "speed": 0.742,
+    "ace": 5.066,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.605,
+    "ace": 4.178,
+    "matches": 27
+   },
+   "gstaad": {
+    "speed": 0.814,
+    "ace": 5.866,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.694,
+    "ace": 4.356,
+    "matches": 30
+   },
+   "kitzbuhel": {
+    "speed": 0.863,
+    "ace": 6.457,
+    "matches": 27
+   },
+   "washington": {
+    "speed": 1.224,
+    "ace": 11.322,
+    "matches": 47
+   },
+   "canada": {
+    "speed": 1.08,
+    "ace": 9.645,
+    "matches": 55
+   },
+   "cincinnati": {
+    "speed": 1.151,
+    "ace": 9.6,
+    "matches": 55
+   },
+   "winstonsalem": {
+    "speed": 1.36,
+    "ace": 11.514,
+    "matches": 46
+   },
+   "usopen": {
+    "speed": 1.279,
+    "ace": 8.957,
+    "matches": 127
+   },
+   "metz": {
+    "speed": 1.31,
+    "ace": 9.734,
+    "matches": 26
+   },
+   "beijing": {
+    "speed": 0.914,
+    "ace": 8.199,
+    "matches": 31
+   },
+   "tokyo": {
+    "speed": 1.036,
+    "ace": 8.925,
+    "matches": 31
+   },
+   "shanghai": {
+    "speed": 1.056,
+    "ace": 9.709,
+    "matches": 55
+   },
+   "vienna": {
+    "speed": 1.381,
+    "ace": 12.435,
+    "matches": 31
+   },
+   "basel": {
+    "speed": 1.082,
+    "ace": 9.351,
+    "matches": 31
+   },
+   "paris": {
+    "speed": 1.041,
+    "ace": 8.755,
+    "matches": 47
+   },
+   "atpfinals": {
+    "speed": 0.889,
+    "ace": 6.034,
+    "matches": 15
+   }
+  },
+  "2016": {
+   "brisbane": {
+    "speed": 1.155,
+    "ace": 9.537,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 0.952,
+    "ace": 6.475,
+    "matches": 31
+   },
+   "auckland": {
+    "speed": 1.085,
+    "ace": 10.53,
+    "matches": 27
+   },
+   "ausopen": {
+    "speed": 1.477,
+    "ace": 9.71,
+    "matches": 127
+   },
+   "montpellier": {
+    "speed": 1.225,
+    "ace": 8.689,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.868,
+    "ace": 5.479,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 1.19,
+    "ace": 8.26,
+    "matches": 31
+   },
+   "delraybeach": {
+    "speed": 0.848,
+    "ace": 7.72,
+    "matches": 31
+   },
+   "rio": {
+    "speed": 0.743,
+    "ace": 5.979,
+    "matches": 30
+   },
+   "acapulco": {
+    "speed": 0.905,
+    "ace": 8.341,
+    "matches": 31
+   },
+   "dubai": {
+    "speed": 0.856,
+    "ace": 7.38,
+    "matches": 31
+   },
+   "indianwells": {
+    "speed": 0.819,
+    "ace": 6.481,
+    "matches": 94
+   },
+   "miami": {
+    "speed": 0.983,
+    "ace": 7.478,
+    "matches": 94
+   },
+   "houston": {
+    "speed": 0.846,
+    "ace": 7.577,
+    "matches": 27
+   },
+   "marrakech": {
+    "speed": 0.956,
+    "ace": 6.435,
+    "matches": 26
+   },
+   "montecarlo": {
+    "speed": 0.699,
+    "ace": 5.063,
+    "matches": 55
+   },
+   "barcelona": {
+    "speed": 0.629,
+    "ace": 4.456,
+    "matches": 47
+   },
+   "bucharest": {
+    "speed": 0.682,
+    "ace": 4.904,
+    "matches": 27
+   },
+   "estoril": {
+    "speed": 0.738,
+    "ace": 5.77,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 0.708,
+    "ace": 4.752,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.903,
+    "ace": 7.244,
+    "matches": 55
+   },
+   "rome": {
+    "speed": 0.721,
+    "ace": 5.551,
+    "matches": 54
+   },
+   "geneva": {
+    "speed": 0.777,
+    "ace": 6.878,
+    "matches": 27
+   },
+   "rolandgarros": {
+    "speed": 0.929,
+    "ace": 5.928,
+    "matches": 126
+   },
+   "shertogenbosch": {
+    "speed": 1.106,
+    "ace": 11.8,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.543,
+    "ace": 11.166,
+    "matches": 27
+   },
+   "halle": {
+    "speed": 1.223,
+    "ace": 9.505,
+    "matches": 29
+   },
+   "queens": {
+    "speed": 1.359,
+    "ace": 12.925,
+    "matches": 30
+   },
+   "wimbledon": {
+    "speed": 1.326,
+    "ace": 9.611,
+    "matches": 126
+   },
+   "bastad": {
+    "speed": 0.565,
+    "ace": 4.137,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.744,
+    "ace": 4.312,
+    "matches": 31
+   },
+   "gstaad": {
+    "speed": 1.295,
+    "ace": 7.769,
+    "matches": 27
+   },
+   "kitzbuhel": {
+    "speed": 0.866,
+    "ace": 5.364,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.543,
+    "ace": 3.671,
+    "matches": 27
+   },
+   "washington": {
+    "speed": 1.154,
+    "ace": 11.821,
+    "matches": 47
+   },
+   "canada": {
+    "speed": 1.109,
+    "ace": 9.874,
+    "matches": 55
+   },
+   "losCabos": {
+    "speed": 0.917,
+    "ace": 8.743,
+    "matches": 27
+   },
+   "cincinnati": {
+    "speed": 1.217,
+    "ace": 10.813,
+    "matches": 54
+   },
+   "winstonsalem": {
+    "speed": 1.117,
+    "ace": 8.199,
+    "matches": 46
+   },
+   "usopen": {
+    "speed": 1.015,
+    "ace": 7.174,
+    "matches": 126
+   },
+   "metz": {
+    "speed": 1.362,
+    "ace": 11.061,
+    "matches": 27
+   },
+   "chengdu": {
+    "speed": 1.245,
+    "ace": 9.065,
+    "matches": 27
+   },
+   "beijing": {
+    "speed": 0.988,
+    "ace": 7.327,
+    "matches": 30
+   },
+   "tokyo": {
+    "speed": 1.157,
+    "ace": 10.419,
+    "matches": 30
+   },
+   "shanghai": {
+    "speed": 1.048,
+    "ace": 7.997,
+    "matches": 55
+   },
+   "basel": {
+    "speed": 1.14,
+    "ace": 9.269,
+    "matches": 31
+   },
+   "vienna": {
+    "speed": 1.021,
+    "ace": 10.429,
+    "matches": 30
+   },
+   "paris": {
+    "speed": 1.217,
+    "ace": 10.607,
+    "matches": 46
+   },
+   "atpfinals": {
+    "speed": 1.029,
+    "ace": 7.596,
+    "matches": 15
+   }
+  },
+  "2017": {
+   "brisbane": {
+    "speed": 1.011,
+    "ace": 8.329,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 1.116,
+    "ace": 8.661,
+    "matches": 31
+   },
+   "auckland": {
+    "speed": 1.263,
+    "ace": 10.279,
+    "matches": 26
+   },
+   "ausopen": {
+    "speed": 1.323,
+    "ace": 9.352,
+    "matches": 127
+   },
+   "montpellier": {
+    "speed": 1.058,
+    "ace": 9.027,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.823,
+    "ace": 5.065,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 1.14,
+    "ace": 8.972,
+    "matches": 31
+   },
+   "delraybeach": {
+    "speed": 0.981,
+    "ace": 8.258,
+    "matches": 29
+   },
+   "rio": {
+    "speed": 0.711,
+    "ace": 4.773,
+    "matches": 31
+   },
+   "acapulco": {
+    "speed": 0.913,
+    "ace": 8.375,
+    "matches": 30
+   },
+   "dubai": {
+    "speed": 0.887,
+    "ace": 6.885,
+    "matches": 31
+   },
+   "indianwells": {
+    "speed": 0.979,
+    "ace": 7.356,
+    "matches": 93
+   },
+   "miami": {
+    "speed": 0.85,
+    "ace": 6.688,
+    "matches": 94
+   },
+   "houston": {
+    "speed": 1.042,
+    "ace": 8.009,
+    "matches": 27
+   },
+   "marrakech": {
+    "speed": 0.895,
+    "ace": 6.134,
+    "matches": 27
+   },
+   "montecarlo": {
+    "speed": 0.509,
+    "ace": 3.92,
+    "matches": 55
+   },
+   "barcelona": {
+    "speed": 0.575,
+    "ace": 4.358,
+    "matches": 46
+   },
+   "estoril": {
+    "speed": 0.469,
+    "ace": 3.865,
+    "matches": 26
+   },
+   "munich": {
+    "speed": 0.966,
+    "ace": 6.988,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.953,
+    "ace": 7.703,
+    "matches": 53
+   },
+   "rome": {
+    "speed": 0.85,
+    "ace": 7.619,
+    "matches": 55
+   },
+   "geneva": {
+    "speed": 0.9,
+    "ace": 6.745,
+    "matches": 27
+   },
+   "lyon": {
+    "speed": 0.856,
+    "ace": 6.826,
+    "matches": 27
+   },
+   "rolandgarros": {
+    "speed": 0.907,
+    "ace": 6.15,
+    "matches": 127
+   },
+   "shertogenbosch": {
+    "speed": 1.153,
+    "ace": 11.669,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.429,
+    "ace": 12.992,
+    "matches": 27
+   },
+   "halle": {
+    "speed": 1.128,
+    "ace": 8.646,
+    "matches": 31
+   },
+   "queens": {
+    "speed": 1.378,
+    "ace": 13.325,
+    "matches": 31
+   },
+   "eastbourne": {
+    "speed": 1.082,
+    "ace": 8.482,
+    "matches": 27
+   },
+   "wimbledon": {
+    "speed": 1.166,
+    "ace": 9.259,
+    "matches": 127
+   },
+   "bastad": {
+    "speed": 0.797,
+    "ace": 5.742,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.593,
+    "ace": 3.49,
+    "matches": 27
+   },
+   "gstaad": {
+    "speed": 0.933,
+    "ace": 5.918,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.882,
+    "ace": 5.805,
+    "matches": 31
+   },
+   "kitzbuhel": {
+    "speed": 1.099,
+    "ace": 6.943,
+    "matches": 27
+   },
+   "losCabos": {
+    "speed": 0.967,
+    "ace": 8.277,
+    "matches": 27
+   },
+   "washington": {
+    "speed": 1.158,
+    "ace": 9.37,
+    "matches": 47
+   },
+   "canada": {
+    "speed": 0.959,
+    "ace": 7.694,
+    "matches": 55
+   },
+   "cincinnati": {
+    "speed": 1.136,
+    "ace": 11.167,
+    "matches": 55
+   },
+   "winstonsalem": {
+    "speed": 1.064,
+    "ace": 7.936,
+    "matches": 47
+   },
+   "usopen": {
+    "speed": 1.06,
+    "ace": 7.46,
+    "matches": 127
+   },
+   "metz": {
+    "speed": 1.255,
+    "ace": 9.556,
+    "matches": 27
+   },
+   "chengdu": {
+    "speed": 1.236,
+    "ace": 8.99,
+    "matches": 27
+   },
+   "beijing": {
+    "speed": 0.917,
+    "ace": 8.03,
+    "matches": 31
+   },
+   "tokyo": {
+    "speed": 1.118,
+    "ace": 9.369,
+    "matches": 30
+   },
+   "shanghai": {
+    "speed": 1.454,
+    "ace": 12.38,
+    "matches": 55
+   },
+   "basel": {
+    "speed": 0.962,
+    "ace": 8.463,
+    "matches": 31
+   },
+   "vienna": {
+    "speed": 0.985,
+    "ace": 7.77,
+    "matches": 31
+   },
+   "paris": {
+    "speed": 1.095,
+    "ace": 9.915,
+    "matches": 46
+   },
+   "atpfinals": {
+    "speed": 1.017,
+    "ace": 7.656,
+    "matches": 14
+   }
+  },
+  "2018": {
+   "brisbane": {
+    "speed": 1.359,
+    "ace": 10.866,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 0.957,
+    "ace": 7.632,
+    "matches": 29
+   },
+   "auckland": {
+    "speed": 1.187,
+    "ace": 9.417,
+    "matches": 27
+   },
+   "ausopen": {
+    "speed": 1.307,
+    "ace": 9.364,
+    "matches": 127
+   },
+   "montpellier": {
+    "speed": 1.153,
+    "ace": 8.526,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.736,
+    "ace": 4.724,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 1.198,
+    "ace": 9.605,
+    "matches": 30
+   },
+   "delraybeach": {
+    "speed": 1.063,
+    "ace": 10.308,
+    "matches": 31
+   },
+   "rio": {
+    "speed": 0.695,
+    "ace": 4.953,
+    "matches": 31
+   },
+   "acapulco": {
+    "speed": 1.002,
+    "ace": 9.577,
+    "matches": 31
+   },
+   "dubai": {
+    "speed": 1.019,
+    "ace": 7.95,
+    "matches": 31
+   },
+   "indianwells": {
+    "speed": 0.901,
+    "ace": 7.445,
+    "matches": 94
+   },
+   "miami": {
+    "speed": 0.816,
+    "ace": 7.106,
+    "matches": 95
+   },
+   "houston": {
+    "speed": 0.904,
+    "ace": 8.884,
+    "matches": 27
+   },
+   "marrakech": {
+    "speed": 0.594,
+    "ace": 3.559,
+    "matches": 31
+   },
+   "montecarlo": {
+    "speed": 0.598,
+    "ace": 4.8,
+    "matches": 54
+   },
+   "barcelona": {
+    "speed": 0.619,
+    "ace": 4.72,
+    "matches": 47
+   },
+   "estoril": {
+    "speed": 0.57,
+    "ace": 3.628,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 0.763,
+    "ace": 6.072,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.895,
+    "ace": 7.623,
+    "matches": 55
+   },
+   "rome": {
+    "speed": 0.723,
+    "ace": 5.811,
+    "matches": 55
+   },
+   "geneva": {
+    "speed": 1.083,
+    "ace": 8.763,
+    "matches": 27
+   },
+   "lyon": {
+    "speed": 0.838,
+    "ace": 5.686,
+    "matches": 27
+   },
+   "rolandgarros": {
+    "speed": 0.887,
+    "ace": 5.965,
+    "matches": 127
+   },
+   "shertogenbosch": {
+    "speed": 1.211,
+    "ace": 10.221,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.315,
+    "ace": 13.46,
+    "matches": 27
+   },
+   "halle": {
+    "speed": 1.094,
+    "ace": 8.945,
+    "matches": 31
+   },
+   "queens": {
+    "speed": 1.358,
+    "ace": 13.441,
+    "matches": 30
+   },
+   "eastbourne": {
+    "speed": 0.993,
+    "ace": 6.872,
+    "matches": 27
+   },
+   "wimbledon": {
+    "speed": 1.295,
+    "ace": 10.382,
+    "matches": 126
+   },
+   "bastad": {
+    "speed": 0.674,
+    "ace": 3.827,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.802,
+    "ace": 5.296,
+    "matches": 27
+   },
+   "gstaad": {
+    "speed": 1.13,
+    "ace": 7.748,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.764,
+    "ace": 5.02,
+    "matches": 30
+   },
+   "losCabos": {
+    "speed": 0.834,
+    "ace": 8.176,
+    "matches": 27
+   },
+   "kitzbuhel": {
+    "speed": 0.865,
+    "ace": 5.887,
+    "matches": 27
+   },
+   "washington": {
+    "speed": 1.059,
+    "ace": 7.979,
+    "matches": 46
+   },
+   "canada": {
+    "speed": 1.202,
+    "ace": 9.865,
+    "matches": 55
+   },
+   "cincinnati": {
+    "speed": 1.103,
+    "ace": 10.024,
+    "matches": 55
+   },
+   "winstonsalem": {
+    "speed": 1.043,
+    "ace": 8.031,
+    "matches": 46
+   },
+   "usopen": {
+    "speed": 1.18,
+    "ace": 8.55,
+    "matches": 127
+   },
+   "metz": {
+    "speed": 1.244,
+    "ace": 9.269,
+    "matches": 27
+   },
+   "chengdu": {
+    "speed": 1.045,
+    "ace": 9.173,
+    "matches": 27
+   },
+   "beijing": {
+    "speed": 1.001,
+    "ace": 7.699,
+    "matches": 30
+   },
+   "tokyo": {
+    "speed": 1.269,
+    "ace": 11.513,
+    "matches": 31
+   },
+   "shanghai": {
+    "speed": 1.211,
+    "ace": 10.325,
+    "matches": 55
+   },
+   "basel": {
+    "speed": 1.163,
+    "ace": 9.715,
+    "matches": 31
+   },
+   "vienna": {
+    "speed": 1.206,
+    "ace": 9.985,
+    "matches": 30
+   },
+   "paris": {
+    "speed": 1.03,
+    "ace": 9.022,
+    "matches": 45
+   },
+   "atpfinals": {
+    "speed": 1.041,
+    "ace": 10.529,
+    "matches": 15
+   }
+  },
+  "2019": {
+   "brisbane": {
+    "speed": 1.233,
+    "ace": 13.502,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 1.146,
+    "ace": 7.866,
+    "matches": 30
+   },
+   "auckland": {
+    "speed": 0.993,
+    "ace": 9.359,
+    "matches": 27
+   },
+   "ausopen": {
+    "speed": 1.459,
+    "ace": 10.584,
+    "matches": 127
+   },
+   "montpellier": {
+    "speed": 1.219,
+    "ace": 9.822,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.5,
+    "ace": 2.983,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 0.888,
+    "ace": 6.878,
+    "matches": 31
+   },
+   "delraybeach": {
+    "speed": 1.096,
+    "ace": 10.489,
+    "matches": 31
+   },
+   "rio": {
+    "speed": 0.687,
+    "ace": 4.511,
+    "matches": 30
+   },
+   "acapulco": {
+    "speed": 0.948,
+    "ace": 10.588,
+    "matches": 30
+   },
+   "dubai": {
+    "speed": 0.947,
+    "ace": 6.721,
+    "matches": 31
+   },
+   "indianwells": {
+    "speed": 0.776,
+    "ace": 6.79,
+    "matches": 93
+   },
+   "miami": {
+    "speed": 0.941,
+    "ace": 8.064,
+    "matches": 93
+   },
+   "houston": {
+    "speed": 0.829,
+    "ace": 7.026,
+    "matches": 27
+   },
+   "marrakech": {
+    "speed": 0.819,
+    "ace": 6.364,
+    "matches": 30
+   },
+   "montecarlo": {
+    "speed": 0.511,
+    "ace": 3.628,
+    "matches": 54
+   },
+   "barcelona": {
+    "speed": 0.581,
+    "ace": 4.256,
+    "matches": 47
+   },
+   "estoril": {
+    "speed": 0.574,
+    "ace": 3.95,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 0.735,
+    "ace": 5.795,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.787,
+    "ace": 5.847,
+    "matches": 54
+   },
+   "rome": {
+    "speed": 0.712,
+    "ace": 5.735,
+    "matches": 54
+   },
+   "geneva": {
+    "speed": 0.834,
+    "ace": 5.346,
+    "matches": 27
+   },
+   "lyon": {
+    "speed": 0.988,
+    "ace": 7.309,
+    "matches": 26
+   },
+   "rolandgarros": {
+    "speed": 0.849,
+    "ace": 5.659,
+    "matches": 127
+   },
+   "shertogenbosch": {
+    "speed": 1.106,
+    "ace": 8.703,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.373,
+    "ace": 12.47,
+    "matches": 26
+   },
+   "halle": {
+    "speed": 1.289,
+    "ace": 10.466,
+    "matches": 31
+   },
+   "queens": {
+    "speed": 1.257,
+    "ace": 10.884,
+    "matches": 30
+   },
+   "eastbourne": {
+    "speed": 1.058,
+    "ace": 9.649,
+    "matches": 27
+   },
+   "wimbledon": {
+    "speed": 1.158,
+    "ace": 8.564,
+    "matches": 127
+   },
+   "bastad": {
+    "speed": 0.787,
+    "ace": 5.004,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.716,
+    "ace": 4.486,
+    "matches": 27
+   },
+   "gstaad": {
+    "speed": 0.766,
+    "ace": 4.856,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.848,
+    "ace": 6.352,
+    "matches": 31
+   },
+   "kitzbuhel": {
+    "speed": 0.809,
+    "ace": 5.231,
+    "matches": 27
+   },
+   "losCabos": {
+    "speed": 0.872,
+    "ace": 6.218,
+    "matches": 27
+   },
+   "washington": {
+    "speed": 1.12,
+    "ace": 11.909,
+    "matches": 47
+   },
+   "canada": {
+    "speed": 1.095,
+    "ace": 8.593,
+    "matches": 54
+   },
+   "cincinnati": {
+    "speed": 1.086,
+    "ace": 9.656,
+    "matches": 54
+   },
+   "winstonsalem": {
+    "speed": 1.175,
+    "ace": 9.231,
+    "matches": 47
+   },
+   "usopen": {
+    "speed": 1.14,
+    "ace": 8.029,
+    "matches": 125
+   },
+   "metz": {
+    "speed": 1.294,
+    "ace": 10.764,
+    "matches": 27
+   },
+   "chengdu": {
+    "speed": 1.53,
+    "ace": 12.62,
+    "matches": 27
+   },
+   "beijing": {
+    "speed": 1.2,
+    "ace": 9.723,
+    "matches": 31
+   },
+   "tokyo": {
+    "speed": 1.059,
+    "ace": 9.59,
+    "matches": 31
+   },
+   "shanghai": {
+    "speed": 1.314,
+    "ace": 10.252,
+    "matches": 55
+   },
+   "basel": {
+    "speed": 1.159,
+    "ace": 11.158,
+    "matches": 30
+   },
+   "vienna": {
+    "speed": 1.138,
+    "ace": 8.885,
+    "matches": 31
+   },
+   "paris": {
+    "speed": 1.186,
+    "ace": 10.397,
+    "matches": 46
+   },
+   "atpfinals": {
+    "speed": 1.41,
+    "ace": 9.388,
+    "matches": 15
+   }
+  },
+  "2020": {
+   "doha": {
+    "speed": 0.929,
+    "ace": 7.688,
+    "matches": 27
+   },
+   "adelaide": {
+    "speed": 1.084,
+    "ace": 11.483,
+    "matches": 27
+   },
+   "auckland": {
+    "speed": 1.247,
+    "ace": 9.431,
+    "matches": 27
+   },
+   "ausopen": {
+    "speed": 1.235,
+    "ace": 8.986,
+    "matches": 126
+   },
+   "montpellier": {
+    "speed": 1.236,
+    "ace": 9.285,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.873,
+    "ace": 4.801,
+    "matches": 26
+   },
+   "rotterdam": {
+    "speed": 1.176,
+    "ace": 8.61,
+    "matches": 30
+   },
+   "delraybeach": {
+    "speed": 0.925,
+    "ace": 9.465,
+    "matches": 31
+   },
+   "acapulco": {
+    "speed": 0.97,
+    "ace": 9.696,
+    "matches": 31
+   },
+   "dubai": {
+    "speed": 1.009,
+    "ace": 7.19,
+    "matches": 31
+   },
+   "santiago": {
+    "speed": 0.745,
+    "ace": 4.602,
+    "matches": 27
+   },
+   "cincinnati": {
+    "speed": 0.989,
+    "ace": 9.511,
+    "matches": 55
+   },
+   "usopen": {
+    "speed": 1.232,
+    "ace": 8.311,
+    "matches": 127
+   },
+   "kitzbuhel": {
+    "speed": 0.779,
+    "ace": 5.885,
+    "matches": 27
+   },
+   "rome": {
+    "speed": 0.734,
+    "ace": 5.498,
+    "matches": 54
+   },
+   "hamburg": {
+    "speed": 0.575,
+    "ace": 4.745,
+    "matches": 31
+   },
+   "rolandgarros": {
+    "speed": 0.725,
+    "ace": 4.298,
+    "matches": 127
+   },
+   "vienna": {
+    "speed": 1.197,
+    "ace": 9.542,
+    "matches": 31
+   },
+   "paris": {
+    "speed": 1.147,
+    "ace": 9.873,
+    "matches": 54
+   },
+   "atpfinals": {
+    "speed": 1.192,
+    "ace": 8.33,
+    "matches": 15
+   }
+  },
+  "2021": {
+   "munich": {
+    "speed": 0.722,
+    "ace": 5.369,
+    "matches": 26
+   },
+   "queens": {
+    "speed": 1.267,
+    "ace": 10.866,
+    "matches": 31
+   },
+   "gstaad": {
+    "speed": 1.059,
+    "ace": 7.016,
+    "matches": 27
+   },
+   "bastad": {
+    "speed": 0.616,
+    "ace": 4.462,
+    "matches": 26
+   },
+   "kitzbuhel": {
+    "speed": 0.782,
+    "ace": 4.866,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.312,
+    "ace": 12.773,
+    "matches": 27
+   },
+   "geneva": {
+    "speed": 0.811,
+    "ace": 5.739,
+    "matches": 27
+   },
+   "vienna": {
+    "speed": 1.163,
+    "ace": 8.967,
+    "matches": 31
+   },
+   "metz": {
+    "speed": 1.171,
+    "ace": 8.859,
+    "matches": 27
+   },
+   "paris": {
+    "speed": 1.157,
+    "ace": 8.221,
+    "matches": 54
+   },
+   "montpellier": {
+    "speed": 1.216,
+    "ace": 8.347,
+    "matches": 27
+   },
+   "miami": {
+    "speed": 0.953,
+    "ace": 7.45,
+    "matches": 94
+   },
+   "indianwells": {
+    "speed": 0.756,
+    "ace": 5.96,
+    "matches": 94
+   },
+   "rotterdam": {
+    "speed": 0.89,
+    "ace": 6.88,
+    "matches": 31
+   },
+   "montecarlo": {
+    "speed": 0.482,
+    "ace": 3.592,
+    "matches": 55
+   },
+   "hamburg": {
+    "speed": 0.712,
+    "ace": 4.598,
+    "matches": 26
+   },
+   "rome": {
+    "speed": 0.721,
+    "ace": 5.943,
+    "matches": 54
+   },
+   "washington": {
+    "speed": 0.996,
+    "ace": 7.679,
+    "matches": 46
+   },
+   "canada": {
+    "speed": 1.212,
+    "ace": 10.774,
+    "matches": 46
+   },
+   "cincinnati": {
+    "speed": 1.331,
+    "ace": 10.296,
+    "matches": 55
+   },
+   "barcelona": {
+    "speed": 0.616,
+    "ace": 4.058,
+    "matches": 47
+   },
+   "umag": {
+    "speed": 0.543,
+    "ace": 3.221,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 1.088,
+    "ace": 8.024,
+    "matches": 25
+   },
+   "dubai": {
+    "speed": 1.239,
+    "ace": 9.408,
+    "matches": 45
+   },
+   "delraybeach": {
+    "speed": 0.868,
+    "ace": 7.761,
+    "matches": 27
+   },
+   "halle": {
+    "speed": 1.271,
+    "ace": 9.403,
+    "matches": 31
+   },
+   "buenosaires": {
+    "speed": 0.552,
+    "ace": 3.169,
+    "matches": 27
+   },
+   "atpfinals": {
+    "speed": 1.776,
+    "ace": 13.08,
+    "matches": 15
+   },
+   "eastbourne": {
+    "speed": 1.045,
+    "ace": 7.758,
+    "matches": 27
+   },
+   "acapulco": {
+    "speed": 0.73,
+    "ace": 5.975,
+    "matches": 30
+   },
+   "madrid": {
+    "speed": 0.817,
+    "ace": 6.947,
+    "matches": 55
+   },
+   "rolandgarros": {
+    "speed": 0.926,
+    "ace": 5.703,
+    "matches": 126
+   },
+   "wimbledon": {
+    "speed": 1.307,
+    "ace": 8.454,
+    "matches": 126
+   },
+   "usopen": {
+    "speed": 1.494,
+    "ace": 10.046,
+    "matches": 127
+   },
+   "ausopen": {
+    "speed": 1.343,
+    "ace": 9.11,
+    "matches": 126
+   },
+   "winstonsalem": {
+    "speed": 1.203,
+    "ace": 8.39,
+    "matches": 47
+   },
+   "estoril": {
+    "speed": 0.669,
+    "ace": 4.963,
+    "matches": 26
+   },
+   "losCabos": {
+    "speed": 0.99,
+    "ace": 10.362,
+    "matches": 27
+   },
+   "lyon": {
+    "speed": 0.824,
+    "ace": 5.449,
+    "matches": 27
+   },
+   "mallorca": {
+    "speed": 1.321,
+    "ace": 11.322,
+    "matches": 26
+   },
+   "santiago": {
+    "speed": 1.049,
+    "ace": 6.63,
+    "matches": 27
+   }
+  },
+  "2022": {
+   "ausopen": {
+    "speed": 1.371,
+    "ace": 8.442,
+    "matches": 126
+   },
+   "montpellier": {
+    "speed": 1.102,
+    "ace": 8.198,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.569,
+    "ace": 3.201,
+    "matches": 27
+   },
+   "rotterdam": {
+    "speed": 1.03,
+    "ace": 7.26,
+    "matches": 31
+   },
+   "dallas": {
+    "speed": 1.333,
+    "ace": 14.118,
+    "matches": 27
+   },
+   "delraybeach": {
+    "speed": 0.774,
+    "ace": 7.31,
+    "matches": 27
+   },
+   "doha": {
+    "speed": 1.094,
+    "ace": 7.602,
+    "matches": 27
+   },
+   "rio": {
+    "speed": 0.628,
+    "ace": 4.163,
+    "matches": 27
+   },
+   "acapulco": {
+    "speed": 0.906,
+    "ace": 6.888,
+    "matches": 30
+   },
+   "dubai": {
+    "speed": 1.347,
+    "ace": 10.186,
+    "matches": 31
+   },
+   "santiago": {
+    "speed": 0.682,
+    "ace": 3.913,
+    "matches": 27
+   },
+   "indianwells": {
+    "speed": 0.935,
+    "ace": 7.249,
+    "matches": 93
+   },
+   "miami": {
+    "speed": 0.985,
+    "ace": 7.239,
+    "matches": 95
+   },
+   "houston": {
+    "speed": 0.96,
+    "ace": 9.535,
+    "matches": 26
+   },
+   "marrakech": {
+    "speed": 0.622,
+    "ace": 3.829,
+    "matches": 31
+   },
+   "montecarlo": {
+    "speed": 0.653,
+    "ace": 4.115,
+    "matches": 55
+   },
+   "barcelona": {
+    "speed": 0.587,
+    "ace": 4.002,
+    "matches": 47
+   },
+   "estoril": {
+    "speed": 0.696,
+    "ace": 4.404,
+    "matches": 27
+   },
+   "munich": {
+    "speed": 0.666,
+    "ace": 4.325,
+    "matches": 27
+   },
+   "madrid": {
+    "speed": 0.969,
+    "ace": 7.139,
+    "matches": 54
+   },
+   "rome": {
+    "speed": 0.727,
+    "ace": 5.163,
+    "matches": 55
+   },
+   "geneva": {
+    "speed": 0.87,
+    "ace": 6.245,
+    "matches": 27
+   },
+   "lyon": {
+    "speed": 0.782,
+    "ace": 4.798,
+    "matches": 27
+   },
+   "rolandgarros": {
+    "speed": 0.859,
+    "ace": 5.28,
+    "matches": 127
+   },
+   "shertogenbosch": {
+    "speed": 1.036,
+    "ace": 8.263,
+    "matches": 27
+   },
+   "stuttgart": {
+    "speed": 1.46,
+    "ace": 12.22,
+    "matches": 26
+   },
+   "halle": {
+    "speed": 1.269,
+    "ace": 11.259,
+    "matches": 31
+   },
+   "queens": {
+    "speed": 1.171,
+    "ace": 9.495,
+    "matches": 31
+   },
+   "mallorca": {
+    "speed": 1.255,
+    "ace": 9.137,
+    "matches": 26
+   },
+   "eastbourne": {
+    "speed": 0.98,
+    "ace": 8.36,
+    "matches": 27
+   },
+   "wimbledon": {
+    "speed": 1.326,
+    "ace": 8.275,
+    "matches": 125
+   },
+   "bastad": {
+    "speed": 0.673,
+    "ace": 3.905,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.694,
+    "ace": 4.033,
+    "matches": 31
+   },
+   "gstaad": {
+    "speed": 0.963,
+    "ace": 7.386,
+    "matches": 27
+   },
+   "kitzbuhel": {
+    "speed": 0.922,
+    "ace": 5.231,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.543,
+    "ace": 3.24,
+    "matches": 27
+   },
+   "losCabos": {
+    "speed": 0.966,
+    "ace": 8.3,
+    "matches": 27
+   },
+   "washington": {
+    "speed": 1.145,
+    "ace": 9.302,
+    "matches": 47
+   },
+   "canada": {
+    "speed": 1.045,
+    "ace": 8.276,
+    "matches": 55
+   },
+   "cincinnati": {
+    "speed": 1.246,
     "ace": 9.246,
     "matches": 55
    },
    "winstonsalem": {
-    "speed": 1.015,
+    "speed": 1.133,
     "ace": 8.625,
     "matches": 47
    },
    "usopen": {
-    "speed": 1.16,
+    "speed": 1.366,
     "ace": 8.265,
     "matches": 126
    },
+   "metz": {
+    "speed": 0.914,
+    "ace": 6.825,
+    "matches": 27
+   },
    "tokyo": {
-    "speed": 1.195,
+    "speed": 1.207,
     "ace": 8.941,
     "matches": 30
    },
+   "basel": {
+    "speed": 1.152,
+    "ace": 8.811,
+    "matches": 31
+   },
    "vienna": {
-    "speed": 1.262,
+    "speed": 1.33,
     "ace": 10.605,
     "matches": 31
    },
    "paris": {
-    "speed": 1.028,
+    "speed": 1.148,
     "ace": 8.28,
     "matches": 55
+   },
+   "atpfinals": {
+    "speed": 1.908,
+    "ace": 13.128,
+    "matches": 15
    }
   },
   "2023": {
+   "auckland": {
+    "speed": 1.202,
+    "ace": 8.947,
+    "matches": 26
+   },
    "ausopen": {
-    "speed": 1.104,
+    "speed": 1.265,
     "ace": 8.639,
     "matches": 127
    },
    "dallas": {
-    "speed": 1.191,
+    "speed": 1.442,
     "ace": 12.93,
     "matches": 27
    },
    "montpellier": {
-    "speed": 0.892,
+    "speed": 1.004,
     "ace": 8.901,
     "matches": 26
    },
+   "delraybeach": {
+    "speed": 0.941,
+    "ace": 7.151,
+    "matches": 27
+   },
+   "buenosaires": {
+    "speed": 0.585,
+    "ace": 3.376,
+    "matches": 27
+   },
    "rotterdam": {
-    "speed": 1.019,
+    "speed": 1.013,
     "ace": 8.985,
     "matches": 31
    },
+   "doha": {
+    "speed": 1.032,
+    "ace": 7.16,
+    "matches": 27
+   },
+   "acapulco": {
+    "speed": 0.724,
+    "ace": 5.985,
+    "matches": 31
+   },
    "dubai": {
-    "speed": 1.195,
+    "speed": 1.223,
     "ace": 10.073,
     "matches": 31
    },
+   "santiago": {
+    "speed": 0.902,
+    "ace": 5.591,
+    "matches": 27
+   },
    "indianwells": {
-    "speed": 0.912,
+    "speed": 0.842,
     "ace": 6.995,
     "matches": 95
    },
    "miami": {
-    "speed": 1.088,
+    "speed": 1.135,
     "ace": 9.114,
     "matches": 93
    },
+   "estoril": {
+    "speed": 0.627,
+    "ace": 4.562,
+    "matches": 27
+   },
    "houston": {
-    "speed": 0.883,
+    "speed": 1.033,
     "ace": 8.331,
     "matches": 27
    },
+   "marrakech": {
+    "speed": 0.668,
+    "ace": 4.195,
+    "matches": 27
+   },
    "montecarlo": {
-    "speed": 0.688,
+    "speed": 0.631,
     "ace": 5.144,
     "matches": 54
    },
+   "barcelona": {
+    "speed": 0.505,
+    "ace": 3.881,
+    "matches": 45
+   },
+   "munich": {
+    "speed": 0.734,
+    "ace": 5.153,
+    "matches": 27
+   },
    "madrid": {
-    "speed": 0.972,
+    "speed": 0.948,
     "ace": 7.306,
     "matches": 95
    },
    "rome": {
-    "speed": 0.783,
+    "speed": 0.682,
     "ace": 4.987,
     "matches": 95
    },
+   "geneva": {
+    "speed": 0.896,
+    "ace": 7.151,
+    "matches": 26
+   },
+   "lyon": {
+    "speed": 0.694,
+    "ace": 4.886,
+    "matches": 26
+   },
    "rolandgarros": {
-    "speed": 0.691,
+    "speed": 0.779,
     "ace": 4.825,
     "matches": 126
    },
    "shertogenbosch": {
-    "speed": 1.081,
+    "speed": 1.263,
     "ace": 9.507,
     "matches": 27
    },
    "stuttgart": {
-    "speed": 1.276,
+    "speed": 1.54,
     "ace": 13.309,
     "matches": 27
    },
    "halle": {
-    "speed": 1.239,
+    "speed": 1.361,
     "ace": 11.048,
     "matches": 31
    },
+   "queens": {
+    "speed": 1.048,
+    "ace": 7.574,
+    "matches": 31
+   },
+   "mallorca": {
+    "speed": 1.051,
+    "ace": 9.846,
+    "matches": 27
+   },
+   "eastbourne": {
+    "speed": 1.084,
+    "ace": 7.395,
+    "matches": 27
+   },
    "wimbledon": {
-    "speed": 1.109,
+    "speed": 1.302,
     "ace": 8.765,
     "matches": 127
    },
    "gstaad": {
-    "speed": 0.842,
+    "speed": 0.855,
     "ace": 6.242,
     "matches": 27
    },
+   "bastad": {
+    "speed": 0.802,
+    "ace": 4.771,
+    "matches": 27
+   },
+   "hamburg": {
+    "speed": 0.759,
+    "ace": 5.176,
+    "matches": 31
+   },
+   "umag": {
+    "speed": 0.596,
+    "ace": 4.035,
+    "matches": 27
+   },
+   "kitzbuhel": {
+    "speed": 0.985,
+    "ace": 6.754,
+    "matches": 27
+   },
+   "losCabos": {
+    "speed": 0.792,
+    "ace": 7.442,
+    "matches": 27
+   },
    "washington": {
-    "speed": 0.916,
+    "speed": 1.046,
     "ace": 8.742,
     "matches": 46
    },
    "canada": {
-    "speed": 1.043,
+    "speed": 1.096,
     "ace": 8.21,
     "matches": 54
    },
    "cincinnati": {
-    "speed": 0.801,
+    "speed": 0.849,
     "ace": 6.748,
     "matches": 54
    },
    "winstonsalem": {
-    "speed": 1.049,
+    "speed": 1.128,
     "ace": 8.055,
     "matches": 46
    },
    "usopen": {
-    "speed": 1.037,
+    "speed": 1.179,
     "ace": 8.243,
     "matches": 127
    },
+   "chengdu": {
+    "speed": 1.116,
+    "ace": 7.787,
+    "matches": 27
+   },
    "beijing": {
-    "speed": 0.99,
+    "speed": 0.96,
     "ace": 6.383,
     "matches": 31
    },
    "shanghai": {
-    "speed": 1.019,
+    "speed": 1.065,
     "ace": 8.38,
     "matches": 95
    },
    "tokyo": {
-    "speed": 1.023,
+    "speed": 1.12,
     "ace": 8.347,
     "matches": 31
    },
    "basel": {
-    "speed": 1.002,
+    "speed": 1.226,
     "ace": 9.252,
     "matches": 31
    },
+   "vienna": {
+    "speed": 1.22,
+    "ace": 8.929,
+    "matches": 31
+   },
    "paris": {
-    "speed": 1.136,
+    "speed": 1.208,
     "ace": 9.102,
     "matches": 53
    },
    "metz": {
-    "speed": 1.018,
+    "speed": 1.136,
     "ace": 8.579,
     "matches": 27
+   },
+   "atpfinals": {
+    "speed": 1.708,
+    "ace": 12.546,
+    "matches": 15
    }
   },
   "2024": {
    "brisbane": {
-    "speed": 1.261,
+    "speed": 1.334,
     "ace": 9.96,
     "matches": 30
    },
    "hongkong": {
-    "speed": 1.005,
+    "speed": 0.974,
     "ace": 8.301,
     "matches": 27
    },
    "adelaide": {
-    "speed": 0.987,
+    "speed": 1.038,
     "ace": 8.643,
     "matches": 27
    },
    "auckland": {
-    "speed": 1.152,
+    "speed": 1.042,
     "ace": 8.371,
     "matches": 26
    },
    "ausopen": {
-    "speed": 1.154,
+    "speed": 1.337,
     "ace": 9.089,
     "matches": 127
    },
+   "montpellier": {
+    "speed": 1.061,
+    "ace": 8.183,
+    "matches": 27
+   },
+   "dallas": {
+    "speed": 1.093,
+    "ace": 9.394,
+    "matches": 26
+   },
    "delraybeach": {
-    "speed": 1.051,
+    "speed": 1.03,
     "ace": 8.293,
     "matches": 27
    },
+   "buenosaires": {
+    "speed": 0.526,
+    "ace": 3.749,
+    "matches": 27
+   },
    "rotterdam": {
-    "speed": 1.187,
+    "speed": 1.33,
     "ace": 11.107,
     "matches": 31
    },
    "doha": {
-    "speed": 0.779,
+    "speed": 0.782,
     "ace": 7.069,
     "matches": 27
    },
    "losCabos": {
-    "speed": 0.678,
+    "speed": 0.759,
     "ace": 5.889,
     "matches": 27
    },
    "acapulco": {
-    "speed": 0.903,
+    "speed": 0.911,
     "ace": 7.129,
     "matches": 31
    },
    "dubai": {
-    "speed": 1.022,
+    "speed": 1.13,
     "ace": 10.298,
     "matches": 31
    },
+   "santiago": {
+    "speed": 0.904,
+    "ace": 5.054,
+    "matches": 27
+   },
    "indianwells": {
-    "speed": 0.837,
+    "speed": 0.832,
     "ace": 6.644,
     "matches": 94
    },
    "miami": {
-    "speed": 1.135,
+    "speed": 1.099,
     "ace": 9.174,
     "matches": 95
    },
+   "estoril": {
+    "speed": 0.573,
+    "ace": 4.232,
+    "matches": 27
+   },
    "houston": {
-    "speed": 0.835,
+    "speed": 0.992,
     "ace": 7.936,
     "matches": 27
    },
+   "marrakech": {
+    "speed": 0.721,
+    "ace": 4.862,
+    "matches": 27
+   },
    "montecarlo": {
-    "speed": 0.601,
+    "speed": 0.602,
     "ace": 4.866,
     "matches": 55
    },
    "barcelona": {
-    "speed": 0.726,
+    "speed": 0.568,
     "ace": 3.961,
     "matches": 46
    },
    "munich": {
-    "speed": 0.738,
+    "speed": 0.798,
     "ace": 5.867,
     "matches": 27
    },
+   "bucharest": {
+    "speed": 0.565,
+    "ace": 3.638,
+    "matches": 27
+   },
    "madrid": {
-    "speed": 0.759,
+    "speed": 0.76,
     "ace": 5.929,
     "matches": 94
    },
    "rome": {
-    "speed": 0.744,
+    "speed": 0.734,
     "ace": 5.726,
     "matches": 95
    },
+   "geneva": {
+    "speed": 0.74,
+    "ace": 5.438,
+    "matches": 26
+   },
+   "lyon": {
+    "speed": 0.811,
+    "ace": 6.443,
+    "matches": 25
+   },
    "rolandgarros": {
-    "speed": 0.739,
+    "speed": 0.8,
     "ace": 5.448,
     "matches": 126
    },
    "shertogenbosch": {
-    "speed": 0.937,
+    "speed": 0.946,
     "ace": 8.613,
     "matches": 27
    },
    "stuttgart": {
-    "speed": 1.336,
+    "speed": 1.478,
     "ace": 13.69,
     "matches": 26
    },
    "halle": {
-    "speed": 1.264,
+    "speed": 1.49,
     "ace": 13.177,
     "matches": 31
    },
    "queens": {
-    "speed": 1.165,
+    "speed": 1.215,
     "ace": 10.465,
     "matches": 31
    },
    "mallorca": {
-    "speed": 1.192,
+    "speed": 1.207,
     "ace": 8.863,
     "matches": 27
    },
    "eastbourne": {
-    "speed": 1.012,
+    "speed": 1.184,
     "ace": 8.888,
     "matches": 27
    },
    "wimbledon": {
-    "speed": 1.202,
+    "speed": 1.378,
     "ace": 9.533,
     "matches": 125
    },
    "gstaad": {
-    "speed": 0.834,
+    "speed": 0.998,
     "ace": 7.768,
     "matches": 27
    },
    "hamburg": {
-    "speed": 0.899,
+    "speed": 0.853,
     "ace": 5.945,
     "matches": 31
    },
+   "bastad": {
+    "speed": 0.665,
+    "ace": 4.521,
+    "matches": 27
+   },
+   "kitzbuhel": {
+    "speed": 0.803,
+    "ace": 5.336,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.537,
+    "ace": 3.854,
+    "matches": 27
+   },
    "washington": {
-    "speed": 1.203,
+    "speed": 1.279,
     "ace": 11.355,
     "matches": 47
    },
    "canada": {
-    "speed": 0.861,
+    "speed": 0.895,
     "ace": 7.184,
     "matches": 54
    },
    "cincinnati": {
-    "speed": 1.062,
+    "speed": 1.167,
     "ace": 9.738,
     "matches": 54
    },
    "winstonsalem": {
-    "speed": 0.866,
+    "speed": 0.879,
     "ace": 6.887,
     "matches": 46
    },
    "usopen": {
-    "speed": 1.05,
+    "speed": 1.191,
     "ace": 8.425,
     "matches": 127
    },
    "chengdu": {
-    "speed": 1.209,
+    "speed": 1.333,
     "ace": 11.441,
     "matches": 27
    },
    "hangzhou": {
-    "speed": 1.039,
+    "speed": 1.034,
     "ace": 10.397,
     "matches": 26
    },
    "tokyo": {
-    "speed": 1.136,
+    "speed": 1.161,
     "ace": 9.205,
     "matches": 31
    },
    "beijing": {
-    "speed": 0.826,
+    "speed": 0.867,
     "ace": 6.718,
     "matches": 31
    },
    "shanghai": {
-    "speed": 1.066,
+    "speed": 1.138,
     "ace": 8.632,
     "matches": 95
    },
    "almaty": {
-    "speed": 1.005,
+    "speed": 1.038,
     "ace": 9.461,
     "matches": 27
    },
    "basel": {
-    "speed": 1.323,
+    "speed": 1.48,
     "ace": 12.712,
     "matches": 31
    },
    "vienna": {
-    "speed": 1.028,
+    "speed": 1.162,
     "ace": 9.168,
     "matches": 30
    },
    "paris": {
-    "speed": 1.192,
+    "speed": 1.306,
     "ace": 10.221,
     "matches": 55
+   },
+   "metz": {
+    "speed": 1.094,
+    "ace": 8.169,
+    "matches": 26
+   },
+   "atpfinals": {
+    "speed": 1.375,
+    "ace": 11.244,
+    "matches": 15
    }
   },
   "2025": {
    "brisbane": {
-    "speed": 1.121,
+    "speed": 1.196,
     "ace": 13.009,
     "matches": 31
    },
    "hongkong": {
-    "speed": 1.068,
+    "speed": 1.164,
     "ace": 8.28,
     "matches": 27
    },
    "adelaide": {
-    "speed": 1.005,
+    "speed": 1.067,
     "ace": 10.235,
     "matches": 26
    },
    "auckland": {
-    "speed": 0.856,
+    "speed": 0.837,
     "ace": 6.521,
     "matches": 27
    },
    "ausopen": {
-    "speed": 1.139,
+    "speed": 1.239,
     "ace": 8.965,
     "matches": 127
    },
    "montpellier": {
-    "speed": 1.142,
+    "speed": 1.215,
     "ace": 11.443,
     "matches": 27
    },
    "dallas": {
-    "speed": 1.068,
+    "speed": 1.138,
     "ace": 9.234,
     "matches": 31
    },
    "rotterdam": {
-    "speed": 0.884,
+    "speed": 0.823,
     "ace": 7.263,
     "matches": 31
    },
+   "buenosaires": {
+    "speed": 0.753,
+    "ace": 4.619,
+    "matches": 26
+   },
    "delraybeach": {
-    "speed": 1.013,
+    "speed": 1.091,
     "ace": 8.893,
     "matches": 26
    },
    "doha": {
-    "speed": 1.007,
+    "speed": 1.103,
     "ace": 9.824,
     "matches": 30
    },
    "rio": {
-    "speed": 0.991,
+    "speed": 0.794,
     "ace": 5.788,
     "matches": 31
    },
    "acapulco": {
-    "speed": 0.823,
+    "speed": 0.822,
     "ace": 6.859,
     "matches": 29
    },
    "dubai": {
-    "speed": 0.874,
+    "speed": 0.949,
     "ace": 8.812,
     "matches": 31
    },
+   "santiago": {
+    "speed": 0.832,
+    "ace": 5.548,
+    "matches": 27
+   },
    "indianwells": {
-    "speed": 0.697,
+    "speed": 0.694,
     "ace": 5.793,
     "matches": 95
    },
@@ -2040,285 +3115,345 @@
     "ace": 10.182,
     "matches": 94
    },
+   "bucharest": {
+    "speed": 0.373,
+    "ace": 2.437,
+    "matches": 27
+   },
    "houston": {
-    "speed": 0.716,
+    "speed": 0.788,
     "ace": 5.4,
     "matches": 27
    },
    "marrakech": {
-    "speed": 0.816,
+    "speed": 0.822,
     "ace": 5.839,
     "matches": 27
    },
    "montecarlo": {
-    "speed": 0.556,
+    "speed": 0.539,
     "ace": 4.239,
     "matches": 55
    },
    "barcelona": {
-    "speed": 0.503,
+    "speed": 0.459,
     "ace": 3.78,
     "matches": 31
    },
    "munich": {
-    "speed": 0.843,
+    "speed": 0.698,
     "ace": 5.766,
     "matches": 31
    },
    "madrid": {
-    "speed": 0.85,
+    "speed": 0.795,
     "ace": 6.708,
     "matches": 93
    },
    "rome": {
-    "speed": 0.714,
+    "speed": 0.581,
     "ace": 4.848,
     "matches": 94
    },
    "geneva": {
-    "speed": 0.767,
+    "speed": 0.781,
     "ace": 7.197,
     "matches": 27
    },
    "hamburg": {
-    "speed": 0.631,
+    "speed": 0.604,
     "ace": 4.993,
     "matches": 31
    },
    "rolandgarros": {
-    "speed": 0.749,
+    "speed": 0.815,
     "ace": 5.771,
     "matches": 125
    },
    "shertogenbosch": {
-    "speed": 1.017,
+    "speed": 1.106,
     "ace": 8.913,
     "matches": 25
    },
    "stuttgart": {
-    "speed": 1.271,
+    "speed": 1.405,
     "ace": 12.152,
     "matches": 27
    },
    "halle": {
-    "speed": 1.268,
+    "speed": 1.313,
     "ace": 10.453,
     "matches": 31
    },
    "queens": {
-    "speed": 1.347,
+    "speed": 1.36,
     "ace": 11.575,
     "matches": 31
    },
    "mallorca": {
-    "speed": 1.075,
+    "speed": 1.076,
     "ace": 8.323,
     "matches": 27
    },
    "eastbourne": {
-    "speed": 0.925,
+    "speed": 0.792,
     "ace": 7.155,
     "matches": 27
    },
    "wimbledon": {
-    "speed": 1.089,
+    "speed": 1.236,
     "ace": 9.537,
     "matches": 127
    },
+   "bastad": {
+    "speed": 0.735,
+    "ace": 5.278,
+    "matches": 27
+   },
    "gstaad": {
-    "speed": 0.981,
+    "speed": 1.092,
     "ace": 8.331,
     "matches": 27
    },
+   "losCabos": {
+    "speed": 0.834,
+    "ace": 7.329,
+    "matches": 27
+   },
+   "umag": {
+    "speed": 0.746,
+    "ace": 4.6,
+    "matches": 27
+   },
    "kitzbuhel": {
-    "speed": 0.838,
+    "speed": 0.912,
     "ace": 7.723,
     "matches": 27
    },
    "washington": {
-    "speed": 1.147,
+    "speed": 1.085,
     "ace": 9.441,
     "matches": 47
    },
    "canada": {
-    "speed": 1.049,
+    "speed": 1.07,
     "ace": 8.787,
     "matches": 94
    },
    "cincinnati": {
-    "speed": 1.143,
+    "speed": 1.144,
     "ace": 9.823,
     "matches": 95
    },
    "winstonsalem": {
-    "speed": 1.11,
+    "speed": 1.016,
     "ace": 9.098,
     "matches": 45
    },
    "usopen": {
-    "speed": 0.981,
+    "speed": 1.085,
     "ace": 8.641,
     "matches": 126
    },
    "chengdu": {
-    "speed": 1.181,
+    "speed": 1.319,
     "ace": 11.125,
     "matches": 27
    },
    "hangzhou": {
-    "speed": 1.0,
+    "speed": 1.08,
     "ace": 10.017,
     "matches": 27
    },
    "tokyo": {
-    "speed": 1.125,
+    "speed": 1.159,
     "ace": 9.386,
     "matches": 31
    },
    "beijing": {
-    "speed": 0.896,
+    "speed": 0.951,
     "ace": 7.604,
     "matches": 31
    },
    "shanghai": {
-    "speed": 1.095,
+    "speed": 1.113,
     "ace": 9.539,
     "matches": 95
    },
    "almaty": {
-    "speed": 0.982,
+    "speed": 1.095,
     "ace": 9.048,
     "matches": 27
    },
    "brussels": {
-    "speed": 1.233,
+    "speed": 1.322,
     "ace": 11.931,
     "matches": 27
    },
    "basel": {
-    "speed": 1.287,
+    "speed": 1.351,
     "ace": 12.138,
     "matches": 30
    },
    "vienna": {
-    "speed": 1.246,
+    "speed": 1.209,
     "ace": 9.84,
     "matches": 30
    },
    "paris": {
-    "speed": 1.025,
+    "speed": 0.99,
     "ace": 8.417,
     "matches": 54
    },
    "athens": {
-    "speed": 1.477,
+    "speed": 1.556,
     "ace": 11.944,
     "matches": 27
    },
    "metz": {
-    "speed": 1.166,
+    "speed": 1.277,
     "ace": 9.376,
     "matches": 27
+   },
+   "atpfinals": {
+    "speed": 1.387,
+    "ace": 9.837,
+    "matches": 15
    }
   },
   "2026": {
    "brisbane": {
-    "speed": 1.149,
+    "speed": 1.209,
     "ace": 13.333,
     "matches": 31
    },
    "hongkong": {
-    "speed": 1.118,
+    "speed": 1.203,
     "ace": 9.071,
     "matches": 27
    },
+   "adelaide": {
+    "speed": 1.17,
+    "ace": 9.682,
+    "matches": 26
+   },
    "auckland": {
-    "speed": 1.116,
+    "speed": 1.124,
     "ace": 9.477,
     "matches": 27
    },
    "ausopen": {
-    "speed": 1.216,
+    "speed": 1.35,
     "ace": 9.542,
     "matches": 126
    },
    "montpellier": {
-    "speed": 1.286,
+    "speed": 1.436,
     "ace": 14.196,
     "matches": 27
    },
+   "buenosaires": {
+    "speed": 0.661,
+    "ace": 4.133,
+    "matches": 27
+   },
    "dallas": {
-    "speed": 1.148,
+    "speed": 1.349,
     "ace": 13.678,
     "matches": 31
    },
    "rotterdam": {
-    "speed": 1.057,
+    "speed": 1.046,
     "ace": 8.592,
     "matches": 31
    },
    "delraybeach": {
-    "speed": 1.163,
+    "speed": 1.35,
     "ace": 11.59,
     "matches": 27
    },
    "doha": {
-    "speed": 0.894,
+    "speed": 0.937,
     "ace": 7.339,
     "matches": 31
    },
+   "rio": {
+    "speed": 1.004,
+    "ace": 6.377,
+    "matches": 31
+   },
    "acapulco": {
-    "speed": 1.037,
+    "speed": 1.168,
     "ace": 10.075,
     "matches": 31
    },
    "dubai": {
-    "speed": 1.287,
+    "speed": 1.402,
     "ace": 13.188,
     "matches": 30
    },
+   "santiago": {
+    "speed": 0.896,
+    "ace": 5.322,
+    "matches": 27
+   },
    "indianwells": {
-    "speed": 1.084,
+    "speed": 1.175,
     "ace": 8.993,
     "matches": 94
    },
    "miami": {
-    "speed": 1.173,
+    "speed": 1.282,
     "ace": 10.567,
     "matches": 95
    },
+   "bucharest": {
+    "speed": 0.394,
+    "ace": 2.896,
+    "matches": 27
+   },
    "houston": {
-    "speed": 0.777,
+    "speed": 0.727,
     "ace": 6.93,
     "matches": 27
    },
+   "marrakech": {
+    "speed": 1.1,
+    "ace": 6.444,
+    "matches": 26
+   },
    "montecarlo": {
-    "speed": 0.57,
+    "speed": 0.607,
     "ace": 4.585,
     "matches": 55
    },
    "barcelona": {
-    "speed": 0.654,
+    "speed": 0.585,
     "ace": 4.313,
     "matches": 30
    },
    "munich": {
-    "speed": 0.723,
+    "speed": 0.783,
     "ace": 5.346,
     "matches": 31
    },
    "madrid": {
-    "speed": 1.025,
+    "speed": 0.939,
     "ace": 7.225,
     "matches": 94
    },
    "rome": {
-    "speed": 0.77,
+    "speed": 0.734,
     "ace": 5.421,
     "matches": 94
    },
+   "geneva": {
+    "speed": 0.738,
+    "ace": 6.108,
+    "matches": 27
+   },
    "hamburg": {
-    "speed": 0.752,
+    "speed": 0.635,
     "ace": 4.211,
     "matches": 31
    }

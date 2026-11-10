@@ -112,6 +112,12 @@ object BundledDataset {
 
     fun load(context: Context): PaceData {
         val text = context.assets.open(ASSET).bufferedReader().use { it.readText() }
-        return PaceData.parse(text)
+        val parsed = PaceData.parse(text)
+        // Historical builds bundled the former pooled-rate live estimate. Live ratings are
+        // now calculated from ATP match stats plus the opponent-adjustment baseline at runtime.
+        val withoutStaticLiveRatings = parsed.dataset.copy(
+            readings = parsed.dataset.readings.filterNot { it.src == "live" && it.speed != null },
+        )
+        return PaceData(withoutStaticLiveRatings)
     }
 }

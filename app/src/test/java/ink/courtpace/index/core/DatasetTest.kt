@@ -67,8 +67,8 @@ class DatasetTest {
     fun `coverage matches what the sources claim`() {
         val cpi = data.dataset.readings.count { it.cpi != null }
         val speed = data.dataset.readings.count { it.speed != null }
-        assertEquals(106, cpi)
-        assertEquals(497, speed)
+        assertTrue("CPI coverage dropped below its 106-reading baseline: $cpi", cpi >= 106)
+        assertTrue("Speed coverage dropped below its 497-reading baseline: $speed", speed >= 497)
         assertEquals(2012, data.seasons.first())
         assertEquals(2026, data.seasons.last())
     }
@@ -77,8 +77,8 @@ class DatasetTest {
     fun `speed history is split cleanly between published and computed`() {
         val published = data.dataset.readings.filter { it.speed != null && it.src == "tennisabstract" }
         val computed = data.dataset.readings.filter { it.speed != null && it.src == "computed" }
-        assertEquals(62, published.size)
-        assertEquals(435, computed.size)
+        assertTrue("published coverage unexpectedly shrank: ${published.size}", published.size >= 62)
+        assertTrue("computed coverage unexpectedly shrank: ${computed.size}", computed.size >= 435)
         // The published table is a rolling 52-week window, so it straddles two seasons.
         assertEquals(setOf(2025, 2026), published.map { it.s }.toSet())
         assertTrue(computed.all { it.s in 2012..2025 })

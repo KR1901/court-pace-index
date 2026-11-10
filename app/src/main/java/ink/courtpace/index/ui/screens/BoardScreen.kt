@@ -88,8 +88,7 @@ fun BoardScreen(
     refreshing: Boolean,
     onRefresh: () -> Unit,
     statusNote: String?,
-    livePace: ink.courtpace.index.core.live.AtpResultsParser.LivePace? = null,
-    liveAce: ink.courtpace.index.core.live.AceRating.Result? = null,
+    liveAceByEvent: Map<String, ink.courtpace.index.core.live.AceRating.Result> = emptyMap(),
     liveProgress: String? = null,
     liveNote: String? = null,
     scrollState: ScrollState = rememberScrollState(),
@@ -209,13 +208,14 @@ fun BoardScreen(
                 SectionLabel(text = "Live now")
                 Spacer(Modifier.height(10.dp))
                 pending.forEach { (tournament, event) ->
+                    val liveReading = data.liveReading(tournament.id, event.s)
                     LivePendingRow(
                         tournament = tournament,
                         event = event,
-                        datasetRating = data.value(tournament.id, event.s, Metric.SPEED),
-                        datasetMatches = data.reading(tournament.id, event.s)?.matches,
-                        pace = livePace,
-                        ace = liveAce,
+                        datasetRating = liveReading?.speed,
+                        datasetMatches = liveReading?.matches,
+                        pace = null,
+                        ace = liveAceByEvent[tournament.id],
                         progress = liveProgress,
                         note = liveNote,
                         onClick = { onOpen(tournament) },
@@ -267,8 +267,8 @@ fun BoardScreen(
             text = when (metric) {
                 Metric.CPI -> "Court Pace Index from the courtspeed.com database, compiled from ATP and " +
                     "Tennis TV broadcast data. Centre-court readings."
-                Metric.SPEED -> "Surface speed from Tennis Abstract: ace rate adjusted for the servers and " +
-                    "returners in each match, 1.00 = tour average."
+                Metric.SPEED -> "Published ratings adjust for the servers and returners. Live ratings use " +
+                    "completed-match ace rate against the 7.83% tour baseline; 1.00 = average."
             },
         )
         Spacer(Modifier.height(LocalTabBarInset.current))
@@ -359,7 +359,57 @@ private fun LivePendingRow(
                         if (datasetRating != null) {
                             append(" · live speed ")
                             append(String.format(java.util.Locale.UK, "%.2f", datasetRating))
-                            if (datasetMatches != null && datasetMatches > 0) {
+                            if (ace != null) {
+                                append(" · ")
+                                append(ace.matches)
+                                append("/")
+                                append(ace.discoveredMatches)
+                                append(" completed")
+                                append(" · ")
+                                append(ace.adjustedServerSides)
+                                append("/")
+                                append(ace.totalServerSides)
+                                append(" server sides adjusted")
+                                if (ace.adjustmentIssues.isNotEmpty()) {
+                                    append("\nNot adjusted: ")
+                                    append(
+                                        ace.adjustmentIssues.take(4).joinToString("; ") { issue ->
+                                            val id = issue.matchId?.let { "$it " }.orEmpty()
+                                            "$id${issue.server} → ${issue.returner} (${adjustmentIssueLabel(issue.reason)})"
+                                        },
+                                    )
+                                    if (ace.adjustmentIssues.size > 4) {
+                                        append(" +")
+                                        append(ace.adjustmentIssues.size - 4)
+                                        append(" more")
+                                    }
+                                }
+                                if (ace.inProgressMatches > 0) {
+                                    append(" · ")
+                                    append(ace.inProgressMatches)
+                                    append(" live excluded")
+                                }
+                                if (ace.walkoversExcluded > 0) {
+                                    append(" · ")
+                                    append(ace.walkoversExcluded)
+                                    append(" walkovers/no-play excluded")
+                                }
+                                if (ace.missingMatchIds.isNotEmpty()) {
+                                    append("\nMissing: ")
+                                    append(
+                                        ace.missingMatchIds.take(2).joinToString(", ") { id ->
+                                            val reason = ace.missingReasons[id].orEmpty()
+                                            val shortReason = missingReasonLabel(reason)
+                                            "$id ($shortReason)"
+                                        },
+                                    )
+                                    if (ace.missingMatchIds.size > 2) {
+                                        append(" +")
+                                        append(ace.missingMatchIds.size - 2)
+                                        append(" more")
+                                    }
+                                }
+                            } else if (datasetMatches != null && datasetMatches > 0) {
                                 append(" · ")
                                 append(datasetMatches)
                                 append(" matches")
@@ -392,11 +442,36 @@ private fun LivePendingRow(
                     },
                     style = TextStyle(fontSize = 11.sp),
                     color = colors.textDim,
-                    maxLines = 2,
+                    maxLines = if (ace?.adjustmentIssues?.isNotEmpty() == true) 6 else 3,
                 )
             }
         }
     }
+}
+
+private fun adjustmentIssueLabel(reason: String): String = when {
+    reason.startsWith("no server serve profile or returner") -> "both profiles missing"
+    reason.startsWith("no server serve profile") -> "no server profile"
+    reason.startsWith("no returner concession profile") -> "no returner profile"
+    reason.startsWith("zero or invalid expected aces") -> "zero expected aces"
+    reason.startsWith("invalid ace/service-point") -> "invalid match stats"
+    reason.startsWith("invalid expected-aces") -> "invalid expectation"
+    else -> reason.take(32)
+}
+
+private fun missingReasonLabel(reason: String): String = when {
+    reason.contains("HTTP 404", ignoreCase = true) -> "no feed record"
+    reason.contains("HTTP 403", ignoreCase = true) ->
+        "HTTP 403 " + reason.substringAfter("HTTP 403").take(62)
+    reason.contains("HTTP 429", ignoreCase = true) ->
+        "HTTP 429 " + reason.substringAfter("HTTP 429").take(62)
+    reason.contains("HTTP 5", ignoreCase = true) ->
+        "server error " + reason.substringAfter("HTTP 5").take(62)
+    reason.contains("timeout", ignoreCase = true) -> "timeout"
+    reason.contains("setStats.set0", ignoreCase = true) -> "no full-match stats"
+    reason.contains("padding", ignoreCase = true) ||
+        reason.contains("cipher", ignoreCase = true) -> "decode failure"
+    else -> reason.substringAfterLast(": ").take(34).ifBlank { "unavailable" }
 }
 
 @Composable
