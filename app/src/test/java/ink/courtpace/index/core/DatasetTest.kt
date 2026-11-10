@@ -1,5 +1,6 @@
 package ink.courtpace.index.core
 
+import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.Metric
 import org.junit.Assert.assertEquals
@@ -66,7 +67,12 @@ class DatasetTest {
     fun `values sit inside plausible ranges`() {
         data.dataset.readings.forEach { reading ->
             reading.cpi?.let { assertTrue("cpi $it at ${reading.t}", it in 10.0..60.0) }
-            reading.speed?.let { assertTrue("speed $it at ${reading.t}", it in 0.30..2.0) }
+            reading.speed?.let {
+                val validStandardRating = it in 0.30..2.0
+                val validFormatSpecificNextGenRating =
+                    reading.t == "nextgen" && reading.src == "computed" && it.isFinite() && it >= 0.30
+                assertTrue("speed $it at ${reading.t}", validStandardRating || validFormatSpecificNextGenRating)
+            }
             reading.ace?.let { assertTrue("ace $it at ${reading.t}", it in 0.0..30.0) }
         }
     }
@@ -98,16 +104,28 @@ class DatasetTest {
         val publishedYears = published.map { it.s }.toSet()
         assertEquals((1991..2026).toSet(), publishedYears)
         val calc2025Ids = computed.filter { it.s == 2025 }.map { it.t }.toSet()
-        assertTrue("2025 CALC is missing the restored standard-format events: $calc2025Ids",
-            calc2025Ids.containsAll(setOf("marseille", "stockholm")))
-        assertTrue("Next Gen must remain outside the standard-format CALC population",
-            "nextgen" !in calc2025Ids)
-        val nextGen2025 = data.dataset.readings.first { it.t == "nextgen" && it.s == 2025 }
-        assertEquals("tennisabstract", nextGen2025.src)
-        assertEquals(0.81, nextGen2025.speed!!, 0.001)
-        val nextGen2024 = data.dataset.readings.first { it.t == "nextgen" && it.s == 2024 }
-        assertEquals("tennisabstract", nextGen2024.src)
-        assertEquals(1.39, nextGen2024.speed!!, 0.001)
+        assertTrue("2025 CALC is missing restored events: $calc2025Ids",
+            calc2025Ids.containsAll(setOf("marseille", "stockholm", "nextgen")))
+        val nextGen2025 = computed.first { it.t == "nextgen" && it.s == 2025 }
+        assertEquals("computed", nextGen2025.src)
+        assertEquals(0.81, nextGen2025.publishedSpeed!!, 0.001)
+        assertTrue("Next Gen must retain its complete eligible draw",
+            (nextGen2025.adjustedServerSides ?: 0) >= 10)
+        assertEquals("computed", data.speedSource("nextgen", 2025))
+        assertEquals(nextGen2025.publishedSpeed, data.publishedSpeed("nextgen", 2025))
+
+        val nextGen2024 = computed.first { it.t == "nextgen" && it.s == 2024 }
+        assertEquals("computed", nextGen2024.src)
+        assertEquals(1.39, nextGen2024.publishedSpeed!!, 0.001)
+
+        // The 2026 Rio and Adelaide CALC values exist in speed_history.json; make sure
+        // the public dataset builder actually promotes those calculations over TA-only.
+        val rio2026 = computed.first { it.t == "rio" && it.s == 2026 }
+        assertEquals(0.95, rio2026.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("rio", 2026))
+        val adelaide2026 = computed.first { it.t == "adelaide" && it.s == 2026 }
+        assertEquals(1.04, adelaide2026.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("adelaide", 2026))
         assertTrue(computed.all { it.s in 2012..2026 })
         val comparisons = computed.filter { it.publishedSpeed != null }
         assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
@@ -130,6 +148,29 @@ class DatasetTest {
         assertEquals("computed", data.speedSource("lavercup", 2026))
         assertEquals(laverCup.speed, data.value("lavercup", 2026, Metric.SPEED))
         assertEquals(laverCup.publishedSpeed, data.publishedSpeed("lavercup", 2026))
+    }
+
+    @Test
+    fun `only computed Next Gen ratings may exceed the standard two point range`() {
+        val nextGen = data.dataset.readings.first { it.t == "nextgen" && it.s == 2025 }
+        val nextGenCalc = nextGen.copy(
+            speed = 2.45,
+            publishedSpeed = 0.81,
+            src = "computed",
+        )
+        val withNextGenOutlier = data.dataset.copy(
+            readings = data.dataset.readings.filterNot { it.t == "nextgen" && it.s == 2025 } + nextGenCalc,
+        )
+        assertTrue("format-specific Next Gen CALC above 2.0 must be accepted",
+            DatasetPolicy.isAcceptable(withNextGenOutlier))
+
+        val rio = data.dataset.readings.first { it.t == "rio" && it.s == 2025 }
+        val standardOutlier = rio.copy(speed = 2.45, src = "computed")
+        val withStandardOutlier = data.dataset.copy(
+            readings = data.dataset.readings.filterNot { it.t == "rio" && it.s == 2025 } + standardOutlier,
+        )
+        assertTrue("standard ATP CALC must retain the 2.0 upper bound",
+            !DatasetPolicy.isAcceptable(withStandardOutlier))
     }
 
     @Test
