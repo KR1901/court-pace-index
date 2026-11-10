@@ -230,46 +230,77 @@ jobs:
           VERSION_CODE: ${{ steps.meta.outputs.version_code }}
           SHA256: ${{ steps.verify.outputs.sha256 }}
           KEY_TRANSITION: ${{ steps.signing.outputs.key_transition }}
+        shell: bash
         run: |
-          cat > "$RUNNER_TEMP/RELEASE_NOTES.md" <<EOF
-          ## Court Pace $VERSION
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
 
-          Production release from the merged main branch.
+          version = os.environ["VERSION"]
+          version_code = os.environ["VERSION_CODE"]
+          package = "ink.courtpace.index"
+          asset = f"court-pace-{version}.apk"
+          sha256 = os.environ["SHA256"]
+          key_transition = os.environ.get("KEY_TRANSITION", "false") == "true"
 
-          ### Included
-          - More reliable live ATP 1000/500/250 match discovery and coverage diagnostics.
-          - Generic played-retirement inclusion and walkover/no-play exclusion with validated match statistics.
-          - Calibrated expected-aces Surface Speed methodology and historical player-profile calculations.
-          - Expanded calculation diagnostics, historical coverage audits and refreshed tournament/CPI data.
-          - Consistent tournament calculation diagnostics and paired CPI/Surface Speed comparison improvements.
+          if not sha256 or len(sha256) != 64:
+              raise SystemExit("Missing or invalid APK SHA-256 for release notes.")
 
-          ### Build
-          - Version: **$VERSION** (versionCode $VERSION_CODE)
-          - Package: `ink.courtpace.index`
-          - Asset: `court-pace-$VERSION.apk`
-          - SHA-256: `$SHA256`
+          lines = [
+              f"## Court Pace {version}",
+              "",
+              "Production release from the verified main branch.",
+              "",
+          ]
 
-          EOF
-          if [[ "$VERSION" == "3.2.1" ]]; then
-            cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
-          ### 3.2.1 maintenance update
-          - Corrected Paris Masters 2026 to a completed schedule tombstone while retaining its event window so stale ATP score-hub routes cannot revive it.
-          - Regenerated the bundled dataset: Paris is retained only in `liveSchedule`; Stockholm remains in the visible active-event fallback.
-          - Dataset snapshot publishing now runs when live-event metadata or the dataset generator changes, with explicit Paris/Stockholm integrity checks.
-          - Clarified that live Surface Speed is calculated on-device through ATP/Infosys and the production opponent-adjusted rating engine is unchanged.
-          - Refreshed About, README, data provenance and source-specific licensing documentation.
-          EOF
-          fi
-          if [[ "$KEY_TRANSITION" == "true" ]]; then
-            cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
-          ### Signing-key transition
-          A new replacement key had to be generated because the previous release key could not be recovered. Android does not permit an in-place update across different signing certificates. Uninstall the previously installed Court Pace version before installing this APK. A restricted Actions recovery artifact is available for 90 days; download it, configure all four repository Actions secrets from its `GITHUB_ACTIONS_SECRETS.txt`, and keep an offline backup. Never share the artifact or its credentials.
-          EOF
-          else
-            cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
-          This APK uses the retained Court Pace release key and supports in-place upgrades from releases signed with that same key.
-          EOF
-          fi
+          if version == "3.2.1":
+              lines += [
+                  "### Included in 3.2.1",
+                  "- Corrected Paris Masters 2026 to a completed schedule tombstone while retaining its event window to reject stale ATP routes.",
+                  "- Regenerated the bundled dataset: Paris is schedule-only; Stockholm remains visible as the active-event fallback.",
+                  "- Made the dataset publisher react to live-schedule and generator changes, with explicit Paris/Stockholm integrity checks.",
+                  "- Kept live Surface Speed calculation on-device through ATP/Infosys; the production opponent-adjusted rating engine is unchanged.",
+                  "- Updated About, README, data provenance and source-specific licensing documentation.",
+                  "",
+              ]
+          else:
+              lines += [
+                  "### Included",
+                  "- See the commits included in this release for the changes delivered in this version.",
+                  "",
+              ]
+
+          lines += [
+              "### Build verification",
+              f"- Version: **{version}** (versionCode {version_code})",
+              f"- Package: `{package}`",
+              f"- APK: `{asset}`",
+              f"- SHA-256: `{sha256}`",
+              "",
+          ]
+
+          if key_transition:
+              lines += [
+                  "### Signing-key transition",
+                  "This APK uses a newly generated replacement key. Android does not permit in-place updates across different signing certificates; uninstall the previously installed app before installing this APK. Download the private Actions recovery artifact, configure the four repository Actions secrets from its GITHUB_ACTIONS_SECRETS.txt, and keep an offline backup. Never share the artifact or credentials.",
+                  "",
+              ]
+          else:
+              lines += [
+                  "This APK uses the retained Court Pace signing certificate and supports in-place upgrades from releases signed with the same certificate.",
+                  "",
+              ]
+
+          Path(os.environ["RUNNER_TEMP"], "RELEASE_NOTES.md").write_text(
+              "\\n".join(lines), encoding="utf-8"
+          )
+          PY
+
+          # Reject empty or unexpanded build metadata before publishing.
+          grep -F -- "- Package: `ink.courtpace.index`" "$RUNNER_TEMP/RELEASE_NOTES.md"
+          grep -F -- "- APK: `court-pace-$VERSION.apk`" "$RUNNER_TEMP/RELEASE_NOTES.md"
+          grep -F -- "- SHA-256: `$SHA256`" "$RUNNER_TEMP/RELEASE_NOTES.md"
+          ! grep -Eq '\\$\\{?(VERSION|VERSION_CODE|SHA256)' "$RUNNER_TEMP/RELEASE_NOTES.md"
 
       - name: Publish stable GitHub release and APK
         uses: softprops/action-gh-release@v2
