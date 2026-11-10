@@ -139,6 +139,7 @@ class PaceData(val dataset: PaceDataset) {
                     provisionalCiHigh = rows.firstNotNullOfOrNull { it.provisionalCiHigh },
                     provisionalServerSides = rows.firstNotNullOfOrNull { it.provisionalServerSides },
                     provisionalMatches = rows.firstNotNullOfOrNull { it.provisionalMatches },
+                    // A live overlay can lack archival diagnostics; prefer the completed CALC record.
                     calculationDiagnostics = speedReading?.calculationDiagnostics
                         ?: rows.firstNotNullOfOrNull { it.calculationDiagnostics },
                 )

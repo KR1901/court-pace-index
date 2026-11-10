@@ -326,7 +326,7 @@ fun TournamentScreen(
                                 }
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                        )
+                        ) {
                             Text(
                                 text = reading.season.toString(),
                                 style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium),
