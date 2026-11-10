@@ -148,6 +148,7 @@ class ScreenshotTest {
                 data = data,
                 tournament = data.tournament("madrid")!!,
                 season = data.latestSeason,
+                onSelectSeason = {},
                 onBack = {},
             )
         }
