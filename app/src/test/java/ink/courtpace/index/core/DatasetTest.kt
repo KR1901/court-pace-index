@@ -98,8 +98,16 @@ class DatasetTest {
         val publishedYears = published.map { it.s }.toSet()
         assertEquals((1991..2026).toSet(), publishedYears)
         val calc2025Ids = computed.filter { it.s == 2025 }.map { it.t }.toSet()
-        assertTrue("2025 CALC is missing one or more restored events: $calc2025Ids",
-            calc2025Ids.containsAll(setOf("marseille", "stockholm", "nextgen")))
+        assertTrue("2025 CALC is missing the restored standard-format events: $calc2025Ids",
+            calc2025Ids.containsAll(setOf("marseille", "stockholm")))
+        assertTrue("Next Gen must remain outside the standard-format CALC population",
+            "nextgen" !in calc2025Ids)
+        val nextGen2025 = data.dataset.readings.first { it.t == "nextgen" && it.s == 2025 }
+        assertEquals("tennisabstract", nextGen2025.src)
+        assertEquals(0.81, nextGen2025.speed!!, 0.001)
+        val nextGen2024 = data.dataset.readings.first { it.t == "nextgen" && it.s == 2024 }
+        assertEquals("tennisabstract", nextGen2024.src)
+        assertEquals(1.39, nextGen2024.speed!!, 0.001)
         assertTrue(computed.all { it.s in 2012..2026 })
         val comparisons = computed.filter { it.publishedSpeed != null }
         assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
