@@ -36,6 +36,19 @@ The generated 10 November 2026 history now contains these target estimates: Next
 
 Sources: [Tennis Abstract 2025 surface-speed table](https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year=2025), [ATP Next Gen rules](https://www.atptour.com/en/news/next-gen-atp-finals-presented-by-pif-2024-rules-and-innovations).
 
+## Archive-wide tournament calculation detail UI
+
+The tournament detail screen now uses one shared calculation-diagnostics presentation for both Live Now and completed tournament editions. The live result and the archived event-season result are converted into the same typed diagnostics model, so completed editions display the same summary and influential-side detail rather than a reduced historical summary.
+
+- The **By season** list is selectable. Opening a tournament starts on the selected board season; tapping another season row switches the detail screen to that edition and loads that season's rating, uncertainty and diagnostics.
+- The diagnostics summary includes completed matches, adjusted server-side coverage, pooled aces/service points, tour-average ace rate, raw event score, season normalisation, matched server/returner profiles and tour-prior fallback counts.
+- Each computed event-season retains the ten highest and ten lowest server-side actual/expected-aces ratios (deduplicated when a side appears in both tails). Each retained row shows the server/returner, source type, actual aces, expected aces, service points and ratio. Event totals and coverage counts are calculated over the full eligible event population; the app does not need the complete raw match archive.
+- The archive calculation sweep starts in **1991**, the earliest year in the selected ATP match-stat archive. The refreshed 1991–2026 build contains **1,601 computed tournament-season records**, including **32 rateable events in 1991**.
+- A Tennis Abstract-only historical reading is not presented as a calculated diagnostic. When the selected edition has no eligible source match statistics, the screen explicitly explains that side-level CALC diagnostics are unavailable rather than manufacturing player estimates or side ratios.
+- The dataset refresh verifies that every computed event-season in `data/speed_history.json` has a matching app reading with the same diagnostic payload, a consistent completed-match/side count, and no more than 20 retained influential sides. The refreshed bundle's verification ran `./gradlew :app:testDebugUnitTest` successfully.
+
+The displayed side diagnostics are derived from the event's eligible match statistics and the same calibrated expected-aces calculation used for the historical rating. They are a compact audit view, not a claim that every match side is stored in the app bundle. Source-specific rights still apply: the existing TennisMyLife terms do not clearly authorize public-app onward distribution of derived ratings, so public distribution of TML-derived 2026 output remains subject to written source clearance.
+
 ## Statistical audit
 
 Latest completed comparison: 1,289 common event-seasons across 36 seasons (1991–2026), 5,000 season-stratified paired bootstrap resamples.
