@@ -313,6 +313,15 @@ fun TournamentScreen(
                             "This event is included in the ranking; small samples carry wider uncertainty.",
                     )
                 }
+                if (tournament.id == "nextgen" && speed != null && speedSource == "computed") {
+                    Spacer(Modifier.height(10.dp))
+                    GlassNote(
+                        "Format-specific CALC: Next Gen uses short sets and no-ad scoring. Its matches are " +
+                            "rated against standard ATP player profiles and the standard ATP season anchor, " +
+                            "but do not train those profiles or set that anchor. The untrimmed value is shown; " +
+                            "interpret it separately from standard-format events.",
+                    )
+                }
                 if (speed != null && seasonReading?.speedCiLow != null && seasonReading.speedCiHigh != null) {
                     Spacer(Modifier.height(10.dp))
                     GlassNote(
