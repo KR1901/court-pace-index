@@ -4,7 +4,7 @@ This file keeps the recommended repository-facing summary in version control. Gi
 
 ## Recommended description
 
-Android app and research toolkit comparing physical tennis-court pace measurements with calibrated, ace-based ATP Surface Speed ratings.
+Independent Android app and research toolkit comparing physical tennis-court pace readings with opponent-adjusted, ace-based Surface Speed analysis.
 
 ## Recommended topics
 
@@ -12,8 +12,8 @@ Android app and research toolkit comparing physical tennis-court pace measuremen
 
 ## Positioning
 
-Court Pace is an independent Android reading and research app. It compares published physical CPI readings with opponent-adjusted ace-based Surface Speed ratings, documents the calculation and data provenance, and provides a live ATP match view. It is not an official ATP or ITF product and is not a court-measuring device.
+Court Pace is an independent Android reading and research app. It compares published physical CPI readings with opponent-adjusted, ace-based Surface Speed analysis, documents the calculation and data provenance, and computes live ATP match ratings on-device from ATP/Infosys statistics. It is not an official ATP or ITF product and is not a court-measuring device.
 
 ## Metadata maintenance
 
-Keep the native GitHub description, Topics, README introduction and licence scope consistent. Avoid describing the app as "ITF-grade physics" unless that specific claim has been independently established and is appropriately qualified.
+Keep the native GitHub description, Topics, README introduction and licence scope consistent. Avoid describing the app as a court-measuring instrument or as providing "ITF-grade physics". The native About description and Topics are GitHub repository settings; this file records the values to apply there.
