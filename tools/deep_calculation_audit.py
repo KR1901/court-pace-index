@@ -105,7 +105,7 @@ def exact_surface_bucket(surface):
 
 
 def aggregate_season(rows):
-    """Aggregate player/event sufficient statistics, retaining unnamed rows for priors."""
+    """Aggregate standard-format training stats while retaining special-format targets."""
     usable = compute_speed.valid_rows(rows)
     players = {}
     by_event_players = {}
@@ -117,14 +117,19 @@ def aggregate_season(rows):
     event_rows = defaultdict(list)
     event_surfaces = {}
 
+    # Every valid event row remains available as a target. Special-format Next Gen
+    # matches are scored, but they must not enter any standard-ATP training population.
     for row in usable:
         tid = event_id(row.get("tourney_name"))
         if tid:
             event_rows[tid].append(row)
             surface = (row.get("surface") or "").strip()
             event_surfaces.setdefault(tid, surface or "Unknown")
-        else:
-            surface = (row.get("surface") or "").strip()
+
+    profile_rows = compute_speed.calculation_eligible_rows(usable)
+    for row in profile_rows:
+        tid = event_id(row.get("tourney_name"))
+        surface = (row.get("surface") or "").strip()
         bucket = surface_bucket(surface)
         exact_bucket = exact_surface_bucket(surface)
 
@@ -140,8 +145,9 @@ def aggregate_season(rows):
             event_player = ensure_event_player(by_event_players, tid, player_id) if tid else None
             event_total = ensure_event_stats(event_stats, tid) if tid else None
 
-            # All valid ATP matches, including rows with an unmapped event label, train
-            # player tendencies and the tour anchor. Only named events form event clusters.
+            # All valid standard ATP matches, including rows with an unmapped event label,
+            # train player tendencies and the tour anchor. Target-only special-format rows
+            # are deliberately absent from this profile_rows collection.
             add_stats(player["serve"]["pooled"], aces, points)
             add_stats(global_stats["serve"]["pooled"], aces, points)
             add_stats(player["return"]["pooled"], conceded_aces, conceded_points)
@@ -176,7 +182,6 @@ def aggregate_season(rows):
                     add_stats(event_total["return"][exact_bucket], conceded_aces, conceded_points)
 
     return usable, event_rows, event_surfaces, players, by_event_players, global_stats, event_stats
-
 
 def posterior_rate(player_stats, prior_stats, prior_points, min_matches):
     """Beta-binomial style rate shrinkage using service points as the exposure."""
@@ -530,8 +535,14 @@ def score_season(rows, configs, detail_ids):
     for tid, matches in event_rows.items():
         surface = event_surfaces.get(tid, "Unknown")
         for name, config in configs.items():
+            target_player_ids = {
+                player_id
+                for row in matches
+                for player_id in (row["winner_id"], row["loser_id"])
+            }
             profiles, prior_players = build_event_profiles(
-                tid, surface, players, event_players, global_stats, event_stats, config
+                tid, surface, players, event_players, global_stats, event_stats, config,
+                target_player_ids=target_player_ids,
             )
             if config.get("empirical_bayes"):
                 for role, buckets in prior_players.get("_empirical_bayes_audit", {}).items():
@@ -557,7 +568,13 @@ def score_season(rows, configs, detail_ids):
             raw[name][tid] = statistics.fmean(ratios)
 
     for name, ratings in raw.items():
-        normalisers[name] = statistics.fmean(ratings.values()) if ratings else None
+        standard_ratings = {
+            tid: value for tid, value in ratings.items()
+            if tid not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
+        }
+        normalisers[name] = (
+            statistics.fmean(standard_ratings.values()) if standard_ratings else None
+        )
     if empirical_bayes_strengths:
         print("  empirical-Bayes prior exposure (median pseudo service points across LOEO events):")
         for role, buckets in sorted(empirical_bayes_strengths.items()):
@@ -694,9 +711,15 @@ def full_pipeline_bootstrap_interval(tid, all_rows, config, iterations=250, seed
         raw_by_event = {}
         for event_id_key, matches in event_rows.items():
             surface = event_surfaces.get(event_id_key, "Unknown")
+            target_player_ids = {
+                player_id
+                for row in matches
+                for player_id in (row["winner_id"], row["loser_id"])
+            }
             profiles, prior_players = build_event_profiles(
                 event_id_key, surface, players, event_players,
                 global_stats, event_stats, config,
+                target_player_ids=target_player_ids,
             )
             ratios, _clusters = score_event(
                 event_id_key, matches, surface, profiles,
@@ -705,7 +728,11 @@ def full_pipeline_bootstrap_interval(tid, all_rows, config, iterations=250, seed
             if len(ratios) >= MIN_SIDES:
                 raw_by_event[event_id_key] = statistics.fmean(ratios)
 
-        normaliser = statistics.fmean(raw_by_event.values()) if raw_by_event else None
+        standard_raw = {
+            event_id_key: value for event_id_key, value in raw_by_event.items()
+            if event_id_key not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
+        }
+        normaliser = statistics.fmean(standard_raw.values()) if standard_raw else None
         target_raw = raw_by_event.get(tid)
         if normaliser is not None and normaliser > 0 and target_raw is not None:
             samples.append(target_raw / normaliser)
@@ -966,12 +993,23 @@ def run_audit(seasons, boot, detail_ids):
               f"{len(published[year]):13d}  {len(common):18d}")
         if not common:
             continue
-        reference_mean = statistics.fmean(published[year][tid] for tid in common)
+        normaliser_common = [
+            tid for tid in common
+            if tid not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
+        ]
+        if not normaliser_common:
+            continue
+        # Next Gen is a rateable target, not an input to either standard-tour anchor.
+        reference_mean = statistics.fmean(
+            published[year][tid] for tid in normaliser_common
+        )
         reference_values = {tid: published[year][tid] / reference_mean for tid in common}
         for tid in common:
             surfaces_by_key[(year, tid)] = event_surfaces.get(tid, "Unknown")
         for variant in configs:
-            calc_mean = statistics.fmean(raw[variant][tid] for tid in common)
+            calc_mean = statistics.fmean(
+                raw[variant][tid] for tid in normaliser_common
+            )
             for tid in common:
                 pairs[variant].append((
                     raw[variant][tid] / calc_mean,
