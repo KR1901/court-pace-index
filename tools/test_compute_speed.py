@@ -621,6 +621,10 @@ class CurrentSeasonSourceTests(unittest.TestCase):
         self.assertEqual("nextgen", compute_speed.NAMES["Next Gen Finals"])
         self.assertEqual("nextgen", compute_speed.NAMES["Next Gen ATP Finals"])
         self.assertEqual("nextgen", compute_speed.NAMES["Next Generation ATP Finals"])
+        self.assertEqual("adelaide", compute_speed.tournament_id("Adelaide International"))
+        self.assertEqual("adelaide", compute_speed.tournament_id("ADELAIDE INTERNATIONAL"))
+        self.assertEqual("rio", compute_speed.tournament_id("Rio Open"))
+        self.assertEqual("rio", compute_speed.tournament_id("RIO OPEN"))
 
     def test_2025_archive_levels_and_serve_stats_are_accepted_for_missing_events(self):
         rows = []
@@ -826,33 +830,46 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             self.assertEqual(10, len(training_rows))
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
-    def test_next_gen_is_excluded_as_a_target_and_from_standard_event_training(self):
-        rows = []
-        for event, level in (
-            ("Paris Masters", "M"),
-            ("Rome Masters", "M"),
-            ("Next Gen Finals", "F"),
+    def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
+        standard_rows = []
+        all_rows = []
+        for event, level, aces in (
+            ("Paris Masters", "M", 8),
+            ("Rome Masters", "M", 8),
+            # Short-set/no-ad format can produce a much higher per-service-point ace rate.
+            ("Next Gen Finals", "F", 20),
         ):
-            for _ in range(10):
-                rows.append({
-                    "tourney_name": event, "tourney_level": level, "surface": "Hard",
-                    "winner_id": "p1", "loser_id": "p2",
-                    "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
-                })
+            event_rows = [{
+                "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                "winner_id": "p1", "loser_id": "p2",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
+            } for _ in range(10)]
+            all_rows.extend(event_rows)
+            if event != "Next Gen Finals":
+                standard_rows.extend(event_rows)
 
         real_player_rates = compute_speed.player_rates
         compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}):
+            standard_ratings = compute_speed.season_ratings(2024, standard_rows)
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
         with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
              patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
-            ratings = compute_speed.season_ratings(2024, rows)
+            ratings = compute_speed.season_ratings(2024, all_rows)
 
-        self.assertEqual({"paris", "rome"}, set(ratings))
-        self.assertEqual(2, profiles.call_count)
+        self.assertEqual({"paris", "rome", "nextgen"}, set(ratings))
+        self.assertEqual(3, profiles.call_count)
         for call in profiles.call_args_list:
             training_rows = call.args[0]
             event_names = {row["tourney_name"] for row in training_rows}
             self.assertNotIn("Next Gen Finals", event_names)
-            self.assertEqual(1, len(event_names))
+        # A non-standard target can exceed 2.0, but must not pull standard events'
+        # normaliser upwards. The full point estimate remains available rather than clipped.
+        self.assertGreater(ratings["nextgen"]["speed"], 2.0)
+        self.assertAlmostEqual(standard_ratings["paris"]["speed"], ratings["paris"]["speed"], places=12)
+        self.assertAlmostEqual(standard_ratings["rome"]["speed"], ratings["rome"]["speed"], places=12)
+        compute_speed._PROFILE_YEAR_CACHE.clear()
 
 
     def test_next_gen_is_excluded_from_historical_player_profile_training(self):
