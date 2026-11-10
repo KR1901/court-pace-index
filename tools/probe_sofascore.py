@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Probes free, keyless readers that render JavaScript server-side."""
+"""Diagnostic-only ATP page probe through r.jina.ai (legacy filename: no SofaScore use).
+
+Does not fetch Infosys match statistics, update data/live.json, or calculate a rating.
+It is retained only as a reachability diagnostic for the scheduled dataset publisher.
+"""
 import re, urllib.request
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
