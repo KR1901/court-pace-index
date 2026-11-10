@@ -139,7 +139,8 @@ class PaceData(val dataset: PaceDataset) {
                     provisionalCiHigh = rows.firstNotNullOfOrNull { it.provisionalCiHigh },
                     provisionalServerSides = rows.firstNotNullOfOrNull { it.provisionalServerSides },
                     provisionalMatches = rows.firstNotNullOfOrNull { it.provisionalMatches },
-                    calculationDiagnostics = speedReading?.calculationDiagnostics,
+                    calculationDiagnostics = speedReading?.calculationDiagnostics
+                        ?: rows.firstNotNullOfOrNull { it.calculationDiagnostics },
                 )
             }
             .sortedByDescending { it.season }
