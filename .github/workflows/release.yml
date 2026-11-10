@@ -1,0 +1,156 @@
+name: Release signed Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/build.gradle.kts"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: court-pace-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Read version metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import re
+          from pathlib import Path
+
+          text = Path("app/build.gradle.kts").read_text(encoding="utf-8")
+          code = re.search(r"\\bversionCode\\s*=\\s*(\\d+)", text)
+          name = re.search(r'\\bversionName\\s*=\\s*"([^"]+)"', text)
+          if not code or not name:
+              raise SystemExit("Could not read Android versionCode/versionName")
+          version_code = int(code.group(1))
+          version_name = name.group(1)
+          if not re.fullmatch(r"\\d+\\.\\d+\\.\\d+", version_name):
+              raise SystemExit(f"Expected stable semantic version, got {version_name!r}")
+          print(f"version={version_name}")
+          print(f"version_code={version_code}")
+          print(f"tag=v{version_name}")
+          PY
+          echo "Release version: $(grep '^version=' "$GITHUB_OUTPUT" | cut -d= -f2)"
+          echo "Version code: $(grep '^version_code=' "$GITHUB_OUTPUT" | cut -d= -f2)"
+
+      - name: Check release tag is unused
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists. Bump versionCode/versionName before publishing another release."
+            exit 1
+          fi
+
+      - name: Restore the existing release signing key
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.COURT_PACE_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_BASE64" ]]; then
+            echo "::error::Missing repository secret COURT_PACE_KEYSTORE_BASE64. Add the existing v3.1.0 signing keystore as base64; do not generate a replacement key."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/court-pace-release.jks"
+          test -s "$RUNNER_TEMP/court-pace-release.jks"
+          keytool -list -keystore "$RUNNER_TEMP/court-pace-release.jks" \
+            -storepass "${{ secrets.COURT_PACE_KEYSTORE_PASSWORD }}" \
+            -alias "${{ secrets.COURT_PACE_KEY_ALIAS }}" >/dev/null
+          echo "Release keystore restored and alias verified."
+
+      - name: Run unit tests and assemble signed production APK
+        env:
+          COURT_PACE_KEYSTORE: ${{ runner.temp }}/court-pace-release.jks
+          COURT_PACE_KEYSTORE_PASSWORD: ${{ secrets.COURT_PACE_KEYSTORE_PASSWORD }}
+          COURT_PACE_KEY_ALIAS: ${{ secrets.COURT_PACE_KEY_ALIAS }}
+          COURT_PACE_KEY_PASSWORD: ${{ secrets.COURT_PACE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          ./gradlew :app:testDebugUnitTest :app:assembleRelease --stacktrace
+
+      - name: Verify production package, version and APK signature
+        id: verify
+        shell: bash
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          VERSION_CODE: ${{ steps.meta.outputs.version_code }}
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/release/app-release.apk"
+          test -s "$apk"
+          build_tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk"
+          "$build_tools/aapt" dump badging "$apk" | head -n 1 | tee package.txt
+          grep -F "name='ink.courtpace.index'" package.txt
+          grep -F "versionCode='$VERSION_CODE'" package.txt
+          grep -F "versionName='$VERSION'" package.txt
+          mkdir -p "$RUNNER_TEMP/release"
+          cp "$apk" "$RUNNER_TEMP/release/court-pace-$VERSION.apk"
+          sha256sum "$RUNNER_TEMP/release/court-pace-$VERSION.apk" | tee "$RUNNER_TEMP/release/SHA256SUMS.txt"
+          echo "apk=$RUNNER_TEMP/release/court-pace-$VERSION.apk" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(cut -d' ' -f1 "$RUNNER_TEMP/release/SHA256SUMS.txt")" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release notes
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          VERSION_CODE: ${{ steps.meta.outputs.version_code }}
+          SHA256: ${{ steps.verify.outputs.sha256 }}
+        run: |
+          cat > "$RUNNER_TEMP/RELEASE_NOTES.md" <<EOF
+          ## Court Pace $VERSION
+
+          Production release from the merged `main` branch.
+
+          ### Included
+          - More reliable live ATP 1000/500/250 match discovery and coverage diagnostics.
+          - Generic played-retirement inclusion and walkover/no-play exclusion with validated match statistics.
+          - Calibrated expected-aces Surface Speed methodology and historical player-profile calculations.
+          - Expanded calculation diagnostics, historical coverage audits and refreshed tournament/CPI data.
+          - Tournament detail and paired CPI/Surface Speed comparison improvements.
+
+          ### Build
+          - Version: **$VERSION** (versionCode $VERSION_CODE)
+          - Package: `ink.courtpace.index`
+          - Asset: `court-pace-$VERSION.apk`
+          - SHA-256: `$SHA256`
+
+          This is a signed production APK, not the debug variant. The same configured signing key is required to preserve upgrade compatibility with the existing installation.
+          EOF
+
+      - name: Publish stable GitHub release and APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Court Pace ${{ steps.meta.outputs.version }} — calibrated Surface Speed and live match coverage
+          body_path: ${{ runner.temp }}/RELEASE_NOTES.md
+          files: ${{ steps.verify.outputs.apk }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
