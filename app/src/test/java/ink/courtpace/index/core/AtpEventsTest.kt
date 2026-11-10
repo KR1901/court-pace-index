@@ -70,6 +70,26 @@ class AtpEventsTest {
     }
 
     @Test
+    fun `a terminal schedule tombstone rejects a stale ATP route without date bounds`() {
+        val page = """<a href="/en/scores/current/paris/352/results">Paris Masters</a>"""
+        val completed = LiveEvent(
+            t = "paris",
+            s = 2026,
+            status = "completed",
+        )
+
+        val found = AtpEvents.fromCurrentScoresPage(
+            source = page,
+            tournaments = tournaments,
+            year = 2026,
+            liveSchedule = listOf(completed),
+            today = LocalDate.of(2026, 11, 10),
+        )
+
+        assertTrue(found.isEmpty())
+    }
+
+    @Test
     fun `ignores unknown routes and non target tournament levels`() {
         val page = """
             /en/scores/current/roland-garros/520/results
