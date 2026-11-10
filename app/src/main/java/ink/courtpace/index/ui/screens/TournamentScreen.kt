@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.live.AceRating
+import ink.courtpace.index.core.model.CalculationDiagnostics
+import ink.courtpace.index.core.model.SideRatioDiagnostic
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Tournament
 import ink.courtpace.index.ui.components.ChartPoint
@@ -57,6 +59,7 @@ fun TournamentScreen(
     tournament: Tournament,
     season: Int,
     liveAceRating: AceRating.Result? = null,
+    onSelectSeason: (Int) -> Unit,
     onBack: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -65,6 +68,7 @@ fun TournamentScreen(
     val speedSource = data.speedSource(tournament.id, season)
     val publishedSpeed = data.publishedSpeed(tournament.id, season)
     val seasonReading = data.seasonRows(tournament.id).firstOrNull { it.season == season }
+    val calculationDiagnostics = liveAceRating?.toCalculationDiagnostics() ?: seasonReading?.calculationDiagnostics
     val latestCpiSeason = data.latestSeason(tournament.id, Metric.CPI)
     val shownCpi = cpi ?: latestCpiSeason?.let { data.value(tournament.id, it, Metric.CPI) }
     val shownCpiSeason = if (cpi != null) season else latestCpiSeason
@@ -178,127 +182,27 @@ fun TournamentScreen(
                         )
                     }
                 }
-                if (liveAceRating != null) {
+                if (calculationDiagnostics != null) {
+                    CalculationDiagnosticsContent(
+                        diagnostics = calculationDiagnostics,
+                        liveAceRating = liveAceRating,
+                    )
+                } else if (speed != null && speedSource == "tennisabstract") {
                     Spacer(Modifier.height(14.dp))
-                    SectionLabel("Live calculation diagnostics")
+                    SectionLabel("Calculation diagnostics unavailable")
                     Spacer(Modifier.height(8.dp))
-                    StatRow("Completed matches", liveAceRating.matches.toString())
-                    HairLine()
-                    StatRow(
-                        "Adjusted server sides",
-                        "${liveAceRating.adjustedServerSides}/${liveAceRating.totalServerSides}",
+                    GlassNote(
+                        "This is a published Tennis Abstract reference only. No calibrated event-side " +
+                            "calculation is archived for this tournament-season, so player-adjusted side ratios " +
+                            "cannot be reconstructed from the published rating alone.",
                     )
-                    HairLine()
-                    StatRow(
-                        "Pooled ace rate",
-                        String.format(java.util.Locale.US, "%.2f%%", liveAceRating.aceRate * 100.0),
+                } else if (speed != null && speedSource == "computed") {
+                    Spacer(Modifier.height(14.dp))
+                    SectionLabel("Calculation diagnostics")
+                    GlassNote(
+                        "The rating is available, but this dataset revision does not yet contain its archived " +
+                            "side-level diagnostics. Refresh the published dataset to load the complete detail.",
                     )
-                    HairLine()
-                    StatRow("Aces", liveAceRating.aces.toString())
-                    if (liveAceRating.totalServicePoints > 0) {
-                        HairLine()
-                        StatRow("Total service points", liveAceRating.totalServicePoints.toString())
-                        HairLine()
-                        StatRow(
-                            "Tour-average ace rate",
-                            liveAceRating.tourAceRate?.let { String.format(java.util.Locale.US, "%.3f%%", it * 100.0) } ?: "—",
-                        )
-                        HairLine()
-                        StatRow(
-                            "Raw adjusted event score",
-                            String.format(java.util.Locale.US, "%.5f", liveAceRating.rawEventScore),
-                        )
-                        HairLine()
-                        StatRow(
-                            "Season normalisation",
-                            String.format(java.util.Locale.US, "%.6f", liveAceRating.normalisation),
-                        )
-                        HairLine()
-                        StatRow("Server profiles matched", "${liveAceRating.serverProfilesMatched}/${liveAceRating.totalServerSides}")
-                        HairLine()
-                        StatRow("Returner profiles matched", "${liveAceRating.returnerProfilesMatched}/${liveAceRating.totalServerSides}")
-                        HairLine()
-                        StatRow("Server tour-prior fallbacks", liveAceRating.serverProfilesFallback.toString())
-                        HairLine()
-                        StatRow("Returner tour-prior fallbacks", liveAceRating.returnerProfilesFallback.toString())
-                        Spacer(Modifier.height(10.dp))
-                        SectionLabel("Largest adjusted side ratios")
-                        Text(
-                            text = "Actual aces ÷ expected aces. Highest and lowest ten sides are shown to identify influential matchups.",
-                            style = TextStyle(fontSize = 11.sp),
-                            color = colors.textDim,
-                        )
-                        val influentialSides = liveAceRating.sideDiagnostics
-                            .sortedByDescending { it.actualExpectedRatio }
-                            .take(10)
-                        val lowSides = liveAceRating.sideDiagnostics
-                            .sortedBy { it.actualExpectedRatio }
-                            .take(10)
-                        val displayedSides = (influentialSides + lowSides)
-                            .distinctBy { it.matchId to it.server }
-                        displayedSides.forEach { side ->
-                            HairLine()
-                            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                                Text(
-                                    text = "${side.server} vs ${side.returner}" +
-                                        (side.matchId?.let { " · $it" } ?: ""),
-                                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
-                                    color = colors.text,
-                                )
-                                val serverSourceLabel = when {
-                                    side.serverProfileSource == "tour-average-prior-only" -> "tour-average prior"
-                                    side.serverProfileSource.startsWith("career-history") -> "career-history profile"
-                                    else -> "player profile"
-                                }
-                                val returnerSourceLabel = when {
-                                    side.returnerProfileSource == "tour-average-prior-only" -> "tour-average prior"
-                                    side.returnerProfileSource.startsWith("career-history") -> "career-history profile"
-                                    else -> "player profile"
-                                }
-                                Text(
-                                    text = "Server: $serverSourceLabel · Returner: $returnerSourceLabel",
-                                    style = TextStyle(fontSize = 9.sp),
-                                    color = colors.textDim,
-                                )
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                ) {
-                                    Text(
-                                        text = "${side.actualAces} actual / ${String.format(java.util.Locale.US, "%.2f", side.expectedAces)} expected · ${side.servicePoints} service points",
-                                        style = TextStyle(fontSize = 10.sp),
-                                        color = colors.textDim,
-                                    )
-                                    Text(
-                                        text = String.format(java.util.Locale.US, "%.2f×", side.actualExpectedRatio),
-                                        style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.SemiBold),
-                                        color = colors.text,
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = "Detailed calculation inputs will appear after a fresh live refresh. Cached ratings contain only summary diagnostics.",
-                            style = TextStyle(fontSize = 11.sp),
-                            color = colors.textDim,
-                        )
-                    }
-                    if (liveAceRating.inProgressMatches > 0 || liveAceRating.walkoversExcluded > 0) {
-                        HairLine()
-                        StatRow("In-progress matches", liveAceRating.inProgressMatches.toString())
-                        HairLine()
-                        StatRow("Walkovers excluded", liveAceRating.walkoversExcluded.toString())
-                    }
-                    if (liveAceRating.adjustmentIssues.isNotEmpty()) {
-                        Spacer(Modifier.height(8.dp))
-                        GlassNote(
-                            "${liveAceRating.adjustmentIssues.size} server-side adjustments excluded. " +
-                                liveAceRating.adjustmentIssues.groupingBy { it.reason }
-                                    .eachCount().entries.joinToString(" · ") { "${it.key}: ${it.value}" },
-                        )
-                    }
                 }
                 if (
                     speed != null &&
@@ -405,14 +309,24 @@ fun TournamentScreen(
                 shape = RoundedCornerShape(28.dp),
                 contentPadding = PaddingValues(20.dp),
             ) {
-                SectionLabel("By season")
+                SectionLabel("By season · tap an edition")
                 Spacer(Modifier.height(10.dp))
                 val readings = data.seasonRows(tournament.id)
                 if (readings.isEmpty()) {
                     Text("No readings.", style = TextStyle(fontSize = 13.sp), color = colors.textDim)
                 } else {
                     readings.forEachIndexed { index, reading ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (reading.season == season) Color.White.copy(alpha = 0.055f) else Color.Transparent)
+                                .clickable(onClickLabel = "Open ${reading.season} diagnostics", role = Role.Button) {
+                                    onSelectSeason(reading.season)
+                                }
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        )
                             Text(
                                 text = reading.season.toString(),
                                 style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Medium),
@@ -536,6 +450,144 @@ fun TournamentScreen(
         }
     }
 }
+
+
+private fun AceRating.Result.toCalculationDiagnostics() = CalculationDiagnostics(
+    completedMatches = matches,
+    adjustedServerSides = adjustedServerSides,
+    totalServerSides = totalServerSides,
+    aces = aces,
+    totalServicePoints = totalServicePoints,
+    tourAverageAceRate = tourAceRate,
+    rawAdjustedEventScore = rawEventScore,
+    seasonNormalisation = normalisation,
+    serverProfilesMatched = serverProfilesMatched,
+    returnerProfilesMatched = returnerProfilesMatched,
+    serverProfilesFallback = serverProfilesFallback,
+    returnerProfilesFallback = returnerProfilesFallback,
+    sideDiagnostics = sideDiagnostics.map { side ->
+        SideRatioDiagnostic(
+            matchId = side.matchId,
+            server = side.server,
+            returner = side.returner,
+            actualAces = side.actualAces,
+            servicePoints = side.servicePoints,
+            serveRate = side.serveRate,
+            returnerConcedeRate = side.returnerConcedeRate,
+            expectedAces = side.expectedAces,
+            actualExpectedRatio = side.actualExpectedRatio,
+            serverProfileSource = side.serverProfileSource,
+            returnerProfileSource = side.returnerProfileSource,
+        )
+    },
+)
+
+@Composable
+private fun CalculationDiagnosticsContent(
+    diagnostics: CalculationDiagnostics,
+    liveAceRating: AceRating.Result?,
+) {
+    val colors = PaceTheme.colors
+    Spacer(Modifier.height(14.dp))
+    SectionLabel(if (liveAceRating != null) "Live calculation diagnostics" else "Calculation diagnostics")
+    Spacer(Modifier.height(8.dp))
+    StatRow("Completed matches", diagnostics.completedMatches.toString())
+    HairLine()
+    StatRow("Adjusted server sides", "${diagnostics.adjustedServerSides}/${diagnostics.totalServerSides}")
+    HairLine()
+    val pooledAceRate = if (diagnostics.totalServicePoints > 0) {
+        diagnostics.aces.toDouble() / diagnostics.totalServicePoints
+    } else null
+    StatRow(
+        "Pooled ace rate",
+        pooledAceRate?.let { String.format(java.util.Locale.US, "%.2f%%", it * 100.0) } ?: "—",
+    )
+    HairLine()
+    StatRow("Aces", diagnostics.aces.toString())
+    if (diagnostics.totalServicePoints > 0) {
+        HairLine()
+        StatRow("Total service points", diagnostics.totalServicePoints.toString())
+        HairLine()
+        StatRow(
+            "Tour-average ace rate",
+            diagnostics.tourAverageAceRate?.let { String.format(java.util.Locale.US, "%.3f%%", it * 100.0) } ?: "—",
+        )
+        HairLine()
+        StatRow("Raw adjusted event score", String.format(java.util.Locale.US, "%.5f", diagnostics.rawAdjustedEventScore))
+        HairLine()
+        StatRow("Season normalisation", String.format(java.util.Locale.US, "%.6f", diagnostics.seasonNormalisation))
+        HairLine()
+        StatRow("Server profiles matched", "${diagnostics.serverProfilesMatched}/${diagnostics.totalServerSides}")
+        HairLine()
+        StatRow("Returner profiles matched", "${diagnostics.returnerProfilesMatched}/${diagnostics.totalServerSides}")
+        HairLine()
+        StatRow("Server tour-prior fallbacks", diagnostics.serverProfilesFallback.toString())
+        HairLine()
+        StatRow("Returner tour-prior fallbacks", diagnostics.returnerProfilesFallback.toString())
+        Spacer(Modifier.height(10.dp))
+        SectionLabel("Largest adjusted side ratios")
+        Text(
+            text = "Actual aces ÷ expected aces. Highest and lowest ten sides are shown to identify influential matchups.",
+            style = TextStyle(fontSize = 11.sp),
+            color = colors.textDim,
+        )
+        val highest = diagnostics.sideDiagnostics.sortedByDescending { it.actualExpectedRatio }.take(10)
+        val lowest = diagnostics.sideDiagnostics.sortedBy { it.actualExpectedRatio }.take(10)
+        val displayedSides = (highest + lowest).distinctBy { it.matchId to it.server }
+        displayedSides.forEach { side ->
+            HairLine()
+            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                Text(
+                    text = "${side.server} vs ${side.returner}" + (side.matchId?.let { " · ${it}" } ?: ""),
+                    style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+                    color = colors.text,
+                )
+                val serverSourceLabel = when {
+                    side.serverProfileSource == "tour-average-prior-only" -> "tour-average prior"
+                    side.serverProfileSource.startsWith("career-history") -> "career-history profile"
+                    else -> "player profile"
+                }
+                val returnerSourceLabel = when {
+                    side.returnerProfileSource == "tour-average-prior-only" -> "tour-average prior"
+                    side.returnerProfileSource.startsWith("career-history") -> "career-history profile"
+                    else -> "player profile"
+                }
+                Text(
+                    text = "Server: ${serverSourceLabel} · Returner: ${returnerSourceLabel}",
+                    style = TextStyle(fontSize = 9.sp),
+                    color = colors.textDim,
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        text = "${side.actualAces} actual / ${String.format(java.util.Locale.US, "%.2f", side.expectedAces)} expected · ${side.servicePoints} service points",
+                        style = TextStyle(fontSize = 10.sp),
+                        color = colors.textDim,
+                    )
+                    Text(
+                        text = String.format(java.util.Locale.US, "%.2f×", side.actualExpectedRatio),
+                        style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.SemiBold),
+                        color = colors.text,
+                    )
+                }
+            }
+        }
+    }
+    if (liveAceRating != null && (liveAceRating.inProgressMatches > 0 || liveAceRating.walkoversExcluded > 0)) {
+        HairLine()
+        StatRow("In-progress matches", liveAceRating.inProgressMatches.toString())
+        HairLine()
+        StatRow("Walkovers excluded", liveAceRating.walkoversExcluded.toString())
+    }
+    if (liveAceRating?.adjustmentIssues?.isNotEmpty() == true) {
+        Spacer(Modifier.height(8.dp))
+        GlassNote(
+            "${liveAceRating.adjustmentIssues.size} server-side adjustments excluded. " +
+                liveAceRating.adjustmentIssues.groupingBy { it.reason }
+                    .eachCount().entries.joinToString(" · ") { "${it.key}: ${it.value}" },
+        )
+    }
+}
+
 
 private fun chartRange(values: List<Float>, fallbackLow: Float, fallbackHigh: Float): ClosedFloatingPointRange<Float> {
     if (values.isEmpty()) return fallbackLow..fallbackHigh

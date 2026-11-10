@@ -20,7 +20,8 @@ from urllib.error import HTTPError
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
 TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
-YEARS = range(2012, date.today().year + 1)
+PROFILE_HISTORY_START_YEAR = 1991
+YEARS = range(PROFILE_HISTORY_START_YEAR, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Finals
 SOURCE_BY_YEAR = {}
 SOURCE_METADATA_BY_YEAR = {}
@@ -383,7 +384,6 @@ def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
 
 
 # Live and historical profile coverage share one long-window, recency-weighted player history.
-PROFILE_HISTORY_START_YEAR = 1991
 LIVE_PROFILE_FALLBACK_SEASONS = 35
 LIVE_PROFILE_HISTORY_DECAY = 0.90
 LIVE_PROFILE_PRIOR_SERVICE_POINTS = 150.0
@@ -1041,6 +1041,92 @@ def bootstrap_event_interval(clusters, normaliser, iterations=EVENT_CI_BOOTSTRAP
     return {"low": percentile(0.025), "high": percentile(0.975)}
 
 
+
+def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
+    """Compact archive diagnostic matching the Live Now highest/lowest side detail."""
+    total_aces = 0
+    total_points = 0
+    server_profiles_matched = 0
+    returner_profiles_matched = 0
+    server_fallbacks = 0
+    returner_fallbacks = 0
+    sides = []
+    for match_index, row in enumerate(event_rows, start=1):
+        match_num = str(row.get("match_num") or "").strip()
+        match_id = f"m{int(match_num):03d}" if match_num.isdigit() else f"m{match_index:03d}"
+        total_aces += int(num(row.get("w_ace")) + num(row.get("l_ace")))
+        total_points += int(num(row.get("w_svpt")) + num(row.get("l_svpt")))
+        for server_id, returner_id, server_name, returner_name, aces_key, points_key in (
+            ("winner_id", "loser_id", "winner_name", "loser_name", "w_ace", "w_svpt"),
+            ("loser_id", "winner_id", "loser_name", "winner_name", "l_ace", "l_svpt"),
+        ):
+            server_id_value = row.get(server_id)
+            returner_id_value = row.get(returner_id)
+            server_profile = profiles.get(server_id_value, {})
+            returner_profile = profiles.get(returner_id_value, {})
+            serve_rate = server_profile.get("serve_rate")
+            concede_rate = returner_profile.get("concede_rate")
+            server_source = server_profile.get("serve_rate_source") or "player-profile"
+            returner_source = returner_profile.get("concede_rate_source") or "player-profile"
+            server_fallback = serve_rate is None or server_source == "tour-average-prior-only"
+            returner_fallback = concede_rate is None or returner_source == "tour-average-prior-only"
+            if server_fallback:
+                serve_rate = tour_rate
+                server_source = "tour-average-prior-only"
+                server_fallbacks += 1
+            else:
+                server_profiles_matched += 1
+            if returner_fallback:
+                concede_rate = tour_rate
+                returner_source = "tour-average-prior-only"
+                returner_fallbacks += 1
+            else:
+                returner_profiles_matched += 1
+            service_points = int(num(row.get(points_key)))
+            aces = int(num(row.get(aces_key)))
+            if (
+                service_points <= 0 or aces < 0 or aces > service_points
+                or serve_rate is None or concede_rate is None
+                or not 0.0 < serve_rate < 1.0 or not 0.0 < concede_rate < 1.0
+                or tour_rate is None or not 0.0 < tour_rate < 1.0
+            ):
+                continue
+            expected = expected_calibrated_aces(serve_rate, concede_rate, tour_rate, service_points)
+            if not math.isfinite(expected) or expected <= MIN_EXPECTED_ACES:
+                continue
+            adjusted_expected = max(expected, EXPECTED_ACES_FLOOR)
+            sides.append({
+                "matchId": match_id,
+                "server": row.get(server_name) or str(server_id_value or "Unknown"),
+                "returner": row.get(returner_name) or str(returner_id_value or "Unknown"),
+                "actualAces": aces,
+                "servicePoints": service_points,
+                "serveRate": serve_rate,
+                "returnerConcedeRate": concede_rate,
+                "expectedAces": adjusted_expected,
+                "actualExpectedRatio": aces / adjusted_expected,
+                "serverProfileSource": server_source,
+                "returnerProfileSource": returner_source,
+            })
+    highest = sorted(sides, key=lambda side: side["actualExpectedRatio"], reverse=True)[:retain_per_tail]
+    lowest = sorted(sides, key=lambda side: side["actualExpectedRatio"])[:retain_per_tail]
+    retained = {}
+    for side in highest + lowest:
+        retained[(side["matchId"], side["server"])] = side
+    return {
+        "totalServerSides": len(event_rows) * 2,
+        "aces": total_aces,
+        "totalServicePoints": total_points,
+        "tourAverageAceRate": tour_rate,
+        "serverProfilesMatched": server_profiles_matched,
+        "returnerProfilesMatched": returner_profiles_matched,
+        "serverProfilesFallback": server_fallbacks,
+        "returnerProfilesFallback": returner_fallbacks,
+        "sideDiagnostics": list(retained.values()),
+    }
+
+
+
 def season_ratings(year, rows):
     """LOEO ratings; special-format events are targets, never training or normaliser inputs."""
     target_rows = valid_rows(rows)
@@ -1077,6 +1163,7 @@ def season_ratings(year, rows):
             continue
         profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
         clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
+        side_diagnostics = event_side_diagnostics(event_rows, profiles, tour_rate)
         ratios = [ratio for cluster in clusters for ratio in cluster]
         sides = len(ratios)
         if sides < MIN_EVENT_RATING_SERVER_SIDES:
@@ -1090,6 +1177,7 @@ def season_ratings(year, rows):
             "matches": len(event_rows),
             "ace": 100.0 * aces / points if points else None,
             "profile_coverage": profile_coverage,
+            "calculation_diagnostics": side_diagnostics,
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1139,6 +1227,21 @@ def season_ratings(year, rows):
             "speedCiLow": ci.get("low"),
             "speedCiHigh": ci.get("high"),
             "speedCiMethod": ci.get("method"),
+            "calculationDiagnostics": {
+                "completedMatches": item["matches"],
+                "adjustedServerSides": item["sides"],
+                "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
+                "aces": item["calculation_diagnostics"]["aces"],
+                "totalServicePoints": item["calculation_diagnostics"]["totalServicePoints"],
+                "tourAverageAceRate": item["calculation_diagnostics"]["tourAverageAceRate"],
+                "rawAdjustedEventScore": item["raw"],
+                "seasonNormalisation": mean_raw,
+                "serverProfilesMatched": item["calculation_diagnostics"]["serverProfilesMatched"],
+                "returnerProfilesMatched": item["calculation_diagnostics"]["returnerProfilesMatched"],
+                "serverProfilesFallback": item["calculation_diagnostics"]["serverProfilesFallback"],
+                "returnerProfilesFallback": item["calculation_diagnostics"]["returnerProfilesFallback"],
+                "sideDiagnostics": item["calculation_diagnostics"]["sideDiagnostics"],
+            },
         }
     return output
 

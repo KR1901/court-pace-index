@@ -355,6 +355,7 @@ if os.path.exists(COMPUTED):
             reading["speedCiLow"] = values.get("speedCiLow")
             reading["speedCiHigh"] = values.get("speedCiHigh")
             reading["speedCiMethod"] = values.get("speedCiMethod")
+            reading["calculationDiagnostics"] = values.get("calculationDiagnostics")
             reading["src"] = "computed"
             computed_n += 1
             published_overlap_n += 1
@@ -381,6 +382,7 @@ if os.path.exists(COMPUTED):
                     "speedCiLow": values.get("speedCiLow"),
                     "speedCiHigh": values.get("speedCiHigh"),
                     "speedCiMethod": values.get("speedCiMethod"),
+                    "calculationDiagnostics": values.get("calculationDiagnostics"),
                     "src": "computed",
                 })
                 computed_n += 1

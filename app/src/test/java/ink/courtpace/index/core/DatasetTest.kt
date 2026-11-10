@@ -133,7 +133,27 @@ class DatasetTest {
         val adelaide2026 = computed.first { it.t == "adelaide" && it.s == 2026 }
         assertEquals(1.04, adelaide2026.publishedSpeed!!, 0.001)
         assertEquals("computed", data.speedSource("adelaide", 2026))
-        assertTrue(computed.all { it.s in 2012..2026 })
+        assertTrue(computed.all { it.s in 1991..2026 })
+        assertTrue(
+            "the archive should calculate at least one event in its first supported season",
+            computed.any { it.s == 1991 && it.calculationDiagnostics != null },
+        )
+        assertTrue(
+            "every computed tournament-season must carry archived detail diagnostics",
+            computed.all { it.calculationDiagnostics != null },
+        )
+        computed.forEach { reading ->
+            val diagnostics = reading.calculationDiagnostics!!
+            assertEquals(reading.matches, diagnostics.completedMatches)
+            assertEquals(reading.adjustedServerSides, diagnostics.adjustedServerSides)
+            assertEquals(diagnostics.completedMatches * 2, diagnostics.totalServerSides)
+            assertTrue(diagnostics.sideDiagnostics.isNotEmpty())
+            assertTrue(diagnostics.sideDiagnostics.size <= 20)
+            assertTrue(diagnostics.sideDiagnostics.all {
+                it.server.isNotBlank() && it.returner.isNotBlank() &&
+                    it.expectedAces > 0.0 && it.actualExpectedRatio.isFinite()
+            })
+        }
         val comparisons = computed.filter { it.publishedSpeed != null }
         assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
         val montpellier = comparisons.first {

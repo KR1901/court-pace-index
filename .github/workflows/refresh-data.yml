@@ -190,7 +190,15 @@ jobs:
                           assert row.get("adjustedServerSides") == values.get("adjustedServerSides"), f"{filename} stale side coverage for {season}/{tournament_id}"
                           assert row.get("matches") == values.get("matches"), f"{filename} stale match count for {season}/{tournament_id}"
                           assert row.get("speedCiLow") == values.get("speedCiLow"), f"{filename} stale lower interval for {season}/{tournament_id}"
-                          assert row.get("speedCiHigh") == values.get("speedCiHigh"), f"{filename} stale upper interval for {season}/{tournament_id}"
+                          assert row.get("speedCiHigh") == values.get("speedCiHigh"), f"${filename} stale upper interval for ${season}/${tournament_id}"
+                          diagnostics = values.get("calculationDiagnostics")
+                          assert isinstance(diagnostics, dict), f"${season}/${tournament_id} missing historical calculation diagnostics"
+                          assert diagnostics.get("completedMatches") == values.get("matches")
+                          assert diagnostics.get("adjustedServerSides") == values.get("adjustedServerSides")
+                          assert diagnostics.get("totalServerSides") == values.get("matches", 0) * 2
+                          assert diagnostics.get("sideDiagnostics"), f"${season}/${tournament_id} has no retained influential sides"
+                          assert len(diagnostics["sideDiagnostics"]) <= 20
+                          assert row.get("calculationDiagnostics") == diagnostics, f"${filename} stale detail diagnostics for ${season}/${tournament_id}"
                           checked += 1
                       elif values.get("provisionalSpeed") is not None:
                           assert row is not None, f"{filename} missing provisional {season}/{tournament_id}"

@@ -112,6 +112,7 @@ class PaceData(val dataset: PaceDataset) {
         val provisionalCiHigh: Double? = null,
         val provisionalServerSides: Int? = null,
         val provisionalMatches: Int? = null,
+        val calculationDiagnostics: ink.courtpace.index.core.model.CalculationDiagnostics? = null,
     )
 
     fun seasonRows(id: String): List<SeasonRow> =
@@ -138,6 +139,7 @@ class PaceData(val dataset: PaceDataset) {
                     provisionalCiHigh = rows.firstNotNullOfOrNull { it.provisionalCiHigh },
                     provisionalServerSides = rows.firstNotNullOfOrNull { it.provisionalServerSides },
                     provisionalMatches = rows.firstNotNullOfOrNull { it.provisionalMatches },
+                    calculationDiagnostics = speedReading?.calculationDiagnostics,
                 )
             }
             .sortedByDescending { it.season }

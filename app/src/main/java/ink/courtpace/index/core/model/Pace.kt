@@ -101,6 +101,40 @@ data class Tournament(
  * sources and are rarely both present, so each field is optional.
  */
 @Serializable
+data class SideRatioDiagnostic(
+    val matchId: String? = null,
+    val server: String,
+    val returner: String,
+    val actualAces: Int,
+    val servicePoints: Int,
+    val serveRate: Double,
+    val returnerConcedeRate: Double,
+    val expectedAces: Double,
+    val actualExpectedRatio: Double,
+    val serverProfileSource: String = "player-profile",
+    val returnerProfileSource: String = "player-profile",
+)
+
+/** Compact event-level calculation inputs shared by live and archived tournament details. */
+@Serializable
+data class CalculationDiagnostics(
+    val completedMatches: Int,
+    val adjustedServerSides: Int,
+    val totalServerSides: Int,
+    val aces: Int,
+    val totalServicePoints: Int,
+    val tourAverageAceRate: Double? = null,
+    val rawAdjustedEventScore: Double,
+    val seasonNormalisation: Double,
+    val serverProfilesMatched: Int,
+    val returnerProfilesMatched: Int,
+    val serverProfilesFallback: Int,
+    val returnerProfilesFallback: Int,
+    /** Highest and lowest ten server-side ratios, not the complete raw match archive. */
+    val sideDiagnostics: List<SideRatioDiagnostic> = emptyList(),
+)
+
+@Serializable
 data class PaceReading(
     val t: String,
     val s: Int,
@@ -132,6 +166,7 @@ data class PaceReading(
     val provisionalCiHigh: Double? = null,
     val provisionalServerSides: Int? = null,
     val provisionalMatches: Int? = null,
+    val calculationDiagnostics: CalculationDiagnostics? = null,
 ) {
     fun value(metric: Metric): Double? = when (metric) {
         Metric.CPI -> cpi

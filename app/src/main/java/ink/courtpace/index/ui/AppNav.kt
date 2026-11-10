@@ -74,7 +74,7 @@ import ink.courtpace.index.ui.theme.PaceTheme
 
 sealed interface Route {
     data class Tab(val index: Int) : Route
-    data class Detail(val tournamentId: String) : Route
+    data class Detail(val tournamentId: String, val season: Int) : Route
 }
 
 private val tabs = listOf(
@@ -197,7 +197,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     onSeason = { vm.selectSeason(it) },
                                     onMetric = { vm.selectMetric(it) },
                                     onSurface = { vm.toggleSurface(it) },
-                                    onOpen = { push(Route.Detail(it.id)) },
+                                    onOpen = { push(Route.Detail(it.id, vm.season)) },
                                     refreshing = vm.refreshState is RefreshState.Running,
                                     onRefresh = { vm.refresh() },
                                     liveAceByEvent = vm.liveAceByEvent,
@@ -227,15 +227,16 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                             }
 
                             is Route.Detail -> {
-                                val tournament = data.tournament(current.tournamentId, vm.season)
+                                val tournament = data.tournament(current.tournamentId, current.season)
                                 if (tournament == null) {
                                     pop()
                                 } else {
                                     TournamentScreen(
                                         data = data,
                                         tournament = tournament,
-                                        season = vm.season,
-                                        liveAceRating = vm.liveAceByEvent[current.tournamentId].takeIf { vm.season == data.latestSeason },
+                                        season = current.season,
+                                        liveAceRating = vm.liveAceByEvent[current.tournamentId].takeIf { current.season == data.latestSeason },
+                                        onSelectSeason = { selected -> route = current.copy(season = selected) },
                                         onBack = { pop() },
                                     )
                                 }

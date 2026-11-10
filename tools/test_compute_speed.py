@@ -86,6 +86,44 @@ def profile(
     }
 
 
+class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
+    def test_calculation_archive_starts_with_the_first_supported_season(self):
+        self.assertEqual(1991, compute_speed.YEARS.start)
+
+    def test_event_side_diagnostics_retain_high_and_low_matchups_and_full_denominators(self):
+        rows = [{
+            "winner_id": "p1", "winner_name": "Server One",
+            "loser_id": "p2", "loser_name": "Returner Two",
+            "w_svpt": "100", "l_svpt": "90", "w_ace": "8", "l_ace": "3",
+            "match_num": "17",
+        }]
+        profiles = {
+            "p1": {"serve_rate": 0.10, "serve_rate_source": "career-history-surface-shrunk"},
+            "p2": {"concede_rate": 0.08, "concede_rate_source": "career-history-surface-shrunk"},
+        }
+        result = compute_speed.event_side_diagnostics(rows, profiles, 0.08)
+        self.assertEqual(2, result["totalServerSides"])
+        self.assertEqual(11, result["aces"])
+        self.assertEqual(190, result["totalServicePoints"])
+        self.assertEqual(2, len(result["sideDiagnostics"]))
+        self.assertEqual(2, result["serverProfilesMatched"])
+        self.assertEqual(2, result["returnerProfilesMatched"])
+        self.assertEqual(0, result["serverProfilesFallback"])
+        self.assertEqual(0, result["returnerProfilesFallback"])
+        self.assertTrue(all(item["matchId"] == "m017" for item in result["sideDiagnostics"]))
+        self.assertEqual(
+            {"Server One", "Returner Two"},
+            {item["server"] for item in result["sideDiagnostics"]} |
+            {item["returner"] for item in result["sideDiagnostics"]},
+        )
+        for item in result["sideDiagnostics"]:
+            expected = compute_speed.expected_calibrated_aces(
+                item["serveRate"], item["returnerConcedeRate"], 0.08, item["servicePoints"]
+            )
+            self.assertAlmostEqual(max(expected, compute_speed.EXPECTED_ACES_FLOOR), item["expectedAces"])
+            self.assertAlmostEqual(item["actualAces"] / item["expectedAces"], item["actualExpectedRatio"])
+
+
 class BuildLiveProfilesTests(unittest.TestCase):
     def test_same_season_conflicting_player_ids_are_excluded_as_ambiguous(self):
         first = profile("id-a", "Alex Molcan", serve_rate=0.08, concede_rate=0.06,
