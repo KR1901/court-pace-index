@@ -1,6 +1,6 @@
 # Data licences, terms and attribution
 
-**Last checked: 8 November 2026.** This document distinguishes the MIT licence for project software from the separate rights that may apply to source data, published ratings and generated datasets. It is a provenance and risk guide, not legal advice.
+**Last checked: 10 November 2026.** This document distinguishes the MIT licence for project software from the separate rights that may apply to source data, published ratings and generated datasets. It is a provenance and risk guide, not legal advice.
 
 There is no single licence that covers every data point in this repository. Do not infer that the MIT licence, or one third-party data licence, applies to the entire bundled dataset.
 
@@ -18,7 +18,7 @@ When reusing archive-derived material, attribute Jeff Sackmann, link to the upst
 
 ## 3. Current-season TennisMyLife data
 
-The current-season loader may use the [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database). Its published repository terms describe the datasets as intended for personal, educational and non-commercial research. The public terms limit use to personal, educational and non-commercial research; free downloads do not grant commercial rights. They do not authorise raw-database redistribution or resale. The current terms additionally require prior express written permission for commercial services using the data, including model training/validation, statistical predictions and monetisation of derived predictions. They warn that third-party rights may apply.
+The current-season loader may use the [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database). Its published repository terms describe the datasets as intended for personal, educational and non-commercial research. The public terms limit use to personal, educational and non-commercial research; free downloads do not grant commercial rights. They do not authorise raw-database redistribution or resale. The current terms additionally state that no commercial use is authorised by the public terms and require prior express written permission for commercial services using the data, including model training/validation, statistical predictions and monetisation of derived predictions. They warn that third-party rights may apply.
 
 Accordingly:
 
@@ -44,7 +44,7 @@ Published CPI readings are sourced from [courtspeed.com](https://courtspeed.com/
 
 The Android app can retrieve live match results and statistics from ATP/Infosys pages. These requests are not an official ATP API and do not create a licence to reuse ATP content.
 
-The [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions-app) restrict use of website content to individual non-commercial purposes and state that systematic retrieval of scores, statistics or rankings to compile a dataset is prohibited without ATP's prior express written permission. Users and operators must review and comply with the current ATP terms. This repository does not represent that ATP permission has been obtained.
+The [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions) limit general website/content use to individual non-commercial, entertainment and informational purposes. They expressly prohibit systematic retrieval of scores, statistics or rankings to create or compile a collection or database without ATP's prior express written permission. The app's on-device implementation does not itself grant permission for systematic retrieval. Users and operators must review the current ATP terms; this repository does not represent that ATP permission has been obtained.
 
 ## 7. Combined and generated datasets
 
@@ -55,6 +55,10 @@ Because sources have different terms, **do not apply one blanket licence to the 
 ## 8. Third-party software and assets
 
 Android/Gradle dependencies, fonts, icons, graphics and any separately sourced assets remain under their own licences. Review dependency metadata and asset notices before redistributing a build.
+
+## 9. Private repository status does not change source rights
+
+This repository is currently private for personal development and research. Repository privacy is an access-control measure, not a licence or permission from any data provider. It does not change the non-commercial, attribution, share-alike, redistribution or systematic-retrieval restrictions described above. Do not publish the generated dataset or distribute data-derived functionality beyond the rights available for each source. Obtain source permission where the terms require it.
 
 ## Source links
 
