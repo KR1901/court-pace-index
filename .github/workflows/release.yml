@@ -96,6 +96,7 @@ jobs:
           mkdir -p "$recovery" "$download_dir"
           umask 077
           generated=false
+          key_transition=false
 
           if [[ -n "$KEYSTORE_BASE64" && -n "$KEYSTORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
             printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
@@ -143,6 +144,7 @@ jobs:
                 -keyalg RSA -keysize 3072 -validity 10000 \
                 -dname "CN=Court Pace, OU=Personal, O=KR1901, L=Bilaspur, ST=Chhattisgarh, C=IN"
               generated=true
+              key_transition=true
               echo "Generated a new permanent release signing key."
             fi
 
@@ -175,6 +177,7 @@ jobs:
             echo "KEY_RECOVERY_DIR=$recovery"
           } >> "$GITHUB_ENV"
           echo "generated=$generated" >> "$GITHUB_OUTPUT"
+          echo "key_transition=$key_transition" >> "$GITHUB_OUTPUT"
 
       - name: Retain new signing key for recovery
         if: steps.signing.outputs.generated == 'true'
@@ -226,7 +229,7 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           VERSION_CODE: ${{ steps.meta.outputs.version_code }}
           SHA256: ${{ steps.verify.outputs.sha256 }}
-          NEW_KEY: ${{ steps.signing.outputs.generated }}
+          KEY_TRANSITION: ${{ steps.signing.outputs.key_transition }}
         run: |
           cat > "$RUNNER_TEMP/RELEASE_NOTES.md" <<EOF
           ## Court Pace $VERSION
@@ -247,10 +250,20 @@ jobs:
           - SHA-256: `$SHA256`
 
           EOF
-          if [[ "$NEW_KEY" == "true" ]]; then
+          if [[ "$VERSION" == "3.2.1" ]]; then
             cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
-          ### One-time signing-key transition
-          The previous v3.1.0 signing key was unavailable. This APK uses a newly generated permanent replacement key. **Uninstall Court Pace 3.1.0 before installing this release**; Android does not permit an in-place update signed by a different certificate. A restricted Actions recovery artifact is available for 90 days. Download it, configure the four repository Actions secrets shown in its `GITHUB_ACTIONS_SECRETS.txt`, and keep an offline backup. Do not share the artifact or its credentials.
+          ### 3.2.1 maintenance update
+          - Corrected Paris Masters 2026 to a completed schedule tombstone while retaining its event window so stale ATP score-hub routes cannot revive it.
+          - Regenerated the bundled dataset: Paris is retained only in `liveSchedule`; Stockholm remains in the visible active-event fallback.
+          - Dataset snapshot publishing now runs when live-event metadata or the dataset generator changes, with explicit Paris/Stockholm integrity checks.
+          - Clarified that live Surface Speed is calculated on-device through ATP/Infosys and the production opponent-adjusted rating engine is unchanged.
+          - Refreshed About, README, data provenance and source-specific licensing documentation.
+          EOF
+          fi
+          if [[ "$KEY_TRANSITION" == "true" ]]; then
+            cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
+          ### Signing-key transition
+          A new replacement key had to be generated because the previous release key could not be recovered. Android does not permit an in-place update across different signing certificates. Uninstall the previously installed Court Pace version before installing this APK. A restricted Actions recovery artifact is available for 90 days; download it, configure all four repository Actions secrets from its `GITHUB_ACTIONS_SECRETS.txt`, and keep an offline backup. Never share the artifact or its credentials.
           EOF
           else
             cat >> "$RUNNER_TEMP/RELEASE_NOTES.md" <<'EOF'
@@ -262,7 +275,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
-          name: Court Pace ${{ steps.meta.outputs.version }} — calibrated Surface Speed and live match coverage
+          name: Court Pace ${{ steps.meta.outputs.version }} — live schedule reliability and maintenance fixes
           body_path: ${{ runner.temp }}/RELEASE_NOTES.md
           files: ${{ steps.verify.outputs.apk }}
           draft: false
