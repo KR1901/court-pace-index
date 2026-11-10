@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-10T05:57:01+00:00",
+  "generated": "2026-11-10T06:06:39+00:00",
   "source": "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year=2026",
   "seasonPolicy": "Tennis Abstract year selector",
   "seasons": {
@@ -3875,6 +3875,14 @@
         "src": "tennisabstract"
       },
       {
+        "t": "atpfinals",
+        "s": 2000,
+        "date": "2000-11-27",
+        "speed": 0.89,
+        "ace": 11.7,
+        "src": "tennisabstract"
+      },
+      {
         "t": "auckland",
         "s": 2000,
         "date": "2000-01-10",
@@ -4210,6 +4218,14 @@
         "date": "2001-01-01",
         "speed": 0.96,
         "ace": 9.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "atpfinals",
+        "s": 2001,
+        "date": "2001-11-12",
+        "speed": 1.0,
+        "ace": 9.3,
         "src": "tennisabstract"
       },
       {
@@ -4559,6 +4575,14 @@
         "src": "tennisabstract"
       },
       {
+        "t": "atpfinals",
+        "s": 2002,
+        "date": "2002-11-11",
+        "speed": 0.96,
+        "ace": 9.4,
+        "src": "tennisabstract"
+      },
+      {
         "t": "auckland",
         "s": 2002,
         "date": "2002-01-07",
@@ -4905,6 +4929,14 @@
         "src": "tennisabstract"
       },
       {
+        "t": "atpfinals",
+        "s": 2003,
+        "date": "2003-11-10",
+        "speed": 0.94,
+        "ace": 9.7,
+        "src": "tennisabstract"
+      },
+      {
         "t": "auckland",
         "s": 2003,
         "date": "2003-01-06",
@@ -5240,6 +5272,14 @@
         "date": "2004-01-05",
         "speed": 0.99,
         "ace": 8.8,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "atpfinals",
+        "s": 2004,
+        "date": "2004-11-15",
+        "speed": 1.2,
+        "ace": 12.0,
         "src": "tennisabstract"
       },
       {
@@ -5597,6 +5637,14 @@
         "src": "tennisabstract"
       },
       {
+        "t": "atpfinals",
+        "s": 2005,
+        "date": "2005-11-14",
+        "speed": 0.81,
+        "ace": 6.9,
+        "src": "tennisabstract"
+      },
+      {
         "t": "auckland",
         "s": 2005,
         "date": "2005-01-10",
@@ -5940,6 +5988,14 @@
         "date": "2006-01-02",
         "speed": 1.0,
         "ace": 8.4,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "atpfinals",
+        "s": 2006,
+        "date": "2006-11-13",
+        "speed": 1.28,
+        "ace": 11.0,
         "src": "tennisabstract"
       },
       {
@@ -6289,6 +6345,14 @@
         "src": "tennisabstract"
       },
       {
+        "t": "atpfinals",
+        "s": 2007,
+        "date": "2007-11-12",
+        "speed": 0.88,
+        "ace": 7.5,
+        "src": "tennisabstract"
+      },
+      {
         "t": "auckland",
         "s": 2007,
         "date": "2007-01-08",
@@ -6632,6 +6696,14 @@
         "date": "2007-12-31",
         "speed": 1.13,
         "ace": 11.1,
+        "src": "tennisabstract"
+      },
+      {
+        "t": "atpfinals",
+        "s": 2008,
+        "date": "2008-11-09",
+        "speed": 1.02,
+        "ace": 8.4,
         "src": "tennisabstract"
       },
       {
@@ -13622,7 +13694,6 @@
       "London",
       "Long Island",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Mexico City",
       "Moscow",
@@ -13651,7 +13722,6 @@
       "Indianapolis",
       "Long Island",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Milan",
       "Moscow",
@@ -13677,7 +13747,6 @@
       "Indianapolis",
       "Long Island",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Milan",
       "Moscow",
@@ -13704,7 +13773,6 @@
       "Indianapolis",
       "Long Island",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Milan",
       "Moscow",
@@ -13730,7 +13798,6 @@
       "Indianapolis",
       "Long Island",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Milan",
       "Moscow",
@@ -13756,7 +13823,6 @@
       "Ho Chi Minh City",
       "Indianapolis",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Milan",
       "Moscow",
@@ -13783,7 +13849,6 @@
       "Indianapolis",
       "Las Vegas",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Moscow",
       "Mumbai",
@@ -13810,7 +13875,6 @@
       "Indianapolis",
       "Las Vegas",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Moscow",
       "Mumbai",
@@ -13835,7 +13899,6 @@
       "Indianapolis",
       "Las Vegas",
       "Los Angeles",
-      "Masters Cup",
       "Memphis",
       "Moscow",
       "New Haven",
