@@ -18,6 +18,22 @@ This PR implements and audits the calibrated expected-aces Surface Speed methodo
 - CALC is primary when an archive calculation is available; Tennis Abstract remains a behavioural reference or labelled fallback.
 - Live diagnostics expose raw score, normalisation, tour ace rate, service-point totals, matched profiles and influential side ratios.
 
+## Next Gen Finals target-rating policy
+
+Next Gen Finals is now a CALC target event as well as a published Tennis Abstract reference. Tennis Abstract's method describes an ace rate adjusted for the servers and returners in each match, and its 2025 season table includes Next Gen Finals (0.81). The project therefore no longer suppresses the event's own adjusted target estimate.
+
+The event's short first-to-four sets and no-ad scoring make its service-point population format-specific. The implementation handles that explicitly:
+
+- Next Gen match rows are eligible as target rows for their own event estimate.
+- Next Gen rows remain excluded from standard ATP player-profile fitting and the standard ATP season normaliser.
+- The target is rated against the standard ATP profile estimates and standard-event season anchor, so it cannot alter Rio, Adelaide or any other standard event's rating.
+- Its CALC value is preserved without a 2.0 ceiling. The app accepts it only when the tournament is `nextgen` and the source is `computed`; published TA values and all other events retain the normal range guard.
+- The tournament detail and Method screens label the result format-specific. Small draws remain visible with sample/uncertainty context.
+
+The same source-label resolver now handles exact aliases and case/punctuation variants such as `Rio Open` / `Rio de Janeiro` and `Adelaide International` / `Adelaide`. The existing 2026 computed-history records for Rio and Adelaide are required by Android dataset tests to survive the source merge as CALC values with their TA references retained.
+
+Sources: [Tennis Abstract 2025 surface-speed table](https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year=2025), [ATP Next Gen rules](https://www.atptour.com/en/news/next-gen-atp-finals-presented-by-pif-2024-rules-and-innovations).
+
 ## Statistical audit
 
 Latest completed comparison: 1,289 common event-seasons across 36 seasons (1991–2026), 5,000 season-stratified paired bootstrap resamples.
