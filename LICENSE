@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Scope clarification
+
+This MIT grant applies to the original software code and accompanying project
+documentation to the extent owned by the project copyright holder. It does not
+relicense third-party datasets, published statistics, source-site content,
+third-party libraries, or other materials that carry separate terms.
+
+The bundled dataset is assembled from multiple sources. Its components and
+derived-data restrictions are source-specific; see [DATA-LICENSES.md](DATA-LICENSES.md).
+Nothing in this file grants rights that the project does not own or have authority
+to grant. The GitHub repository licence indicator identifies the MIT code licence,
+not an umbrella licence for every file or data point in the repository.

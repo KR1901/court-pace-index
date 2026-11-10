@@ -111,21 +111,42 @@ fun MethodScreen(data: PaceData) {
             Text(
                 text = "A behavioural reading. Count the aces at an event, adjust for which servers and " +
                     "which returners were actually on court, and compare with what those same players " +
-                    "would have produced on a tour-average surface. 1.00 is average; the usual range " +
-                    "across ATP events is about 0.50 to 1.50.",
+                    "would have produced on a tour-average surface. 1.00 is the season mean; " +
+                    "individual event ratings can fall outside any illustrative range.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "Player tendencies come from the baseline's profile season or the most recent " +
-                    "qualified profile in the ten seasons before it. Where a player has no qualified profile, " +
-                    "their own available surface-specific serve sample is shrunk toward that season's " +
-                    "surface average using a 300-service-point prior. For each server side, expected aces " +
-                    "are calculated from the server's serve rate and the returner's ace-concession rate. " +
-                    "Positive expected-ace counts below 0.5 are floored at 0.5 rather than dropping that " +
-                    "side or letting a tiny denominator dominate. Historical and live ratings use this " +
-                    "same rule; low-sample estimates are labelled in the baseline.",
+                text = "Historical event ratings are calculated leave-one-tournament-out: every match from " +
+                    "the event being rated is excluded from its player profiles and tour-average anchor. " +
+                    "Qualified server and returner rates use at least three matches per surface bucket and " +
+                    "are shrunk toward the season's surface-wide rate with a 150-service-point prior before " +
+                    "the neutral blend: clay one third, hard/grass two thirds. If only one surface qualifies, " +
+                    "that rate is used. A returner without a qualified surface profile uses a pooled " +
+                    "ace-concession rate shrunk toward the tour-wide average with the same prior. Positive " +
+                    "expected-ace counts below 0.5 are floored at 0.5. The event score is the equal-weight " +
+                    "mean of actual/expected ace ratios, then season-normalised to a mean of 1.00. Live " +
+                    "baselines exclude active tournament matches when a fresh event manifest is available; " +
+                    "if that manifest is stale or unavailable, the previous completed season is used. " +
+                    "Live low-sample profiles use the same 150-service-point prior. A CALC point estimate is " +
+                    "shown when at least one server side can be adjusted; events with fewer than 20 adjusted " +
+                    "server sides remain ranked but are labelled small-sample. The season anchor preferentially " +
+                    "uses events with at least 20 adjusted sides. Each standard reading includes a conditional " +
+                    "95% match-cluster interval when at least five matches are available: whole matches are " +
+                    "resampled, while fitted player profiles and the season normaliser are fixed. It is event-" +
+                    "sampling uncertainty, not total model uncertainty. The 1.00 scale is a relative behavioural " +
+                    "measure, not an absolute physical court-speed measurement.",
+                style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
+                color = colors.textDim,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = "Next Gen ATP Finals is also given a CALC target rating, following Tennis Abstract's " +
+                    "published treatment. Because it uses short sets and no-ad scoring, its matches are " +
+                    "excluded from standard ATP player-profile fitting and the standard season anchor. Its " +
+                    "format-specific CALC is shown without a 2.0 cap and should be interpreted separately " +
+                    "from standard-format events.",
                 style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                 color = colors.textDim,
             )
@@ -269,13 +290,13 @@ fun MethodScreen(data: PaceData) {
 
         Spacer(Modifier.height(16.dp))
         GlassNote(
-            "Speed figures for 2012-2025 are recomputed by this project from the public ATP match " +
-                "archive compiled by Jeff Sackmann (CC BY-NC-SA 4.0), using the server/returner-adjusted " +
-                "method, a 0.5 expected-ace floor for positive low expectations, and season normalisation. " +
-                "2025-26 readings published by Tennis Abstract take precedence where they exist. The " +
-                "recomputed 2026 event ratings compare with the published reference at correlation 0.962 " +
-                "and mean absolute difference 0.090; they are not the same series, and the app dims the " +
-                "computed seasons wherever it shows them.",
+            "CALC ratings are recomputed from the public ATP match archive compiled by Jeff Sackmann " +
+                "(CC BY-NC-SA 4.0), using the calibrated server/returner odds-ratio method and season " +
+                "normalisation. Where a matching Tennis Abstract rating exists, CALC is the primary " +
+                "ranking value and the original TA figure is retained as a side-by-side reference. Where " +
+                "the archive has no calculation, the published TA value remains as a clearly labelled " +
+                "fallback. The two estimates are different methods, so the app identifies them instead " +
+                "of silently mixing their sources.",
         )
         Spacer(Modifier.height(12.dp))
         GlassNote(

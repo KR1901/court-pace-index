@@ -1,5 +1,6 @@
 package ink.courtpace.index.core
 
+import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.Metric
 import org.junit.Assert.assertEquals
@@ -39,12 +40,26 @@ class DatasetTest {
     }
 
     @Test
-    fun `readings carry exactly one metric each`() {
+    fun `readings carry one primary metric or one provisional diagnostic`() {
         data.dataset.readings.forEach { reading ->
-            val present = listOfNotNull(reading.cpi, reading.speed).size
-            assertEquals("reading $reading", 1, present)
+            val primary = listOfNotNull(reading.cpi, reading.speed).size
+            val provisionalOnly = reading.provisionalSpeed != null &&
+                reading.cpi == null && reading.speed == null
+            assertTrue("reading has invalid primary/provisional metric shape: $reading",
+                primary == 1 || provisionalOnly)
             assertTrue(reading.s in 1990..2030)
             assertTrue(reading.src.isNotBlank())
+            reading.provisionalSpeed?.let {
+                assertTrue(it in 0.30..2.0)
+                assertTrue(reading.provisionalServerSides!! in 10..19)
+                assertTrue(reading.provisionalCiLow!! <= reading.provisionalCiHigh!!)
+                if (reading.speed == null) assertEquals("provisional", reading.src)
+                else assertTrue(reading.src == "tennisabstract" || reading.src == "computed")
+            }
+            if (reading.speedCiLow != null && reading.speedCiHigh != null) {
+                assertTrue(reading.speedCiLow <= reading.speedCiHigh)
+                assertEquals("match-cluster-conditional-v1", reading.speedCiMethod)
+            }
         }
     }
 
@@ -52,7 +67,12 @@ class DatasetTest {
     fun `values sit inside plausible ranges`() {
         data.dataset.readings.forEach { reading ->
             reading.cpi?.let { assertTrue("cpi $it at ${reading.t}", it in 10.0..60.0) }
-            reading.speed?.let { assertTrue("speed $it at ${reading.t}", it in 0.30..2.0) }
+            reading.speed?.let {
+                val validStandardRating = it in 0.30..2.0
+                val validFormatSpecificNextGenRating =
+                    reading.t == "nextgen" && reading.src == "computed" && it.isFinite() && it >= 0.30
+                assertTrue("speed $it at ${reading.t}", validStandardRating || validFormatSpecificNextGenRating)
+            }
             reading.ace?.let { assertTrue("ace $it at ${reading.t}", it in 0.0..30.0) }
         }
     }
@@ -68,23 +88,144 @@ class DatasetTest {
         val cpi = data.dataset.readings.count { it.cpi != null }
         val speed = data.dataset.readings.count { it.speed != null }
         assertTrue("CPI coverage dropped below its 106-reading baseline: $cpi", cpi >= 106)
-        assertTrue("Speed coverage dropped below its 497-reading baseline: $speed", speed >= 497)
-        assertEquals(2012, data.seasons.first())
+        assertTrue("Speed coverage dropped below its 716-reading baseline: $speed", speed >= 716)
+        assertEquals(1991, data.seasons.first())
         assertEquals(2026, data.seasons.last())
     }
 
     @Test
-    fun `speed history is split cleanly between published and computed`() {
-        val published = data.dataset.readings.filter { it.speed != null && it.src == "tennisabstract" }
+    fun `calibrated readings lead and published values remain available as comparisons`() {
+        val published = data.dataset.readings.filter {
+            it.speed != null && (it.src == "tennisabstract" || it.publishedSpeed != null)
+        }
         val computed = data.dataset.readings.filter { it.speed != null && it.src == "computed" }
         assertTrue("published coverage unexpectedly shrank: ${published.size}", published.size >= 62)
-        assertTrue("computed coverage unexpectedly shrank: ${computed.size}", computed.size >= 435)
-        // The published table is a rolling 52-week window, so it straddles two seasons.
-        assertEquals(setOf(2025, 2026), published.map { it.s }.toSet())
-        assertTrue(computed.all { it.s in 2012..2025 })
-        // No season is claimed twice for the same event.
-        val publishedKeys = published.map { it.t to it.s }.toSet()
-        assertTrue(computed.none { (it.t to it.s) in publishedKeys })
+        assertTrue("calculated coverage unexpectedly shrank: ${computed.size}", computed.size >= 685)
+        val publishedYears = published.map { it.s }.toSet()
+        assertEquals((1991..2026).toSet(), publishedYears)
+        val calc2025Ids = computed.filter { it.s == 2025 }.map { it.t }.toSet()
+        assertTrue("2025 CALC is missing restored events: $calc2025Ids",
+            calc2025Ids.containsAll(setOf("marseille", "stockholm", "nextgen")))
+        val nextGen2025 = computed.first { it.t == "nextgen" && it.s == 2025 }
+        assertEquals("computed", nextGen2025.src)
+        assertEquals(0.81, nextGen2025.publishedSpeed!!, 0.001)
+        assertTrue("Next Gen must retain its complete eligible draw",
+            (nextGen2025.adjustedServerSides ?: 0) >= 10)
+        assertEquals("computed", data.speedSource("nextgen", 2025))
+        assertEquals(nextGen2025.publishedSpeed, data.publishedSpeed("nextgen", 2025))
+
+        val nextGen2024 = computed.first { it.t == "nextgen" && it.s == 2024 }
+        assertEquals("computed", nextGen2024.src)
+        assertEquals(1.39, nextGen2024.publishedSpeed!!, 0.001)
+        assertEquals(2.146, nextGen2024.speed!!, 0.001)
+        assertTrue("Next Gen 2024 CALC above 2.0 must remain visible",
+            nextGen2024.speed!! > 2.0)
+        assertEquals(15, nextGen2024.matches)
+        assertEquals(30, nextGen2024.adjustedServerSides)
+        assertEquals(1.659, nextGen2024.speedCiLow!!, 0.001)
+        assertEquals(2.669, nextGen2024.speedCiHigh!!, 0.001)
+
+        // The 2026 Rio and Adelaide CALC values exist in speed_history.json; make sure
+        // the public dataset builder actually promotes those calculations over TA-only.
+        val rio2026 = computed.first { it.t == "rio" && it.s == 2026 }
+        assertEquals(0.95, rio2026.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("rio", 2026))
+        val adelaide2026 = computed.first { it.t == "adelaide" && it.s == 2026 }
+        assertEquals(1.04, adelaide2026.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("adelaide", 2026))
+        assertTrue(computed.all { it.s in 1991..2026 })
+        assertTrue(
+            "the archive should calculate at least one event in its first supported season",
+            computed.any { it.s == 1991 && it.calculationDiagnostics != null },
+        )
+        assertTrue(
+            "every computed tournament-season must carry archived detail diagnostics",
+            computed.all { it.calculationDiagnostics != null },
+        )
+        computed.forEach { reading ->
+            val diagnostics = reading.calculationDiagnostics!!
+            assertEquals(reading.matches, diagnostics.completedMatches)
+            assertEquals(reading.adjustedServerSides, diagnostics.adjustedServerSides)
+            assertEquals(diagnostics.completedMatches * 2, diagnostics.totalServerSides)
+            assertTrue(diagnostics.sideDiagnostics.isNotEmpty())
+            assertTrue(diagnostics.sideDiagnostics.size <= 20)
+            assertTrue(diagnostics.sideDiagnostics.all {
+                it.server.isNotBlank() && it.returner.isNotBlank() &&
+                    it.expectedAces > 0.0 && it.actualExpectedRatio.isFinite()
+            })
+        }
+        val comparisons = computed.filter { it.publishedSpeed != null }
+        assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
+        val montpellier = comparisons.first {
+            it.t == "montpellier" && it.s == 2026
+        }
+        assertEquals(montpellier.speed, data.value("montpellier", 2026, Metric.SPEED))
+        assertEquals(montpellier.publishedSpeed!!, data.publishedSpeed("montpellier", 2026)!!, 0.001)
+        assertEquals(1.53, montpellier.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("montpellier", 2026))
+        // Laver Cup's 2026 seven-match draw has fourteen valid adjusted server sides.
+        // It now receives a ranked CALC point estimate, with the 2026 TA value retained.
+        val laverCup = data.dataset.readings.first {
+            it.t == "lavercup" && it.s == 2026
+        }
+        assertEquals("computed", laverCup.src)
+        assertEquals(7, laverCup.matches)
+        assertEquals(14, laverCup.adjustedServerSides)
+        assertEquals(0.44, laverCup.publishedSpeed!!, 0.001)
+        assertEquals("computed", data.speedSource("lavercup", 2026))
+        assertEquals(laverCup.speed, data.value("lavercup", 2026, Metric.SPEED))
+        assertEquals(laverCup.publishedSpeed, data.publishedSpeed("lavercup", 2026))
+    }
+
+    @Test
+    fun `completed tournament opens on its latest archived CALC edition`() {
+        // A Next Gen 2026 board context has no 2026 edition, so opening the event
+        // should land on the latest historical edition with its full diagnostics.
+        assertEquals(2025, data.detailSeason("nextgen", 2026))
+        assertEquals(2024, data.detailSeason("nextgen", 2024))
+        assertEquals(2026, data.detailSeason("rio", 2026))
+
+        val opened = data.seasonRows("nextgen").first {
+            it.season == data.detailSeason("nextgen", 2026)
+        }
+        assertTrue("the default edition must include the archived CALC detail",
+            opened.calculationDiagnostics != null)
+    }
+
+    @Test
+    fun `only computed Next Gen ratings may exceed the standard two point range`() {
+        val nextGen = data.dataset.readings.first { it.t == "nextgen" && it.s == 2025 }
+        val nextGenCalc = nextGen.copy(
+            speed = 2.45,
+            publishedSpeed = 0.81,
+            src = "computed",
+        )
+        val withNextGenOutlier = data.dataset.copy(
+            readings = data.dataset.readings.filterNot { it.t == "nextgen" && it.s == 2025 } + nextGenCalc,
+        )
+        assertTrue("format-specific Next Gen CALC above 2.0 must be accepted",
+            DatasetPolicy.isAcceptable(withNextGenOutlier))
+
+        val rio = data.dataset.readings.first { it.t == "rio" && it.s == 2025 }
+        val standardOutlier = rio.copy(speed = 2.45, src = "computed")
+        val withStandardOutlier = data.dataset.copy(
+            readings = data.dataset.readings.filterNot { it.t == "rio" && it.s == 2025 } + standardOutlier,
+        )
+        assertTrue("standard ATP CALC must retain the 2.0 upper bound",
+            !DatasetPolicy.isAcceptable(withStandardOutlier))
+    }
+
+    @Test
+    fun `Laver Cup host city is resolved per edition without rewriting history`() {
+        val edition2025 = data.tournament("lavercup", 2025)!!
+        val edition2026 = data.tournament("lavercup", 2026)!!
+
+        assertEquals("San Francisco", edition2025.city)
+        assertEquals("USA", edition2025.country)
+        assertEquals("London", edition2026.city)
+        assertEquals("GBR", edition2026.country)
+        assertEquals("London", data.entries(2026, Metric.SPEED)
+            .first { it.first.id == "lavercup" }.first.city)
     }
 
     @Test

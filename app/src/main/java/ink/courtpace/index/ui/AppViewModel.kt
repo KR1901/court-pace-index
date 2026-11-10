@@ -59,14 +59,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var liveAceByEvent by mutableStateOf<Map<String, ink.courtpace.index.core.live.AceRating.Result>>(emptyMap())
         private set
 
-    /** Retained for the live-row progress/diagnostic text. */
+    /** Event progress is keyed by tournament; one event cannot write into another row. */
+    var liveProgressByEvent by mutableStateOf<Map<String, String>>(emptyMap())
+        private set
+
+    /** Overall refresh diagnostic, not attached to individual event rows. */
     var livePaceNote by mutableStateOf<String?>(null)
     var liveAceProgress by mutableStateOf<String?>(null)
 
     private val atpClient = ink.courtpace.index.data.AtpLiveClient(application)
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
     private val liveRefreshMutex = Mutex()
+    private val datasetRefreshMutex = Mutex()
     private var livePollingStarted = false
+    private var datasetPollingStarted = false
 
     init {
         viewModelScope.launch {
@@ -75,6 +81,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     val cached = runCatching { updater.cached() }.getOrNull()
                     publish(PaceData(DatasetPolicy.choose(bundled.dataset, cached?.dataset)))
                     showCachedLiveRatings()
+                    startDatasetPolling()
+                    viewModelScope.launch {
+                        refreshPublishedDataset(reportStatus = false)
+                        refreshLivePace()
+                    }
                     refreshLivePace()
                     startLivePolling()
                 }
@@ -97,11 +108,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun seasonsWithData(data: PaceData, metric: Metric): List<Int> =
         data.seasons.filter { data.entries(it, metric).isNotEmpty() }
 
-    /** Checks the project's published copy for a newer historical dataset. */
-    fun refresh() {
-        if (refreshState is RefreshState.Running) return
-        refreshState = RefreshState.Running
-        viewModelScope.launch {
+    /** Refresh the published CPI/CALC/TA dataset, preserving the selected season. */
+    private suspend fun refreshPublishedDataset(reportStatus: Boolean) {
+        datasetRefreshMutex.lock()
+        try {
             when (val result = updater.refresh()) {
                 is RefreshResult.Success -> {
                     val current = _data.value
@@ -110,17 +120,45 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         PaceData(DatasetPolicy.choose(current.dataset, result.dataset))
                     }
-                    publish(merged, keepSeason = true)
-                    refreshState = RefreshState.Done(
-                        "Updated to the ${result.dataset.meta.generated} dataset · " +
-                            "${result.dataset.readings.size} readings",
-                    )
+                    publish(merged, keepSeason = current != null)
+                    if (reportStatus) {
+                        refreshState = RefreshState.Done(
+                            "Updated to the ${result.dataset.meta.generated} dataset · " +
+                                "${result.dataset.readings.size} readings",
+                        )
+                    }
                 }
-
-                RefreshResult.Unchanged -> refreshState = RefreshState.Done("Already up to date.")
-                is RefreshResult.Failure -> refreshState = RefreshState.Failed(result.message)
+                RefreshResult.Unchanged -> {
+                    if (reportStatus) refreshState = RefreshState.Done("Already up to date.")
+                }
+                is RefreshResult.Failure -> {
+                    if (reportStatus) refreshState = RefreshState.Failed(result.message)
+                }
             }
+        } finally {
+            datasetRefreshMutex.unlock()
+        }
+    }
+
+    /** Manual refresh and automatic polling share the same validated download path. */
+    fun refresh() {
+        if (refreshState is RefreshState.Running) return
+        refreshState = RefreshState.Running
+        viewModelScope.launch {
+            refreshPublishedDataset(reportStatus = true)
             refreshLivePace()
+        }
+    }
+
+    /** Poll the published source while the app is open; CI refreshes the source snapshots. */
+    private fun startDatasetPolling() {
+        if (datasetPollingStarted) return
+        datasetPollingStarted = true
+        viewModelScope.launch {
+            while (isActive) {
+                delay(DATASET_REFRESH_INTERVAL_MS)
+                refreshPublishedDataset(reportStatus = false)
+            }
         }
     }
 
@@ -140,7 +178,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             t = tournamentId,
             s = season,
             speed = speed,
-            ace = aceRate,
+            // Historical dataset ace values are stored in percentage points (e.g. 8.5),
+            // while AceRating.Result exposes a fraction (e.g. 0.085). Keep the shared
+            // PaceReading unit consistent so detail screens do not display 0.1% instead of 8.5%.
+            ace = aceRate?.times(100.0),
             src = "live",
             live = true,
             asOf = java.time.Instant.now().toString(),
@@ -199,14 +240,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 tournaments = initial.dataset.tournaments,
                 fallback = initial.dataset.live,
                 year = year,
+                liveSchedule = initial.dataset.liveSchedule,
             )
             val refs = discovery.events
-            if (refs.isEmpty()) {
-                return status(
-                    "no active ATP 1000/500/250 links · ${discovery.pageBytes}B current page",
-                )
-            }
-
+            liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" }
             val existing = _data.value?.dataset?.live.orEmpty()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
@@ -223,11 +260,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
             val latest = _data.value ?: initial
+            val activeKeys = refs.map { it.tournamentId to it.year }.toSet()
+            val retainedReadings = latest.dataset.readings.filterNot { reading ->
+                reading.src == "live" && (reading.t to reading.s) !in activeKeys
+            }
             publish(
-                PaceData(latest.dataset.copy(live = refreshedEvents)),
+                PaceData(latest.dataset.copy(live = refreshedEvents, readings = retainedReadings)),
                 keepSeason = true,
             )
             liveAceByEvent = emptyMap()
+            if (refs.isEmpty()) {
+                liveProgressByEvent = emptyMap()
+                val note = if (discovery.hubReadable) {
+                    "current ATP hub has no active events"
+                } else {
+                    "no dated active fallback events"
+                }
+                return status("$note · ${discovery.pageBytes}B current page")
+            }
 
             // Restore cached figures for the events still active; they remain visible while the
             // fresh match pages render, and each row reads only its own cached value.
@@ -244,6 +294,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             for (ref in refs) {
                 val name = _data.value?.tournament(ref.tournamentId)?.name ?: ref.slug
+                fun eventStatus(text: String) {
+                    liveProgressByEvent = liveProgressByEvent + (ref.tournamentId to text)
+                }
+                eventStatus("Reading completed singles links")
                 status("$name · reading completed singles links")
                 val baseline = _data.value?.dataset?.speedBaseline
                     ?.takeIf { it.season == ref.year }
@@ -257,11 +311,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         event = ref,
                         baseline = baseline,
                         onProgress = { found, tried ->
-                            status(
-                                "$name · $discoveryLine · " +
-                                    if (found > 0) "$found matches from $tried pages"
-                                    else "page $tried",
-                            )
+                            val detail = if (found > 0) {
+                                "$found matches from $tried pages"
+                            } else {
+                                "page $tried"
+                            }
+                            eventStatus("$discoveryLine · $detail")
+                            status("$name · $discoveryLine · $detail")
                         },
                         onDiscovery = { ids, bytes ->
                             discoveryLine = if (ids > 0) {
@@ -269,6 +325,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             } else {
                                 "no links, $bytes B page"
                             }
+                            eventStatus(discoveryLine)
                             status("$name · $discoveryLine")
                         },
                     )
@@ -301,12 +358,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             adjustmentIssues = rating.adjustmentIssues,
                         ),
                     )
+                    eventStatus("Updated · ${rating.matches} completed matches")
                     status(
                         "$name · live speed ${"%.2f".format(rating.rating)} " +
                             "from ${rating.matches} completed matches",
                     )
                 }.onFailure { error ->
-                    status("$name · ${error.message ?: "match stats unavailable"}")
+                    val message = error.message ?: "match stats unavailable"
+                    eventStatus(message)
+                    status("$name · $message")
                 }
             }
         } catch (error: CancellationException) {
@@ -374,6 +434,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
         /** Bound each event walk while retaining partial results. */
         const val WALK_TIMEOUT_MS = 900_000L
+
+        /** Refresh the published CPI/CALC/TA payload while the app is open. */
+        const val DATASET_REFRESH_INTERVAL_MS = 60 * 60 * 1_000L
 
         /** Keep the event slate and ace-based reading current while the app is open. */
         const val LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1_000L

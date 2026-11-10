@@ -55,9 +55,7 @@ class DatasetUpdater(private val context: Context) {
         }
 
         val previous = cached()
-        if (previous != null && previous.dataset.readings.size == dataset.readings.size &&
-            previous.dataset.meta.generated == dataset.meta.generated
-        ) {
+        if (previous != null && previous.dataset == dataset) {
             return@withContext RefreshResult.Unchanged
         }
 
@@ -77,7 +75,7 @@ class DatasetUpdater(private val context: Context) {
     }
 
     private fun download(): String {
-        val connection = (URL(SOURCE_URL).openConnection() as HttpURLConnection).apply {
+        val connection = (URL(if (BuildConfig.DEBUG) DEBUG_SOURCE_URL else SOURCE_URL).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 20_000
@@ -103,6 +101,8 @@ class DatasetUpdater(private val context: Context) {
         private const val CACHE_NAME = "dataset_cache.json"
         const val SOURCE_URL =
             "https://raw.githubusercontent.com/KR1901/court-pace-index/main/data/latest.json"
+        const val DEBUG_SOURCE_URL =
+            "https://raw.githubusercontent.com/KR1901/court-pace-index/analysis/expected-aces-formula-comparison/data/latest.json"
     }
 }
 

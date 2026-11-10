@@ -74,7 +74,7 @@ import ink.courtpace.index.ui.theme.PaceTheme
 
 sealed interface Route {
     data class Tab(val index: Int) : Route
-    data class Detail(val tournamentId: String) : Route
+    data class Detail(val tournamentId: String, val season: Int) : Route
 }
 
 private val tabs = listOf(
@@ -197,12 +197,18 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     onSeason = { vm.selectSeason(it) },
                                     onMetric = { vm.selectMetric(it) },
                                     onSurface = { vm.toggleSurface(it) },
-                                    onOpen = { push(Route.Detail(it.id)) },
+                                    onOpen = { tournament ->
+                                        val detailSeason = if (data.isLive(tournament.id)) {
+                                            vm.season
+                                        } else {
+                                            data.detailSeason(tournament.id, vm.season)
+                                        }
+                                        push(Route.Detail(tournament.id, detailSeason))
+                                    },
                                     refreshing = vm.refreshState is RefreshState.Running,
                                     onRefresh = { vm.refresh() },
                                     liveAceByEvent = vm.liveAceByEvent,
-                                    liveProgress = vm.liveAceProgress,
-                                    liveNote = vm.livePaceNote,
+                                    liveProgressByEvent = vm.liveProgressByEvent,
                                     statusNote = when (val state = vm.refreshState) {
                                         is RefreshState.Done -> state.message
                                         is RefreshState.Failed -> state.message
@@ -215,7 +221,14 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     season = vm.season,
                                     selected = vm.compareIds,
                                     onToggle = { vm.toggleCompare(it) },
-                                    onOpen = { push(Route.Detail(it.id)) },
+                                    onOpen = { tournament ->
+                                        val detailSeason = if (data.isLive(tournament.id)) {
+                                            vm.season
+                                        } else {
+                                            data.detailSeason(tournament.id, vm.season)
+                                        }
+                                        push(Route.Detail(tournament.id, detailSeason))
+                                    },
                                 )
 
                                 2 -> SurfacesScreen(
@@ -228,14 +241,16 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                             }
 
                             is Route.Detail -> {
-                                val tournament = data.tournament(current.tournamentId)
+                                val tournament = data.tournament(current.tournamentId, current.season)
                                 if (tournament == null) {
                                     pop()
                                 } else {
                                     TournamentScreen(
                                         data = data,
                                         tournament = tournament,
-                                        season = vm.season,
+                                        season = current.season,
+                                        liveAceRating = vm.liveAceByEvent[current.tournamentId].takeIf { current.season == data.latestSeason },
+                                        onSelectSeason = { selected -> route = current.copy(season = selected) },
                                         onBack = { pop() },
                                     )
                                 }

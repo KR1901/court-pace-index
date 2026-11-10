@@ -67,7 +67,7 @@ fun CompareScreen(
 ) {
     val colors = PaceTheme.colors
     val candidates = data.withHistory(Metric.CPI)
-    val chosen = selected.mapNotNull { data.tournament(it) }
+    val chosen = selected.mapNotNull { data.tournament(it, season) }
     val points = chosen.mapIndexed { index, tournament ->
         ChartSeries(
             label = tournament.name,
@@ -192,8 +192,9 @@ fun CompareScreen(
                 }
                 Spacer(Modifier.height(6.dp))
                 SourceLine(
-                    "Percentile within the ${season} field for each metric. A wide gap means the bounce " +
-                        "and the ace rate are telling different stories about the same court.",
+                    "Speed percentiles use calibrated CALC/LIVE ratings where available and labelled " +
+                        "Tennis Abstract (TA) fallbacks otherwise. Percentiles are within the ${season} " +
+                        "field for each metric. A wide gap means the bounce and ace rate tell different stories.",
                 )
             }
         }

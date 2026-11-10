@@ -1,0 +1,86 @@
+name: Event population audit
+
+on:
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/event-population-audit.yml"
+      - "tools/audit_event_population.py"
+      - "tools/test_audit_event_population.py"
+      - "tools/aggregate_event_profile_coverage.py"
+      - "tools/test_aggregate_event_profile_coverage.py"
+      - "tools/compute_speed.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests-and-reconciliation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore the ATP source archive cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/atp
+          key: event-population-audit-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py') }}
+          restore-keys: |
+            deep-calculation-audit-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
+      - name: Run audit-tool unit tests
+        run: |
+          python3 -m unittest discover -s tools -p "test_audit_event_population.py" -v
+          python3 -m unittest discover -s tools -p "test_aggregate_event_profile_coverage.py" -v
+      - name: Check audit CLI syntax
+        run: python3 tools/audit_event_population.py --help
+      - name: Reconcile Montpellier 2026 against the TennisMyLife ATP source
+        run: |
+          set -euo pipefail
+          python3 tools/audit_event_population.py \
+            --event Montpellier \
+            --season 2026 \
+            --require-source "TennisMyLife ATP Match Database" \
+            --out "$RUNNER_TEMP/event-population-audit"
+      - name: Sweep every mapped ATP event from 1991 through the latest available season
+        id: sweep
+        run: |
+          set -euo pipefail
+          latest_season="$(date -u +%Y)"
+          profile_audit_root="$RUNNER_TEMP/all-event-profile-coverage"
+          mkdir -p "$profile_audit_root"
+          for season in $(seq 1991 "$latest_season"); do
+            args=()
+            if [ "$season" = "$latest_season" ]; then
+              args+=(--require-source "TennisMyLife ATP Match Database")
+            fi
+            echo "::group::All-event profile coverage — $season"
+            python3 tools/audit_event_population.py \
+              --all-events \
+              --season "$season" \
+              "${args[@]}" \
+              --out "$profile_audit_root/$season"
+            echo "::endgroup::"
+          done
+
+          python3 tools/aggregate_event_profile_coverage.py \
+            --input-dir "$profile_audit_root" \
+            --start-year 1991 \
+            --end-year "$latest_season" \
+            --output-dir "$RUNNER_TEMP/profile-coverage-consolidated"
+
+          cat "$RUNNER_TEMP/profile-coverage-consolidated/README.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "latest_season=$latest_season" >> "$GITHUB_OUTPUT"
+
+      - name: Retain the consolidated 1991-to-latest-season coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-event-profile-coverage-1991-${{ steps.sweep.outputs.latest_season }}
+          path: ${{ runner.temp }}/profile-coverage-consolidated/
+          if-no-files-found: error
+          retention-days: 90

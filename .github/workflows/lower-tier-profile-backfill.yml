@@ -1,0 +1,77 @@
+name: Lower-tier profile backfill audit
+
+on:
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/lower-tier-profile-backfill.yml"
+      - "tools/audit_lower_tier_profile_backfill.py"
+      - "tools/test_lower_tier_profile_backfill.py"
+      - "tools/compute_speed.py"
+      - "tools/audit_surface_backfill_2026_forward.py"
+      - "tools/test_surface_backfill_2026_forward.py"
+  # Run after the Monday 06:00 UTC production data refresh. When this workflow
+  # is present on the default branch, it re-fetches the available-to-date 2026
+  # ATP, Challenger and qualifying sources and re-runs the chronological audit.
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    steps:
+      - name: Check out PR code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore pinned ATP archive cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/lower-tier-backfill
+          key: lower-tier-profile-backfill-${{ runner.os }}-83733587353df8a41f2fd4f516147d5aa83f5a8d
+          restore-keys: |
+            lower-tier-profile-backfill-${{ runner.os }}-
+      - name: Run lower-tier audit unit tests
+        run: python3 -m unittest discover -s tools -p "test_lower_tier_profile_backfill.py" -v
+      - name: Run rolling-origin qualifying / Challenger experiment
+        run: |
+          set -euo pipefail
+          python3 tools/audit_lower_tier_profile_backfill.py \
+            --start-season 2012 \
+            --end-season 2025 \
+            --development-end 2018 \
+            --bootstrap 2000 \
+            --cache-dir .cache/lower-tier-backfill \
+            --output-dir build/lower-tier-profile-backfill | tee lower-tier-profile-backfill.txt
+          cat build/lower-tier-profile-backfill/README.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Run 2026 surface-backfill tests
+        run: python3 -m unittest discover -s tools -p "test_surface_backfill_2026_forward.py" -v
+      - name: Run 2026 full-available-season and post-17-May forward test
+        run: |
+          set -euo pipefail
+          python3 tools/audit_surface_backfill_2026_forward.py \
+            --archive-cache-dir .cache/lower-tier-backfill \
+            --output-dir build/surface-backfill-2026 \
+            --bootstrap 2000 | tee surface-backfill-2026.txt
+          cat build/surface-backfill-2026/README.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload aggregate-only research reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lower-tier-profile-and-2026-forward-audit
+          path: |
+            build/lower-tier-profile-backfill/summary.json
+            build/lower-tier-profile-backfill/README.md
+            lower-tier-profile-backfill.txt
+            build/surface-backfill-2026/summary.json
+            build/surface-backfill-2026/README.md
+            surface-backfill-2026.txt
+          if-no-files-found: error
+          retention-days: 90

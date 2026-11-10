@@ -1,0 +1,53 @@
+name: Surface-specific lower-tier backfill audit
+
+on:
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/surface-specific-lower-tier-backfill.yml"
+      - "tools/audit_surface_specific_lower_tier_backfill.py"
+      - "tools/test_surface_specific_lower_tier_backfill.py"
+      - "tools/audit_lower_tier_profile_backfill.py"
+      - "tools/compute_speed.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out PR code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run surface-weight audit unit tests
+        run: python3 -m unittest discover -s tools -p "test_surface_specific_lower_tier_backfill.py" -v
+      - name: Run surface-specific weight selection and 2026 forward test
+        env:
+          CACHE_DIR: .cache/surface-tier-weight-backfill
+        run: |
+          set -euo pipefail
+          python3 tools/audit_surface_specific_lower_tier_backfill.py \
+            --validation-year 2026 \
+            --development-start 2012 \
+            --development-end 2018 \
+            --bootstrap 2000 \
+            --cache-dir "$CACHE_DIR" \
+            --output-dir build/surface-tier-weight-backfill | tee surface-tier-weight-backfill.txt
+          cat build/surface-tier-weight-backfill/README.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload aggregate-only forward-test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: surface-specific-tier-backfill-2012-2018-to-2026
+          path: |
+            build/surface-tier-weight-backfill/summary.json
+            build/surface-tier-weight-backfill/README.md
+            surface-tier-weight-backfill.txt
+          if-no-files-found: error
+          retention-days: 90

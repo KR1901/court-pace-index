@@ -1,0 +1,191 @@
+# Independent physical validation plan
+
+## Purpose
+
+The ace-based Surface Speed rating is behavioural. Tennis Abstract is a useful external behavioural reference, but it is not an independent physical measurement. Physical validation must use actual court measurements such as ITF Court Pace Rating (CPR) or appropriately sourced CPI readings.
+
+The validation question is whether event/court Surface Speed rankings track independently measured ball-surface interaction. Do not interpret a high correlation as proof that the measures are interchangeable: Surface Speed is a match-outcome statistic, while CPR is a controlled ball-impact test.
+
+## Preferred physical evidence: ITF Court Pace Rating
+
+The 2026 ITF Technical Booklet describes ITF Court Pace Rating (ITF CS 01/02) as a measurement of ball-surface interaction, including horizontal friction and vertical restitution. The prescribed procedure uses three test balls with three impacts per ball (nine impacts total), at an incident angle of 16.0 ± 2.0 degrees and a speed of 30.0 ± 2.0 m/s. Ball spin is limited to no more than 3 revolutions per second. Impact locations are varied; directional surfaces such as natural or artificial grass are tested in the typical direction of play.
+
+The apparatus is calibrated against ITF reference devices using standard surfaces every two years. The test report records the inbound and outbound horizontal/vertical velocities, coefficient of restitution, coefficient of friction and mean ball temperature. CPR is calculated as:
+
+\`\`\`
+e   = v_fy / v_iy
+mu  = (v_ix - v_fx) / (v_iy * (1 + e))
+e_T = e + 0.003 * (23 - T)
+CPR = 100 * (1 - mu) + 150 * (0.81 - e_T)
+\`\`\`
+
+The reported test value is the mean CPR over the impacts, excluding court markings; spatial variation is reported separately. The 2026 booklet states that court-surface product testing is undertaken by ITF-accredited laboratories and that ITF Court Pace Classification is valid for three years.
+
+**Important scope distinction:** an ITF classified-surface listing is a product classification, not a measurement of the actual installed court at a particular tournament and season. Use product classifications as contextual metadata only; do not treat them as a court-specific CPR observation.
+
+Reference: [ITF 2026 Technical Booklet](https://www.itftennis.com/media/15639/2026-technical-booklet.pdf), Part B, section 4, printed pages 26–28.
+
+## Dataset schema
+
+Create a versioned CSV with one row per event-season-court measurement. Keep source provenance and measurement conditions explicit.
+
+| Column | Meaning |
+|---|---|
+| event_id, event_name, season | Stable event identity |
+| court_id, court_name | Actual measured court; do not treat all courts at an event as identical |
+| surface, court_construction | Surface category and construction |
+| physical_metric, physical_value, physical_unit | CPR/CPI/COF/COR name, value and units |
+| measurement_date, measurement_source, source_url | When and where the measurement was published |
+| lab_name, lab_accreditation, test_standard | Laboratory, accreditation and test method |
+| calibration_date, apparatus_id | Calibration provenance where available |
+| test_ball_brand, test_ball_model, test_ball_condition | Ball context where known |
+| test_ball_temperature_c | Mean ball temperature used for CPR adjustment |
+| temperature_c, humidity_pct, pressure_kpa, altitude_m | Environmental context at measurement |
+| impact_count, location_count, location_variation, uncertainty | Test replication, spatial variation and uncertainty |
+| calc_speed, ta_speed | Behavioural ratings for the same event-season |
+| matches, service_points, adjusted_server_sides | Statistical coverage |
+| notes | Measurement and matching caveats |
+
+Unknown values must remain blank; never infer court-specific measurements or environmental values from an event-level number. Preserve the original measurement and its source units; do not silently convert an ITF product category into a numeric CPR.
+
+## Evidence hierarchy and acquisition plan
+
+1. **Highest priority — court-specific ITF CPR report.** Request the actual test report or measured court-level CPR from the ITF Technical Centre, an ITF-accredited laboratory, tournament organisers or court operators. Require court identity, test date, standard, apparatus calibration, test-ball temperature, impact/location replication and spatial variation.
+2. **Second priority — independently published CPI/CPR with traceable provenance.** Accept only when the source identifies the actual court or installation and the measurement method. Store the raw value and uncertainty separately.
+3. **Context only — product classifications and generic surface descriptions.** The ITF classified-surface list describes surface products. It does not establish the properties of a particular tournament court after installation, wear, maintenance, weather or temporary resurfacing. Do not enter it as an event-level physical observation.
+
+The current repository CPI table provides a limited show-court cross-check. It must not be enlarged by copying generic surface categories, assigning a single court's value to every court at an event, or inferring missing values from surface type.
+
+## Secondary CPI source candidate: The Racquet ATP Court Speed Database
+
+This is a **candidate CPI dataset**, not an ITF-accredited CPR dataset. It is transcribed from ATP/TennisTV pace charts, and its author describes the readings as usually centre/stadium-court values. The website says chart values can drift within a tournament as grit wears and weather varies; where multiple charts disagree, it prefers a tournament average or averages several day readings. The disclaimer describes the database as an independent educational reference, makes no accuracy guarantee and says it is not affiliated with the ATP or TennisTV. See [current table](https://courtspeed.com/), [method notes](https://courtspeed.com/method-notes/) and [disclaimer](https://courtspeed.com/disclaimer/).
+
+### CPI-to-ITF-CPR comparability and temperature term
+
+The Court Speed method page documents its displayed CPI as:
+
+\`\`\`
+CPI = 100 * (1 - mu) + 150 * (0.81 - e)
+\`\`\`
+
+The 2026 ITF method uses temperature-adjusted restitution:
+
+\`\`\`
+e_T = e + 0.003 * (23 - T)
+CPR = 100 * (1 - mu) + 150 * (0.81 - e_T)
+\`\`\`
+
+For otherwise identical friction, unadjusted restitution and measurement conditions, the formula-only difference is:
+
+\`\`\`
+CPR_ITF - CPI_CourtSpeed = 0.45 * (T - 23) points
+\`\`\`
+
+For example, the formula term alone differs by −2.25 points at a mean test-ball temperature of 18°C and +2.25 points at 28°C. These are algebraic illustrations, not measured corrections to any Court Speed row. The current CPI table does not contain mean ball temperature or the raw per-impact velocity observations needed to recompute the ITF value.
+
+**Do not temperature-correct the existing CPI observations by using ambient weather or a guessed ball temperature.** Court Speed values are transcriptions of charted readings, usually for a centre/stadium court, and not raw ITF laboratory reports. Keep them under a distinct \`CPI\` metric/source label. Do not silently relabel them as official ITF CPR, and do not compare them as though their temperature treatment is known to be identical.
+
+References: [Court Speed method & notes](https://courtspeed.com/method-notes/) · [ITF 2026 Technical Booklet](https://www.itftennis.com/media/15639/2026-technical-booklet.pdf).
+
+### What the public ITF court records add — and what they do not
+
+The ITF's [Recognised Courts listing](https://www.world.tennis/en/about-us/tennis-tech/recognised-courts/) provides a useful discovery source because Two-Star entries can identify a venue, court(s), surface material, pace **category** and test date. ITF says Two-Star recognition requires the average court CPR to be within five points of the ITF-classified value for the product. However, the public listing exposes the pace class rather than the numeric measured CPR and its impact-level report. One-Star entries do not provide a pace category.
+
+These rows can support an explicitly ordinal, court-specific cross-check only when venue/court identity and test date genuinely match the tournament court. They must not be converted into numeric midpoints (for example, treating “Medium-fast” as 42), and must not be used as a numeric CPR observation. Product classification alone is weaker still and remains contextual metadata.
+
+#### Example of an ATP venue with an ITF court-category record: Chengdu
+
+The current ITF Recognised Courts register lists a Two-Star record for **Sichuan International Tennis Center — Center Court**, with Laykold M3 (acrylic), pace category **Medium**, and test date **27 September 2025**. The ATP's 2026 Chengdu Open page identifies the same Sichuan International Tennis Center as the tournament venue, and the venue operator separately identifies a dedicated Tennis Center Court. This is a strong venue / court-name match for an ATP event, but the ITF record predates the 2026 edition by about a year.
+
+The same ITF register also lists a **separate Court 1** record at this venue with a Medium-fast category and a different surface product (Toplus MC PRO System). It must not be merged with or substituted for the Center Court record. The main-court/Center Court entry is the only one used for this example.
+
+This gives the physical-validation protocol one useful **ordinal** ATP-venue comparison: Chengdu's 2026 ATP event was on hard court, while its registered Center Court's prior ITF category was Medium. It is not a numeric CPR observation, and the 2025 test does not establish the actual centre-court pace during the 2026 tournament. The ITF recognition document states that recognition may remain in place until resurfacing or ten years, but test results are valid only for the day of testing because use, maintenance and ambient conditions can change court properties. Therefore, this record is kept as contextual ordinal evidence only; it is not inserted into the numeric CPI/CPR sample or used as a 2026 matched physical datapoint.
+
+Sources: [ITF Recognised Courts register](https://www.world.tennis/en/about-us/tennis-tech/recognised-courts/) · [ATP Chengdu Open 2026 overview](https://www.atptour.com/en/tournaments/chengdu/7581/overview) · [Sichuan International Tennis Center — Tennis Center Court](https://en.sciitc.com/sports/venue/1.html) · [ITF 2025 Technical Booklet, Part D](https://www.itftennis.com/media/14104/2025-technical-booklet.pdf).
+
+A 2016 field-study paper, *Measuring the court pace rating of tennis courts using low-cost portable devices*, reports measurements on a Plexicushion Prestige hard court and a sand-filled artificial-grass court using 20 sample points on half a court. It reports mean CPR estimates of 47 and 68, respectively, but also explains that the devices do not reproduce every feature of the ITF impact test. Importantly, the paper states that the actual CPR for professional surfaces was not publicly available to its authors, only the category. Its measured courts are useful as a physical-method / surface-consistency reference, not as ATP event-season observations.
+
+Reference: [Espinosa et al. (2016), JSME Sports Engineering and Human Dynamics](https://www.jstage.jst.go.jp/article/jsmeshd/2016/0/2016_B-8/_pdf).
+
+**Acquisition consequence:** seek numeric, court-specific reports from ITF-accredited laboratories or tournament court operators. A public venue/court pace category is useful only as a separate ordinal record. The current public sources do not provide a sufficiently large set of numeric CPR observations for the same professional tournament courts and seasons represented in CALC.
+
+### 8 November 2026 source reconciliation
+
+The bundled CPI list was reconciled against the public Court Speed table updated 7 November 2026. The refreshed builder now contains **107 CPI readings**, compared with 106 previously. All 106 prior event-season keys still appear in the source; seven displayed values were revised and one new event-season reading was added:
+
+| Event / season | Bundled value | 7 Nov source value |
+|---|---:|---:|
+| Canadian Open 2019 | 42.8 | 43.4 |
+| Canadian Open 2025 | 44.6 | 44.7 |
+| Canadian Open 2026 | 35.4 | 36.5 |
+| Cincinnati 2025 | 43.0 | 43.7 |
+| Cincinnati 2026 | 39.0 | 40.4 |
+| Shanghai 2018 | 40.0 | 39.9 |
+| Paris Masters 2024 | 45.5 | 46.6 |
+| **Paris Masters 2026 (new)** | — | **50.0** |
+
+All seven revisions are hard-court readings. **No clay CPI value changed**, so this source refresh does not explain the negative clay association. The additional Paris 2026 reading has no corresponding computed 2026 Surface Speed in the checked-in CALC history at this reconciliation point, so it increases CPI coverage but not the matched-pair sample. Recheck the overlap after each CALC data refresh.
+
+Against the same 106 checked-in CALC event-season values, substituting the updated CPI numbers changes the descriptive correlation only slightly:
+
+| Sample | n | Pearson | Spearman |
+|---|---:|---:|---:|
+| All matched event-seasons | 106 | 0.660 | 0.693 |
+| Clay | 24 | −0.415 | −0.427 |
+| Hard | 81 | 0.512 | 0.506 |
+| Grass | 1 | Not estimable | Not estimable |
+| Within-surface centred, pooled | 106 | 0.402 before → 0.397 after | 0.354 before → 0.354 after |
+
+The clay subset covers only **four distinct tournament IDs** (Monte Carlo, Madrid, Rome and Roland Garros), repeated over several seasons. It is not 24 independent physical sites. The new 2,000-resample tournament-ID bootstrap (1,988 successful resamples; fixed seed 73191) gives exploratory raw clay intervals of **[−0.642, −0.204]** for Pearson and **[−0.657, −0.222]** for Spearman. The within-event-centred bootstrap gives **[−0.546, −0.244]** for Pearson and **[−0.667, −0.133]** for Spearman. Four clusters are too few to treat either interval as robust external validation. These results confirm a reproducible warning signal, not a causal formula defect or grounds for a clay-specific correction.
+
+The seven updated hard-court values move the hard-only correlation marginally (Pearson 0.518 to 0.512; Spearman 0.514 to 0.506); the clay values and their correlation are unchanged. The current source snapshot therefore resolves a source-staleness concern for some hard-court rows but **does not resolve the clay discrepancy**.
+
+### Reproducible event-level diagnostics
+
+The deep calculation audit now computes the following statistics directly from the versioned pace_dataset.json snapshot:
+
+1. **Per-event series:** Pearson/Spearman association across all matched seasons for each tournament ID. A one-season event is retained as a count, but no correlation is reported for it.
+2. **Within-event-centred association:** subtract each event ID's multi-season mean from both its CALC and CPI values, then correlate the pooled residuals. This tests whether year-to-year changes within the same tournament tend to move together, rather than allowing differences between tournament baselines to dominate.
+3. **Raw clay event-cluster bootstrap:** resample the four clay tournament IDs with replacement, retaining all matched seasons for each sampled ID, and compute the raw clay event-season association.
+4. **Within-event-centred clay event-cluster bootstrap:** use the same event-ID resampling unit, but subtract each event's mean inside each resample before calculating the association.
+
+Both cluster intervals default to 2,000 resamples with a fixed seed (73191) for reproducibility. The script reports the number of event clusters, successful resamples, estimand and percentile interval. Resampling complete tournament IDs prevents repeated years within Madrid, Rome, Monte Carlo or Roland Garros from being counted as independent courts.
+
+The relevant output appears under within_event_centered, by_event, clay_event_cluster_bootstrap and clay_within_event_centered_cluster_bootstrap in the deep audit's physical CPI cross-check. The CI workflow runs the same script and uploads its aggregate-only audit log. This is an exploratory cluster sensitivity analysis, not a substitute for a larger set of independently measured courts.
+
+The automated 8 November 2026 diagnostic reproduces the within-event-centred clay association at **n=24, Pearson −0.400 and Spearman −0.348**. Event-specific repeated-year results are: Madrid (n=8; r=−0.341, rho=−0.310), Rome (n=7; r=−0.546, rho=−0.643), Monte Carlo (n=8; r=−0.244, rho=−0.119); Roland Garros has one matched year and is not estimable. All three clay events with enough years have negative Pearson correlations, but the measurements may not represent the same physical court condition over time. This narrows the diagnostic; it does not establish a causal formula defect.
+
+The source's CPI readings are generally centre/stadium-court measurements, whereas CALC aggregates eligible main-draw match statistics across the event's playable courts. Matching an event-season is therefore not always a same-court comparison. It also pairs a live/broadcast chart-based measurement with match outcomes affected by balls, player styles, weather, altitude and court allocation. These are major measurement-population limitations, even before considering the small number of clay event clusters.
+
+The source's public disclaimer identifies the database as an independent educational reference and makes no guarantee of accuracy. I did not identify an explicit data-reuse licence in the published page. Attribution is retained in the repository, but permission for systematic republication or commercial reuse remains unverified; do not infer redistribution rights from public availability. The raw ATP/TennisTV chart screenshots are not copied into this repository.
+
+Before using new rows in a stronger validation claim, record:
+- source page and individual chart/screenshot URL;
+- event, season and actual court identity;
+- whether the value is a single-day reading or tournament average;
+- the exact displayed CPI and any discrepancy/averaging rule;
+- whether the row already exists in the repository CPI table;
+- source terms and permission/attribution requirements.
+
+The site also displays ace rates, rally lengths and air-density context, but these are separate behavioural or environmental predictors and must not be counted as independent physical measurements. In particular, ace rates from the same match population as the Surface Speed rating would be circular validation evidence.
+
+References: [Court Speed CPI database](https://courtspeed.com/) · [Method and notes](https://courtspeed.com/method-notes/) · [Disclaimer and provenance](https://courtspeed.com/disclaimer/).
+
+## Validation protocol
+
+1. Freeze the model version, code commit and dataset snapshot before analysis.
+2. Match physical measurements to the same event, season and court wherever possible. Keep exact-court matches separate from event-level or product-level proxies.
+3. Report exact-court, event-level and surface-product coverage separately.
+4. Compare within-season rankings and within-surface associations; do not assume the CPR and Surface Speed scales have a one-to-one linear conversion.
+5. Calculate overall and within-surface Pearson/Spearman association, rank error, MAE after a predeclared calibration, bias and calibration slope. Report raw and within-surface-centred results.
+6. Use event-cluster bootstrap intervals; do not treat several courts from one tournament as independent tournaments.
+7. Stratify by surface and report sample sizes, court counts, missingness and measurement uncertainty.
+8. Run environmental sensitivity analyses only where measurements exist; do not impute temperature, humidity, pressure, altitude or ball data.
+9. Reserve entire events or seasons for out-of-sample validation. Do not tune the model and then report the same observations as independent evidence.
+10. Publish exclusions, matching confidence and uncertainty intervals alongside all headline results.
+
+## Current status and limitations
+
+The 7 November 2026 Court Speed source refresh now supplies 107 CPI readings. The checked-in CALC series has 106 matched event-season pairs, including only 24 clay pairs from four tournament IDs. The refreshed hard-court values do not change the clay observations or their negative association. A larger set of court-specific, independently measured clay CPR/CPI observations is still required before treating the anomaly as a formula defect.
+
+The 2026 ITF booklet provides a reproducible physical test protocol, but the publicly listed surface-product classifications are not a substitute for actual tournament court measurements. No new event-level CPR dataset has been acquired as part of this change. This document expands the acquisition standard and schema; it does not claim additional physical observations or completed physical validation.

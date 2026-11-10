@@ -18,6 +18,8 @@ object AtpEvents {
     data class Discovery(
         val events: List<Ref>,
         val pageBytes: Int,
+        /** True when the current-scores hub returned a readable page, even if no event is active. */
+        val hubReadable: Boolean,
     )
 
     private val legacyRefs = mapOf(
@@ -38,6 +40,8 @@ object AtpEvents {
         source: String,
         tournaments: List<Tournament>,
         year: Int,
+        liveSchedule: List<LiveEvent> = emptyList(),
+        today: LocalDate = LocalDate.now(),
     ): List<Ref> {
         val eligible = tournaments.filter { it.level in eligibleLevels }
         val discovered = linkedMapOf<String, Ref>()
@@ -46,6 +50,12 @@ object AtpEvents {
             val atpId = match.groupValues[2].toIntOrNull() ?: return@forEach
             val tournament = resolveTournament(slug, eligible) ?: return@forEach
             if (atpId <= 0) return@forEach
+            // ATP may retain a completed event's results route on the current-scores hub.
+            // A route alone is not proof that the tournament is still in progress.
+            val scheduled = liveSchedule.firstOrNull {
+                it.t == tournament.id && it.s == year
+            }
+            if (scheduled != null && isExpired(scheduled, today)) return@forEach
             discovered.putIfAbsent(tournament.id, Ref(tournament.id, atpId, slug, year))
         }
         return discovered.values.toList()
@@ -54,9 +64,7 @@ object AtpEvents {
     /** Use bundled live-event metadata only when the current hub cannot be read or parsed. */
     fun fallback(events: List<LiveEvent>, year: Int): List<Ref> =
         events.mapNotNull { event ->
-            // A stale bundled live row must disappear after its published tournament end date.
-            val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-            if (endDate != null && endDate.isBefore(LocalDate.now())) return@mapNotNull null
+            if (isExpired(event, LocalDate.now())) return@mapNotNull null
 
             val known = forTournament(event.t)
             val atpId = event.atpId ?: known?.atpId ?: return@mapNotNull null
@@ -65,6 +73,14 @@ object AtpEvents {
                 ?: return@mapNotNull null
             Ref(event.t, atpId, slug, event.s.takeIf { it > 0 } ?: year)
         }.distinctBy { it.tournamentId }
+
+    private fun isExpired(event: LiveEvent, today: LocalDate): Boolean {
+        val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        val terminalStatus = event.status.lowercase() in setOf(
+            "completed", "complete", "finished", "final", "cancelled",
+        )
+        return terminalStatus || (endDate != null && endDate.isBefore(today))
+    }
 
     private fun resolveTournament(slug: String, candidates: List<Tournament>): Tournament? {
         val parts = slug.lowercase().split('-').filter { it.isNotBlank() }

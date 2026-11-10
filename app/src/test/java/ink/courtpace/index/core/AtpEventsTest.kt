@@ -19,6 +19,7 @@ class AtpEventsTest {
         Tournament("brisbane", "Brisbane International", "Brisbane", "AUS", Surface.HARD, false, Level.ATP250),
         Tournament("rolandgarros", "Roland Garros", "Paris", "FRA", Surface.CLAY, false, Level.GS),
         Tournament("nextgen", "Next Gen Finals", "Jeddah", "SAU", Surface.HARD, true, Level.SPECIAL),
+        Tournament("stockholm", "Stockholm Open", "Stockholm", "SWE", Surface.HARD, true, Level.ATP250),
     )
 
     @Test
@@ -37,6 +38,35 @@ class AtpEventsTest {
         assertEquals(listOf("paris", "indianwells", "canada", "brisbane"), found.map { it.tournamentId })
         assertEquals(listOf(352, 404, 421, 990), found.map { it.atpId })
         assertTrue(found.all { it.year == 2026 })
+    }
+
+    @Test
+    fun `current hub does not revive an ended event beside an active one`() {
+        val page = """
+            <a href="/en/scores/current/paris/352/results">Paris Masters</a>
+            <a href="/en/scores/current/stockholm/429/results">Stockholm Open</a>
+        """.trimIndent()
+        val schedule = listOf(
+            LiveEvent(
+                t = "paris", s = 2026, status = "in_progress",
+                start = "2026-11-02", end = "2026-11-08",
+            ),
+            LiveEvent(
+                t = "stockholm", s = 2026, status = "in_progress",
+                start = "2026-11-08", end = "2026-11-14",
+            ),
+        )
+
+        val found = AtpEvents.fromCurrentScoresPage(
+            source = page,
+            tournaments = tournaments,
+            year = 2026,
+            liveSchedule = schedule,
+            today = LocalDate.of(2026, 11, 9),
+        )
+
+        assertEquals(listOf("stockholm"), found.map { it.tournamentId })
+        assertEquals(429, found.single().atpId)
     }
 
     @Test

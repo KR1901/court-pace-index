@@ -39,17 +39,47 @@ object DatasetPolicy {
                     profile.name.isBlank() ||
                         (profile.serveRate != null && (!profile.serveRate.isFinite() || profile.serveRate !in 0.0..1.0)) ||
                         (profile.concedeRate != null && (!profile.concedeRate.isFinite() || profile.concedeRate !in 0.0..1.0)) ||
-                        (profile.serveRateSeason != null && profile.serveRateSeason !in 2012..baseline.season) ||
-                        (profile.concedeRateSeason != null && profile.concedeRateSeason !in 2012..baseline.season) ||
-                        (profile.serveRateSampleMatches != null && profile.serveRateSampleMatches < 1) ||
-                        (profile.serveRateSampleServicePoints != null && profile.serveRateSampleServicePoints < 1) ||
+                        (profile.serveRateSeason != null && profile.serveRateSeason !in 1991..baseline.season) ||
+                        (profile.concedeRateSeason != null && profile.concedeRateSeason !in 1991..baseline.season) ||
+                        (profile.serveRateSampleMatches != null &&
+                            (profile.serveRateSampleMatches < 0 ||
+                                (profile.serveRateSampleMatches == 0 &&
+                                    profile.serveRate != null &&
+                                    profile.serveRateSource != "tour-average-prior-only"))) ||
+                        (profile.serveRateSampleServicePoints != null &&
+                            (profile.serveRateSampleServicePoints < 0 ||
+                                (profile.serveRateSampleServicePoints == 0 &&
+                                    profile.serveRate != null &&
+                                    profile.serveRateSource != "tour-average-prior-only"))) ||
+                        (profile.concedeRateSampleMatches != null &&
+                            (profile.concedeRateSampleMatches < 0 ||
+                                (profile.concedeRateSampleMatches == 0 &&
+                                    profile.concedeRate != null &&
+                                    profile.concedeRateSource != "tour-average-prior-only"))) ||
+                        (profile.concedeRateSampleServicePoints != null &&
+                            (profile.concedeRateSampleServicePoints < 0 ||
+                                (profile.concedeRateSampleServicePoints == 0 &&
+                                    profile.concedeRate != null &&
+                                    profile.concedeRateSource != "tour-average-prior-only"))) ||
                         (profile.serveRatePriorServicePoints != null &&
                             (!profile.serveRatePriorServicePoints.isFinite() || profile.serveRatePriorServicePoints <= 0.0)) ||
+                        (profile.concedeRatePriorServicePoints != null &&
+                            (!profile.concedeRatePriorServicePoints.isFinite() || profile.concedeRatePriorServicePoints <= 0.0)) ||
                         (profile.serveRateSource != null && profile.serveRateSource !in setOf(
                             "current-season-qualified",
                             "prior-season-qualified",
                             "current-season-shrunk",
                             "prior-season-shrunk",
+                            "career-history-surface-shrunk",
+                            "career-history-pooled-shrunk",
+                            "tour-average-prior-only",
+                        )) ||
+                        (profile.concedeRateSource != null && profile.concedeRateSource !in setOf(
+                            "surface-qualified",
+                            "pooled-fallback",
+                            "career-history-surface-shrunk",
+                            "career-history-pooled-shrunk",
+                            "tour-average-prior-only",
                         ))
                 }) return false
             val usableProfiles = baseline.profiles.count { profile ->
@@ -58,8 +88,15 @@ object DatasetPolicy {
             if (usableProfiles < MIN_SPEED_BASELINE_PROFILES) return false
         }
         return dataset.readings.all { reading ->
+            val speed = reading.speed
+            val speedIsValid = speed == null || (
+                speed.isFinite() && speed >= 0.30 &&
+                    (speed <= 2.0 || (reading.t == "nextgen" && reading.src == "computed"))
+            )
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
-                (reading.speed == null || reading.speed in 0.30..2.0) &&
+                speedIsValid &&
+                (reading.publishedSpeed == null ||
+                    (reading.publishedSpeed.isFinite() && reading.publishedSpeed in 0.30..2.0)) &&
                 reading.s in 1990..2100
         }
     }
@@ -72,6 +109,13 @@ object DatasetPolicy {
         if (remote == null) return bundled
         if (!isAcceptable(remote)) return bundled
         if (remote.readings.size < bundled.readings.size) return bundled
+        // An older cache can have the same row count but lack the new published TA values.
+        // Do not allow it to erase richer side-by-side source data from the bundled dataset.
+        val bundledComparisons = bundled.readings.filter { it.publishedSpeed != null }
+            .map { it.t to it.s }.toSet()
+        val remoteComparisons = remote.readings.filter { it.publishedSpeed != null }
+            .map { it.t to it.s }.toSet()
+        if (!remoteComparisons.containsAll(bundledComparisons)) return bundled
         // A published dataset built before the live feed existed carries no live array; taking
         // it wholesale would erase the event in progress from the screen.
         val chosen = if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {

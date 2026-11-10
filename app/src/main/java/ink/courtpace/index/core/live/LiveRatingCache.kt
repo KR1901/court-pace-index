@@ -40,7 +40,7 @@ data class CachedLiveRating(
             matches <= 0 ||
             discovered < matches ||
             total != discovered * 2 ||
-            adjusted < AceRating.MIN_ADJUSTED_SERVER_SIDES ||
+            adjusted <= 0 ||
             adjusted > total ||
             // Every parsed match contributes two candidate sides. If any are excluded,
             // their per-side diagnostics must survive the cache round-trip. This prevents
@@ -83,7 +83,7 @@ data class CachedLiveRating(
     }
 
     companion object {
-        const val CURRENT_METHOD_VERSION = 4
+        const val CURRENT_METHOD_VERSION = 7
         const val LEGACY_METHOD_VERSION = 1
         /** Tolerant on purpose: a corrupt or older cache must never break the app. */
         fun fromJson(raw: String?): CachedLiveRating? {

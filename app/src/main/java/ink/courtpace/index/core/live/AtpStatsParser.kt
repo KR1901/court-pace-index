@@ -127,11 +127,40 @@ object AceRating {
         val adjustmentIssues: List<AdjustmentIssue> = emptyList(),
         val inProgressMatches: Int = 0,
         val walkoversExcluded: Int = 0,
+        /** Raw mean actual/expected ratio before season normalisation. */
+        val rawEventScore: Double = 0.0,
+        val normalisation: Double = 1.0,
+        val tourAceRate: Double? = null,
+        val totalServicePoints: Int = 0,
+        val serverProfilesMatched: Int = 0,
+        val returnerProfilesMatched: Int = 0,
+        /** Sides where the server rate was supplied by the tour-average prior. */
+        val serverProfilesFallback: Int = 0,
+        /** Sides where the returner's concession rate was supplied by the tour-average prior. */
+        val returnerProfilesFallback: Int = 0,
+        /** Included server-side observations, one record per adjusted side. */
+        val sideDiagnostics: List<SideDiagnostic> = emptyList(),
     )
 
-    /** Preserve the historical pipeline's minimum event sample: twenty server-side observations. */
-    const val MIN_MATCHES = 8
-    const val MIN_ADJUSTED_SERVER_SIDES = 20
+    data class SideDiagnostic(
+        val matchId: String?,
+        val server: String,
+        val returner: String,
+        val actualAces: Int,
+        val servicePoints: Int,
+        val serveRate: Double,
+        val returnerConcedeRate: Double,
+        val expectedAces: Double,
+        val actualExpectedRatio: Double,
+        val serverProfileSource: String = "player-profile",
+        val returnerProfileSource: String = "player-profile",
+    )
+
+    /**
+     * Display-only hint for small live samples. It never suppresses a rating.
+     * The live calculation starts as soon as one completed match yields a valid server side.
+     */
+    const val EARLY_SAMPLE_MATCH_THRESHOLD = 8
     const val MIN_EXPECTED_ACES = 0.0
     const val EXPECTED_ACES_FLOOR = 0.5
 
@@ -275,6 +304,8 @@ object AceRating {
         val returnerProfilesMatched: Int,
         val adjustedServerSides: Int,
         val issues: List<AdjustmentIssue> = emptyList(),
+        val serverProfilesFallback: Int = 0,
+        val returnerProfilesFallback: Int = 0,
     )
 
     private data class Evaluation(
@@ -282,6 +313,7 @@ object AceRating {
         val totalPoints: Int,
         val ratios: List<Double>,
         val coverage: Coverage,
+        val sideDiagnostics: List<SideDiagnostic>,
     )
 
     private fun evaluate(
@@ -290,16 +322,20 @@ object AceRating {
     ): Evaluation {
         val totalSides = matches.size * 2
         if (baseline.normalisation <= 0.0 || !baseline.normalisation.isFinite()) {
-            return Evaluation(0, 0, emptyList(), Coverage(totalSides, 0, 0, 0))
+            return Evaluation(0, 0, emptyList(), Coverage(totalSides, 0, 0, 0), emptyList())
         }
 
         val profiles = profileIndex(baseline.profiles)
+        val tourAceRate = baseline.tourAceRate
         var totalAces = 0
         var totalPoints = 0
         var serverProfilesMatched = 0
         var returnerProfilesMatched = 0
+        var serverProfilesFallback = 0
+        var returnerProfilesFallback = 0
         val ratios = mutableListOf<Double>()
         val issues = mutableListOf<AdjustmentIssue>()
+        val sideDiagnostics = mutableListOf<SideDiagnostic>()
 
         fun addSide(serverName: String, returnerName: String, aces: Int, servicePoints: Int, matchId: String?) {
             totalAces += aces
@@ -307,11 +343,15 @@ object AceRating {
 
             val server = profiles.resolve(serverName)
             val returner = profiles.resolve(returnerName)
-            val serveRate = server?.serveRate
-            val concedeRate = returner?.concedeRate
+            val resolvedServeRate = server?.serveRate
+            val resolvedConcedeRate = returner?.concedeRate
+            // Profiles stored with tour-average-prior-only are explicit neutral fallbacks,
+            // not personalised profile matches; count them in the fallback columns below.
+            val playerServeRate = if (server?.serveRateSource == "tour-average-prior-only") null else resolvedServeRate
+            val playerConcedeRate = if (returner?.concedeRateSource == "tour-average-prior-only") null else resolvedConcedeRate
 
-            if (serveRate != null) serverProfilesMatched++
-            if (concedeRate != null) returnerProfilesMatched++
+            if (playerServeRate != null) serverProfilesMatched++
+            if (playerConcedeRate != null) returnerProfilesMatched++
 
             fun exclude(reason: String) {
                 issues += AdjustmentIssue(
@@ -322,36 +362,63 @@ object AceRating {
                 )
             }
 
-            if (serveRate == null && concedeRate == null) {
-                exclude("no server serve profile or returner concession profile")
-                return
-            }
-            if (serveRate == null) {
-                exclude("no server serve profile")
-                return
-            }
-            if (concedeRate == null) {
-                exclude("no returner concession profile")
-                return
-            }
             if (servicePoints <= 0 || aces < 0 || aces > servicePoints) {
                 exclude("invalid ace/service-point statistics")
                 return
             }
-            val joint = serveRate * concedeRate
-            val denominator = joint + (1.0 - serveRate) * (1.0 - concedeRate)
-            if (!denominator.isFinite() || denominator <= 0.0) {
-                exclude("invalid expected-aces denominator")
+            if (tourAceRate == null || !tourAceRate.isFinite() || tourAceRate <= 0.0 || tourAceRate >= 1.0) {
+                exclude("season tour-average ace rate is unavailable or invalid")
                 return
             }
-            val expected = (joint / denominator) * servicePoints
+
+            // A player with no usable match history receives an explicit neutral prior.
+            // This keeps the side rateable without pretending a personalised profile exists.
+            val serveRate = playerServeRate ?: tourAceRate.also { serverProfilesFallback++ }
+            val concedeRate = playerConcedeRate ?: tourAceRate.also { returnerProfilesFallback++ }
+            val serverProfileSource = server?.serveRateSource
+                ?: if (playerServeRate == null) "tour-average-prior-only" else "player-profile"
+            val returnerProfileSource = returner?.concedeRateSource
+                ?: if (playerConcedeRate == null) "tour-average-prior-only" else "player-profile"
+
+            if (!serveRate.isFinite() || serveRate <= 0.0 || serveRate >= 1.0 ||
+                !concedeRate.isFinite() || concedeRate <= 0.0 || concedeRate >= 1.0
+            ) {
+                exclude("invalid server/returner ace-rate profile")
+                return
+            }
+            // Calibrated odds-ratio (log5) expectation: server odds × returner concession
+            // odds ÷ season tour-average ace odds. This puts the expectation on the actual
+            // tour ace-rate scale; the 0.5 floor is retained only for rare tiny expectations.
+            val serverOdds = serveRate / (1.0 - serveRate)
+            val returnerOdds = concedeRate / (1.0 - concedeRate)
+            val tourOdds = tourAceRate / (1.0 - tourAceRate)
+            val matchupOdds = (serverOdds * returnerOdds) / tourOdds
+            if (!matchupOdds.isFinite() || matchupOdds <= 0.0) {
+                exclude("invalid calibrated expected-aces odds")
+                return
+            }
+            val expectedAceRate = matchupOdds / (1.0 + matchupOdds)
+            val expected = expectedAceRate * servicePoints
             if (!expected.isFinite() || expected <= MIN_EXPECTED_ACES) {
-                exclude("zero or invalid expected aces (server=$serveRate, returner=$concedeRate)")
+                exclude("zero or invalid calibrated expected aces (server=$serveRate, returner=$concedeRate)")
                 return
             }
-            // Match the historical pipeline: retain every valid positive-expectation side.
-            // Floor expected aces at 0.5 to avoid unstable ratios without discarding a player side.
-            ratios += aces.toDouble() / maxOf(expected, EXPECTED_ACES_FLOOR)
+            val adjustedExpected = maxOf(expected, EXPECTED_ACES_FLOOR)
+            val actualExpectedRatio = aces.toDouble() / adjustedExpected
+            ratios += actualExpectedRatio
+            sideDiagnostics += SideDiagnostic(
+                matchId = matchId,
+                server = serverName,
+                returner = returnerName,
+                actualAces = aces,
+                servicePoints = servicePoints,
+                serveRate = serveRate,
+                returnerConcedeRate = concedeRate,
+                expectedAces = adjustedExpected,
+                actualExpectedRatio = actualExpectedRatio,
+                serverProfileSource = serverProfileSource,
+                returnerProfileSource = returnerProfileSource,
+            )
         }
 
         matches.forEach { match ->
@@ -369,7 +436,10 @@ object AceRating {
                 returnerProfilesMatched = returnerProfilesMatched,
                 adjustedServerSides = ratios.size,
                 issues = issues.toList(),
+                serverProfilesFallback = serverProfilesFallback,
+                returnerProfilesFallback = returnerProfilesFallback,
             ),
+            sideDiagnostics = sideDiagnostics.toList(),
         )
     }
 
@@ -380,11 +450,10 @@ object AceRating {
     ): Coverage = evaluate(matches, baseline).coverage
 
     /**
-     * Same opponent-adjusted calculation as tools/compute_speed.py:
-     * expected aces = ((serveRate * concedeRate) /
-     * (serveRate * concedeRate + (1-serveRate) * (1-concedeRate))) * servicePoints.
-     * Expected-ace counts below 0.5 are floored at 0.5 rather than excluded, so valid low-ace
-     * player sides remain covered without allowing tiny expectations to dominate. Average
+     * Same calibrated opponent-adjusted calculation as tools/compute_speed.py:
+     * expected ace odds = odds(server serve rate) × odds(returner concession rate) /
+     * odds(season tour-average ace rate), then multiplied by service points.
+     * Expected-ace counts below 0.5 are floored at 0.5 rather than excluded. Average
      * actual/expected ratios over both server sides, then divide by the season-wide mean of
      * historical event raw scores. Missing player profiles are omitted, never replaced
      * by the pooled-rate approximation.
@@ -393,11 +462,11 @@ object AceRating {
         matches: List<AtpMatchStats>,
         baseline: ink.courtpace.index.core.model.LiveSpeedBaseline,
     ): Result? {
-        if (matches.size < MIN_MATCHES) return null
+        if (matches.isEmpty()) return null
         val evaluation = evaluate(matches, baseline)
-        if (evaluation.totalPoints <= 0 ||
-            evaluation.ratios.size < MIN_ADJUSTED_SERVER_SIDES
-        ) return null
+        // No arbitrary match-count or adjusted-side floor: even one valid server side from the
+        // first completed match is enough to publish an explicitly early live reading.
+        if (evaluation.totalPoints <= 0 || evaluation.ratios.isEmpty()) return null
 
         val rawEventScore = evaluation.ratios.average()
         val pooledAceRate = evaluation.totalAces.toDouble() / evaluation.totalPoints
@@ -409,6 +478,15 @@ object AceRating {
             adjustedServerSides = evaluation.coverage.adjustedServerSides,
             totalServerSides = evaluation.coverage.totalServerSides,
             adjustmentIssues = evaluation.coverage.issues,
+            rawEventScore = rawEventScore,
+            normalisation = baseline.normalisation,
+            tourAceRate = baseline.tourAceRate,
+            totalServicePoints = evaluation.totalPoints,
+            serverProfilesMatched = evaluation.coverage.serverProfilesMatched,
+            returnerProfilesMatched = evaluation.coverage.returnerProfilesMatched,
+            serverProfilesFallback = evaluation.coverage.serverProfilesFallback,
+            returnerProfilesFallback = evaluation.coverage.returnerProfilesFallback,
+            sideDiagnostics = evaluation.sideDiagnostics,
         )
     }
 

@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.Role
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.analytics.Ranked
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.live.AceRating
 import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.Surface
@@ -89,15 +90,33 @@ fun BoardScreen(
     onRefresh: () -> Unit,
     statusNote: String?,
     liveAceByEvent: Map<String, ink.courtpace.index.core.live.AceRating.Result> = emptyMap(),
-    liveProgress: String? = null,
-    liveNote: String? = null,
+    liveProgressByEvent: Map<String, String> = emptyMap(),
     scrollState: ScrollState = rememberScrollState(),
 ) {
     val colors = PaceTheme.colors
-    val ranking = PaceAnalytics.ranking(data, season, metric, surfaces)
+    val comparableSpeedSources = if (metric == Metric.SPEED) setOf("computed", "live") else null
+    val ranking = PaceAnalytics.ranking(
+        data, season, metric, surfaces, speedSources = comparableSpeedSources,
+    )
+    val taOnlyRanking = if (metric == Metric.SPEED) {
+        PaceAnalytics.ranking(data, season, metric, surfaces, speedSources = setOf("tennisabstract"))
+    } else {
+        emptyList()
+    }
     val top = ranking.firstOrNull()
     val bottom = ranking.lastOrNull()
-    val average = PaceAnalytics.average(data, season, metric)
+    val average = PaceAnalytics.average(
+        data, season, metric, speedSources = comparableSpeedSources, surfaces = surfaces,
+    )
+    val speedSourceCounts = if (metric == Metric.SPEED) {
+        data.entries(season, metric)
+            .filter { surfaces.isEmpty() || it.first.surface in surfaces }
+            .groupingBy { (tournament, _) ->
+                data.speedSource(tournament.id, season)
+            }.eachCount()
+    } else {
+        emptyMap()
+    }
 
     val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Column(
@@ -138,7 +157,7 @@ fun BoardScreen(
                 Metric.CPI ->
                     "Physical bounce readings from Hawk-Eye, ${ranking.size} events in $season."
                 Metric.SPEED ->
-                    "Ace rate against a tour-average surface, ${ranking.size} events in $season."
+                    "${ranking.size} CALC/LIVE ratings and ${taOnlyRanking.size} TA-only references in $season."
             },
             style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
             color = colors.textDim,
@@ -191,9 +210,15 @@ fun BoardScreen(
                         modifier = Modifier.weight(1f),
                     )
                     StatTile(
-                        label = "Field average",
+                        label = if (metric == Metric.SPEED) "CALC / LIVE avg" else "Field average",
                         value = PaceAnalytics.format(average, metric),
-                        caption = "${ranking.size} events",
+                        caption = if (metric == Metric.SPEED) {
+                            "${speedSourceCounts["computed"] ?: 0} CALC · " +
+                                "${speedSourceCounts["live"] ?: 0} LIVE · " +
+                                "${speedSourceCounts["tennisabstract"] ?: 0} TA-only"
+                        } else {
+                            "${ranking.size} events"
+                        },
                         color = colors.text,
                         modifier = Modifier.weight(1f),
                     )
@@ -216,8 +241,8 @@ fun BoardScreen(
                         datasetMatches = liveReading?.matches,
                         pace = null,
                         ace = liveAceByEvent[tournament.id],
-                        progress = liveProgress,
-                        note = liveNote,
+                        progress = liveProgressByEvent[tournament.id],
+                        note = null,
                         onClick = { onOpen(tournament) },
                     )
                     Spacer(Modifier.height(8.dp))
@@ -228,7 +253,11 @@ fun BoardScreen(
         Spacer(Modifier.height(22.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             SectionLabel(
-                text = if (surfaces.isEmpty()) "Ranked" else surfaces.joinToString(" + ") { it.label } + " only",
+                text = when (metric) {
+                    Metric.CPI -> if (surfaces.isEmpty()) "Ranked" else surfaces.joinToString(" + ") { it.label } + " only"
+                    Metric.SPEED -> if (surfaces.isEmpty()) "CALC / LIVE ranked"
+                        else surfaces.joinToString(" + ") { it.label } + " CALC / LIVE"
+                },
                 modifier = Modifier.weight(1f),
             )
             Text(
@@ -240,17 +269,67 @@ fun BoardScreen(
         Spacer(Modifier.height(10.dp))
 
         if (ranking.isEmpty()) {
-            GlassNote("No $season readings for this filter. Try another season or surface.")
+            GlassNote(
+                if (metric == Metric.SPEED && taOnlyRanking.isNotEmpty()) {
+                    "No CALC/LIVE readings for this filter. TA-only references are listed separately below."
+                } else {
+                    "No $season readings for this filter. Try another season or surface."
+                },
+            )
         } else {
             val min = ranking.minOf { it.value }
             val max = ranking.maxOf { it.value }
             ranking.forEach { row ->
+                val source = if (metric == Metric.SPEED) data.speedSource(row.tournament.id, season) else null
+                val reading = if (metric == Metric.SPEED) data.reading(row.tournament.id, season) else null
+                val adjustedSides = reading?.adjustedServerSides
+                val smallSampleNote = if (
+                    reading != null &&
+                    source == "computed" &&
+                    adjustedSides != null &&
+                    adjustedSides in 1 until PaceAnalytics.STABLE_SPEED_SAMPLE_SERVER_SIDES
+                ) {
+                    "${reading.matches ?: "?"} matches · $adjustedSides adjusted sides"
+                } else {
+                    null
+                }
                 RankRow(
                     row = row,
                     metric = metric,
                     min = min,
                     max = max,
-                    live = data.isLive(row.tournament.id),
+                    live = metric == Metric.SPEED && source == "live",
+                    speedSource = source,
+                    publishedSpeed = if (metric == Metric.SPEED) data.publishedSpeed(row.tournament.id, season) else null,
+                    sampleNote = smallSampleNote,
+                    onClick = { onOpen(row.tournament) },
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+
+        if (metric == Metric.SPEED && taOnlyRanking.isNotEmpty()) {
+            Spacer(Modifier.height(18.dp))
+            SectionLabel(text = "TA-only references")
+            Spacer(Modifier.height(5.dp))
+            Text(
+                text = "Published Tennis Abstract values are shown separately. They are not ranked against CALC because the two source populations are normalised independently.",
+                style = TextStyle(fontSize = 11.sp, lineHeight = 15.sp),
+                color = colors.textFaint,
+            )
+            Spacer(Modifier.height(10.dp))
+            val taMin = taOnlyRanking.minOf { it.value }
+            val taMax = taOnlyRanking.maxOf { it.value }
+            taOnlyRanking.forEach { row ->
+                RankRow(
+                    row = row,
+                    metric = metric,
+                    min = taMin,
+                    max = taMax,
+                    live = false,
+                    speedSource = "tennisabstract",
+                    publishedSpeed = null,
+                    sampleNote = null,
                     onClick = { onOpen(row.tournament) },
                 )
                 Spacer(Modifier.height(8.dp))
@@ -267,8 +346,9 @@ fun BoardScreen(
             text = when (metric) {
                 Metric.CPI -> "Court Pace Index from the courtspeed.com database, compiled from ATP and " +
                     "Tennis TV broadcast data. Centre-court readings."
-                Metric.SPEED -> "Published ratings adjust for the servers and returners. Live ratings use " +
-                    "completed-match ace rate against the 7.83% tour baseline; 1.00 = average."
+                Metric.SPEED -> "CALC/LIVE is the calibrated server/returner-adjusted rating; original TA values " +
+                    "are shown beside CALC rows where available and otherwise in a separate reference list. " +
+                    "The two sources are not mixed in one ranking. 1.00 = tour average within each source."
             },
         )
         Spacer(Modifier.height(LocalTabBarInset.current))
@@ -370,6 +450,9 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.totalServerSides)
                                 append(" server sides adjusted")
+                                if (ace.matches < AceRating.EARLY_SAMPLE_MATCH_THRESHOLD) {
+                                    append(" · early sample")
+                                }
                                 if (ace.adjustmentIssues.isNotEmpty()) {
                                     append("\nNot adjusted: ")
                                     append(
@@ -530,6 +613,9 @@ private fun RankRow(
     min: Double,
     max: Double,
     live: Boolean,
+    speedSource: String?,
+    publishedSpeed: Double?,
+    sampleNote: String?,
     onClick: () -> Unit,
 ) {
     val colors = PaceTheme.colors
@@ -590,20 +676,61 @@ private fun RankRow(
                     )
                     DeltaBadge(delta = row.delta, metric = metric)
                 }
+                if (sampleNote != null) {
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        text = "SMALL SAMPLE · $sampleNote",
+                        style = TextStyle(fontSize = 8.5.sp, fontWeight = FontWeight.Medium),
+                        color = colors.textFaint,
+                        maxLines = 1,
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
                 AnimatedBar(fraction = fraction, color = accent)
             }
             Spacer(Modifier.width(12.dp))
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = PaceAnalytics.format(row.value, metric),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.8).sp,
-                    ),
-                    color = colors.text,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = PaceAnalytics.format(row.value, metric),
+                            style = TextStyle(
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.8).sp,
+                            ),
+                            color = colors.text,
+                        )
+                        if (metric == Metric.SPEED && speedSource != null) {
+                            Text(
+                                text = when (speedSource) {
+                                    "live" -> "LIVE"
+                                    "computed" -> "CALC"
+                                    else -> "TA"
+                                },
+                                style = TextStyle(fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                                color = colors.textFaint,
+                            )
+                        }
+                    }
+                    if (metric == Metric.SPEED && publishedSpeed != null && speedSource != "tennisabstract") {
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = PaceAnalytics.format(publishedSpeed, metric),
+                                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                color = colors.textDim,
+                            )
+                            Text(
+                                text = "TA",
+                                style = TextStyle(fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                                color = colors.textFaint,
+                            )
+                        }
+                    }
+                }
                 Spacer(Modifier.height(4.dp))
                 ValueBadge(text = PaceAnalytics.label(row.value, metric), color = accent)
             }

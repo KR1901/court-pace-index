@@ -16,35 +16,45 @@ import org.junit.Test
 class LiveFeedTest {
 
     private val data = PaceData.parse(Datasets.raw())
+    private val activeParis = LiveEvent(
+        t = "paris",
+        s = 2026,
+        status = "in_progress",
+        start = "2026-11-02",
+        end = "2026-11-12",
+        atpId = 352,
+        slug = "paris",
+    )
+
+    private fun withParisLive() = data.dataset.copy(live = listOf(activeParis))
 
     @Test
-    fun `the bundled feed carries the event in progress`() {
-        val paris = data.liveEvent("paris")
-        assertNotNull("Paris should be listed as live", paris)
-        assertEquals(2026, paris!!.s)
-        assertEquals("in_progress", paris.status)
-        // A live event may exist without a rating; it must not invent one.
-        assertNull(data.value("paris", 2026, Metric.SPEED))
+    fun `the bundled feed does not retain an event after its end date`() {
+        assertNull("Paris ended on 8-Nov-2026 and must not remain live", data.liveEvent("paris"))
+        assertFalse(data.isLive("paris"))
+        assertTrue(data.dataset.live.none { it.t == "paris" && it.s == 2026 })
     }
 
     @Test
     fun `live is per event, not global`() {
-        assertTrue(data.isLive("paris"))
-        assertFalse(data.isLive("miami"))
-        assertNull(data.liveEvent("miami"))
+        val liveData = PaceData(withParisLive())
+        assertTrue(liveData.isLive("paris"))
+        assertFalse(liveData.isLive("miami"))
+        assertNull(liveData.liveEvent("miami"))
     }
 
     @Test
-    fun `an event with no rating is still listed so it can be shown`() {
-        val pending = data.liveWithoutRating(2026, Metric.SPEED)
+    fun `an active event with no rating is still listed so it can be shown`() {
+        val liveData = PaceData(withParisLive())
+        val pending = liveData.liveWithoutRating(2026, Metric.SPEED)
         assertTrue("Paris should appear as pending", pending.any { it.first.id == "paris" })
         // Only the speed metric: a live ace rating says nothing about the physical CPI.
-        assertTrue(data.liveWithoutRating(2026, Metric.CPI).none { it.first.id == "paris" })
+        assertTrue(liveData.liveWithoutRating(2026, Metric.CPI).none { it.first.id == "paris" })
     }
 
     @Test
     fun `a live event that has a rating leaves the pending list`() {
-        val withRating = data.dataset.copy(
+        val withRating = withParisLive().copy(
             readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
                 t = "paris", s = 2026, speed = 1.04, ace = 11.2, src = "live",
                 live = true, asOf = "2026-11-04T18:00:00Z", matches = 42,
@@ -62,7 +72,7 @@ class LiveFeedTest {
             it.t == "paris" && it.s == 2026 && it.speed != null
         }
         val merged = PaceData(
-            data.dataset.copy(
+            withParisLive().copy(
                 readings = withoutParisSeason + listOf(
                     ink.courtpace.index.core.model.PaceReading(
                         t = "paris", s = 2026, speed = 0.91, src = "tennisabstract",
@@ -81,6 +91,15 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a cache without published comparisons cannot replace the richer bundled dataset`() {
+        val stale = data.dataset.copy(
+            readings = data.dataset.readings.map { it.copy(publishedSpeed = null) },
+        )
+        assertTrue(data.dataset.readings.any { it.publishedSpeed != null })
+        assertEquals(data.dataset, DatasetPolicy.choose(data.dataset, stale))
+    }
+
+    @Test
     fun `a dataset without a live feed still parses`() {
         val withoutLive = data.dataset.copy(live = emptyList())
         assertTrue(PaceData(withoutLive).liveWithoutRating(2026, Metric.SPEED).isEmpty())
@@ -91,9 +110,10 @@ class LiveFeedTest {
     fun `an ATP id missing from a cached dataset is recovered`() {
         // A cache written by an earlier release has no atpId. The lookup returned null, the
         // fetch was skipped before any network call, and the feature did nothing at all.
-        val staleLive = data.dataset.live.map { it.copy(atpId = null, slug = null) }
-        val stale = data.dataset.copy(live = staleLive)
-        val chosen = DatasetPolicy.choose(data.dataset, stale)
+        val bundled = withParisLive()
+        val staleLive = bundled.live.map { it.copy(atpId = null, slug = null) }
+        val stale = bundled.copy(live = staleLive)
+        val chosen = DatasetPolicy.choose(bundled, stale)
         assertTrue("the bundled definition must win", chosen.live.all { it.atpId != null })
         // And even with nothing to recover from, the registry knows where Paris lives.
         assertEquals(352, ink.courtpace.index.core.live.AtpEvents.forTournament("paris")?.atpId)
@@ -103,15 +123,16 @@ class LiveFeedTest {
     fun `a published dataset without a live list cannot erase the event in progress`() {
         // The workflow publishes datasets built from the asset; one produced before the live
         // feed existed has no live array, and taking it whole made the live row disappear.
-        val remote = data.dataset.copy(live = emptyList())
-        val chosen = DatasetPolicy.choose(data.dataset, remote)
+        val bundled = withParisLive()
+        val remote = bundled.copy(live = emptyList())
+        val chosen = DatasetPolicy.choose(bundled, remote)
         assertTrue("live events must survive the swap", chosen.live.isNotEmpty())
         assertTrue(PaceData(chosen).isLive("paris"))
     }
 
     @Test
     fun `a live event stays listed once it has a rating`() {
-        val withRating = data.dataset.copy(
+        val withRating = withParisLive().copy(
             readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
                 t = "paris", s = 2026, speed = 1.12, src = "live", live = true, matches = 30,
             ),

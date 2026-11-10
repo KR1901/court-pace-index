@@ -67,6 +67,32 @@ class LiveRatingCacheTest {
     }
 
     @Test
+    fun `a first-match rating with one valid side survives the cache round trip`() {
+        val original = CachedLiveRating(
+            tournamentId = "stockholm",
+            season = 2026,
+            speed = 1.12,
+            matches = 1,
+            aceRate = 0.15,
+            asOf = "2026-11-09T16:00:00Z",
+            methodVersion = CachedLiveRating.CURRENT_METHOD_VERSION,
+            baselineGenerated = "2026-11-09T15:00:00Z",
+            discoveredMatches = 1,
+            adjustedServerSides = 1,
+            totalServerSides = 2,
+            aces = 12,
+            adjustmentIssues = skippedSides(1),
+        )
+
+        val restored = CachedLiveRating.fromJson(original.toJson())!!
+        val result = restored.toAceRatingResultOrNull()!!
+
+        assertEquals(1, result.matches)
+        assertEquals(1, result.adjustedServerSides)
+        assertEquals(2, result.totalServerSides)
+    }
+
+    @Test
     fun `excluded player-side diagnostics survive live rating cache round trip`() {
         val issue = ink.courtpace.index.core.live.AceRating.AdjustmentIssue(
             matchId = "ms043",
@@ -169,7 +195,7 @@ class LiveRatingCacheTest {
     }
 
     @Test
-    fun `the previous live-rating cache is invalidated after player-name resolution changes`() {
+    fun `the previous live-rating cache is invalidated after formula calibration changes`() {
         val previous = CachedLiveRating(
             tournamentId = "paris",
             season = 2026,
@@ -177,7 +203,7 @@ class LiveRatingCacheTest {
             matches = 49,
             aceRate = 0.10,
             asOf = "2026-11-07T00:00:00Z",
-            methodVersion = 3,
+            methodVersion = 6,
             baselineGenerated = "2026-11-06T19:25:21Z",
             discoveredMatches = 49,
             adjustedServerSides = 94,
@@ -186,7 +212,8 @@ class LiveRatingCacheTest {
 
         val restored = CachedLiveRating.fromJson(previous.toJson())!!
 
-        assertEquals(3, restored.methodVersion)
+        assertEquals(6, restored.methodVersion)
+        assertEquals(7, CachedLiveRating.CURRENT_METHOD_VERSION)
         assertTrue(restored.methodVersion != CachedLiveRating.CURRENT_METHOD_VERSION)
         assertNull(restored.toAceRatingResultOrNull())
     }

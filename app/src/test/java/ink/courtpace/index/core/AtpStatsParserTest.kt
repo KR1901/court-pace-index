@@ -120,6 +120,7 @@ class AtpStatsParserTest {
     private val baseline = LiveSpeedBaseline(
         season = 2026,
         normalisation = 1.0,
+        tourAceRate = 0.08,
         profiles = listOf(
             LiveSpeedPlayerProfile("A. Server", serveRate = 0.15, concedeRate = 0.10),
             LiveSpeedPlayerProfile("B. Returner", serveRate = 0.25, concedeRate = 0.20),
@@ -131,14 +132,40 @@ class AtpStatsParserTest {
     }
 
     @Test
-    fun `a rating needs enough matches and adjusted server observations`() {
-        assertNull(AceRating.rate(sampleMatches(1), baseline))
-        assertNull(
-            AceRating.rate(
-                sampleMatches(10),
-                baseline.copy(profiles = baseline.profiles.filterNot { it.name == "B. Returner" }),
-            ),
+    fun `live rating starts with the first completed match`() {
+        assertNull(AceRating.rate(emptyList(), baseline))
+
+        val firstMatch = sampleMatches(1)
+        val firstCoverage = AceRating.coverage(firstMatch, baseline)
+        val firstRating = AceRating.rate(firstMatch, baseline)!!
+
+        assertEquals(1, firstRating.matches)
+        assertEquals(2, firstRating.totalServerSides)
+        assertEquals(2, firstRating.adjustedServerSides)
+        assertEquals(2, firstRating.sideDiagnostics.size)
+        assertEquals(2, firstCoverage.serverProfilesMatched)
+        assertEquals(2, firstCoverage.returnerProfilesMatched)
+
+        // Six completed matches (12 adjusted sides) must also be rateable; this was the
+        // exact situation that previously displayed the obsolete twenty-side requirement.
+        val sixMatchRating = AceRating.rate(sampleMatches(6), baseline)!!
+        assertEquals(6, sixMatchRating.matches)
+        assertEquals(12, sixMatchRating.totalServerSides)
+        assertEquals(12, sixMatchRating.adjustedServerSides)
+
+        val reducedBaseline = baseline.copy(
+            profiles = baseline.profiles.filterNot { it.name == "B. Returner" },
         )
+        val coverage = AceRating.coverage(sampleMatches(10), reducedBaseline)
+        val result = AceRating.rate(sampleMatches(10), reducedBaseline)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(10, coverage.serverProfilesMatched)
+        assertEquals(10, coverage.returnerProfilesMatched)
+        assertEquals(10, coverage.serverProfilesFallback)
+        assertEquals(10, coverage.returnerProfilesFallback)
+        assertEquals(20, result.adjustedServerSides)
     }
 
     @Test
@@ -161,6 +188,52 @@ class AtpStatsParserTest {
         assertEquals(1, result.inProgressMatches)
         assertEquals(1, result.walkoversExcluded)
         assertEquals(20, result.adjustedServerSides)
+    }
+
+    @Test
+    fun `average server and returner profiles map to the season tour-average rate`() {
+        val averageBaseline = baseline.copy(
+            tourAceRate = 0.08,
+            profiles = listOf(
+                LiveSpeedPlayerProfile("A. Average", serveRate = 0.08, concedeRate = 0.08),
+                LiveSpeedPlayerProfile("B. Average", serveRate = 0.08, concedeRate = 0.08),
+            ),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("A. Average", "B. Average", 6, 40, 6, 40, true)
+        }
+
+        val result = AceRating.rate(matches, averageBaseline)!!
+
+        // With average server and returner odds, calibrated expectation is the tour rate:
+        // 0.08 × 40 = 3.2 expected aces; six actual aces gives 6 / 3.2 per side.
+        assertEquals(6.0 / 3.2, result.rating, 1e-9)
+        assertEquals(20, result.adjustedServerSides)
+        assertEquals(20, result.sideDiagnostics.size)
+        assertEquals(result.rating, result.rawEventScore / result.normalisation, 1e-12)
+        assertEquals(0.08, result.tourAceRate!!, 1e-12)
+        assertEquals(800, result.totalServicePoints)
+        assertEquals(20, result.serverProfilesMatched)
+        assertEquals(20, result.returnerProfilesMatched)
+        val firstSide = result.sideDiagnostics.first()
+        assertEquals(6, firstSide.actualAces)
+        assertEquals(40, firstSide.servicePoints)
+        assertTrue(firstSide.expectedAces > 0.0)
+        assertEquals(firstSide.actualAces / firstSide.expectedAces, firstSide.actualExpectedRatio, 1e-12)
+    }
+
+    @Test
+    fun `calibrated expected aces use tour-average odds as the neutral anchor`() {
+        val expected = AceRating.rate(sampleMatches(), baseline)!!
+        val alternativeTour = AceRating.rate(
+            sampleMatches(),
+            baseline.copy(tourAceRate = 0.12),
+        )!!
+
+        assertTrue(
+            "raising the tour-average ace rate should lower expected aces for fixed player profiles",
+            alternativeTour.rating > expected.rating,
+        )
     }
 
     @Test
@@ -195,6 +268,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
                 LiveSpeedPlayerProfile("Andrey Rublev", serveRate = 0.14, concedeRate = 0.08),
@@ -219,6 +293,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Juan Manuel Cerundolo", serveRate = 0.11, concedeRate = 0.09),
                 LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
@@ -238,6 +313,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Juan Manuel Cerundolo", serveRate = 0.11, concedeRate = 0.09),
                 LiveSpeedPlayerProfile("Alex de Minaur", serveRate = 0.12, concedeRate = 0.10),
@@ -271,10 +347,11 @@ class AtpStatsParserTest {
     }
 
     @Test
-    fun `shortened full names remain unresolved when more than one profile matches`() {
+    fun `shortened full names use a tour prior when multiple profiles match`() {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Tommy Paul", serveRate = 0.10, concedeRate = 0.08),
                 LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
@@ -287,8 +364,12 @@ class AtpStatsParserTest {
 
         val coverage = AceRating.coverage(matches, ambiguousBaseline)
 
-        assertEquals(0, coverage.adjustedServerSides)
-        assertEquals(20, coverage.issues.size)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(10, coverage.serverProfilesMatched)
+        assertEquals(10, coverage.returnerProfilesMatched)
+        assertEquals(10, coverage.serverProfilesFallback)
+        assertEquals(10, coverage.returnerProfilesFallback)
+        assertTrue(coverage.issues.isEmpty())
     }
 
     @Test
@@ -296,6 +377,7 @@ class AtpStatsParserTest {
         val realisticBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Adolfo Daniel Vallejo", serveRate = 0.10, concedeRate = 0.08),
                 LiveSpeedPlayerProfile("Daniel Merida Aguilar", serveRate = 0.09, concedeRate = 0.07),
@@ -351,17 +433,24 @@ class AtpStatsParserTest {
         val rating = AceRating.rate(matches, liveBaseline)!!
 
         assertEquals(56, coverage.totalServerSides)
-        assertEquals(56, coverage.serverProfilesMatched)
-        assertEquals(56, coverage.returnerProfilesMatched)
+        assertEquals(
+            56,
+            coverage.serverProfilesMatched + coverage.serverProfilesFallback,
+        )
+        assertEquals(
+            56,
+            coverage.returnerProfilesMatched + coverage.returnerProfilesFallback,
+        )
         assertEquals(56, coverage.adjustedServerSides)
         assertEquals(56, rating.adjustedServerSides)
     }
 
     @Test
-    fun `ambiguous abbreviated names are not assigned to an arbitrary profile`() {
+    fun `ambiguous abbreviated names use a neutral prior and never an arbitrary player's profile`() {
         val ambiguousBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("Alex Smith", serveRate = 0.12, concedeRate = 0.10),
                 LiveSpeedPlayerProfile("Andrew Smith", serveRate = 0.14, concedeRate = 0.08),
@@ -369,13 +458,52 @@ class AtpStatsParserTest {
             ),
         )
         val matches = (1..10).map {
-            AtpMatchStats("A. SMITH", "B. JONES", 5, 39, 4, 40, true)
+            AtpMatchStats("A. SMITH", "B. JONES", 6, 75, 6, 75, true)
         }
 
         val coverage = AceRating.coverage(matches, ambiguousBaseline)
+        val result = AceRating.rate(matches, ambiguousBaseline)!!
 
-        assertEquals(0, coverage.adjustedServerSides)
-        assertNull(AceRating.rate(matches, ambiguousBaseline))
+        // The ambiguous A. Smith must not be assigned either Alex's or Andrew's profile.
+        // Its side uses the transparent tour prior and remains included.
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(10, coverage.serverProfilesMatched)
+        assertEquals(10, coverage.returnerProfilesMatched)
+        assertEquals(10, coverage.serverProfilesFallback)
+        assertEquals(10, coverage.returnerProfilesFallback)
+        assertEquals(20, result.adjustedServerSides)
+        assertTrue(result.sideDiagnostics.any {
+            it.server == "A. SMITH" && it.serverProfileSource == "tour-average-prior-only"
+        })
+    }
+
+    @Test
+    fun `true debutants are rated with the neutral season prior rather than dropped`() {
+        val prior = LiveSpeedBaseline(
+            season = 2026,
+            normalisation = 1.0,
+            tourAceRate = 0.08,
+            profiles = emptyList(),
+        )
+        val matches = (1..10).map {
+            AtpMatchStats("Unknown Debutant One", "Unknown Debutant Two", 6, 75, 6, 75, true)
+        }
+
+        val coverage = AceRating.coverage(matches, prior)
+        val result = AceRating.rate(matches, prior)!!
+
+        assertEquals(20, coverage.totalServerSides)
+        assertEquals(20, coverage.adjustedServerSides)
+        assertEquals(0, coverage.serverProfilesMatched)
+        assertEquals(0, coverage.returnerProfilesMatched)
+        assertEquals(20, coverage.serverProfilesFallback)
+        assertEquals(20, coverage.returnerProfilesFallback)
+        assertEquals(1.0, result.rating, 1e-12)
+        assertEquals(20, result.sideDiagnostics.size)
+        assertTrue(result.sideDiagnostics.all {
+            it.serverProfileSource == "tour-average-prior-only" &&
+                it.returnerProfileSource == "tour-average-prior-only"
+        })
     }
 
     @Test
@@ -394,6 +522,7 @@ class AtpStatsParserTest {
         val lowAceBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("A. Low", serveRate = 0.01, concedeRate = 0.01),
                 LiveSpeedPlayerProfile("B. Low", serveRate = 0.01, concedeRate = 0.01),
@@ -427,6 +556,7 @@ class AtpStatsParserTest {
         val zeroBaseline = LiveSpeedBaseline(
             season = 2026,
             normalisation = 1.0,
+            tourAceRate = 0.08,
             profiles = listOf(
                 LiveSpeedPlayerProfile("A. Zero", serveRate = 0.10, concedeRate = 0.0),
                 LiveSpeedPlayerProfile("B. Zero", serveRate = 0.10, concedeRate = 0.0),
@@ -450,7 +580,7 @@ class AtpStatsParserTest {
         assertEquals(0, coverage.adjustedServerSides)
         assertEquals(20, coverage.issues.size)
         assertTrue(coverage.issues.all { it.matchId == "ms-zero" })
-        assertTrue(coverage.issues.all { it.reason.contains("zero or invalid expected aces") })
+        assertTrue(coverage.issues.all { it.reason.contains("invalid server/returner ace-rate profile") })
         assertNull(AceRating.rate(matches, zeroBaseline))
     }
 

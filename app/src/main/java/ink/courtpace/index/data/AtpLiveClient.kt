@@ -36,14 +36,25 @@ class AtpLiveClient(context: Context) {
         tournaments: List<Tournament>,
         fallback: List<LiveEvent>,
         year: Int,
+        liveSchedule: List<LiveEvent> = emptyList(),
     ): AtpEvents.Discovery {
         val source = web.readPageSource(CURRENT_SCORES_URL)
         val html = source.orEmpty()
-        val discovered = AtpEvents.fromCurrentScoresPage(html, tournaments, year)
-        val events = discovered.ifEmpty { AtpEvents.fallback(fallback, year) }
+        val discovered = AtpEvents.fromCurrentScoresPage(
+            source = html,
+            tournaments = tournaments,
+            year = year,
+            liveSchedule = liveSchedule,
+        )
+        val hubReadable = html.isNotBlank() &&
+            !html.contains(AtpWebReader.BLOCKED, ignoreCase = true)
+        // A readable hub with no active routes is authoritative; dated fallback rows are only
+        // used when the ATP page failed to load or was blocked.
+        val events = if (hubReadable) discovered else AtpEvents.fallback(fallback, year)
         return AtpEvents.Discovery(
             events = events,
             pageBytes = html.toByteArray(Charsets.UTF_8).size,
+            hubReadable = hubReadable,
         )
     }
 
@@ -215,14 +226,13 @@ class AtpLiveClient(context: Context) {
         val rating = AceRating.rate(found, baseline) ?: error(
             when {
                 found.isNotEmpty() -> {
-                    "usable Infosys stats for ${found.size}/${eligibleIds.size} played singles matches; " +
-                        "opponent adjustment matched ${adjustmentCoverage.adjustedServerSides}/" +
-                        "${adjustmentCoverage.totalServerSides} server sides " +
+                    "usable Infosys stats for ${found.size}/${eligibleIds.size} played singles matches, " +
+                        "but no server side could be opponent-adjusted; coverage " +
+                        "${adjustmentCoverage.adjustedServerSides}/${adjustmentCoverage.totalServerSides} " +
                         "(serve profiles ${adjustmentCoverage.serverProfilesMatched}/" +
                         "${adjustmentCoverage.totalServerSides}, returner profiles " +
                         "${adjustmentCoverage.returnerProfilesMatched}/" +
-                        "${adjustmentCoverage.totalServerSides}); at least " +
-                        "${AceRating.MIN_ADJUSTED_SERVER_SIDES} adjusted server sides are required"
+                        "${adjustmentCoverage.totalServerSides})"
                 }
                 payloads.get() == 0 -> {
                     val sample = samples.peek()?.let { " · ${it}" }.orEmpty()
