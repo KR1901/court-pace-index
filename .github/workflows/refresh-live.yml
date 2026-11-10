@@ -1,6 +1,12 @@
 name: Publish app dataset snapshot
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/live.json'
+      - 'tools/build_dataset.py'
+      - '.github/workflows/refresh-live.yml'
   schedule:
     - cron: '0 */3 * * *'
   workflow_dispatch:
@@ -47,6 +53,29 @@ jobs:
           for event in retained_only:
               print("SCHEDULE ONLY", event.get("t"), event.get("status"), event.get("end"))
           print("Live Surface Speed is computed on-device; this workflow does not request Infosys match statistics.")
+
+          # Guard the specific stale Paris row corrected in data/live.json.
+          paris_source = next(
+              (event for event in json.load(open("data/live.json", encoding="utf-8")).get("events", [])
+               if event.get("t") == "paris" and event.get("s") == 2026),
+              None,
+          )
+          if paris_source is None or paris_source.get("status") != "completed":
+              raise SystemExit("Paris 2026 must remain a completed schedule tombstone.")
+          if not any(event.get("t") == "paris" and event.get("s") == 2026 for event in schedule):
+              raise SystemExit("Paris 2026 schedule tombstone was dropped from the generated dataset.")
+          if any(event.get("t") == "paris" and event.get("s") == 2026 for event in visible):
+              raise SystemExit("Completed Paris 2026 must not appear in the visible Live now fallback list.")
+
+          stockholm_source = next(
+              (event for event in json.load(open("data/live.json", encoding="utf-8")).get("events", [])
+               if event.get("t") == "stockholm" and event.get("s") == 2026),
+              None,
+          )
+          if stockholm_source is not None and stockholm_source.get("status") == "in_progress":
+              if not any(event.get("t") == "stockholm" and event.get("s") == 2026 for event in visible):
+                  raise SystemExit("Active Stockholm 2026 was unexpectedly omitted from the visible live list.")
+          print("Paris/Stockholm live-schedule checks passed.")
           PY
 
       - name: Commit if anything changed
