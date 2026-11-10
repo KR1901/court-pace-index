@@ -58,6 +58,14 @@ The app discovers active ATP 1000/500/250 events from the ATP current-scores/res
 
 ATP/Infosys CDN access is device-sensitive. Successful CI verifies code and tests, not necessarily live retrieval from a physical handset. Verify coverage on-device.
 
+## Live metadata and runtime rating path
+
+`data/live.json` is the source event-window file. The dataset builder intentionally carries all known windows into `liveSchedule`, including ended events, so the Android client can reject stale routes still present on the ATP current-scores hub. Only non-expired, non-terminal windows are copied into the dataset's visible `live` fallback list. An ended row can therefore be present in `liveSchedule` without being an active event. Keep its tournament ID and date bounds until the stale-route guard no longer needs them; update its status to a terminal value rather than deleting the schedule row.
+
+The three-hour `refresh-live.yml` workflow is a **dataset snapshot publisher**, not a live-rating calculator. It rebuilds the app dataset and copies the result to `data/latest.json`. Its ATP page probe is diagnostic only. `tools/live_update.py` is a legacy experimental updater; it is not invoked by this workflow or by the app and its old 20-match gate/formula must not be used as the current production method.
+
+At runtime, `AppViewModel` asks `AtpLiveClient` to discover active ATP 1000/500/250 events. The Android client obtains completed singles links from ATP results pages, retrieves match statistics via `AtpInfosysStatsClient`, and calculates live Surface Speed using the current `AceRating` method and the season baseline included in the published dataset. Per-event results are cached locally. A `null` speed in `data/live.json` is expected for this architecture and is not evidence that the app's device-side Infosys path is unused.
+
 ## Source selection and provenance
 
 | Use | Source | Notes |
