@@ -224,7 +224,7 @@ CALC_EXCLUDED_EVENT_KEYS = frozenset({
 
 
 def calculation_eligible_rows(rows):
-    """Valid archive rows that belong to the standard ATP scoring population."""
+    """Standard-format ATP rows for CALC; special-format Next Gen rows remain TA-only."""
     return [
         row for row in rows
         if "".join(
