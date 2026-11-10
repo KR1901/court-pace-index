@@ -88,9 +88,15 @@ object DatasetPolicy {
             if (usableProfiles < MIN_SPEED_BASELINE_PROFILES) return false
         }
         return dataset.readings.all { reading ->
+            val speed = reading.speed
+            val speedIsValid = speed == null || (
+                speed.isFinite() && speed >= 0.30 &&
+                    (speed <= 2.0 || (reading.t == "nextgen" && reading.src == "computed"))
+            )
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
-                (reading.speed == null || reading.speed in 0.30..2.0) &&
-                (reading.publishedSpeed == null || reading.publishedSpeed in 0.30..2.0) &&
+                speedIsValid &&
+                (reading.publishedSpeed == null ||
+                    (reading.publishedSpeed.isFinite() && reading.publishedSpeed in 0.30..2.0)) &&
                 reading.s in 1990..2100
         }
     }
