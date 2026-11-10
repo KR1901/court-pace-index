@@ -508,14 +508,3 @@ print("seasons with CPI:", sorted({r['s'] for r in readings if 'cpi' in r}))
 both = {r['t'] for r in readings if 'cpi' in r and r['s'] == 2026} & {r['t'] for r in readings if 'speed' in r}
 print("2026 events with both metrics:", len(both), sorted(both))
 
-# Emit any value that the Android dataset validation would reject, with its event and season.
-# This keeps a source/crosswalk regression diagnosable from the Actions log.
-bad_speed = [r for r in readings if r.get("speed") is not None and not 0.30 <= float(r["speed"]) <= 2.0]
-bad_published = [r for r in readings if r.get("publishedSpeed") is not None and not 0.30 <= float(r["publishedSpeed"]) <= 2.0]
-bad_ace = [r for r in readings if r.get("ace") is not None and not 0.0 <= float(r["ace"]) <= 30.0]
-print("OUT_OF_RANGE_SPEED_READINGS:", json.dumps(bad_speed, sort_keys=True))
-print("OUT_OF_RANGE_PUBLISHED_SPEED_READINGS:", json.dumps(bad_published, sort_keys=True))
-print("OUT_OF_RANGE_ACE_READINGS:", json.dumps(bad_ace, sort_keys=True))
-calc_2025 = [r for r in readings if int(r["s"]) == 2025 and r.get("src") == "computed" and r["t"] in {"marseille", "stockholm", "nextgen"}]
-print("2025_REQUESTED_CALC_ROWS:", json.dumps(calc_2025, sort_keys=True))
-print("TA_SEASONS_IN_DATASET:", sorted({int(r["s"]) for r in readings if r.get("src") == "tennisabstract" or r.get("publishedSpeed") is not None}))
