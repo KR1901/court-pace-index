@@ -212,6 +212,27 @@ def valid_rows(rows):
         usable.append(r)
     return usable
 
+# Next Gen uses short sets, no-ad scoring and other non-standard conditions. Its
+# service-point ace rates are not directly comparable to standard ATP events under
+# this CALC model. Keep its Tennis Abstract observations as TA-only references, but
+# exclude its matches from target-event ratings, player profiles and tour normalisers.
+CALC_EXCLUDED_EVENT_KEYS = frozenset({
+    "nextgenfinals",
+    "nextgenatpfinals",
+    "nextgenerationatpfinals",
+})
+
+
+def calculation_eligible_rows(rows):
+    """Valid archive rows that belong to the standard ATP scoring population."""
+    return [
+        row for row in rows
+        if "".join(
+            character for character in str(row.get("tourney_name") or "").casefold()
+            if character.isalnum()
+        ) not in CALC_EXCLUDED_EVENT_KEYS
+    ]
+
 
 def player_rates(usable, prior_points=PROFILE_PRIOR_SERVICE_POINTS):
     """Surface-specific, 150-service-point-shrunk player profiles."""
@@ -433,7 +454,7 @@ def _shrunk_return_rate(profile, priors):
 def _profile_year_rates(year):
     """Cache source rows/profile estimates so a 35-year backfill is not re-parsed per event."""
     if year not in _PROFILE_YEAR_CACHE:
-        _PROFILE_YEAR_CACHE[year] = player_rates(valid_rows(load(year)))
+        _PROFILE_YEAR_CACHE[year] = player_rates(calculation_eligible_rows(valid_rows(load(year))))
     return _PROFILE_YEAR_CACHE[year]
 
 
@@ -913,6 +934,7 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
     divide by the season tour-average ace odds. Returns raw event means before the
     season-wide normalisation.
     """
+    usable = calculation_eligible_rows(usable)
     excluded = exclude_event_ids or set()
     if tour_rate is None:
         tour_rate = tour_average_ace_rate(usable)
@@ -1001,7 +1023,7 @@ def bootstrap_event_interval(clusters, normaliser, iterations=EVENT_CI_BOOTSTRAP
 
 def season_ratings(year, rows):
     """LOEO tournament ratings with a long-history, recency-weighted player-profile backfill."""
-    usable = valid_rows(rows)
+    usable = calculation_eligible_rows(valid_rows(rows))
     rows_by_event = defaultdict(list)
     mapped_rows = []
     for row in usable:
@@ -1173,7 +1195,7 @@ def main():
         excluded_live_event_matches = 0
         if live_manifest["fresh"]:
             try:
-                all_profile_rows = valid_rows(load(profile_year))
+                all_profile_rows = calculation_eligible_rows(valid_rows(load(profile_year)))
             except HTTPError:
                 all_profile_rows = []
             excluded_live_event_ids = live_manifest["eventIds"]
@@ -1182,7 +1204,7 @@ def main():
         else:
             profile_year = current_year - 1
             print(f"live manifest stale; using completed season {profile_year}: {live_manifest['reason']}")
-            profile_rows = valid_rows(load(profile_year))
+            profile_rows = calculation_eligible_rows(valid_rows(load(profile_year)))
         current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
         profiles = build_live_profiles(profile_year, current_profiles)
         tour_rate = tour_average_ace_rate(profile_rows)
@@ -1192,7 +1214,7 @@ def main():
             profile_year = current_year - 1
             excluded_live_event_ids = []
             excluded_live_event_matches = 0
-            profile_rows = valid_rows(load(profile_year))
+            profile_rows = calculation_eligible_rows(valid_rows(load(profile_year)))
             current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
             profiles = build_live_profiles(profile_year, current_profiles)
             tour_rate = tour_average_ace_rate(profile_rows)
