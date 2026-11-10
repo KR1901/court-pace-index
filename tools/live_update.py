@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-"""Refreshes data/live.json - the events in progress and, when match stats exist, their rating.
+"""LEGACY EXPERIMENT — NOT PART OF THE PRODUCTION LIVE-RATING PATH.
 
-Contract
---------
-data/live.json carries an `events` array. An event appears there while it is being played.
-It gains `speed`/`ace`/`matches` only once the configured match source has enough completed
-matches with ace counts to compute the same odds-ratio rating the historical series uses.
+This script is not called by the Android app or any scheduled workflow. It predates the
+on-device ATP/Infosys implementation and uses an old archive-only calculation with a
+20-match gate. Do not use it to publish current live ratings or reconnect it to production.
+The app's production live path is AppViewModel -> AtpLiveClient -> AtpInfosysStatsClient
+-> AceRating, using the published season baseline.
 
-The script never invents a figure. If the source has no matches for an event, the event keeps
-its status and its rating stays null, and the app says so.
-
-Usage: python3 tools/live_update.py [--source archive|none]
+The script is retained only as historical implementation context.
 """
 import csv, io, json, os, sys, urllib.request
 from datetime import datetime, timezone
