@@ -46,9 +46,9 @@ NAMES = {
     # TennisMyLife uses these shorter/alternate event labels in its ATP CSV.
     "Monte Carlo": "montecarlo", "Cincinnati": "cincinnati", "Shanghai": "shanghai",
     "'s-Hertogenbosch": "shertogenbosch", "’s-Hertogenbosch": "shertogenbosch",
-    "Adelaide": "adelaide", "Montpellier": "montpellier", "Dallas": "dallas",
+    "Adelaide": "adelaide", "Adelaide International": "adelaide", "Montpellier": "montpellier", "Dallas": "dallas",
     "Rotterdam": "rotterdam", "Delray Beach": "delraybeach",
-    "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Doha": "doha",
+    "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Rio Open": "rio", "Doha": "doha",
     "Acapulco": "acapulco", "Dubai": "dubai", "Santiago": "santiago",
     "Marseille": "marseille", "Open 13 Provence": "marseille",
     "Stockholm": "stockholm", "Stockholm Open": "stockholm",
@@ -66,6 +66,27 @@ NAMES = {
     "Tokyo": "tokyo", "Almaty": "almaty", "Brussels": "brussels",
     "Vienna": "vienna", "Basel": "basel", "Metz": "metz", "Athens": "athens",
 }
+
+
+def _normalise_event_name(value):
+    """Normalise source-specific event labels without fuzzy or partial matching."""
+    value = unicodedata.normalize("NFKD", str(value or "")).casefold()
+    return "".join(character for character in value if character.isalnum())
+
+
+_NORMALISED_EVENT_NAMES = {}
+for _event_label, _event_id in NAMES.items():
+    _event_key = _normalise_event_name(_event_label)
+    _existing_event_id = _NORMALISED_EVENT_NAMES.get(_event_key)
+    if _existing_event_id is not None and _existing_event_id != _event_id:
+        raise ValueError(f"ambiguous normalised event alias: {_event_label}")
+    _NORMALISED_EVENT_NAMES[_event_key] = _event_id
+
+
+def tournament_id(event_name):
+    """Resolve exact event labels and punctuation/case variants to a known ID."""
+    label = str(event_name or "").strip()
+    return NAMES.get(label) or _NORMALISED_EVENT_NAMES.get(_normalise_event_name(label))
 
 
 def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_DAYS):
@@ -212,25 +233,24 @@ def valid_rows(rows):
         usable.append(r)
     return usable
 
-# Next Gen uses short sets, no-ad scoring and other non-standard conditions. Its
-# service-point ace rates are not directly comparable to standard ATP events under
-# this CALC model. Keep its Tennis Abstract observations as TA-only references, but
-# exclude its matches from target-event ratings, player profiles and tour normalisers.
-CALC_EXCLUDED_EVENT_KEYS = frozenset({
+# Next Gen uses short sets and no-ad scoring. We now calculate it as a target event,
+# following Tennis Abstract's decision to publish an adjusted ace-rate rating for it.
+# Its matches must still stay out of standard ATP player profiles and the ATP-wide
+# normaliser; otherwise its different match format would contaminate every other event.
+PROFILE_TRAINING_EXCLUDED_EVENT_KEYS = frozenset({
     "nextgenfinals",
     "nextgenatpfinals",
     "nextgenerationatpfinals",
 })
+CALC_EXCLUDED_EVENT_KEYS = PROFILE_TRAINING_EXCLUDED_EVENT_KEYS  # Backwards-compatible name.
+CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen"})
 
 
 def calculation_eligible_rows(rows):
-    """Standard-format ATP rows for CALC; special-format Next Gen rows remain TA-only."""
+    """Rows eligible to train standard ATP player profiles and tour-average priors."""
     return [
         row for row in rows
-        if "".join(
-            character for character in str(row.get("tourney_name") or "").casefold()
-            if character.isalnum()
-        ) not in CALC_EXCLUDED_EVENT_KEYS
+        if _normalise_event_name(row.get("tourney_name")) not in PROFILE_TRAINING_EXCLUDED_EVENT_KEYS
     ]
 
 
@@ -945,7 +965,7 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
     event_matches = defaultdict(int)
 
     for r in usable:
-        tid = NAMES.get((r["tourney_name"] or "").strip())
+        tid = tournament_id(r.get("tourney_name"))
         if tid is None or tid in excluded:
             continue
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
@@ -1022,19 +1042,26 @@ def bootstrap_event_interval(clusters, normaliser, iterations=EVENT_CI_BOOTSTRAP
 
 
 def season_ratings(year, rows):
-    """LOEO tournament ratings with a long-history, recency-weighted player-profile backfill."""
-    usable = calculation_eligible_rows(valid_rows(rows))
+    """LOEO ratings; special-format events are targets, never training or normaliser inputs."""
+    target_rows = valid_rows(rows)
+    # Next Gen is valid as a target event, but its short-set/no-ad matches must never
+    # influence standard ATP player histories, same-season priors or live baselines.
+    profile_rows = calculation_eligible_rows(target_rows)
     rows_by_event = defaultdict(list)
-    mapped_rows = []
-    for row in usable:
-        tid = NAMES.get((row.get("tourney_name") or "").strip())
-        mapped_rows.append((tid, row))
+    mapped_profile_rows = [
+        (tournament_id(row.get("tourney_name")), row)
+        for row in profile_rows
+    ]
+    for row in target_rows:
+        tid = tournament_id(row.get("tourney_name"))
         if tid is not None:
             rows_by_event[tid].append(row)
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        training_rows = [row for mapped_id, row in mapped_rows if mapped_id != tid]
+        # Leave the target event out of current-season profiles. All training rows are
+        # also filtered to the standard ATP format by calculation_eligible_rows above.
+        training_rows = [row for mapped_id, row in mapped_profile_rows if mapped_id != tid]
         if not training_rows:
             continue
         current_profiles = player_rates(
@@ -1068,12 +1095,17 @@ def season_ratings(year, rows):
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
     # events with at least twenty adjusted sides for the normaliser. If an entire season has
     # no such event, fall back to all rateable events rather than suppressing the season.
-    normaliser_events = {
+    # Next Gen receives its own rating, but never defines the standard ATP season anchor.
+    standard_format_details = {
         tid: item for tid, item in details.items()
+        if tid not in CALC_TARGET_ONLY_EVENT_IDS
+    }
+    normaliser_events = {
+        tid: item for tid, item in standard_format_details.items()
         if item["sides"] >= MIN_NORMALISER_SERVER_SIDES
     }
     if not normaliser_events:
-        normaliser_events = details
+        normaliser_events = standard_format_details
     if not normaliser_events:
         return {}
     mean_raw = sum(item["raw"] for item in normaliser_events.values()) / len(normaliser_events)
@@ -1148,7 +1180,7 @@ def exclude_live_event_rows(rows, event_ids):
     excluded = set(event_ids or ())
     if not excluded:
         return list(rows)
-    return [row for row in rows if NAMES.get((row.get("tourney_name") or "").strip()) not in excluded]
+    return [row for row in rows if tournament_id(row.get("tourney_name")) not in excluded]
 
 
 def main():
