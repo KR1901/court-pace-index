@@ -146,6 +146,26 @@ class PaceData(val dataset: PaceDataset) {
             }
             .sortedByDescending { it.season }
 
+    /**
+     * Pick the most useful edition to open from the tournament board.
+     *
+     * A board-wide season can be empty or TA-only for a particular event. Completed
+     * tournaments therefore open on their newest edition with archived CALC diagnostics,
+     * falling back to the newest published Speed reading only when no CALC detail exists.
+     * Explicit year selections on the detail screen continue to open that exact edition.
+     */
+    fun detailSeason(id: String, preferredSeason: Int): Int {
+        val rows = seasonRows(id)
+        return rows.firstOrNull {
+            it.season == preferredSeason && it.calculationDiagnostics != null
+        }?.season
+            ?: rows.firstOrNull { it.calculationDiagnostics != null }?.season
+            ?: rows.firstOrNull { it.season == preferredSeason && it.speed != null }?.season
+            ?: rows.firstOrNull { it.speed != null }?.season
+            ?: rows.firstOrNull { it.season == preferredSeason }?.season
+            ?: preferredSeason
+    }
+
     /** Every tournament that has a value for [metric] in [season]. */
     fun entries(season: Int, metric: Metric): List<Pair<Tournament, Double>> =
         tournaments.mapNotNull { tournament ->

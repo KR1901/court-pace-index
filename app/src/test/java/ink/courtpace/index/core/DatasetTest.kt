@@ -178,6 +178,21 @@ class DatasetTest {
     }
 
     @Test
+    fun `completed tournament opens on its latest archived CALC edition`() {
+        // A Next Gen 2026 board context has no 2026 edition, so opening the event
+        // should land on the latest historical edition with its full diagnostics.
+        assertEquals(2025, data.detailSeason("nextgen", 2026))
+        assertEquals(2024, data.detailSeason("nextgen", 2024))
+        assertEquals(2026, data.detailSeason("rio", 2026))
+
+        val opened = data.seasonRows("nextgen").first {
+            it.season == data.detailSeason("nextgen", 2026)
+        }
+        assertTrue("the default edition must include the archived CALC detail",
+            opened.calculationDiagnostics != null)
+    }
+
+    @Test
     fun `only computed Next Gen ratings may exceed the standard two point range`() {
         val nextGen = data.dataset.readings.first { it.t == "nextgen" && it.s == 2025 }
         val nextGenCalc = nextGen.copy(

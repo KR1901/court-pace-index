@@ -197,7 +197,14 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     onSeason = { vm.selectSeason(it) },
                                     onMetric = { vm.selectMetric(it) },
                                     onSurface = { vm.toggleSurface(it) },
-                                    onOpen = { push(Route.Detail(it.id, vm.season)) },
+                                    onOpen = { tournament ->
+                                        val detailSeason = if (data.isLive(tournament.id)) {
+                                            vm.season
+                                        } else {
+                                            data.detailSeason(tournament.id, vm.season)
+                                        }
+                                        push(Route.Detail(tournament.id, detailSeason))
+                                    },
                                     refreshing = vm.refreshState is RefreshState.Running,
                                     onRefresh = { vm.refresh() },
                                     liveAceByEvent = vm.liveAceByEvent,
@@ -214,7 +221,14 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     season = vm.season,
                                     selected = vm.compareIds,
                                     onToggle = { vm.toggleCompare(it) },
-                                    onOpen = { push(Route.Detail(it.id, vm.season)) },
+                                    onOpen = { tournament ->
+                                        val detailSeason = if (data.isLive(tournament.id)) {
+                                            vm.season
+                                        } else {
+                                            data.detailSeason(tournament.id, vm.season)
+                                        }
+                                        push(Route.Detail(tournament.id, detailSeason))
+                                    },
                                 )
 
                                 2 -> SurfacesScreen(
