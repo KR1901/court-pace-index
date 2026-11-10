@@ -291,7 +291,7 @@ jobs:
                   "",
               ]
 
-          notes = "\\n".join(lines) + "\\n"
+          notes = "\n".join(lines) + "\n"
           required = [
               f"- Package: `{package}`",
               f"- APK: `{asset}`",
