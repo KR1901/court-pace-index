@@ -98,8 +98,14 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
             "match_num": "17",
         }]
         profiles = {
-            "p1": {"serve_rate": 0.10, "serve_rate_source": "career-history-surface-shrunk"},
-            "p2": {"concede_rate": 0.08, "concede_rate_source": "career-history-surface-shrunk"},
+            "p1": {
+                "serve_rate": 0.10, "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate": 0.08, "concede_rate_source": "career-history-surface-shrunk",
+            },
+            "p2": {
+                "serve_rate": 0.09, "serve_rate_source": "career-history-surface-shrunk",
+                "concede_rate": 0.08, "concede_rate_source": "career-history-surface-shrunk",
+            },
         }
         result = compute_speed.event_side_diagnostics(rows, profiles, 0.08)
         self.assertEqual(2, result["totalServerSides"])
