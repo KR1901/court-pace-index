@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: player-stats-refresh-${{ github.ref_name }}
+  group: refresh-data-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
