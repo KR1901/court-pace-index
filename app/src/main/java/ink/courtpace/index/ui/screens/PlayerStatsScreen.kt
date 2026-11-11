@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,10 +58,7 @@ import ink.courtpace.index.ui.glass.HairLine
 import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
@@ -71,6 +69,7 @@ fun PlayerStatsHost() {
     var error by remember { mutableStateOf<String?>(null) }
     var liveStatus by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
+    val sharedLiveState by PlayerStatsLiveUpdater.state.collectAsState()
 
     LaunchedEffect(context) {
         loading = true
@@ -78,29 +77,20 @@ fun PlayerStatsHost() {
         val initial = withContext(Dispatchers.IO) {
             runCatching { PlayerStatsRepository.load(context) }
         }
-        initial.onSuccess { asset = it }
-            .onFailure { error = it.message ?: "Could not read the player statistics asset." }
+        initial.onSuccess {
+            asset = it
+            PlayerStatsLiveUpdater.publishInitial(it)
+        }.onFailure { error = it.message ?: "Could not read the player statistics asset." }
         loading = false
+    }
 
-        if (initial.isSuccess) {
-            // Refresh immediately when this tab opens, then recheck once per minute while visible.
-            while (isActive) {
-                try {
-                    val refreshed = withContext(Dispatchers.IO) {
-                        PlayerStatsLiveUpdater.refresh(context)
-                    }
-                    asset = refreshed.data
-                    liveStatus = "Checked " + refreshed.checkedAt.replace("T", " ").take(19) +
-                        " UTC · +" + refreshed.addedMatches + " new matches"
-                    error = null
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (failure: Exception) {
-                    error = failure.message ?: "Live Player Stats sync failed."
-                    liveStatus = "Last check failed · retrying automatically"
-                }
-                delay(60_000L)
-            }
+    LaunchedEffect(sharedLiveState) {
+        sharedLiveState?.let { live ->
+            asset = live.data
+            liveStatus = live.checkedAt?.let {
+                "Checked " + it.replace("T", " ").take(19) + " UTC · +" + live.addedMatches + " new matches"
+            } ?: "Automatic sync scheduled"
+            error = live.error
         }
     }
 
