@@ -283,14 +283,20 @@ def parse_current_top100(
     payload: dict,
     snapshot_label: str = "",
 ) -> list[dict[str, object]]:
-    """Validate a dated TML Top-100 response and preserve stable player IDs."""
+    """Parse the TML Top-100 positions, preserving every player tied at a rank.
+
+    A tied rank is not a duplicate row: historical reconstructed snapshots can legitimately
+    assign the same position to multiple players. The cohort therefore contains every player
+    whose published rank is 1–100, including ties at the cutoff; it can exceed 100 members.
+    Duplicate player IDs remain invalid because one player cannot occupy multiple rows in
+    the same snapshot.
+    """
     rows = payload.get("rankings")
     context = f" ({snapshot_label})" if snapshot_label else ""
     if not isinstance(rows, list):
         raise RuntimeError("TML ranking endpoint did not return a rankings array" + context)
     top100: list[dict[str, object]] = []
-    seen_ranks: dict[int, str] = {}
-    seen_ids: dict[str, int] = {}
+    seen_ids: set[str] = set()
     for row in rows:
         if not isinstance(row, dict):
             continue
@@ -303,20 +309,13 @@ def parse_current_top100(
         points = integer(row.get("points"))
         if not player_id or not name:
             raise RuntimeError(f"Invalid TML Top 100 row at rank {rank}: missing player ID/name" + context)
-        if rank in seen_ranks:
-            raise RuntimeError(
-                f"Duplicate TML rank {rank}: IDs {seen_ranks[rank]} and {player_id}" + context
-            )
         if player_id in seen_ids:
-            raise RuntimeError(
-                f"Duplicate TML player ID {player_id}: ranks {seen_ids[player_id]} and {rank}" + context
-            )
-        seen_ranks[rank] = player_id
-        seen_ids[player_id] = rank
+            raise RuntimeError(f"Duplicate TML player ID {player_id} in rank-100 cohort" + context)
+        seen_ids.add(player_id)
         top100.append({"id": player_id, "rank": rank, "name": name, "country": country, "points": points})
-    if sorted(seen_ranks) != list(range(1, 101)) or len(top100) != 100:
+    if len(top100) < 100:
         raise RuntimeError(
-            f"TML ranking snapshot must contain exactly ranks 1–100; found {len(top100)}" + context
+            f"TML rank-100 cohort must contain at least 100 unique players; found {len(top100)}" + context
         )
     return sorted(top100, key=lambda item: int(item["rank"]))
 
