@@ -21,7 +21,12 @@ data class PlayerTop100SeasonSnapshot(
     val year: Int,
     val asOf: String,
     val source: String,
+    /** Identified players whose stable TML IDs can be joined to match/history records. */
     val players: Int = 100,
+    /** Ranked source rows without a stable player ID; never merged into a fake person. */
+    val unresolvedPlayers: Int = 0,
+    /** Total rank-100-or-better source rows, including unresolved IDs and co-ranked players. */
+    val rankedEntries: Int = 100,
 )
 
 @Serializable
