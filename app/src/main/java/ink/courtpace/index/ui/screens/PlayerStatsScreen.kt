@@ -48,6 +48,7 @@ import ink.courtpace.index.core.playerstats.PlayerRankingRow
 import ink.courtpace.index.core.playerstats.PlayerStatsAnalytics
 import ink.courtpace.index.core.playerstats.PlayerStatsData
 import ink.courtpace.index.core.playerstats.PlayerStatsRepository
+import ink.courtpace.index.core.playerstats.PlayerStatsLiveUpdater
 import ink.courtpace.index.core.playerstats.PlayerSurfaceFilter
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.glass.GlassNote
@@ -56,7 +57,10 @@ import ink.courtpace.index.ui.glass.HairLine
 import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
@@ -65,28 +69,58 @@ fun PlayerStatsHost() {
     val context = LocalContext.current
     var asset by remember { mutableStateOf<PlayerStatsData?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var liveStatus by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(true) }
 
     LaunchedEffect(context) {
         loading = true
         error = null
-        val result = withContext(Dispatchers.IO) {
+        val initial = withContext(Dispatchers.IO) {
             runCatching { PlayerStatsRepository.load(context) }
         }
-        result.onSuccess { asset = it }
+        initial.onSuccess { asset = it }
             .onFailure { error = it.message ?: "Could not read the player statistics asset." }
         loading = false
+
+        if (initial.isSuccess) {
+            // Refresh immediately when this tab opens, then recheck once per minute while visible.
+            while (isActive) {
+                try {
+                    val refreshed = withContext(Dispatchers.IO) {
+                        PlayerStatsLiveUpdater.refresh(context)
+                    }
+                    asset = refreshed.data
+                    liveStatus = "Checked " + refreshed.checkedAt.replace("T", " ").take(19) +
+                        " UTC · +" + refreshed.addedMatches + " new matches"
+                    error = null
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    error = failure.message ?: "Live Player Stats sync failed."
+                    liveStatus = "Last check failed · retrying automatically"
+                }
+                delay(60_000L)
+            }
+        }
     }
 
     when {
-        asset != null -> PlayerStatsScreen(asset = asset!!)
+        asset != null -> PlayerStatsScreen(
+            asset = asset!!,
+            liveStatus = liveStatus,
+            liveError = error,
+        )
         loading -> PlayerStatsLoading()
         else -> PlayerStatsError(message = error ?: "Player statistics are unavailable.")
     }
 }
 
 @Composable
-fun PlayerStatsScreen(asset: PlayerStatsData) {
+fun PlayerStatsScreen(
+    asset: PlayerStatsData,
+    liveStatus: String? = null,
+    liveError: String? = null,
+) {
     val colors = PaceTheme.colors
     val years = remember(asset) {
         asset.players.asSequence()
@@ -154,10 +188,26 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                     color = colors.textDim,
                 )
                 Text(
-                    text = "BUNDLED DATA · " + asset.meta.generated.take(10),
+                    text = "ARCHIVE BASELINE · " + asset.meta.generated.take(10),
                     style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp),
                     color = colors.textFaint,
                 )
+                Text(
+                    text = "LIVE SYNC · " + (liveStatus ?: "Preparing automatic updates"),
+                    style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium),
+                    color = colors.textDim,
+                )
+                Text(
+                    text = asset.meta.liveMatchCount.toString() + " new matches merged since archive snapshot" +
+                        (asset.meta.liveUpdatedAt?.let { " · last added " + it.replace("T", " ").take(16) + " UTC" } ?: ""),
+                    style = TextStyle(fontSize = 10.sp),
+                    color = colors.textFaint,
+                )
+                if (liveError != null) {
+                    GlassNote(
+                        text = "Live sync issue: " + liveError + " · saved statistics remain available and the app will retry automatically.",
+                    )
+                }
             }
         }
 
@@ -370,7 +420,7 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                 color = colors.textFaint,
             )
             Text(
-                text = "Calendar years, not rolling 52 weeks · Data snapshot " + asset.meta.generated.take(10),
+                text = "Calendar years · automatic foreground checks every 60 seconds · Android background checks at 15-minute intervals or later · source publication may lag",
                 style = TextStyle(fontSize = 10.5.sp),
                 color = colors.textFaint,
             )
