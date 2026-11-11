@@ -60,7 +60,11 @@ data class HeightGroupSummary(
     val breakPct: Double?
         get() = PlayerStatsAnalytics.percentage(returnGamesWon, returnGames)
     val combined: Double?
-        get() = if (holdPct != null && breakPct != null) holdPct + breakPct else null
+        get() {
+            val hold = holdPct ?: return null
+            val breakRate = breakPct ?: return null
+            return hold + breakRate
+        }
     val winPct: Double?
         get() = PlayerStatsAnalytics.percentage(wins, wins + losses)
 }
