@@ -176,6 +176,20 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(parsed[0]["rank"], 1)
         self.assertEqual(parsed[-1]["id"], "10100")
 
+    def test_tml_top100_parser_preserves_players_with_tied_historical_ranks(self):
+        rows = [
+            {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}", "ioc": "USA"}
+            for rank in range(1, 101)
+        ]
+        rows.append({"id": "10101", "rank": 45, "name": "Co-ranked Player", "ioc": "FRA"})
+
+        parsed = parse_current_top100({"rankings": rows}, "1973 snapshot 1973-12-31")
+
+        self.assertEqual(len(parsed), 101)
+        rank_45 = [row for row in parsed if row["rank"] == 45]
+        self.assertEqual({row["id"] for row in rank_45}, {"10045", "10101"})
+        self.assertEqual(parsed[-1]["rank"], 100)
+
     def test_tml_top100_parser_fails_closed_on_duplicate_or_missing_identity(self):
         rows = [
             {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}"}
