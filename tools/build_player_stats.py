@@ -631,22 +631,24 @@ def build() -> dict:
     )
     top100_ranks_by_player: dict[str, dict[int, int]] = defaultdict(dict)
     for year, snapshot in top100_snapshots.items():
-        seen_ranks: set[int] = set()
         seen_ids: set[str] = set()
         for entry in snapshot["players"]:
             player_id = str(entry["id"])
             rank = int(entry["rank"])
-            if rank in seen_ranks or player_id in seen_ids:
-                raise RuntimeError(f"Duplicate TML Top-100 ID/rank in {year}: {player_id}/{rank}")
-            seen_ranks.add(rank)
+            if not 1 <= rank <= 100:
+                raise RuntimeError(f"TML {year} rank outside the Top 100: {player_id}/{rank}")
+            if player_id in seen_ids:
+                raise RuntimeError(f"Duplicate TML player ID in {year} cohort: {player_id}")
             seen_ids.add(player_id)
             ensure_player(
                 players, player_id, str(entry["name"]),
                 str(entry.get("country") or ""), None, year,
             )
             top100_ranks_by_player[player_id][year] = rank
-        if sorted(seen_ranks) != list(range(1, 101)) or len(seen_ids) != 100:
-            raise RuntimeError(f"TML {year} cohort must contain exactly ranks 1–100")
+        if len(seen_ids) < 100:
+            raise RuntimeError(
+                f"TML {year} rank-100 cohort must contain at least 100 unique players; found {len(seen_ids)}"
+            )
     current_top100_count = len(top100_snapshots[current_year]["players"])
     current_top100_as_of = str(top100_snapshots[current_year]["asOf"])
     current_top100_source = str(top100_snapshots[current_year]["source"])
