@@ -66,6 +66,7 @@ import ink.courtpace.index.ui.glass.rememberReduceMotion
 import ink.courtpace.index.ui.screens.BoardScreen
 import ink.courtpace.index.ui.screens.CompareScreen
 import ink.courtpace.index.ui.screens.MethodScreen
+import ink.courtpace.index.ui.screens.PlayerStatsHost
 import ink.courtpace.index.ui.screens.SurfacesScreen
 import ink.courtpace.index.ui.screens.TournamentScreen
 import ink.courtpace.index.ui.theme.CourtPaceTheme
@@ -82,6 +83,7 @@ private val tabs = listOf(
     Glyph.LIBRARY to "Compare",
     Glyph.HOME to "Surfaces",
     Glyph.METHOD to "Method",
+    Glyph.PLAYERS to "Players",
 )
 
 @Composable
@@ -237,7 +239,9 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     metric = vm.metric,
                                 )
 
-                                else -> MethodScreen(data = data)
+                                3 -> MethodScreen(data = data)
+
+                                else -> PlayerStatsHost()
                             }
 
                             is Route.Detail -> {
