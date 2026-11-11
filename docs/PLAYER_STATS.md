@@ -19,7 +19,7 @@ Only ATP tour-level men's singles main-draw matches are aggregated. The included
 
 Every record belongs to a calendar season. The builder uses the four-digit year at the start of the tournament ID, falling back to the tournament date only when the ID does not contain a valid year. This is a calendar-year selector, not the rolling last-52-weeks window.
 
-Match results are counted only for completed matches. Walkovers, retirements, defaults and abandoned matches are excluded. A completed result remains in wins/losses when its service/return stat line is missing or invalid; that match contributes no hold/break games.
+Match results include played matches with an official winner, including retirements. Walkovers, no-play defaults and abandoned matches are excluded. A retirement counts in W-L, but its partial-match service/return line is excluded from Hold% and Break%. A played result with missing or internally inconsistent service/return fields still contributes W-L, but no hold/break games.
 
 ## Definitions
 
