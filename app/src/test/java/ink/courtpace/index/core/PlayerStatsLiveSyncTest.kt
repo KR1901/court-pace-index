@@ -136,6 +136,54 @@ class PlayerStatsLiveSyncTest {
     }
 
     @Test
+    fun laterPublishedGameCountersEnrichResultsWithoutDoubleCountingWinLoss() {
+        val withoutStats = listOf(
+            header,
+            row(
+                "2026-429", "Stockholm", "Hard", "I", "30",
+                "M0QI", "Alex Michelsen", "193", "C0C8", "Juan Manuel Cerundolo", "183",
+                "6-4 7-6", "", "", "", "", "", "",
+            ),
+        ).joinToString("\n")
+        val first = PlayerStatsLiveAggregator.apply(
+            baseline(), PlayerStatsLiveCsvParser.parse(withoutStats), 2026, "2026-11-11T10:00:00Z",
+        )
+        assertEquals(1, first.addedMatches)
+        assertEquals(0, first.enrichedMatches)
+        val firstStats = first.data.players.single { it.id == "M0QI" }.seasons.single().b.getValue("all")
+        assertEquals(1, firstStats.mp)
+        assertEquals(1, firstStats.w)
+        assertEquals(0, firstStats.sp)
+
+        val withStats = listOf(
+            header,
+            row(
+                "2026-429", "Stockholm", "Hard", "I", "30",
+                "M0QI", "Alex Michelsen", "193", "C0C8", "Juan Manuel Cerundolo", "183",
+                "6-4 7-6", "9", "1", "2", "8", "3", "4",
+            ),
+        ).joinToString("\n")
+        val second = PlayerStatsLiveAggregator.apply(
+            first.data, PlayerStatsLiveCsvParser.parse(withStats), 2026, "2026-11-11T10:01:00Z",
+        )
+        assertEquals(0, second.addedMatches)
+        assertEquals(1, second.enrichedMatches)
+        assertEquals(1, second.data.meta.liveMatchCount)
+        assertEquals(1, second.data.meta.liveEnrichedMatchCount)
+        assertEquals(1, second.data.meta.currentSeasonMatchKeys.size)
+        assertEquals(1, second.data.meta.currentSeasonStatMatchKeys.size)
+
+        val completed = second.data.players.single { it.id == "M0QI" }.seasons.single().b.getValue("all")
+        assertEquals(1, completed.mp)
+        assertEquals(1, completed.w)
+        assertEquals(9, completed.sp)
+        assertEquals(8, completed.sw)
+        assertEquals(8, completed.rp)
+        assertEquals(1, completed.rw)
+        assertEquals(1, completed.sm)
+    }
+
+    @Test
     fun parserHandlesCrLfAndRejectsBrokenQuotedRecords() {
         val valid = header + "\r\n" + row(
             "2026-429", "Stockholm, ATP", "Hard", "I", "30",
