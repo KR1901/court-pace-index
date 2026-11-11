@@ -7,7 +7,7 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, feature/player-stats-screen]
     paths:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
@@ -20,6 +20,13 @@ on:
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'tools/test_fetch_reference_data.py'
+      - 'tools/build_player_stats.py'
+      - 'tools/test_build_player_stats.py'
+      - 'data/current_atp_top100.csv'
+      - 'app/src/main/java/ink/courtpace/index/core/playerstats/**'
+      - 'app/src/main/java/ink/courtpace/index/ui/screens/PlayerStatsScreen.kt'
+      - 'app/src/main/java/ink/courtpace/index/ui/glass/Glass.kt'
+      - 'app/src/main/java/ink/courtpace/index/ui/AppNav.kt'
       - '.github/workflows/refresh-data.yml'
   schedule:
     - cron: '0 */6 * * *'
@@ -211,6 +218,47 @@ jobs:
           print(f"Bundled and downloadable datasets contain the validated baseline and {checked} current CALC rows match speed_history.json.")
           PY
 
+      - name: Build independent Player Stats asset
+        run: python3 tools/build_player_stats.py
+
+      - name: Verify Player Stats asset
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          asset = Path("app/src/main/assets/player_stats.json")
+          published = Path("data/player_stats.json")
+          assert asset.is_file() and published.is_file(), "Player Stats JSON output is missing"
+          assert asset.read_bytes() == published.read_bytes(), "bundled and published Player Stats JSON differ"
+          payload = json.loads(asset.read_text(encoding="utf-8"))
+          players = payload.get("players")
+          meta = payload.get("meta") or {}
+          assert isinstance(players, list) and len(players) >= 100
+          assert len({row.get("id") for row in players}) == len(players), "duplicate player IDs"
+          cohort = [row for row in players if row.get("currentRank") is not None]
+          assert len(cohort) == 100, f"expected 100 current cohort players, got {len(cohort)}"
+          assert sorted(row["currentRank"] for row in cohort) == list(range(1, 101))
+          assert meta.get("players") == len(players)
+          assert meta.get("playersInCurrentTop100") == 100
+          assert meta.get("currentTop100AsOf") == "2026-11-09"
+          assert meta.get("source") == "TennisMyLife ATP Match Database"
+          assert meta.get("coverage", {}).get("completedTourMatches", 0) > 0
+          assert meta.get("coverage", {}).get("matchesWithValidStats", 0) > 0
+          for row in players:
+              height = row.get("heightCm")
+              assert height is None or 140 <= height <= 220, f"invalid height for {row.get('id')}"
+              seasons = row.get("seasons") or []
+              assert len({season["y"] for season in seasons}) == len(seasons)
+              for season in seasons:
+                  for bucket in (season.get("b") or {}).values():
+                      assert bucket.get("sp", 0) >= bucket.get("sw", 0) >= 0
+                      assert bucket.get("rp", 0) >= bucket.get("rw", 0) >= 0
+                      assert bucket.get("mp", 0) == bucket.get("w", 0) + bucket.get("l", 0)
+          print(f"Player Stats asset OK: {len(players)} players; 100 current Top 100 IDs; "
+                f"{meta['coverage']['matchesWithValidStats']} match-stat lines.")
+          PY
+
       - name: Verify
         run: ./gradlew :app:testDebugUnitTest --stacktrace
 
@@ -218,7 +266,7 @@ jobs:
         run: |
           git config user.name "court-pace-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data app/src/main/assets/pace_dataset.json
+          git add data app/src/main/assets/pace_dataset.json app/src/main/assets/player_stats.json
           if git diff --cached --quiet; then
             echo "No change in the dataset."
             exit 0
