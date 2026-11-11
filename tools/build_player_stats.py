@@ -25,13 +25,12 @@ CACHE = ROOT / ".cache" / "player_stats"
 ROSTER_URL = "https://stats.tennismylife.org/data/ATP_Database.csv"
 MANIFEST_URL = "https://stats.tennismylife.org/api/data-files"
 MATCH_URL = "https://stats.tennismylife.org/data/{year}.csv"
-TOP100_PATH = ROOT / "data" / "current_atp_top100.csv"
+RANKING_DATES_URL = "https://stats.tennismylife.org/api/ranking/dates"
+RANKING_URL = "https://stats.tennismylife.org/api/ranking"
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
 )
-RANKING_AS_OF = "2026-11-09"
-RANKING_SOURCE = "https://www.tennis.esp.br/en/rankings?circuito=ATP&data=2026-11-09"
 DATA_SOURCE = "TennisMyLife ATP Match Database"
 DATA_SOURCE_URL = "https://stats.tennismylife.org/tennis-match-database"
 USER_AGENT = "CourtPaceIndex-PrivatePlayerStats/1.0 (personal research)"
@@ -108,17 +107,22 @@ def height_band_id(height_cm: int | None) -> str | None:
     return "195plus"
 
 
+def indoor_setting(value: str | None) -> str | None:
+    """Normalize TML's documented Yes/No flag and equivalent encodings."""
+    token = (value or "").strip().casefold()
+    if token in {"i", "indoor", "yes", "y", "true", "1"}:
+        return "indoor"
+    if token in {"o", "outdoor", "no", "n", "false", "0"}:
+        return "outdoor"
+    return None
+
+
 def match_buckets(surface: str | None, indoor: str | None) -> tuple[str, ...]:
     surface = (surface or "").strip().casefold()
-    indoor = (indoor or "").strip().upper()
     if surface == "hard":
-        if indoor == "I":
-            setting = "hardIndoor"
-        elif indoor == "O":
-            setting = "hardOutdoor"
-        else:
-            setting = "hardUnknown"
-        return ("all", "hardAll", setting)
+        setting = indoor_setting(indoor)
+        bucket = {"indoor": "hardIndoor", "outdoor": "hardOutdoor", None: "hardUnknown"}[setting]
+        return ("all", "hardAll", bucket)
     mapping = {"clay": "clay", "grass": "grass", "carpet": "carpet"}
     bucket = mapping.get(surface)
     return ("all", bucket) if bucket else ("all",)
@@ -236,29 +240,61 @@ def load_roster(files: dict[str, dict]) -> tuple[dict[str, dict], dict[str, set[
     return roster, aliases
 
 
-def load_top100() -> list[dict[str, object]]:
-    if not TOP100_PATH.is_file():
-        raise RuntimeError(f"Missing pinned current Top 100 file: {TOP100_PATH}")
-    rows = csv_rows(TOP100_PATH.read_bytes())
-    top100 = []
+def select_ranking_snapshot_date(payload: dict, today: date | None = None) -> str:
+    """Choose the latest real TML ranking date, never a future or guessed date."""
+    current = today or date.today()
+    raw_dates = payload.get("dates")
+    if not isinstance(raw_dates, list):
+        raise RuntimeError("TML ranking-date endpoint did not return a dates array")
+    valid_dates: list[date] = []
+    for raw in raw_dates:
+        try:
+            parsed = date.fromisoformat(str(raw))
+        except (TypeError, ValueError):
+            continue
+        if parsed <= current:
+            valid_dates.append(parsed)
+    if not valid_dates:
+        raise RuntimeError("TML ranking archive contains no valid snapshot on or before today")
+    return max(valid_dates).isoformat()
+
+
+def parse_current_top100(payload: dict) -> list[dict[str, object]]:
+    """Validate a dated TML Top-100 response and preserve stable player IDs."""
+    rows = payload.get("rankings")
+    if not isinstance(rows, list):
+        raise RuntimeError("TML ranking endpoint did not return a rankings array")
+    top100: list[dict[str, object]] = []
     seen_ranks: set[int] = set()
-    seen_names: set[str] = set()
+    seen_ids: set[str] = set()
     for row in rows:
+        if not isinstance(row, dict):
+            continue
         rank = integer(row.get("rank"))
-        name = (row.get("name") or "").strip()
-        country = (row.get("country") or "").strip().upper()
+        if rank is None or not 1 <= rank <= 100:
+            continue
+        player_id = str(row.get("id") or "").strip()
+        name = str(row.get("name") or "").strip()
+        country = str(row.get("ioc") or row.get("country") or "").strip().upper()
         points = integer(row.get("points"))
-        key = normalize_name(name)
-        if rank is None or not 1 <= rank <= 100 or not name or not key:
-            raise RuntimeError(f"Invalid Top 100 CSV row: {row}")
-        if rank in seen_ranks or key in seen_names:
-            raise RuntimeError(f"Duplicate Top 100 rank/name: {rank}/{name}")
+        if not player_id or not name:
+            raise RuntimeError(f"Invalid TML Top 100 row at rank {rank}: missing player ID/name")
+        if rank in seen_ranks or player_id in seen_ids:
+            raise RuntimeError(f"Duplicate TML Top 100 rank/player ID: {rank}/{player_id}")
         seen_ranks.add(rank)
-        seen_names.add(key)
-        top100.append({"rank": rank, "name": name, "country": country, "points": points})
+        seen_ids.add(player_id)
+        top100.append({"id": player_id, "rank": rank, "name": name, "country": country, "points": points})
     if sorted(seen_ranks) != list(range(1, 101)) or len(top100) != 100:
-        raise RuntimeError("Pinned ranking snapshot must contain exactly ranks 1 through 100")
+        raise RuntimeError(f"TML ranking snapshot must contain exactly ranks 1–100; found {len(top100)}")
     return sorted(top100, key=lambda item: int(item["rank"]))
+
+
+def load_current_top100() -> tuple[str, str, list[dict[str, object]]]:
+    dates_payload = load_json_url(RANKING_DATES_URL)
+    ranking_date = select_ranking_snapshot_date(dates_payload)
+    source_url = f"{RANKING_URL}?date={ranking_date}"
+    snapshot = load_json_url(source_url)
+    return ranking_date, source_url, parse_current_top100(snapshot)
 
 
 def ensure_player(
@@ -321,40 +357,20 @@ def add_player_match(
 
 def resolve_current_top100(
     top100: list[dict[str, object]],
-    aliases: dict[str, set[str]],
     players: dict[str, dict],
+    current_year: int,
 ) -> dict[str, int]:
+    """Join the current cohort by stable TML player ID, never by fuzzy name."""
     result: dict[str, int] = {}
-    missing: list[str] = []
-    ambiguous: list[str] = []
     for entry in top100:
-        name = str(entry["name"])
-        key = normalize_name(name)
-        candidates = set(aliases.get(key, set()))
-        if len(candidates) > 1:
-            country = str(entry.get("country") or "")
-            country_matches = {
-                player_id for player_id in candidates
-                if str(players.get(player_id, {}).get("country") or "").upper() == country
-            }
-            if len(country_matches) == 1:
-                candidates = country_matches
-        if not candidates:
-            missing.append(name)
-            continue
-        if len(candidates) != 1:
-            ambiguous.append(f"{name} -> {sorted(candidates)}")
-            continue
-        player_id = next(iter(candidates))
-        if player_id in result:
-            ambiguous.append(f"{name} and another ranking row map to {player_id}")
-            continue
-        result[player_id] = int(entry["rank"])
-    if missing or ambiguous or len(result) != 100:
-        raise RuntimeError(
-            "Current Top 100 identity mapping failed. "
-            f"Missing={missing[:12]}; ambiguous={ambiguous[:12]}; mapped={len(result)}/100"
-        )
+        player_id = str(entry["id"])
+        ensure_player(players, player_id, str(entry["name"]), str(entry.get("country") or ""), None, current_year)
+        rank = int(entry["rank"])
+        if player_id in result or rank in result.values():
+            raise RuntimeError(f"Duplicate TML current-cohort ID/rank: {player_id}/{rank}")
+        result[player_id] = rank
+    if len(result) != 100 or sorted(result.values()) != list(range(1, 101)):
+        raise RuntimeError("Current TML cohort must map exactly 100 unique IDs at ranks 1–100")
     return result
 
 
@@ -372,8 +388,11 @@ def aggregate_files(
         "retiredMatchResults": 0,
         "excludedNoPlay": 0,
         "excludedIneligibleLevel": 0,
-        "excludedInvalidStatsSides": 0,
+        "matchesWithoutValidStats": 0,
+        "duplicateMatchRowsSkipped": 0,
+        "hardRowsWithUnknownEnvironment": 0,
     }
+    seen_matches: set[tuple[str, str, str, str]] = set()
     for year in years:
         filename = f"{year}.csv"
         item = files.get(filename)
@@ -412,6 +431,13 @@ def aggregate_files(
             loser_id = (row.get("loser_id") or "").strip()
             winner_name = (row.get("winner_name") or "").strip()
             loser_name = (row.get("loser_name") or "").strip()
+            match_num = (row.get("match_num") or "").strip()
+            if match_num:
+                identity = (tournament_id, match_num, min(winner_id, loser_id), max(winner_id, loser_id))
+                if identity in seen_matches:
+                    totals["duplicateMatchRowsSkipped"] += 1
+                    continue
+                seen_matches.add(identity)
             if not match_has_result(row.get("score"), winner_id, loser_id):
                 totals["excludedNoPlay"] += 1
                 continue
@@ -432,10 +458,12 @@ def aggregate_files(
                     match_aliases[key].add(player_id)
 
             buckets = match_buckets(row.get("surface"), row.get("indoor"))
+            if (row.get("surface") or "").strip().casefold() == "hard" and "hardUnknown" in buckets:
+                totals["hardRowsWithUnknownEnvironment"] += 1
             # Retirements count in W-L results, but partial-match games do not train annual rates.
             stats = None if retirement else service_return_contribution(row)
             if stats is None:
-                totals["excludedInvalidStatsSides"] += 1
+                totals["matchesWithoutValidStats"] += 1
                 add_player_match(
                     aggregate, winner_id, season, buckets, True, 0, 0, 0, 0, False
                 )
@@ -490,18 +518,15 @@ def build() -> dict:
     years = range(1968, current_year + 1)
     roster, roster_aliases = load_roster(files)
     players = roster
-    top100 = load_top100()
-    aggregate, match_aliases, totals = aggregate_files(files, years, players)
-
-    aliases: dict[str, set[str]] = defaultdict(set)
-    for key, ids in roster_aliases.items():
-        aliases[key].update(ids)
-    for key, ids in match_aliases.items():
-        aliases[key].update(ids)
-    top100_ranks = resolve_current_top100(top100, aliases, players)
+    ranking_as_of, ranking_source, top100 = load_current_top100()
+    aggregate, _match_aliases, totals = aggregate_files(files, years, players)
+    top100_ranks = resolve_current_top100(top100, players, current_year)
     season_rows = compact_player_seasons(aggregate)
     player_rows = []
-    for player_id, record in players.items():
+    # All archive players are included, plus a current Top-100 player if absent from the archive.
+    archive_player_ids = set(season_rows) | set(top100_ranks)
+    for player_id in archive_player_ids:
+        record = players[player_id]
         height = record.get("heightCm")
         player_rows.append(
             {
@@ -531,8 +556,8 @@ def build() -> dict:
             "players": len(player_rows),
             "playersWithHeight": height_count,
             "playersInCurrentTop100": len(top100_ranks),
-            "currentTop100AsOf": RANKING_AS_OF,
-            "currentTop100Source": RANKING_SOURCE,
+            "currentTop100AsOf": ranking_as_of,
+            "currentTop100Source": ranking_source,
             "source": DATA_SOURCE,
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
@@ -541,6 +566,7 @@ def build() -> dict:
             "statsAvailableSeasons": stat_seasons,
             "tourLevels": sorted(TOUR_LEVELS),
             "coverage": totals,
+            "playersWithEligibleArchiveResults": len(season_rows),
             "usage": "Personal, educational and non-commercial research only. Raw source CSVs are not included. Keep this derived asset private; do not redistribute or use commercially.",
             "heightBandsCm": [
                 {"id": "under183", "minCm": None, "maxCm": 182, "label": "Under 1.83 m"},
