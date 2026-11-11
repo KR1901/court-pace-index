@@ -321,7 +321,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
-          name: Court Pace ${{ steps.meta.outputs.version }} — live schedule reliability and maintenance fixes
+          name: Court Pace ${{ steps.meta.outputs.version }} — Player Stats and automatic live ATP updates
           body_path: ${{ runner.temp }}/RELEASE_NOTES.md
           files: ${{ steps.verify.outputs.apk }}
           draft: false
