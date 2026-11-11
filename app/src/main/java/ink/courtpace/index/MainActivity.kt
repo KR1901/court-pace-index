@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                             failure.message ?: "Automatic Player Stats sync failed.",
                         )
                     }
-                    delay(60_000L)
+                    delay(15_000L)
                 }
             }
         }
