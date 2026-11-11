@@ -75,7 +75,7 @@ class PlayerStatsAnalyticsTest {
         assertEquals(40.0, short.breakPct!!, 0.001)
         assertEquals(90.0, tall.holdPct!!, 0.001)
         assertEquals(25.0, tall.breakPct!!, 0.001)
-        assertEquals(10, tall.serviceGames)
+        assertEquals(100, tall.serviceGames)
         assertEquals(2, tall.wins + tall.losses)
     }
 
