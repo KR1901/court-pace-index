@@ -7,6 +7,7 @@ import ink.courtpace.index.core.playerstats.PlayerStatsBucket
 import ink.courtpace.index.core.playerstats.PlayerStatsData
 import ink.courtpace.index.core.playerstats.PlayerStatsMeta
 import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
+import ink.courtpace.index.core.playerstats.PlayerTop100SeasonRank
 import ink.courtpace.index.core.playerstats.PlayerSeasonStats
 import ink.courtpace.index.core.playerstats.PlayerSurfaceFilter
 import org.junit.Assert.assertEquals
@@ -38,7 +39,7 @@ class PlayerStatsAnalyticsTest {
     @Test
     fun `height cohort uses current top 100 and pooled game denominators`() {
         val data = PlayerStatsData(
-            meta = PlayerStatsMeta(playersInCurrentTop100 = 2),
+            meta = PlayerStatsMeta(lastSeason = 2026, playersInCurrentTop100 = 2),
             players = listOf(
                 PlayerStatsPlayer(
                     id = "A", name = "Tall Player", heightCm = 195, currentRank = 1,
@@ -80,6 +81,60 @@ class PlayerStatsAnalyticsTest {
         assertEquals(25.0, tall.breakPct!!, 0.001)
         assertEquals(100, tall.serviceGames)
         assertEquals(10, tall.wins + tall.losses)
+    }
+
+    @Test
+    fun `historical height groups use that years year end top 100 not the live cohort`() {
+        val data = PlayerStatsData(
+            meta = PlayerStatsMeta(lastSeason = 2026, playersInCurrentTop100 = 2),
+            players = listOf(
+                PlayerStatsPlayer(
+                    id = "A", name = "Historical and live member", heightCm = 195,
+                    currentRank = 1,
+                    seasons = listOf(PlayerSeasonStats(2015, mapOf(
+                        "all" to PlayerStatsBucket(mp = 10, w = 7, l = 3, sp = 100, sw = 90, rp = 100, rw = 20, sm = 10),
+                    ))),
+                    top100RanksBySeason = listOf(
+                        PlayerTop100SeasonRank(2015, 12),
+                        PlayerTop100SeasonRank(2026, 1),
+                    ),
+                ),
+                PlayerStatsPlayer(
+                    id = "B", name = "2015 member only", heightCm = 180,
+                    seasons = listOf(PlayerSeasonStats(2015, mapOf(
+                        "all" to PlayerStatsBucket(mp = 8, w = 5, l = 3, sp = 80, sw = 64, rp = 80, rw = 24, sm = 8),
+                    ))),
+                    top100RanksBySeason = listOf(PlayerTop100SeasonRank(2015, 88)),
+                ),
+                PlayerStatsPlayer(
+                    id = "C", name = "Live member only", heightCm = 192, currentRank = 2,
+                    seasons = listOf(PlayerSeasonStats(2015, mapOf(
+                        "all" to PlayerStatsBucket(mp = 50, w = 40, l = 10, sp = 500, sw = 450, rp = 500, rw = 150, sm = 50),
+                    ))),
+                    top100RanksBySeason = listOf(PlayerTop100SeasonRank(2026, 2)),
+                ),
+                PlayerStatsPlayer(
+                    id = "D", name = "Historical member without a known height",
+                    top100RanksBySeason = listOf(PlayerTop100SeasonRank(2015, 100)),
+                ),
+            ),
+        )
+
+        val historical = PlayerStatsAnalytics.heightGroups(data, 2015, PlayerSurfaceFilter.ALL)
+        val live = PlayerStatsAnalytics.heightGroups(data, 2026, PlayerSurfaceFilter.ALL)
+        val historicalShort = historical.groups.first { it.id == "under183" }
+        val historicalTall = historical.groups.first { it.id == "195plus" }
+
+        assertEquals(3, historical.cohortSize)
+        assertEquals(2, historical.heightKnown)
+        assertEquals(1, historical.unassignedHeight)
+        assertEquals(1, historicalShort.players)
+        assertEquals(1, historicalTall.players)
+        assertEquals(1, historicalShort.playersWithValidStats)
+        assertEquals(1, historicalTall.playersWithValidStats)
+        assertEquals(2, live.cohortSize)
+        assertEquals(1, live.groups.first { it.id == "191to194" }.players)
+        assertEquals(1, live.groups.first { it.id == "195plus" }.players)
     }
 
     @Test

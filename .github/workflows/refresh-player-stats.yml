@@ -79,8 +79,6 @@ jobs:
           assert len(stat_match_keys) == len(set(stat_match_keys)), "duplicate current-season stat match keys"
           assert set(stat_match_keys).issubset(set(current_match_keys)), "stat keys must also be result keys"
           assert meta.get("currentSeasonSourceMtime"), "current-season source mtime is missing"
-          from datetime import date
-
           snapshot_date = date.fromisoformat(meta.get("currentTop100AsOf", ""))
           assert snapshot_date <= date.today(), "current cohort snapshot cannot be in the future"
           assert meta.get("currentTop100Source") == (

@@ -10,6 +10,7 @@ from build_player_stats import (
     normalize_name,
     parse_current_top100,
     select_ranking_snapshot_date,
+    select_ranking_snapshot_dates,
     service_return_contribution,
 )
 
@@ -138,6 +139,34 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             today=__import__("datetime").date(2026, 11, 11),
         )
         self.assertEqual(selected, "2026-11-09")
+
+    def test_year_end_ranking_dates_select_last_snapshot_within_each_calendar_year(self):
+        from datetime import date
+
+        selected = select_ranking_snapshot_dates(
+            {
+                "dates": [
+                    "2015-12-21", "2015-12-28", "2016-01-04",
+                    "2016-11-07", "2016-12-26", "2016-11-02",
+                    "2026-11-09", "2026-11-16", "bad-date",
+                ],
+            },
+            first_year=2015,
+            last_year=2016,
+            today=date(2016, 11, 10),
+        )
+        self.assertEqual(selected, {2015: "2015-12-28", 2016: "2016-11-07"})
+
+    def test_year_end_ranking_dates_fail_closed_when_a_season_is_missing(self):
+        from datetime import date
+
+        with self.assertRaisesRegex(RuntimeError, "2016"):
+            select_ranking_snapshot_dates(
+                {"dates": ["2015-12-28"]},
+                first_year=2015,
+                last_year=2016,
+                today=date(2016, 11, 10),
+            )
 
     def test_tml_top100_parser_preserves_player_ids_without_name_matching(self):
         rows = [
