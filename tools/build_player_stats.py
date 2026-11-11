@@ -279,14 +279,18 @@ def select_ranking_snapshot_date(payload: dict, today: date | None = None) -> st
     return max(valid_dates).isoformat()
 
 
-def parse_current_top100(payload: dict) -> list[dict[str, object]]:
+def parse_current_top100(
+    payload: dict,
+    snapshot_label: str = "",
+) -> list[dict[str, object]]:
     """Validate a dated TML Top-100 response and preserve stable player IDs."""
     rows = payload.get("rankings")
+    context = f" ({snapshot_label})" if snapshot_label else ""
     if not isinstance(rows, list):
-        raise RuntimeError("TML ranking endpoint did not return a rankings array")
+        raise RuntimeError("TML ranking endpoint did not return a rankings array" + context)
     top100: list[dict[str, object]] = []
-    seen_ranks: set[int] = set()
-    seen_ids: set[str] = set()
+    seen_ranks: dict[int, str] = {}
+    seen_ids: dict[str, int] = {}
     for row in rows:
         if not isinstance(row, dict):
             continue
@@ -298,14 +302,22 @@ def parse_current_top100(payload: dict) -> list[dict[str, object]]:
         country = str(row.get("ioc") or row.get("country") or "").strip().upper()
         points = integer(row.get("points"))
         if not player_id or not name:
-            raise RuntimeError(f"Invalid TML Top 100 row at rank {rank}: missing player ID/name")
-        if rank in seen_ranks or player_id in seen_ids:
-            raise RuntimeError(f"Duplicate TML Top 100 rank/player ID: {rank}/{player_id}")
-        seen_ranks.add(rank)
-        seen_ids.add(player_id)
+            raise RuntimeError(f"Invalid TML Top 100 row at rank {rank}: missing player ID/name" + context)
+        if rank in seen_ranks:
+            raise RuntimeError(
+                f"Duplicate TML rank {rank}: IDs {seen_ranks[rank]} and {player_id}" + context
+            )
+        if player_id in seen_ids:
+            raise RuntimeError(
+                f"Duplicate TML player ID {player_id}: ranks {seen_ids[player_id]} and {rank}" + context
+            )
+        seen_ranks[rank] = player_id
+        seen_ids[player_id] = rank
         top100.append({"id": player_id, "rank": rank, "name": name, "country": country, "points": points})
     if sorted(seen_ranks) != list(range(1, 101)) or len(top100) != 100:
-        raise RuntimeError(f"TML ranking snapshot must contain exactly ranks 1–100; found {len(top100)}")
+        raise RuntimeError(
+            f"TML ranking snapshot must contain exactly ranks 1–100; found {len(top100)}" + context
+        )
     return sorted(top100, key=lambda item: int(item["rank"]))
 
 
@@ -366,7 +378,7 @@ def load_top100_season_snapshots(
             "year": year,
             "asOf": ranking_date,
             "source": source_url,
-            "players": parse_current_top100(snapshot),
+            "players": parse_current_top100(snapshot, f"{year} snapshot {ranking_date}"),
         }
 
     # Keep the source load bounded while avoiding 50+ serial HTTP round trips.
