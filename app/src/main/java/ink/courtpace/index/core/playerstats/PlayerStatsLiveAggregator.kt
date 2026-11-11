@@ -77,6 +77,7 @@ object PlayerStatsLiveCsvParser {
 data class PlayerStatsLiveApplyResult(
     val data: PlayerStatsData,
     val addedMatches: Int,
+    val enrichedMatches: Int,
     val matchesWithValidStats: Int,
 )
 
@@ -115,7 +116,9 @@ object PlayerStatsLiveAggregator {
     ): PlayerStatsLiveApplyResult {
         val players = baseline.players.associateBy { it.id }.toMutableMap()
         val seenKeys = baseline.meta.currentSeasonMatchKeys.toMutableSet()
+        val seenStatKeys = baseline.meta.currentSeasonStatMatchKeys.toMutableSet()
         var addedMatches = 0
+        var enrichedMatches = 0
         var validMatches = 0
 
         for (row in rows) {
@@ -134,7 +137,7 @@ object PlayerStatsLiveAggregator {
             ) continue
 
             val key = matchIdentityKey(tournamentId, matchNumber, winnerId, loserId)
-            if (key in seenKeys) continue
+            val resultAlreadyCounted = key in seenKeys
             if (noPlay.containsMatchIn(score)) continue
 
             val winnerName = row["winner_name"].orEmpty().trim().ifBlank { winnerId }
@@ -146,6 +149,9 @@ object PlayerStatsLiveAggregator {
 
             val isRetirement = retirement.containsMatchIn(score)
             val stats = if (isRetirement) null else serviceReturnStats(row)
+            // A provider can publish the final score before its game counters. Count W-L once,
+            // then enrich the same match later when valid service/return stats arrive.
+            if (resultAlreadyCounted && (stats == null || key in seenStatKeys)) continue
             val buckets = matchBuckets(row["surface"], row["indoor"])
 
             var winner = players[winnerId] ?: PlayerStatsPlayer(
@@ -182,6 +188,7 @@ object PlayerStatsLiveAggregator {
                 returnPlayed = stats?.loserServePlayed ?: 0,
                 returnWon = stats?.loserBreaksConceded ?: 0,
                 hasStats = stats != null,
+                countResult = !resultAlreadyCounted,
             )
             loser = addPlayerMatch(
                 loser, season, buckets, won = false,
@@ -190,16 +197,23 @@ object PlayerStatsLiveAggregator {
                 returnPlayed = stats?.winnerServePlayed ?: 0,
                 returnWon = stats?.winnerBreaksConceded ?: 0,
                 hasStats = stats != null,
+                countResult = !resultAlreadyCounted,
             )
             players[winnerId] = winner
             players[loserId] = loser
-            seenKeys += key
-            addedMatches++
-            if (stats != null) validMatches++
+            if (!resultAlreadyCounted) {
+                seenKeys += key
+                addedMatches++
+            }
+            if (stats != null) {
+                seenStatKeys += key
+                validMatches++
+                if (resultAlreadyCounted) enrichedMatches++
+            }
         }
 
-        if (addedMatches == 0) {
-            return PlayerStatsLiveApplyResult(baseline, 0, 0)
+        if (addedMatches == 0 && enrichedMatches == 0) {
+            return PlayerStatsLiveApplyResult(baseline, 0, 0, 0)
         }
 
         val playerRows = players.values.sortedWith(
@@ -218,12 +232,14 @@ object PlayerStatsLiveAggregator {
                 playersWithEligibleArchiveResults = eligibleArchivePlayerCount,
                 statsAvailableSeasons = availableSeasons,
                 currentSeasonMatchKeys = seenKeys.sorted(),
+                currentSeasonStatMatchKeys = seenStatKeys.sorted(),
                 liveUpdatedAt = updatedAt,
                 liveMatchCount = baseline.meta.liveMatchCount + addedMatches,
+                liveEnrichedMatchCount = baseline.meta.liveEnrichedMatchCount + enrichedMatches,
             ),
             players = playerRows,
         )
-        return PlayerStatsLiveApplyResult(updated, addedMatches, validMatches)
+        return PlayerStatsLiveApplyResult(updated, addedMatches, enrichedMatches, validMatches)
     }
 
     private data class ServiceReturnStats(
@@ -295,6 +311,7 @@ object PlayerStatsLiveAggregator {
         returnPlayed: Int,
         returnWon: Int,
         hasStats: Boolean,
+        countResult: Boolean = true,
     ): PlayerStatsPlayer {
         val seasons = player.seasons.associateBy { it.y }.toMutableMap()
         val current = seasons[season] ?: PlayerSeasonStats(y = season)
@@ -303,9 +320,9 @@ object PlayerStatsLiveAggregator {
         for (bucketId in buckets) {
             val counter = updatedBuckets[bucketId] ?: PlayerStatsBucket()
             updatedBuckets[bucketId] = counter.copy(
-                mp = counter.mp + 1,
-                w = counter.w + if (won) 1 else 0,
-                l = counter.l + if (won) 0 else 1,
+                mp = counter.mp + if (countResult) 1 else 0,
+                w = counter.w + if (countResult && won) 1 else 0,
+                l = counter.l + if (countResult && !won) 1 else 0,
                 sp = counter.sp + if (hasStats) servePlayed else 0,
                 sw = counter.sw + if (hasStats) serveWon else 0,
                 rp = counter.rp + if (hasStats) returnPlayed else 0,
