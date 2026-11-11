@@ -408,9 +408,10 @@ def aggregate_files(
         if not rows:
             raise RuntimeError(f"TML {filename} is empty")
         required = {
-            "tourney_id", "tourney_name", "surface", "tourney_date",
-            "tourney_level", "winner_id", "winner_name", "winner_ht", "winner_ioc",
+            "tourney_id", "tourney_name", "surface", "indoor", "tourney_date",
+            "tourney_level", "match_num", "winner_id", "winner_name", "winner_ht", "winner_ioc",
             "loser_id", "loser_name", "loser_ht", "loser_ioc", "score",
+            "w_SvGms", "w_bpFaced", "w_bpSaved", "l_SvGms", "l_bpFaced", "l_bpSaved",
         }
         missing = required - set(rows[0])
         if missing:
@@ -431,6 +432,9 @@ def aggregate_files(
             loser_id = (row.get("loser_id") or "").strip()
             winner_name = (row.get("winner_name") or "").strip()
             loser_name = (row.get("loser_name") or "").strip()
+            if not match_has_result(row.get("score"), winner_id, loser_id):
+                totals["excludedNoPlay"] += 1
+                continue
             match_num = (row.get("match_num") or "").strip()
             if match_num:
                 identity = (tournament_id, match_num, min(winner_id, loser_id), max(winner_id, loser_id))
@@ -438,9 +442,6 @@ def aggregate_files(
                     totals["duplicateMatchRowsSkipped"] += 1
                     continue
                 seen_matches.add(identity)
-            if not match_has_result(row.get("score"), winner_id, loser_id):
-                totals["excludedNoPlay"] += 1
-                continue
             retirement = match_is_retirement(row.get("score"))
             if retirement:
                 totals["retiredMatchResults"] += 1
