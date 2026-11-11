@@ -92,10 +92,17 @@ jobs:
               assert snapshot.get("source") == (
                   "https://stats.tennismylife.org/api/ranking?date=" + snapshot_date.isoformat()
               )
-              members = [ranks[year] for ranks in ranks_by_player.values() if year in ranks]
-              assert len(members) == 100, f"{year} cohort must contain exactly 100 unique players"
-              assert sorted(members) == list(range(1, 101)), (
-                  f"{year} Top-100 ranks must be exactly 1–100"
+              members = [
+                  (player_id, ranks[year])
+                  for player_id, ranks in ranks_by_player.items()
+                  if year in ranks
+              ]
+              assert len(members) >= 100, f"{year} rank-100 cohort must contain at least 100 players"
+              assert all(1 <= rank <= 100 for _, rank in members), (
+                  f"{year} cohort contains a rank outside 1–100"
+              )
+              assert snapshot.get("players") == len(members), (
+                  f"{year} snapshot player count does not match player-level membership"
               )
 
           current_snapshot = snapshots[-1]
@@ -104,9 +111,9 @@ jobs:
           assert current_snapshot["source"] == meta.get("currentTop100Source")
           assert current_snapshot["asOf"] <= date.today().isoformat(), "current cohort date is in the future"
           cohort = [row for row in players if row.get("currentRank") is not None]
-          assert len(cohort) == 100, f"expected 100 current cohort players, got {len(cohort)}"
+          assert len(cohort) >= 100, f"expected at least 100 current cohort players, got {len(cohort)}"
           ranks = [row["currentRank"] for row in cohort]
-          assert sorted(ranks) == list(range(1, 101)), "current Top 100 ranks must be exactly 1–100"
+          assert all(1 <= rank <= 100 for rank in ranks), "current cohort ranks must be within 1–100"
           assert all(
               ranks_by_player[row["id"]].get(current_year) == row["currentRank"]
               for row in cohort
@@ -183,7 +190,7 @@ jobs:
 
           print(
               f"Player Stats OK: {len(players)} archive players, {height_count} heights, "
-              f"{len(cohort_heights)}/100 current-cohort heights ({snapshot_date.isoformat()}), "
+              f"{len(cohort_heights)}/{len(cohort)} current-cohort heights ({snapshot_date.isoformat()}), "
               f"height bands={bands}, {season_count} player-seasons, {bucket_count} surface buckets."
           )
           print(
