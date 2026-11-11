@@ -95,6 +95,13 @@ def service_return_contribution(row: dict[str, str]) -> tuple[int, int, int, int
     return w_sg, w_sg - w_broken, l_sg, l_sg - l_broken
 
 
+def match_identity_key(tournament_id: str, match_num: str, winner_id: str, loser_id: str) -> str:
+    """Stable cross-feed match identity; the same key is used by Android live sync."""
+    if not all((tournament_id, match_num, winner_id, loser_id)):
+        raise ValueError("match identity requires tournament, match number and both player IDs")
+    return "|".join((tournament_id, match_num, *sorted((winner_id, loser_id))))
+
+
 def height_band_id(height_cm: int | None) -> str | None:
     if height_cm is None or height_cm < 140 or height_cm > 220:
         return None
@@ -452,12 +459,13 @@ def aggregate_files(
             match_num = (row.get("match_num") or "").strip()
             if match_num:
                 identity = (tournament_id, match_num, min(winner_id, loser_id), max(winner_id, loser_id))
+                stable_key = match_identity_key(tournament_id, match_num, winner_id, loser_id)
                 if identity in seen_matches:
                     totals["duplicateMatchRowsSkipped"] += 1
                     continue
                 seen_matches.add(identity)
                 if current_season_match_keys is not None and season == current_year:
-                    current_season_match_keys.add("|".join(identity))
+                    current_season_match_keys.add(stable_key)
             retirement = match_is_retirement(row.get("score"))
             if retirement:
                 totals["retiredMatchResults"] += 1
