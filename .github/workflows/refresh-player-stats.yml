@@ -4,7 +4,7 @@ name: Refresh Player Stats
 # builder and stages only the dedicated Player Stats JSON assets.
 on:
   push:
-    branches: [main, feature/player-stats-v2]
+    branches: [main, feature/player-stats-v2, feature/year-specific-height-cohorts]
     paths:
       - 'tools/build_player_stats.py'
       - 'tools/test_build_player_stats.py'
@@ -54,6 +54,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json
+          from datetime import date
           from pathlib import Path
 
           bundled = Path("app/src/main/assets/player_stats.json")
@@ -69,11 +70,47 @@ jobs:
           assert all(isinstance(value, str) and value for value in ids), "blank player ID"
           assert len(set(ids)) == len(ids), "duplicate player IDs"
 
+          snapshots = meta.get("top100SeasonSnapshots")
+          assert isinstance(snapshots, list) and snapshots, "year-specific Top-100 snapshots are missing"
+          snapshot_years = [row.get("year") for row in snapshots]
+          first_top100_year = meta.get("firstTop100Season")
+          current_year = meta.get("lastSeason")
+          expected_years = list(range(first_top100_year, current_year + 1))
+          assert snapshot_years == expected_years, "every ranking season must have exactly one ordered snapshot"
+
+          ranks_by_player = {}
+          for player in players:
+              entries = player.get("top100RanksBySeason") or []
+              years = [entry.get("y") for entry in entries]
+              assert len(years) == len(set(years)), f"duplicate Top-100 season for {player.get('id')}"
+              ranks_by_player[player["id"]] = {entry["y"]: entry["rank"] for entry in entries}
+
+          for snapshot in snapshots:
+              year = snapshot["year"]
+              snapshot_date = date.fromisoformat(snapshot["asOf"])
+              assert snapshot_date.year == year, f"{year} cohort must use a ranking date from that year"
+              assert snapshot.get("source") == (
+                  "https://stats.tennismylife.org/api/ranking?date=" + snapshot_date.isoformat()
+              )
+              members = [ranks[year] for ranks in ranks_by_player.values() if year in ranks]
+              assert len(members) == 100, f"{year} cohort must contain exactly 100 unique players"
+              assert sorted(members) == list(range(1, 101)), (
+                  f"{year} Top-100 ranks must be exactly 1–100"
+              )
+
+          current_snapshot = snapshots[-1]
+          assert current_snapshot["year"] == current_year
+          assert current_snapshot["asOf"] == meta.get("currentTop100AsOf")
+          assert current_snapshot["source"] == meta.get("currentTop100Source")
+          assert current_snapshot["asOf"] <= date.today().isoformat(), "current cohort date is in the future"
           cohort = [row for row in players if row.get("currentRank") is not None]
           assert len(cohort) == 100, f"expected 100 current cohort players, got {len(cohort)}"
           ranks = [row["currentRank"] for row in cohort]
           assert sorted(ranks) == list(range(1, 101)), "current Top 100 ranks must be exactly 1–100"
-          assert len({row["id"] for row in cohort}) == 100, "current Top 100 contains duplicate player IDs"
+          assert all(
+              ranks_by_player[row["id"]].get(current_year) == row["currentRank"]
+              for row in cohort
+          ), "currentRank must match the live-season cohort entry"
 
           assert meta.get("players") == len(players)
           assert meta.get("playersInCurrentTop100") == 100
@@ -87,9 +124,7 @@ jobs:
           assert meta.get("currentSeasonSourceMtime"), "current-season source mtime is missing"
           snapshot_date = date.fromisoformat(meta.get("currentTop100AsOf", ""))
           assert snapshot_date <= date.today(), "current cohort snapshot cannot be in the future"
-          assert meta.get("currentTop100Source") == (
-              "https://stats.tennismylife.org/api/ranking?date=" + snapshot_date.isoformat()
-          ), "current Top 100 must be tied to the exact dated TML ranking response"
+          assert snapshot_date.year == current_year, "live Top 100 must use a ranking snapshot from the live season"
           assert meta.get("source") == "TennisMyLife ATP Match Database"
           assert meta.get("playersWithEligibleArchiveResults", 0) > 0
           coverage = meta.get("coverage") or {}
