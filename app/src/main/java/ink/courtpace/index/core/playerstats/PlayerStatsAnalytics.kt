@@ -1,5 +1,7 @@
 package ink.courtpace.index.core.playerstats
 
+import java.util.Locale
+
 enum class PlayerRankingMetric(val label: String) {
     HOLD("Hold %"),
     BREAK("Break %"),
