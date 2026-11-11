@@ -120,7 +120,9 @@ jobs:
           ), "currentRank must match the live-season cohort entry"
 
           assert meta.get("players") == len(players)
-          assert meta.get("playersInCurrentTop100") == 100
+          assert meta.get("playersInCurrentTop100") == len(cohort), (
+              "current Top-100 metadata count does not match live-season membership"
+          )
           current_match_keys = meta.get("currentSeasonMatchKeys")
           assert isinstance(current_match_keys, list) and current_match_keys, "current-season dedupe keys are missing"
           assert len(current_match_keys) == len(set(current_match_keys)), "duplicate current-season match keys"
