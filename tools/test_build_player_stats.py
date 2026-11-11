@@ -12,6 +12,7 @@ from build_player_stats import (
     parse_current_top100,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
+    unresolved_top100_count,
     service_return_contribution,
 )
 
@@ -189,6 +190,21 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         rank_45 = [row for row in parsed if row["rank"] == 45]
         self.assertEqual({row["id"] for row in rank_45}, {"10045", "10101"})
         self.assertEqual(parsed[-1]["rank"], 100)
+
+    def test_top100_placeholder_id_is_counted_but_not_treated_as_a_player(self):
+        rows = [
+            {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}", "ioc": "USA"}
+            for rank in range(1, 101)
+        ]
+        rows.append({"id": "NA", "rank": 24, "name": "Unknown", "ioc": ""})
+        payload = {"rankings": rows}
+
+        parsed = parse_current_top100(payload, "1974 snapshot 1974-12-30")
+
+        self.assertEqual(len(parsed), 100)
+        self.assertEqual(unresolved_top100_count(payload), 1)
+        self.assertNotIn("NA", {row["id"] for row in parsed})
+        self.assertEqual({row["rank"] for row in parsed if row["rank"] == 24}, {24})
 
     def test_tml_top100_parser_fails_closed_on_duplicate_or_missing_identity(self):
         rows = [
