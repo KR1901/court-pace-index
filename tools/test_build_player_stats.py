@@ -4,7 +4,8 @@ from build_player_stats import (
     add_player_match,
     height_band_id,
     match_buckets,
-    match_is_completed,
+    match_has_result,
+    match_is_retirement,
     normalize_name,
     service_return_contribution,
 )
@@ -48,15 +49,17 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         }
         self.assertIsNone(service_return_contribution(row))
 
-    def test_walkovers_and_retirements_are_excluded(self):
-        self.assertFalse(match_is_completed("W/O", "A", "B"))
-        self.assertFalse(match_is_completed("6-4 2-1 RET", "A", "B"))
-        self.assertFalse(match_is_completed("DEF", "A", "B"))
-        self.assertTrue(match_is_completed("6-4 6-3", "A", "B"))
+    def test_walkovers_and_no_play_defaults_are_excluded_but_retirements_count_as_results(self):
+        self.assertFalse(match_has_result("W/O", "A", "B"))
+        self.assertFalse(match_has_result("DEF", "A", "B"))
+        self.assertFalse(match_has_result("ABN", "A", "B"))
+        self.assertTrue(match_has_result("6-4 2-1 RET", "A", "B"))
+        self.assertTrue(match_is_retirement("6-4 2-1 RET"))
+        self.assertFalse(match_is_retirement("6-4 6-3"))
 
-    def test_completed_match_requires_two_distinct_player_ids(self):
-        self.assertFalse(match_is_completed("6-4 6-3", "A", "A"))
-        self.assertFalse(match_is_completed("6-4 6-3", "", "B"))
+    def test_match_result_requires_two_distinct_player_ids(self):
+        self.assertFalse(match_has_result("6-4 6-3", "A", "A"))
+        self.assertFalse(match_has_result("6-4 6-3", "", "B"))
 
     def test_calendar_surface_buckets_keep_indoor_outdoor_distinct(self):
         self.assertEqual(match_buckets("Hard", "I"), ("all", "hardAll", "hardIndoor"))
