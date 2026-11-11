@@ -301,7 +301,7 @@ def add_player_match(
     return_won: int,
     has_stats: bool,
 ) -> None:
-    years = aggregate[player_id]
+    years = aggregate.setdefault(player_id, {})
     for bucket in buckets:
         counter = years.setdefault(season, {}).setdefault(bucket, empty_counter())
         counter["mp"] += 1
