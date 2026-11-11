@@ -36,6 +36,18 @@ class PlayerStatsAssetTest {
         assertTrue(cohort2015.size >= 100)
         assertTrue(liveCohort.size >= 100)
 
+        // Early TML ranking history has an occasional "Unknown"/NA row.
+        // It is recorded as unresolved, never reused as a fake player across years.
+        val year1974 = snapshots.single { it.year == 1974 }
+        val cohort1974 = data.players.filter { player ->
+            player.top100RanksBySeason.any { it.y == 1974 }
+        }
+        assertEquals(100, year1974.players)
+        assertEquals(1, year1974.unresolvedPlayers)
+        assertEquals(101, year1974.rankedEntries)
+        assertEquals(year1974.players, cohort1974.size)
+        assertTrue(data.players.none { it.id == "NA" })
+
         val rogerFederer = data.players.single { it.name == "Roger Federer" }
         assertNotNull(rogerFederer.top100RanksBySeason.singleOrNull { it.y == 2015 })
         assertNull(rogerFederer.top100RanksBySeason.singleOrNull { it.y == data.meta.lastSeason })
