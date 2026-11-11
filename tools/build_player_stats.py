@@ -91,6 +91,18 @@ def service_return_contribution(row: dict[str, str]) -> tuple[int, int, int, int
     return w_sg, w_sg - w_broken, l_sg, l_sg - l_broken
 
 
+def height_band_id(height_cm: int | None) -> str | None:
+    if height_cm is None or height_cm < 140 or height_cm > 220:
+        return None
+    if height_cm < 183:
+        return "under183"
+    if height_cm <= 190:
+        return "183to190"
+    if height_cm <= 194:
+        return "191to194"
+    return "195plus"
+
+
 def match_buckets(surface: str | None, indoor: str | None) -> tuple[str, ...]:
     surface = (surface or "").strip().casefold()
     indoor = (indoor or "").strip().upper()
