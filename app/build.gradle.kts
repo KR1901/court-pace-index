@@ -21,13 +21,13 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Release workflow trigger: validate private signing and publish Court Pace 3.2.1.
+// Release workflow trigger: validate retained signing and publish Court Pace 3.3.0.
     defaultConfig {
         applicationId = "ink.courtpace.index"
         minSdk = 26
         targetSdk = 37
-        versionCode = 37
-        versionName = "3.2.1"
+        versionCode = 38
+        versionName = "3.3.0"
     }
 
     signingConfigs {
@@ -101,10 +101,12 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    implementation(libs.androidx.work.runtime.ktx)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

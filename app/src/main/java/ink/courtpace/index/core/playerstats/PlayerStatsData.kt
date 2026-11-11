@@ -1,0 +1,103 @@
+package ink.courtpace.index.core.playerstats
+
+import android.content.Context
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class PlayerStatsData(
+    val meta: PlayerStatsMeta,
+    val players: List<PlayerStatsPlayer>,
+)
+
+@Serializable
+data class PlayerStatsMeta(
+    val generated: String = "",
+    val firstSeason: Int = 1967,
+    val lastSeason: Int = 0,
+    val players: Int = 0,
+    val playersWithHeight: Int = 0,
+    val playersInCurrentTop100: Int = 0,
+    val currentTop100AsOf: String = "",
+    val currentTop100Source: String = "",
+    val source: String = "",
+    val sourceUrl: String = "",
+    val seasonDefinition: String = "",
+    val statistics: String = "",
+    val sampleNote: String = "",
+    val statsAvailableSeasons: List<Int> = emptyList(),
+    val tourLevels: List<String> = emptyList(),
+    val usage: String = "",
+    val playersWithEligibleArchiveResults: Int = 0,
+    val currentSeasonSourceMtime: String = "",
+    val currentSeasonMatchKeys: List<String> = emptyList(),
+    val currentSeasonStatMatchKeys: List<String> = emptyList(),
+    val ongoingSourceMtime: String = "",
+    val liveUpdatedAt: String? = null,
+    val liveMatchCount: Int = 0,
+    val liveEnrichedMatchCount: Int = 0,
+)
+
+@Serializable
+data class PlayerStatsPlayer(
+    val id: String,
+    val name: String,
+    val country: String? = null,
+    val heightCm: Int? = null,
+    val heightSource: String? = null,
+    val currentRank: Int? = null,
+    val seasons: List<PlayerSeasonStats> = emptyList(),
+)
+
+@Serializable
+data class PlayerSeasonStats(
+    val y: Int,
+    val b: Map<String, PlayerStatsBucket> = emptyMap(),
+)
+
+@Serializable
+data class PlayerStatsBucket(
+    val mp: Int = 0,
+    val w: Int = 0,
+    val l: Int = 0,
+    val sp: Int = 0,
+    val sw: Int = 0,
+    val rp: Int = 0,
+    val rw: Int = 0,
+    val sm: Int = 0,
+)
+
+object PlayerStatsRepository {
+    private const val CACHE_FILE = "player_stats_live_cache.json"
+    private val json = Json { ignoreUnknownKeys = true }
+
+    /** Prefer the persistent live cache only when it belongs to this exact bundled baseline. */
+    fun load(context: Context): PlayerStatsData {
+        val bundled = loadBundled(context)
+        val cache = android.util.AtomicFile(java.io.File(context.filesDir, CACHE_FILE))
+        val cached = runCatching {
+            cache.openRead().bufferedReader(Charsets.UTF_8).use { reader ->
+                json.decodeFromString<PlayerStatsData>(reader.readText())
+            }
+        }.getOrNull()
+        return cached?.takeIf { it.meta.generated == bundled.meta.generated } ?: bundled
+    }
+
+    fun loadBundled(context: Context): PlayerStatsData =
+        context.assets.open("player_stats.json").bufferedReader(Charsets.UTF_8).use { reader ->
+            json.decodeFromString<PlayerStatsData>(reader.readText())
+        }
+
+    /** Atomic cache replacement prevents an interrupted process from corrupting the last good snapshot. */
+    fun save(context: Context, data: PlayerStatsData) {
+        val cache = android.util.AtomicFile(java.io.File(context.filesDir, CACHE_FILE))
+        val stream = cache.startWrite()
+        try {
+            stream.write(json.encodeToString(data).toByteArray(Charsets.UTF_8))
+            cache.finishWrite(stream)
+        } catch (error: Exception) {
+            cache.failWrite(stream)
+            throw error
+        }
+    }
+}

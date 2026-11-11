@@ -444,7 +444,7 @@ fun HairLine(modifier: Modifier = Modifier) {
     )
 }
 
-enum class Glyph { HOME, GAUGE, LIBRARY, METHOD, SETTINGS }
+enum class Glyph { HOME, GAUGE, LIBRARY, METHOD, PLAYERS, SETTINGS }
 
 /** Bespoke stroke glyphs, drawn rather than pulled from an icon font. */
 @Composable
@@ -528,6 +528,36 @@ fun NavGlyph(glyph: Glyph, color: Color, modifier: Modifier = Modifier) {
                     cap = StrokeCap.Round,
                 )
                 drawCircle(color = color, radius = w * 0.05f, center = Offset(w * 0.5f, h * 0.68f))
+            }
+
+            Glyph.PLAYERS -> {
+                drawCircle(color = color, radius = w * 0.12f, center = Offset(w * 0.5f, h * 0.29f), style = stroke)
+                drawCircle(color = color, radius = w * 0.085f, center = Offset(w * 0.20f, h * 0.40f), style = stroke)
+                drawCircle(color = color, radius = w * 0.085f, center = Offset(w * 0.80f, h * 0.40f), style = stroke)
+                val centerBody = Path().apply {
+                    moveTo(w * 0.18f, h * 0.88f)
+                    cubicTo(w * 0.18f, h * 0.63f, w * 0.34f, h * 0.53f, w * 0.5f, h * 0.53f)
+                    cubicTo(w * 0.66f, h * 0.53f, w * 0.82f, h * 0.63f, w * 0.82f, h * 0.88f)
+                }
+                drawPath(centerBody, color, style = stroke)
+                drawArc(
+                    color = color,
+                    startAngle = 195f,
+                    sweepAngle = 150f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.01f, h * 0.53f),
+                    size = Size(w * 0.42f, h * 0.42f),
+                    style = stroke,
+                )
+                drawArc(
+                    color = color,
+                    startAngle = 195f,
+                    sweepAngle = 150f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.57f, h * 0.53f),
+                    size = Size(w * 0.42f, h * 0.42f),
+                    style = stroke,
+                )
             }
 
             Glyph.SETTINGS -> {

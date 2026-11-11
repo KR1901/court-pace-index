@@ -49,6 +49,7 @@ Historical and live ratings use leave-one-tournament-out training, but player te
 - **Compare:** event comparisons and CPI/Speed percentile divergence.
 - **Surfaces:** surface-level distributions and trends.
 - **Method:** formulas, bands, source provenance and known limitations.
+- **Players:** calendar-year Hold%, Break% and H+B leaderboards, all-player search, surface splits and height-group analysis of the current Top 100 cohort.
 - **Live now:** discovers active ATP 1000/500/250 events, reads completed singles results and computes opponent-adjusted Surface Speed from ATP/Infosys statistics on the device. Diagnostics expose the raw score, normalisation, tour ace rate, service-point totals, matched profiles and influential server-side ratios.
 
 The live pipeline excludes walkovers, confirmed no-play records, doubles and in-progress matches. Played retirements remain eligible when valid statistics exist. Missing data remains visible; the app must not invent statistics to complete a rating. ATP/Infosys access can be device-sensitive, so a green CI build is not a substitute for live handset acceptance.
@@ -90,8 +91,12 @@ Lower-tier profile backfill is research-only and is not used in production. The 
 | Historical match statistics | [Jeff Sackmann ATP archive](https://github.com/JeffSackmann/tennis_atp) via [archive mirror](https://github.com/Aneeshers/tennis-sackmann-archive) | Historical CALC inputs |
 | Current-season match statistics | [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database) | Current-season CALC inputs when available |
 | Live match statistics | [ATP/Infosys Stats Plus](https://www.atptour.com/) | Read-only runtime statistics retrieval |
+| Player Stats annual matches, player heights and current cohort | [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database) and its dated ranking API | Separate private non-commercial player-statistics asset |
 
 The current-season loader records source URL, fetch time, latest match date, row count, byte count and SHA-256 in a local sidecar manifest. A cached TML snapshot is reused only after refresh failure and only when its manifest/hash match and it is no older than seven days. Source selection is recorded; a fallback must not be mistaken for a fresh TML snapshot.
+
+Player Stats is generated and refreshed independently into `player_stats.json`; it does not touch the tournament pace dataset or the live ace-rating engine. It contains all eligible ATP tour-level archive players and follows the same current Top 100 cohort backward through calendar years using a dated TML ranking snapshot. Its TML-derived asset is for private personal/non-commercial use only; do not publish it or distribute an APK containing it without appropriate permissions.
+The screen shows both the bundled data date and the date of the Top 100 snapshot. The weekly private-repository archive workflow refreshes the historical baseline and Top 100 cohort; an installed APK receives that newer baseline with the next APK build. Current-season completed-match results and game statistics are synchronized separately at runtime, approximately every 15 seconds while the app is foregrounded and through automatic WorkManager background checks, so new match data does not require a new APK.
 
 Tennis Abstract is a reference series, not physical ground truth. The source-required 2026 TML audit reconciled 27/27 source-stat-eligible Montpellier matches (54 statistically complete server sides); expanded multi-season leave-one-event-out profiles now rate all 54 sides without a neutral-prior assignment. This resolves the earlier 54-versus-47 profile-coverage gap. The TML source ace rate remains 14.1964% (545 aces / 3,839 service points), versus TA's published 19.8%; this does not establish TA's match population or explain the remaining rate difference. The corrected 1991–2026 profile sweep covered 1,533 mapped event-seasons, 71,150 matches and 142,300 sides; 1,930 sides (1.356%) used at least one neutral tour-average prior, comprising 980 server-role and 980 returner-role uses. Thirty sides required both roles. See the [consolidated all-event audit](https://github.com/KR1901/court-pace-index/actions/runs/42483108359). Separately, the current TML public terms do not clearly grant redistribution of TML-derived ratings in a public app; the 2026 bundled TML-derived output should be treated as not cleared for onward distribution until the source confirms this use in writing.
 
@@ -106,6 +111,7 @@ See [DATA.md](docs/DATA.md) for provenance and [DATA-LICENSES.md](DATA-LICENSES.
 python3 -m unittest discover -s tools -p "test_*.py" -v
 python3 tools/compute_speed.py --write
 python3 tools/build_dataset.py
+python3 tools/build_player_stats.py
 python3 tools/audit_event_population.py --event Montpellier --season 2026 --require-source "TennisMyLife ATP Match Database"
 python3 tools/audit_event_population.py --all-events --season 2026 --require-source "TennisMyLife ATP Match Database"
 ```
