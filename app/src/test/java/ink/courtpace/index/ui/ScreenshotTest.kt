@@ -16,11 +16,17 @@ import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ink.courtpace.index.core.Datasets
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.playerstats.PlayerSeasonStats
+import ink.courtpace.index.core.playerstats.PlayerStatsBucket
+import ink.courtpace.index.core.playerstats.PlayerStatsData
+import ink.courtpace.index.core.playerstats.PlayerStatsMeta
+import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.ui.glass.MeshBackground
 import ink.courtpace.index.ui.screens.BoardScreen
 import ink.courtpace.index.ui.screens.CompareScreen
 import ink.courtpace.index.ui.screens.MethodScreen
+import ink.courtpace.index.ui.screens.PlayerStatsScreen
 import ink.courtpace.index.ui.screens.SurfacesScreen
 import ink.courtpace.index.ui.screens.TournamentScreen
 import ink.courtpace.index.ui.theme.CourtPaceTheme
@@ -79,6 +85,50 @@ class ScreenshotTest {
             onSeason = {}, onMetric = {}, onSurface = {}, onOpen = {},
             refreshing = false, onRefresh = {}, statusNote = null,
         )
+    }
+
+    private fun playerStatsAsset() = PlayerStatsData(
+        meta = PlayerStatsMeta(
+            firstSeason = 1991,
+            lastSeason = 2026,
+            currentTop100AsOf = "2026-11-09",
+            source = "TennisMyLife ATP Match Database",
+        ),
+        players = listOf(
+            PlayerStatsPlayer(
+                id = "206173", name = "Jannik Sinner", country = "ITA",
+                heightCm = 191, currentRank = 2,
+                seasons = listOf(PlayerSeasonStats(2026, mapOf(
+                    "all" to PlayerStatsBucket(mp = 70, w = 64, l = 6, sp = 950, sw = 870, rp = 900, rw = 250, sm = 70),
+                ))),
+            ),
+            PlayerStatsPlayer(
+                id = "207989", name = "Alexander Zverev", country = "GER",
+                heightCm = 198, currentRank = 1,
+                seasons = listOf(PlayerSeasonStats(2026, mapOf(
+                    "all" to PlayerStatsBucket(mp = 68, w = 54, l = 14, sp = 920, sw = 820, rp = 870, rw = 220, sm = 68),
+                ))),
+            ),
+            PlayerStatsPlayer(
+                id = "207518", name = "Carlos Alcaraz", country = "ESP",
+                heightCm = 183, currentRank = 3,
+                seasons = listOf(PlayerSeasonStats(2026, mapOf(
+                    "all" to PlayerStatsBucket(mp = 65, w = 58, l = 7, sp = 840, sw = 760, rp = 820, rw = 240, sm = 65),
+                ))),
+            ),
+            PlayerStatsPlayer(
+                id = "200005", name = "Alex de Minaur", country = "AUS",
+                heightCm = 183, currentRank = 9,
+                seasons = listOf(PlayerSeasonStats(2026, mapOf(
+                    "all" to PlayerStatsBucket(mp = 62, w = 45, l = 17, sp = 780, sw = 700, rp = 790, rw = 230, sm = 62),
+                ))),
+            ),
+        ),
+    )
+
+    @Test
+    fun playerStatsScreen() = shoot("player_stats__rankings") {
+        Frame { PlayerStatsScreen(asset = playerStatsAsset()) }
     }
 
     @Test
@@ -195,6 +245,7 @@ class ScreenshotTest {
                         ink.courtpace.index.ui.glass.Glyph.LIBRARY to "Compare",
                         ink.courtpace.index.ui.glass.Glyph.HOME to "Surfaces",
                         ink.courtpace.index.ui.glass.Glyph.METHOD to "Method",
+                        ink.courtpace.index.ui.glass.Glyph.PLAYERS to "Players",
                     ),
                     selected = 0,
                     onSelect = {},
