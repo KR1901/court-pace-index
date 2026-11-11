@@ -133,10 +133,22 @@ def empty_counter() -> dict[str, int]:
 
 
 def load_json_url(url: str) -> dict:
+    """Fetch a small JSON endpoint with bounded retry for transient source failures."""
     request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
-    with urlopen(request, timeout=60) as response:
-        payload = response.read()
-    return json.loads(payload.decode("utf-8-sig"))
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            with urlopen(request, timeout=60) as response:
+                payload = response.read()
+            result = json.loads(payload.decode("utf-8-sig"))
+            if not isinstance(result, dict):
+                raise ValueError(f"{url} did not return a JSON object")
+            return result
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as error:
+            last_error = error
+            if attempt < 2:
+                time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"Unable to load JSON from {url}: {last_error}")
 
 
 def download_cached(url: str, name: str, expected_size: int | None, modified: str | None) -> bytes:
@@ -559,11 +571,13 @@ def build() -> dict:
             "playersInCurrentTop100": len(top100_ranks),
             "currentTop100AsOf": ranking_as_of,
             "currentTop100Source": ranking_source,
+            "currentTop100Policy": "Latest dated TML ATP Top-100 snapshot at refresh time; stable player IDs; same cohort followed backward through historical calendar years.",
             "source": DATA_SOURCE,
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
             "statistics": "Hold% = service games won / service games played. Break% = return games won / return games played. Combined = Hold% + Break%.",
             "sampleNote": "ATP tour-level singles match results include retirements in W-L. Walkovers and no-play defaults are excluded. Retirement match statistics are not used for Hold/Break because the match sample is partial. Missing or inconsistent stat lines contribute results but no service/return games.",
+            "environmentNote": "TML indoor Yes/No values and equivalent I/O, Boolean and 1/0 encodings are normalized. Unknown hard-court settings stay in All hard but not in Indoor hard or Outdoor hard.",
             "statsAvailableSeasons": stat_seasons,
             "tourLevels": sorted(TOUR_LEVELS),
             "coverage": totals,
