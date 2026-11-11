@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 
 from build_player_stats import (
     add_player_match,
@@ -141,8 +142,6 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(selected, "2026-11-09")
 
     def test_year_end_ranking_dates_select_last_snapshot_within_each_calendar_year(self):
-        from datetime import date
-
         selected = select_ranking_snapshot_dates(
             {
                 "dates": [
@@ -158,8 +157,6 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(selected, {2015: "2015-12-28", 2016: "2016-11-07"})
 
     def test_year_end_ranking_dates_fail_closed_when_a_season_is_missing(self):
-        from datetime import date
-
         with self.assertRaisesRegex(RuntimeError, "2016"):
             select_ranking_snapshot_dates(
                 {"dates": ["2015-12-28"]},
