@@ -55,6 +55,17 @@ class PlayerStatsAssetTest {
         assertEquals(year1974.players, cohort1974.size)
         assertTrue(data.players.none { it.id == "NA" })
 
+        // The reconstructed 1975 snapshot has both co-ranked positions and
+        // one unresolved source row; identified players remain distinct.
+        val year1975 = snapshots.single { it.year == 1975 }
+        val cohort1975 = data.players.filter { player ->
+            player.top100RanksBySeason.any { it.y == 1975 }
+        }
+        assertEquals(102, year1975.players)
+        assertEquals(1, year1975.unresolvedPlayers)
+        assertEquals(103, year1975.rankedEntries)
+        assertEquals(year1975.players, cohort1975.size)
+
         val rogerFederer = data.players.single { it.name == "Roger Federer" }
         assertNotNull(rogerFederer.top100RanksBySeason.singleOrNull { it.y == 2015 })
         assertNull(rogerFederer.top100RanksBySeason.singleOrNull { it.y == data.meta.lastSeason })
