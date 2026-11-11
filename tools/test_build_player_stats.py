@@ -7,6 +7,8 @@ from build_player_stats import (
     match_has_result,
     match_is_retirement,
     normalize_name,
+    parse_current_top100,
+    select_ranking_snapshot_date,
     service_return_contribution,
 )
 
@@ -109,6 +111,46 @@ class PlayerStatsFormulaTest(unittest.TestCase):
     def test_name_matching_ignores_accents_and_punctuation(self):
         self.assertEqual(normalize_name("João Fonseca"), "joaofonseca")
         self.assertEqual(normalize_name("Botic van de Zandschulp"), "boticvandezandschulp")
+
+    def test_tml_yes_no_indoor_flags_are_split_into_real_environment_buckets(self):
+        for value in ("Yes", "YES", "Y", "true", "1", "Indoor", "I"):
+            with self.subTest(value=value):
+                self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardIndoor"))
+        for value in ("No", "NO", "N", "false", "0", "Outdoor", "O"):
+            with self.subTest(value=value):
+                self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardOutdoor"))
+        for value in ("", None, "unknown", "n/a"):
+            with self.subTest(value=value):
+                self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardUnknown"))
+
+    def test_latest_ranking_snapshot_is_selected_by_date_not_response_order(self):
+        selected = select_ranking_snapshot_date(
+            {"dates": ["2026-11-02", "2026-11-09", "2026-11-16", "bad-date"]},
+            today=__import__("datetime").date(2026, 11, 11),
+        )
+        self.assertEqual(selected, "2026-11-09")
+
+    def test_tml_top100_parser_preserves_player_ids_without_name_matching(self):
+        rows = [
+            {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}", "ioc": "USA", "points": 1000-rank}
+            for rank in range(1, 101)
+        ]
+        parsed = parse_current_top100({"rankings": rows})
+        self.assertEqual(len(parsed), 100)
+        self.assertEqual(parsed[0]["id"], "10001")
+        self.assertEqual(parsed[0]["rank"], 1)
+        self.assertEqual(parsed[-1]["id"], "10100")
+
+    def test_tml_top100_parser_fails_closed_on_duplicate_or_missing_identity(self):
+        rows = [
+            {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 101)
+        ]
+        rows[-1]["id"] = rows[0]["id"]
+        with self.assertRaises(RuntimeError):
+            parse_current_top100({"rankings": rows})
+        with self.assertRaises(RuntimeError):
+            parse_current_top100({"rankings": rows[:-1]})
 
 
 if __name__ == "__main__":
