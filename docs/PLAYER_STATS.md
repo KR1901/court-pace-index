@@ -57,7 +57,7 @@ The builder reads TML's dated ranking archive:
 - `https://stats.tennismylife.org/api/ranking/dates` to identify available ranking dates.
 - `https://stats.tennismylife.org/api/ranking?date=YYYY-MM-DD` to read each selected season's ranking list.
 
-For every completed year from 1973 onward, the builder selects the latest available ranking date whose calendar year matches that season. The live season instead selects the latest date not later than today. The exact date and source URL for every season are stored in `meta.top100SeasonSnapshots`; each player stores their rank membership in `top100RanksBySeason`. The ranking's stable player ID is joined directly to the match/player database ID. Each snapshot must contain ranks 1–100 exactly once and 100 unique IDs; a missing year's ranking snapshot fails the refresh rather than substituting another cohort. No fuzzy player-name matching is used.
+For every completed year from 1973 onward, the builder selects the latest available ranking date whose calendar year matches that season. The live season instead selects the latest date not later than today. The exact date and source URL for every season are stored in `meta.top100SeasonSnapshots`; each player stores their rank membership in `top100RanksBySeason`. The ranking's stable player ID is joined directly to the match/player database ID. Each snapshot must contain at least 100 unique player IDs with published ranks from 1–100; tied rank positions are preserved, including any tie at the rank-100 cutoff, so a cohort can contain more than 100 players. Duplicate player IDs or a missing year's ranking snapshot fail the refresh rather than substituting another cohort. No fuzzy player-name matching is used.
 
 ## Heights and bands
 
@@ -91,7 +91,7 @@ python3 -m unittest tools/test_build_player_stats.py -v
 python3 tools/build_player_stats.py
 ```
 
-The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates every dated 100-player season cohort, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
+The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates every dated rank-100 season cohort, including co-ranked players, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
 
 The archive workflow runs weekly and refreshes the private repository asset. The installed Android app does not need a new APK for current-season match updates.
 
