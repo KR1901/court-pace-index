@@ -47,6 +47,7 @@ data class HeightGroupSummary(
     val maxCm: Int?,
     val players: Int,
     val playersWithSeasonData: Int,
+    val playersWithValidStats: Int,
     val serviceGames: Int,
     val serviceGamesWon: Int,
     val returnGames: Int,
@@ -81,7 +82,7 @@ object PlayerStatsAnalytics {
         HeightBand("under183", "Under 1.83 m / 6′0″", null, 182),
         HeightBand("183to190", "1.83–1.90 m / 6′0″–6′2.8″", 183, 190),
         HeightBand("191to194", "1.91–1.94 m / 6′3.2″–6′4.4″", 191, 194),
-        HeightBand("195plus", "1.95 m+ / 6′4.8″+", 195, null),
+        HeightBand("195plus", "1.95 m+ / 6′5″+", 195, null),
     )
 
     fun percentage(numerator: Int, denominator: Int): Double? =
@@ -179,9 +180,11 @@ object PlayerStatsAnalytics {
             var wins = 0
             var losses = 0
             var withData = 0
+            var withValidStats = 0
             players.forEach { player ->
                 val bucket = player.seasons.firstOrNull { it.y == year }?.b?.get(surface.id)
                 if (bucket != null && bucket.mp > 0) withData += 1
+                if (bucket != null && bucket.sm > 0) withValidStats += 1
                 if (bucket != null) {
                     sp += bucket.sp
                     sw += bucket.sw
@@ -199,6 +202,7 @@ object PlayerStatsAnalytics {
                 maxCm = band.maxCm,
                 players = players.size,
                 playersWithSeasonData = withData,
+                playersWithValidStats = withValidStats,
                 serviceGames = sp,
                 serviceGamesWon = sw,
                 returnGames = rp,
