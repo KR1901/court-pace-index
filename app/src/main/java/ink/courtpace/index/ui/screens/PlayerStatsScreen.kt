@@ -462,7 +462,7 @@ private fun HeightGroupCard(
                     color = colors.text,
                 )
                 Text(
-                    text = group.players + " current Top 100 players · " + group.playersWithSeasonData + " with season data",
+                    text = group.players.toString() + " current Top 100 players · " + group.playersWithSeasonData + " with season data",
                     style = TextStyle(fontSize = 10.5.sp),
                     color = colors.textDim,
                 )
