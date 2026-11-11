@@ -163,7 +163,11 @@ object PlayerStatsAnalytics {
         year: Int,
         surface: PlayerSurfaceFilter,
     ): HeightGroupsResult {
-        val cohort = data.players.filter { it.currentRank != null }
+        val cohort = data.players.filter { player ->
+            player.top100RanksBySeason.any { it.y == year } ||
+                (player.top100RanksBySeason.isEmpty() &&
+                    year == data.meta.lastSeason && player.currentRank != null)
+        }
         val buckets = heightBands.associate { it.id to mutableListOf<PlayerStatsPlayer>() }
         var unknown = 0
         cohort.forEach { player ->

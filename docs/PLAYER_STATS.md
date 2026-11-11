@@ -13,7 +13,7 @@ Raw CSVs and raw ranking API responses are not committed. The dedicated Player S
 
 ## Player directory and calendar-year coverage
 
-The directory includes every player with at least one eligible ATP tour-level singles main-draw result in the source archive, plus a member of the current Top 100 if that player is not present in the match archive. It does not include roster-only players with no eligible archive result. Players remain searchable when their match result exists but their height or service/return statistics are missing.
+The directory includes every player with at least one eligible ATP tour-level singles main-draw result in the source archive, plus any player appearing in a year-specific Top 100 snapshot if that player is not present in the match archive. It does not include roster-only players with no eligible archive result. Players remain searchable when their match result exists but their height or service/return statistics are missing.
 
 Included ATP competition levels are Grand Slams, Masters, ATP 500, ATP 250 and the ATP Finals. Qualifying, Challenger, Futures, doubles, Davis Cup and exhibitions are excluded. This keeps the population consistent with the ATP tour-level main-draw analysis.
 
@@ -47,15 +47,17 @@ The screen provides All surfaces, Clay, Grass, Outdoor hard, Indoor hard and All
 
 TennisMyLife's ATP match schema includes a surface field and a separate indoor/outdoor field. The builder recognizes its documented Yes/No values as well as equivalent I/O, Indoor/Outdoor, Boolean and 1/0 encodings. A missing or unrecognized setting remains unknown: it is not guessed as indoor or outdoor. Unknown-setting hard matches remain in the combined All hard aggregate and are counted separately in coverage metadata.
 
-## Current Top 100 height cohort
+## Year-specific Top 100 height cohorts
 
-The height-group analysis uses the same **current ATP Top 100 cohort** for every selected historical year. It answers how the players who are currently in the Top 100 performed in earlier seasons; it is not that historical season's Top 100. The interface displays the exact ranking snapshot date and explicitly labels this survivor/current-cohort comparison.
+The height-group analysis uses a **different ATP Top 100 cohort for each selected calendar year**. For a completed season, the cohort is the 100 players in the final TML ranking snapshot published within that calendar year. It is not the current Top 100 projected backward and it is not a rolling 52-week ranking. Group performance is calculated from match results and valid game statistics belonging to that same calendar year.
+
+For the live current season (2026 in the current build), the cohort is the latest available dated TML ATP Top 100 snapshot on or before the refresh date. As later ranking snapshots become available during the live season, the weekly archive refresh replaces that season's cohort with the latest snapshot.
 
 The builder reads TML's dated ranking archive:
-- `https://stats.tennismylife.org/api/ranking/dates` to find the latest available ranking date that is not in the future.
-- `https://stats.tennismylife.org/api/ranking?date=YYYY-MM-DD` to read the corresponding ranking list.
+- `https://stats.tennismylife.org/api/ranking/dates` to identify available ranking dates.
+- `https://stats.tennismylife.org/api/ranking?date=YYYY-MM-DD` to read each selected season's ranking list.
 
-The ranking's stable player ID is joined directly to the match/player database ID. The pipeline requires ranks 1–100 exactly once and 100 unique IDs. It does not fuzzy-match player names or use the stale mirrored January 2026 rankings file as a substitute. The cohort is refreshed when a newer dated ranking snapshot is available; the precise date is stored in the asset.
+For every completed year from 1973 onward, the builder selects the latest available ranking date whose calendar year matches that season. The live season instead selects the latest date not later than today. The exact date and source URL for every season are stored in `meta.top100SeasonSnapshots`; each player stores their rank membership in `top100RanksBySeason`. The ranking's stable player ID is joined directly to the match/player database ID. Each snapshot retains every identified player with a published rank from 1–100; tied rank positions are preserved, including ties at the rank-100 cutoff, so a cohort can contain more than 100 identified players. Rows with missing or placeholder IDs (such as `NA`/`Unknown`) are counted as unresolved snapshot entries but are excluded from player-level height calculations and are never merged into a synthetic person across years. Duplicate real player IDs or a missing year's ranking snapshot fail the refresh rather than substituting another cohort. No fuzzy player-name matching is used.
 
 ## Heights and bands
 
@@ -72,7 +74,7 @@ The four bands are exhaustive and non-overlapping:
 
 Each group reports its player count, players with selected-year match results, players with valid service/return statistics, Hold%, Break%, H+B, W–L, win percentage and match count. Group rates are pooled from the group's total game counts, not the unweighted mean of player percentages. Surface filters apply to the group comparison as well as the player leaderboard.
 
-These are descriptive associations, not proof that height causes a performance advantage. Group sizes, valid-stat coverage, games played and the selected current-cohort date must be considered when interpreting a leading group.
+These are descriptive associations, not proof that height causes a performance advantage. Group sizes, valid-stat coverage, games played and the selected year's ranking-snapshot date must be considered when interpreting a leading group.
 
 ## Source, rights and personal use
 
@@ -89,7 +91,7 @@ python3 -m unittest tools/test_build_player_stats.py -v
 python3 tools/build_player_stats.py
 ```
 
-The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates the exact dated 100-player cohort, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
+The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates every dated rank-100 season cohort, including co-ranked players, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
 
 The archive workflow runs weekly and refreshes the private repository asset. The installed Android app does not need a new APK for current-season match updates.
 

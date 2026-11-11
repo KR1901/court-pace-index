@@ -150,6 +150,10 @@ fun PlayerStatsScreen(
     val heightResult = remember(asset, year, surface) {
         PlayerStatsAnalytics.heightGroups(asset, year, surface)
     }
+    val yearSnapshot = remember(asset, year) {
+        asset.meta.top100SeasonSnapshots.firstOrNull { it.year == year }
+    }
+    val cohortLabel = if (year == asset.meta.lastSeason) "live Top 100 players" else "year-end Top 100 players"
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().statusBarsPadding(),
@@ -362,6 +366,11 @@ fun PlayerStatsScreen(
                 compareByDescending<HeightGroupSummary> { it.combined ?: Double.NEGATIVE_INFINITY }
                     .thenBy { it.id },
             )
+            val unresolvedNote = yearSnapshot?.unresolvedPlayers
+                ?.takeIf { it > 0 }
+                ?.let { count ->
+                    " " + count + " ranking row(s) have no stable player ID and are excluded from player-level height calculations."
+                }.orEmpty()
             item {
                 GlassSurface(
                     modifier = Modifier.fillMaxWidth(),
@@ -369,12 +378,20 @@ fun PlayerStatsScreen(
                     contentPadding = PaddingValues(14.dp),
                 ) {
                     Text(
-                        text = "Current ATP Top 100 · TML snapshot",
+                        text = if (year == asset.meta.lastSeason) {
+                            "Current ATP Top 100 · TML snapshot"
+                        } else {
+                            year.toString() + " ATP year-end Top 100 · TML snapshot"
+                        },
                         style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                         color = colors.text,
                     )
                     Text(
-                        text = "TML weekly ranking · " + asset.meta.currentTop100AsOf + " · " + heightResult.cohortSize + " players",
+                        text = (yearSnapshot?.asOf?.let { "TML ranking snapshot · " + it }
+                            ?: "No TML ranking snapshot available for " + year) +
+                            " · " + heightResult.cohortSize + " identified players" +
+                            (yearSnapshot?.unresolvedPlayers?.takeIf { it > 0 }
+                                ?.let { " · " + it + " unresolved" } ?: ""),
                         style = TextStyle(fontSize = 11.5.sp),
                         color = colors.textDim,
                     )
@@ -385,7 +402,14 @@ fun PlayerStatsScreen(
                     )
                     HairLine()
                     GlassNote(
-                        text = "The same current Top 100 cohort is followed backwards through each calendar year. This is not that year's historical Top 100.",
+                        text = when {
+                            yearSnapshot == null ->
+                                "No dated TML Top 100 ranking snapshot is available for " + year + ". No cohort is substituted."
+                            year == asset.meta.lastSeason ->
+                                "The live season uses the latest available ATP Top 100 ranking snapshot for " + year + ". Group performance uses match statistics from " + year + "."
+                            else ->
+                                "The cohort is the Top 100 from the final ATP ranking snapshot published in " + year + " (" + yearSnapshot.asOf + "). Group performance uses match statistics from that same calendar year."
+                        } + unresolvedNote,
                     )
                 }
             }
@@ -394,6 +418,7 @@ fun PlayerStatsScreen(
                 HeightGroupCard(
                     group = group,
                     rank = rankedGroups.indexOf(group) + 1,
+                    cohortLabel = cohortLabel,
                 )
             }
 
@@ -492,6 +517,7 @@ private fun PlayerRankingItem(
 private fun HeightGroupCard(
     group: HeightGroupSummary,
     rank: Int,
+    cohortLabel: String,
 ) {
     val colors = PaceTheme.colors
     GlassSurface(
@@ -518,7 +544,7 @@ private fun HeightGroupCard(
                     color = colors.text,
                 )
                 Text(
-                    text = group.players.toString() + " current Top 100 players · " +
+                    text = group.players.toString() + " " + cohortLabel + " · " +
                         group.playersWithSeasonData + " with results · " +
                         group.playersWithValidStats + " with valid game stats",
                     style = TextStyle(fontSize = 10.5.sp),

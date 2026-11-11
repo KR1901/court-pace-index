@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 
 from build_player_stats import (
     add_player_match,
@@ -10,6 +11,8 @@ from build_player_stats import (
     normalize_name,
     parse_current_top100,
     select_ranking_snapshot_date,
+    select_ranking_snapshot_dates,
+    unresolved_top100_count,
     service_return_contribution,
 )
 
@@ -139,6 +142,30 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         )
         self.assertEqual(selected, "2026-11-09")
 
+    def test_year_end_ranking_dates_select_last_snapshot_within_each_calendar_year(self):
+        selected = select_ranking_snapshot_dates(
+            {
+                "dates": [
+                    "2015-12-21", "2015-12-28", "2016-01-04",
+                    "2016-11-07", "2016-12-26", "2016-11-02",
+                    "2026-11-09", "2026-11-16", "bad-date",
+                ],
+            },
+            first_year=2015,
+            last_year=2016,
+            today=date(2016, 11, 10),
+        )
+        self.assertEqual(selected, {2015: "2015-12-28", 2016: "2016-11-07"})
+
+    def test_year_end_ranking_dates_fail_closed_when_a_season_is_missing(self):
+        with self.assertRaisesRegex(RuntimeError, "2016"):
+            select_ranking_snapshot_dates(
+                {"dates": ["2015-12-28"]},
+                first_year=2015,
+                last_year=2016,
+                today=date(2016, 11, 10),
+            )
+
     def test_tml_top100_parser_preserves_player_ids_without_name_matching(self):
         rows = [
             {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}", "ioc": "USA", "points": 1000-rank}
@@ -149,6 +176,35 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(parsed[0]["id"], "10001")
         self.assertEqual(parsed[0]["rank"], 1)
         self.assertEqual(parsed[-1]["id"], "10100")
+
+    def test_tml_top100_parser_preserves_players_with_tied_historical_ranks(self):
+        rows = [
+            {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}", "ioc": "USA"}
+            for rank in range(1, 101)
+        ]
+        rows.append({"id": "10101", "rank": 45, "name": "Co-ranked Player", "ioc": "FRA"})
+
+        parsed = parse_current_top100({"rankings": rows}, "1973 snapshot 1973-12-31")
+
+        self.assertEqual(len(parsed), 101)
+        rank_45 = [row for row in parsed if row["rank"] == 45]
+        self.assertEqual({row["id"] for row in rank_45}, {"10045", "10101"})
+        self.assertEqual(parsed[-1]["rank"], 100)
+
+    def test_top100_placeholder_id_is_counted_but_not_treated_as_a_player(self):
+        rows = [
+            {"id": str(10000 + rank), "rank": rank, "name": f"Player {rank}", "ioc": "USA"}
+            for rank in range(1, 101)
+        ]
+        rows.append({"id": "NA", "rank": 24, "name": "Unknown", "ioc": ""})
+        payload = {"rankings": rows}
+
+        parsed = parse_current_top100(payload, "1974 snapshot 1974-12-30")
+
+        self.assertEqual(len(parsed), 100)
+        self.assertEqual(unresolved_top100_count(payload), 1)
+        self.assertNotIn("NA", {row["id"] for row in parsed})
+        self.assertEqual({row["rank"] for row in parsed if row["rank"] == 24}, {24})
 
     def test_tml_top100_parser_fails_closed_on_duplicate_or_missing_identity(self):
         rows = [
