@@ -399,6 +399,7 @@ def aggregate_files(
     players: dict[str, dict],
     current_year: int | None = None,
     current_season_match_keys: set[str] | None = None,
+    current_season_stat_match_keys: set[str] | None = None,
 ) -> tuple[dict[str, dict[int, dict[str, dict[str, int]]]], dict[str, set[str]], dict]:
     aggregate: dict[str, dict[int, dict[str, dict[str, int]]]] = defaultdict(dict)
     match_aliases: dict[str, set[str]] = defaultdict(set)
@@ -457,6 +458,7 @@ def aggregate_files(
                 totals["excludedNoPlay"] += 1
                 continue
             match_num = (row.get("match_num") or "").strip()
+            stable_key = None
             if match_num:
                 identity = (tournament_id, match_num, min(winner_id, loser_id), max(winner_id, loser_id))
                 stable_key = match_identity_key(tournament_id, match_num, winner_id, loser_id)
@@ -487,6 +489,13 @@ def aggregate_files(
                 totals["hardRowsWithUnknownEnvironment"] += 1
             # Retirements count in W-L results, but partial-match games do not train annual rates.
             stats = None if retirement else service_return_contribution(row)
+            if (
+                current_season_stat_match_keys is not None
+                and season == current_year
+                and stable_key is not None
+                and stats is not None
+            ):
+                current_season_stat_match_keys.add(stable_key)
             if stats is None:
                 totals["matchesWithoutValidStats"] += 1
                 add_player_match(
@@ -545,8 +554,10 @@ def build() -> dict:
     players = roster
     ranking_as_of, ranking_source, top100 = load_current_top100()
     current_season_match_keys: set[str] = set()
+    current_season_stat_match_keys: set[str] = set()
     aggregate, _match_aliases, totals = aggregate_files(
-        files, years, players, current_year, current_season_match_keys
+        files, years, players, current_year,
+        current_season_match_keys, current_season_stat_match_keys,
     )
     top100_ranks = resolve_current_top100(top100, players, current_year)
     season_rows = compact_player_seasons(aggregate)
@@ -583,6 +594,7 @@ def build() -> dict:
             "lastSeason": current_year,
             "currentSeasonSourceMtime": str(files.get(f"{current_year}.csv", {}).get("mtime") or ""),
             "currentSeasonMatchKeys": sorted(current_season_match_keys),
+            "currentSeasonStatMatchKeys": sorted(current_season_stat_match_keys),
             "players": len(player_rows),
             "playersWithHeight": height_count,
             "playersInCurrentTop100": len(top100_ranks),
