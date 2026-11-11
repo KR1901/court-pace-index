@@ -30,8 +30,8 @@ class PlayerStatsAnalyticsTest {
 
     @Test
     fun `height text shows metres and feet inches`() {
-        assertEquals("1.83 m · 6′0″", PlayerStatsAnalytics.heightText(183))
-        assertEquals("1.95 m · 6′4″", PlayerStatsAnalytics.heightText(195))
+        assertEquals("1.83 m · 6′0.0″", PlayerStatsAnalytics.heightText(183))
+        assertEquals("1.95 m · 6′4.8″", PlayerStatsAnalytics.heightText(195))
         assertEquals("Height unavailable", PlayerStatsAnalytics.heightText(null))
     }
 
