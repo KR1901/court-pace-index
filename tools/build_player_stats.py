@@ -279,22 +279,40 @@ def select_ranking_snapshot_date(payload: dict, today: date | None = None) -> st
     return max(valid_dates).isoformat()
 
 
+def unresolved_top100_count(payload: dict) -> int:
+    """Count rank-100 rows without a stable player ID; never treat 'NA' as a person."""
+    rows = payload.get("rankings")
+    if not isinstance(rows, list):
+        raise RuntimeError("TML ranking endpoint did not return a rankings array")
+    placeholders = {"", "NA", "N/A", "NONE", "NULL", "UNKNOWN", "0", "-"}
+    return sum(
+        1
+        for row in rows
+        if isinstance(row, dict)
+        and (rank := integer(row.get("rank"))) is not None
+        and 1 <= rank <= 100
+        and str(row.get("id") or "").strip().upper() in placeholders
+    )
+
+
 def parse_current_top100(
     payload: dict,
     snapshot_label: str = "",
 ) -> list[dict[str, object]]:
-    """Parse the TML Top-100 positions, preserving every player tied at a rank.
+    """Parse the TML rank-100 cohort, preserving co-ranked players and skipping unresolved IDs.
 
-    A tied rank is not a duplicate row: historical reconstructed snapshots can legitimately
-    assign the same position to multiple players. The cohort therefore contains every player
-    whose published rank is 1–100, including ties at the cutoff; it can exceed 100 members.
-    Duplicate player IDs remain invalid because one player cannot occupy multiple rows in
-    the same snapshot.
+    Historical reconstructed snapshots can legitimately assign the same rank to multiple
+    players. All players ranked 1–100 are retained, including ties at the cutoff, so a cohort
+    can exceed 100 identified players. Rows with placeholder IDs such as 'NA' are counted
+    separately as unresolved ranking entries; they are not assigned a fabricated identity or
+    merged across seasons. Duplicate real player IDs remain invalid.
     """
     rows = payload.get("rankings")
     context = f" ({snapshot_label})" if snapshot_label else ""
     if not isinstance(rows, list):
         raise RuntimeError("TML ranking endpoint did not return a rankings array" + context)
+    unresolved = unresolved_top100_count(payload)
+    placeholders = {"", "NA", "N/A", "NONE", "NULL", "UNKNOWN", "0", "-"}
     top100: list[dict[str, object]] = []
     seen_ids: set[str] = set()
     for row in rows:
@@ -307,15 +325,18 @@ def parse_current_top100(
         name = str(row.get("name") or "").strip()
         country = str(row.get("ioc") or row.get("country") or "").strip().upper()
         points = integer(row.get("points"))
-        if not player_id or not name:
-            raise RuntimeError(f"Invalid TML Top 100 row at rank {rank}: missing player ID/name" + context)
+        if player_id.upper() in placeholders:
+            continue
+        if not name:
+            name = player_id
         if player_id in seen_ids:
             raise RuntimeError(f"Duplicate TML player ID {player_id} in rank-100 cohort" + context)
         seen_ids.add(player_id)
         top100.append({"id": player_id, "rank": rank, "name": name, "country": country, "points": points})
-    if len(top100) < 100:
+    if len(top100) + unresolved < 100:
         raise RuntimeError(
-            f"TML rank-100 cohort must contain at least 100 unique players; found {len(top100)}" + context
+            "TML rank-100 cohort must contain at least 100 identified or unresolved entries; "
+            f"found {len(top100)} identified and {unresolved} unresolved" + context
         )
     return sorted(top100, key=lambda item: int(item["rank"]))
 
@@ -378,6 +399,7 @@ def load_top100_season_snapshots(
             "asOf": ranking_date,
             "source": source_url,
             "players": parse_current_top100(snapshot, f"{year} snapshot {ranking_date}"),
+            "unresolvedPlayers": unresolved_top100_count(snapshot),
         }
 
     # Keep the source load bounded while avoiding 50+ serial HTTP round trips.
@@ -645,9 +667,11 @@ def build() -> dict:
                 str(entry.get("country") or ""), None, year,
             )
             top100_ranks_by_player[player_id][year] = rank
-        if len(seen_ids) < 100:
+        unresolved = int(snapshot.get("unresolvedPlayers", 0))
+        if len(seen_ids) + unresolved < 100:
             raise RuntimeError(
-                f"TML {year} rank-100 cohort must contain at least 100 unique players; found {len(seen_ids)}"
+                f"TML {year} rank-100 cohort has only {len(seen_ids)} identified and "
+                f"{unresolved} unresolved entries"
             )
     current_top100_count = len(top100_snapshots[current_year]["players"])
     current_top100_as_of = str(top100_snapshots[current_year]["asOf"])
@@ -704,10 +728,12 @@ def build() -> dict:
                     "asOf": snapshot["asOf"],
                     "source": snapshot["source"],
                     "players": len(snapshot["players"]),
+                    "unresolvedPlayers": int(snapshot.get("unresolvedPlayers", 0)),
+                    "rankedEntries": len(snapshot["players"]) + int(snapshot.get("unresolvedPlayers", 0)),
                 }
                 for year, snapshot in sorted(top100_snapshots.items())
             ],
-            "top100SeasonPolicy": "For completed seasons, use the final TML ATP ranking snapshot published within that calendar year. For the live current season, use the latest available dated snapshot on or before today. Each cohort is analyzed against match statistics from the same calendar year.",
+            "top100SeasonPolicy": "For completed seasons, use the final TML ATP ranking snapshot published within that calendar year. For the live current season, use the latest available dated snapshot on or before today. Preserve co-ranked players; count rows without stable player IDs separately and exclude them from player-level height calculations. Each cohort is analyzed against match statistics from the same calendar year.",
             "source": DATA_SOURCE,
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
