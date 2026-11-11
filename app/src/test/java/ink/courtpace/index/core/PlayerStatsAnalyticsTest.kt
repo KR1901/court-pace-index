@@ -140,7 +140,7 @@ class PlayerStatsAnalyticsTest {
     @Test
     fun `height group averages are weighted by games not player percentages`() {
         val data = PlayerStatsData(
-            PlayerStatsMeta(playersInCurrentTop100 = 2),
+            PlayerStatsMeta(lastSeason = 2026, playersInCurrentTop100 = 2),
             listOf(
                 PlayerStatsPlayer("A", "Player A",  currentRank = 1, heightCm = 195, seasons = listOf(
                     PlayerSeasonStats(2026, mapOf("all" to PlayerStatsBucket(sp = 100, sw = 90, rp = 100, rw = 30))),
