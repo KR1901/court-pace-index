@@ -73,9 +73,9 @@ data class HeightGroupsResult(
 object PlayerStatsAnalytics {
     private val heightBands = listOf(
         HeightBand("under183", "Under 1.83 m / 6′0″", null, 182),
-        HeightBand("183to190", "1.83–1.90 m / 6′0″–6′3″", 183, 190),
-        HeightBand("191to194", "1.91–1.94 m / 6′3″–6′4″", 191, 194),
-        HeightBand("195plus", "1.95 m+ / 6′5″+", 195, null),
+        HeightBand("183to190", "1.83–1.90 m / 6′0″–6′2.8″", 183, 190),
+        HeightBand("191to194", "1.91–1.94 m / 6′3.2″–6′4.4″", 191, 194),
+        HeightBand("195plus", "1.95 m+ / 6′4.8″+", 195, null),
     )
 
     fun percentage(numerator: Int, denominator: Int): Double? =
@@ -91,11 +91,11 @@ object PlayerStatsAnalytics {
 
     fun heightText(heightCm: Int?): String {
         if (heightCm == null || heightCm !in 140..220) return "Height unavailable"
-        val inches = (heightCm / 2.54).toInt()
-        val feet = inches / 12
-        val remainder = inches % 12
-        val metres = "\${heightCm / 100}.\${(heightCm % 100).toString().padStart(2, '0')} m"
-        return "$metres · $feet′$remainder″"
+        val totalInches = heightCm / 2.54
+        val feet = (totalInches / 12.0).toInt()
+        val inches = totalInches - feet * 12.0
+        val metres = (heightCm / 100).toString() + "." + (heightCm % 100).toString().padStart(2, '0') + " m"
+        return metres + " · " + feet + "′" + String.format(Locale.US, "%.1f", inches) + "″"
     }
 
     fun rankings(
