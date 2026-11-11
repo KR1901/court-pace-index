@@ -153,6 +153,11 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                     style = TextStyle(fontSize = 13.sp, lineHeight = 19.sp),
                     color = colors.textDim,
                 )
+                Text(
+                    text = "BUNDLED DATA · " + asset.meta.generated.take(10),
+                    style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp),
+                    color = colors.textFaint,
+                )
             }
         }
 
