@@ -28,6 +28,12 @@ data class PlayerStatsMeta(
     val statsAvailableSeasons: List<Int> = emptyList(),
     val tourLevels: List<String> = emptyList(),
     val usage: String = "",
+    val playersWithEligibleArchiveResults: Int = 0,
+    val currentSeasonSourceMtime: String = "",
+    val currentSeasonMatchKeys: List<String> = emptyList(),
+    val ongoingSourceMtime: String = "",
+    val liveUpdatedAt: String? = null,
+    val liveMatchCount: Int = 0,
 )
 
 @Serializable
@@ -60,10 +66,36 @@ data class PlayerStatsBucket(
 )
 
 object PlayerStatsRepository {
+    private const val CACHE_FILE = "player_stats_live_cache.json"
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun load(context: Context): PlayerStatsData =
+    /** Prefer the persistent live cache only when it belongs to this exact bundled baseline. */
+    fun load(context: Context): PlayerStatsData {
+        val bundled = loadBundled(context)
+        val cache = android.util.AtomicFile(java.io.File(context.filesDir, CACHE_FILE))
+        val cached = runCatching {
+            cache.openRead().bufferedReader(Charsets.UTF_8).use { reader ->
+                json.decodeFromString<PlayerStatsData>(reader.readText())
+            }
+        }.getOrNull()
+        return cached?.takeIf { it.meta.generated == bundled.meta.generated } ?: bundled
+    }
+
+    fun loadBundled(context: Context): PlayerStatsData =
         context.assets.open("player_stats.json").bufferedReader(Charsets.UTF_8).use { reader ->
             json.decodeFromString<PlayerStatsData>(reader.readText())
         }
+
+    /** Atomic cache replacement prevents an interrupted process from corrupting the last good snapshot. */
+    fun save(context: Context, data: PlayerStatsData) {
+        val cache = android.util.AtomicFile(java.io.File(context.filesDir, CACHE_FILE))
+        val stream = cache.startWrite()
+        try {
+            stream.write(json.encodeToString(data).toByteArray(Charsets.UTF_8))
+            cache.finishWrite(stream)
+        } catch (error: Exception) {
+            cache.failWrite(stream)
+            throw error
+        }
+    }
 }
