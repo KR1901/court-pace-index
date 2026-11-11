@@ -10,7 +10,7 @@ class PlayerStatsLiveSyncTest {
     private val header = listOf(
         "tourney_id", "tourney_name", "surface", "indoor", "tourney_date",
         "tourney_level", "match_num", "winner_id", "winner_name", "winner_ht", "winner_ioc",
-        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score",
+        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score", "best_of",
         "w_SvGms", "w_bpSaved", "w_bpFaced", "l_SvGms", "l_bpSaved", "l_bpFaced",
     ).joinToString(",")
 
@@ -33,11 +33,12 @@ class PlayerStatsLiveSyncTest {
         loserServeGames: String,
         loserBpSaved: String,
         loserBpFaced: String,
+        bestOf: String = "3",
     ): String = listOf(
         tournament, "\"" + tournamentName.replace("\"", "\"\"") + "\"",
         surface, indoor, "20261109", "250", matchNumber,
         winnerId, winnerName, winnerHeight, "USA",
-        loserId, loserName, loserHeight, "ESP", score,
+        loserId, loserName, loserHeight, "ESP", score, bestOf,
         winnerServeGames, winnerBpSaved, winnerBpFaced,
         loserServeGames, loserBpSaved, loserBpFaced,
     ).joinToString(",")
@@ -181,6 +182,48 @@ class PlayerStatsLiveSyncTest {
         assertEquals(8, completed.rp)
         assertEquals(1, completed.rw)
         assertEquals(1, completed.sm)
+    }
+
+    @Test
+    fun inProgressScoresAreIgnoredUntilAPlayerWinsTheMatch() {
+        val csv = listOf(
+            header,
+            row(
+                "2026-431", "In Progress Best of Three", "Hard", "O", "40",
+                "P001", "Player One", "190", "P002", "Player Two", "185",
+                "6-4 3-2", "", "", "", "", "", "",
+            ),
+            row(
+                "2026-432", "In Progress Best of Five", "Clay", "O", "41",
+                "P003", "Player Three", "193", "P004", "Player Four", "188",
+                "6-4 6-4 2-1", "", "", "", "", "", "",
+                bestOf = "5",
+            ),
+            row(
+                "2026-433", "Completed Best of Three", "Hard", "O", "42",
+                "P005", "Player Five", "191", "P006", "Player Six", "187",
+                "6-4 6-3", "9", "1", "2", "8", "3", "4",
+            ),
+            row(
+                "2026-434", "Completed Best of Five", "Grass", "O", "43",
+                "P007", "Player Seven", "194", "P008", "Player Eight", "189",
+                "6-4 3-6 6-3 4-6 6-2", "18", "2", "3", "17", "4", "6",
+                bestOf = "5",
+            ),
+        ).joinToString("\n") + "\n"
+
+        val result = PlayerStatsLiveAggregator.apply(
+            baseline = baseline(),
+            rows = PlayerStatsLiveCsvParser.parse(csv),
+            season = 2026,
+            updatedAt = "2026-11-11T10:02:00Z",
+        )
+
+        assertEquals(2, result.addedMatches)
+        assertEquals(4, result.data.players.size)
+        assertTrue(result.data.players.none { it.id in setOf("P001", "P002", "P003", "P004") })
+        assertEquals(setOf("P005", "P006", "P007", "P008"), result.data.players.map { it.id }.toSet())
+        assertEquals(2, result.data.meta.currentSeasonMatchKeys.size)
     }
 
     @Test
