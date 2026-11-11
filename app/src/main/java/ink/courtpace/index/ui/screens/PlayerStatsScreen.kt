@@ -366,6 +366,11 @@ fun PlayerStatsScreen(
                 compareByDescending<HeightGroupSummary> { it.combined ?: Double.NEGATIVE_INFINITY }
                     .thenBy { it.id },
             )
+            val unresolvedNote = yearSnapshot?.unresolvedPlayers
+                ?.takeIf { it > 0 }
+                ?.let { count ->
+                    " " + count + " ranking row(s) have no stable player ID and are excluded from player-level height calculations."
+                }.orEmpty()
             item {
                 GlassSurface(
                     modifier = Modifier.fillMaxWidth(),
@@ -384,7 +389,9 @@ fun PlayerStatsScreen(
                     Text(
                         text = (yearSnapshot?.asOf?.let { "TML ranking snapshot · " + it }
                             ?: "No TML ranking snapshot available for " + year) +
-                            " · " + heightResult.cohortSize + " players",
+                            " · " + heightResult.cohortSize + " identified players" +
+                            (yearSnapshot?.unresolvedPlayers?.takeIf { it > 0 }
+                                ?.let { " · " + it + " unresolved" } ?: ""),
                         style = TextStyle(fontSize = 11.5.sp),
                         color = colors.textDim,
                     )
@@ -402,7 +409,7 @@ fun PlayerStatsScreen(
                                 "The live season uses the latest available ATP Top 100 ranking snapshot for " + year + ". Group performance uses match statistics from " + year + "."
                             else ->
                                 "The cohort is the Top 100 from the final ATP ranking snapshot published in " + year + " (" + yearSnapshot.asOf + "). Group performance uses match statistics from that same calendar year."
-                        },
+                        } + unresolvedNote,
                     )
                 }
             }
