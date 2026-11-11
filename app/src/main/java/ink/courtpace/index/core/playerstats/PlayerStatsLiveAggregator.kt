@@ -88,7 +88,7 @@ data class PlayerStatsLiveApplyResult(
 object PlayerStatsLiveAggregator {
     private val eligibleLevels = setOf("G", "M", "A", "F", "250", "500")
     private val noPlay = Regex(
-        """(?i)(?:\bW/O\b|\bW\.O\.\b|\bWO\b|\bWALKOVER\b|\bDEF\b|\bABD\b|\bABN\b|\bABANDONED\b)""",
+        """(?i)(?:\bW/O\b|\bW\.O\.|\bWO\b|\bWALKOVER\b|\bDEF\b|\bABD\b|\bABN\b|\bABANDONED\b)""",
     )
     private val retirement = Regex("""(?i)\bRET(?:IRED)?\b""")
 
