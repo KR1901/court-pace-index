@@ -103,12 +103,15 @@ jobs:
             keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
             echo "Existing permanent signing key restored from repository secrets."
           elif [[ -z "$KEYSTORE_BASE64" && -z "$KEYSTORE_PASSWORD" && -z "$KEY_ALIAS" && -z "$KEY_PASSWORD" ]]; then
-            artifact_name="court-pace-release-signing-key-v3.2.0"
-            artifact_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq '.artifacts | map(select(.name == "court-pace-release-signing-key-v3.2.0" and .expired == false)) | sort_by(.created_at) | (last // {}) | .id // empty')"
-            recovery_run_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq '.artifacts | map(select(.name == "court-pace-release-signing-key-v3.2.0" and .expired == false)) | sort_by(.created_at) | (last // {}) | .workflow_run.id // empty')"
+            # Always recover the newest retained signing-key artifact. Its versioned name
+            # changes on each release; hard-coding an old tag silently rotates the key.
+            artifact_record="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq '.artifacts | map(select(.expired == false and (.name | startswith("court-pace-release-signing-key-v")))) | sort_by(.created_at) | (last // {})')"
+            artifact_name="$(jq -r '.name // empty' <<<"$artifact_record")"
+            artifact_id="$(jq -r '.id // empty' <<<"$artifact_record")"
+            recovery_run_id="$(jq -r '.workflow_run.id // empty' <<<"$artifact_record")"
 
             recovered=false
-            if [[ -n "$artifact_id" && -n "$recovery_run_id" ]] && gh run download "$recovery_run_id" --repo "$GITHUB_REPOSITORY" --name "$artifact_name" --dir "$download_dir"; then
+            if [[ -n "$artifact_id" && -n "$recovery_run_id" && -n "$artifact_name" ]] && gh run download "$recovery_run_id" --repo "$GITHUB_REPOSITORY" --name "$artifact_name" --dir "$download_dir"; then
               prior_keystore="$(find "$download_dir" -type f -name court-pace-signing-key.jks -print -quit)"
               prior_secrets="$(find "$download_dir" -type f -name GITHUB_ACTIONS_SECRETS.txt -print -quit)"
               if [[ -s "$prior_keystore" && -s "$prior_secrets" ]]; then
@@ -261,6 +264,16 @@ jobs:
                   "- Made the dataset publisher react to live-schedule and generator changes, with explicit Paris/Stockholm integrity checks.",
                   "- Kept live Surface Speed calculation on-device through ATP/Infosys; the production opponent-adjusted rating engine is unchanged.",
                   "- Updated About, README, data provenance and source-specific licensing documentation.",
+                  "",
+              ]
+          elif version == "3.3.0":
+              lines += [
+                  "### Included in 3.3.0",
+                  "- Added the dedicated ATP Player Stats screen with calendar-year Hold%, Break% and combined H+B rankings, full eligible-player search, surface filters and current-Top-100 height-group analysis.",
+                  "- Added automatic Player Stats result/stat ingestion for all eligible ATP tour-level men's singles main-draw players, with approximately 15-second foreground checks and network-connected WorkManager background refresh.",
+                  "- Added completed-score validation, stable match deduplication, delayed game-stat enrichment and a private atomic on-device cache.",
+                  "- Preserved the existing CPI and Surface Speed calculations, datasets, live ATP rating path and original four navigation tabs.",
+                  "- Retained the private personal/non-commercial data-use boundary for TennisMyLife-derived Player Stats.",
                   "",
               ]
           else:
