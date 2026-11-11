@@ -88,7 +88,8 @@ fun PlayerStatsHost() {
         sharedLiveState?.let { live ->
             asset = live.data
             liveStatus = live.checkedAt?.let {
-                "Checked " + it.replace("T", " ").take(19) + " UTC · +" + live.addedMatches + " new matches"
+                "Checked " + it.replace("T", " ").take(19) + " UTC · +" + live.addedMatches +
+                    " results · " + live.enrichedMatches + " stats enriched"
             } ?: "Automatic sync scheduled"
             error = live.error
         }
@@ -188,8 +189,9 @@ fun PlayerStatsScreen(
                     color = colors.textDim,
                 )
                 Text(
-                    text = asset.meta.liveMatchCount.toString() + " new matches merged since archive snapshot" +
-                        (asset.meta.liveUpdatedAt?.let { " · last added " + it.replace("T", " ").take(16) + " UTC" } ?: ""),
+                    text = asset.meta.liveMatchCount.toString() + " new results · " +
+                        asset.meta.liveEnrichedMatchCount + " later stat enrichments since archive snapshot" +
+                        (asset.meta.liveUpdatedAt?.let { " · last updated " + it.replace("T", " ").take(16) + " UTC" } ?: ""),
                     style = TextStyle(fontSize = 10.sp),
                     color = colors.textFaint,
                 )
