@@ -309,6 +309,17 @@ jobs:
                   "- Preserves the existing CPI and Surface Speed calculation paths and the private personal/non-commercial data-use boundary.",
                   "",
               ]
+          elif version == "3.3.2":
+              lines += [
+                  "### Year-specific ATP Top 100 height analysis",
+                  "- Historical Height Groups now use each calendar year's own final ATP Top 100 ranking snapshot; the live 2026 season uses its latest available dated snapshot.",
+                  "- Preserves co-ranked players and reports ranking rows without stable player IDs separately instead of inventing player identities.",
+                  "- Shows the exact ranking snapshot date and cohort counts for the selected season.",
+                  "- Keeps annual Hold%, Break% and H+B calculations, pooled game denominators, player search, surface filters and live Player Stats ingestion.",
+                  "- Preserves the CPI and Surface Speed formulas, live ATP calculation paths and existing pace datasets.",
+                  "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
+                  "",
+              ]
           else:
               lines += [
                   "### Included",
