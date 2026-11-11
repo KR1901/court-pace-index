@@ -91,4 +91,21 @@ python3 tools/build_player_stats.py
 
 The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates the exact dated 100-player cohort, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
 
-The workflow runs weekly on the default branch and refreshes the repository's private asset. The Android app reads the bundled asset; a refreshed repository snapshot is included on the handset with the next APK build/install. There is deliberately no new runtime network client or modification to the existing `AppViewModel` / dataset updater. The screen displays the bundled data date and the separate Top-100 ranking date.
+The archive workflow runs weekly and refreshes the private repository asset. The installed Android app does not need a new APK for current-season match updates.
+
+### Automatic live updates
+
+The app uses a separate Player Stats-only updater. It reads TennisMyLife's `api/data-files` manifest and compares the published modification time for:
+
+- `ongoing_tourneys.csv` — newly completed ATP matches from ongoing tour events.
+- `YYYY.csv` for the current calendar year — results once they are included in the annual archive.
+
+The two feeds are reconciled using the same stable identity key: tournament ID, match number and the two sorted ATP player IDs. The static archive builder records the current-season keys it already contains. The on-device updater stores the keys it has applied in a private app cache, so moving a match from the ongoing feed into the annual file cannot double-count it.
+
+When a new eligible match appears, both players' W–L, service-game and return-game counters are updated for All surfaces and the corresponding surface/environment buckets. New player IDs are added to the directory automatically; this is not limited to the current Top 100. Played retirements count in W–L but partial-match game statistics are excluded. Walkovers/no-play results are excluded. Invalid or missing game counters contribute W–L only and are never guessed.
+
+The Player Stats tab checks the source immediately when opened and approximately once per minute while it remains visible. WorkManager performs an immediate one-time check when the app is launched and schedules connected-network background checks with a 15-minute periodic interval. Android may defer background work for battery and system scheduling reasons; foreground checks are more frequent. If the device is offline or the provider is unavailable, the last saved statistics remain visible and the app retries automatically.
+
+The provider describes the ongoing feed as real-time, but also describes its database refresh cadence as daily/ideally real-time. There is no published delivery-time guarantee. Therefore the app can ingest a match on the first poll after the provider publishes it, but cannot guarantee that every match appears at the exact second the on-court match ends. The interface distinguishes the bundled archive baseline from matches merged by live sync and shows the last successful addition/check state.
+
+The live updater is isolated from CPI, Surface Speed, `PaceData`, and the existing `AppViewModel` refresh loops. It uses the same private personal/non-commercial source boundary as the bundled archive.
