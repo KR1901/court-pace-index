@@ -62,11 +62,11 @@ This repository is currently private for personal development and research. Repo
 
 ## 10. Player Stats dataset
 
-The dedicated Player Stats feature uses the annual ATP match files and player roster published by the [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database). It derives player-season service-game hold percentage, return-game break percentage, combined H+B, results, surface splits and player heights. The pinned current Top 100 cohort is a separate ranking snapshot dated 9 November 2026.
+The dedicated Player Stats feature uses the annual ATP match files, player roster, heights and dated ranking endpoint published by the [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database). It derives calendar-year player Hold%, Break%, H+B, match results, surface/environment splits and height-group summaries. The current Top 100 cohort is loaded from the TML dated ranking API by stable player ID and the exact snapshot date is recorded in the asset.
 
-The source's public terms describe use as personal, educational and non-commercial research and do not authorise raw database redistribution or resale. The new `player_stats.json` asset is intended only for this owner's private hobby app and private repository. Raw TML CSVs remain temporary build inputs and are not committed. Do not publish this derived asset or distribute an APK containing it without confirming the necessary source and third-party rights. The MIT licence applies to original software, not to this dataset. The private-repository setting does not itself create data rights.
+The source's public terms describe use as personal, educational and non-commercial research and do not authorise raw database redistribution or resale. This feature is intended only for this owner's private hobby app and private repository. Raw TML CSVs and API responses remain temporary build inputs and are not committed. Do not publish the derived asset or distribute a public APK containing it without obtaining the necessary source and third-party permissions. The MIT licence applies to original software, not to this dataset. Private repository visibility does not itself grant data rights.
 
-The annual source files and the player roster are fetched by `tools/build_player_stats.py`. The current Top 100 snapshot is stored in `data/current_atp_top100.csv` and must be explicitly refreshed when adopting a newer cohort. Each displayed height uses a canonical centimetre value; metric and imperial strings are derived in the app.
+The annual source files, player roster and current ranking snapshot are fetched by `tools/build_player_stats.py`. Indoor/outdoor hard splits use the explicit source environment flag; unknown values remain unknown. Heights are stored in canonical centimetres; the app derives metric and imperial display strings from that one value.
 
 ## Source links
 
@@ -74,7 +74,7 @@ The annual source files and the player roster are fetched by `tools/build_player
 - [Archive mirror licence](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE)
 - [TennisMyLife database and terms](https://github.com/Tennismylife/TML-Database)
 - [TennisMyLife ATP Match Database catalogue and data-files endpoint](https://stats.tennismylife.org/tennis-match-database)
-- [Pinned 9 November 2026 ATP ranking snapshot](https://www.tennis.esp.br/en/rankings?circuito=ATP&data=2026-11-09)
+- [TennisMyLife dated ranking list](https://stats.tennismylife.org/api/ranking/dates)
 - [Tennis Abstract ATP Surface Speed](https://tennisabstract.com/reports/atp_surface_speed.html)
 - [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions-app)
 - [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
