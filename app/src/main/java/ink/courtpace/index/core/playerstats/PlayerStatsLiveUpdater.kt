@@ -23,6 +23,7 @@ data class PlayerStatsLiveRefreshResult(
     val data: PlayerStatsData,
     val checkedAt: String,
     val addedMatches: Int,
+    val enrichedMatches: Int,
     val changedSources: Int,
 )
 
@@ -30,6 +31,7 @@ data class PlayerStatsLiveState(
     val data: PlayerStatsData,
     val checkedAt: String? = null,
     val addedMatches: Int = 0,
+    val enrichedMatches: Int = 0,
     val error: String? = null,
 )
 
@@ -96,6 +98,7 @@ object PlayerStatsLiveUpdater {
 
             val year = LocalDate.now().year
             var addedMatches = 0
+            var enrichedMatches = 0
             var changedSources = 0
 
             // First reconcile the annual file. The app's baseline carries all match keys already
@@ -114,6 +117,7 @@ object PlayerStatsLiveUpdater {
                     meta = update.data.meta.copy(currentSeasonSourceMtime = annual.modified),
                 )
                 addedMatches += update.addedMatches
+                enrichedMatches += update.enrichedMatches
                 changedSources++
             }
 
@@ -143,6 +147,7 @@ object PlayerStatsLiveUpdater {
                 data = data,
                 checkedAt = Instant.now().toString(),
                 addedMatches = addedMatches,
+                enrichedMatches = enrichedMatches,
                 changedSources = changedSources,
             )
             lastFailure = null
@@ -150,6 +155,7 @@ object PlayerStatsLiveUpdater {
                 data = data,
                 checkedAt = result.checkedAt,
                 addedMatches = result.addedMatches,
+                enrichedMatches = result.enrichedMatches,
                 error = null,
             )
             result
