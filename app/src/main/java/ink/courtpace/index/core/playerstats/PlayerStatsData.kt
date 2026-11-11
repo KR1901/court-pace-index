@@ -31,9 +31,11 @@ data class PlayerStatsMeta(
     val playersWithEligibleArchiveResults: Int = 0,
     val currentSeasonSourceMtime: String = "",
     val currentSeasonMatchKeys: List<String> = emptyList(),
+    val currentSeasonStatMatchKeys: List<String> = emptyList(),
     val ongoingSourceMtime: String = "",
     val liveUpdatedAt: String? = null,
     val liveMatchCount: Int = 0,
+    val liveEnrichedMatchCount: Int = 0,
 )
 
 @Serializable
