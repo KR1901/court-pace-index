@@ -6,6 +6,7 @@ from build_player_stats import (
     match_buckets,
     match_has_result,
     match_is_retirement,
+    match_identity_key,
     normalize_name,
     parse_current_top100,
     select_ranking_snapshot_date,
@@ -107,6 +108,14 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(stats["rw"], 1)
         self.assertEqual(stats["sm"], 1)
         self.assertNotIn(2025, aggregate["P1"])
+
+    def test_match_identity_is_stable_across_winner_loser_order(self):
+        first = match_identity_key("2026-429", "38", "M0QI", "C0C8")
+        reversed_players = match_identity_key("2026-429", "38", "C0C8", "M0QI")
+        self.assertEqual(first, "2026-429|38|C0C8|M0QI")
+        self.assertEqual(first, reversed_players)
+        with self.assertRaises(ValueError):
+            match_identity_key("2026-429", "", "M0QI", "C0C8")
 
     def test_name_matching_ignores_accents_and_punctuation(self):
         self.assertEqual(normalize_name("João Fonseca"), "joaofonseca")
