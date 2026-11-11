@@ -412,7 +412,7 @@ fun PlayerStatsScreen(
                 color = colors.textFaint,
             )
             Text(
-                text = "Calendar years · automatic foreground checks every 60 seconds · Android background checks at 15-minute intervals or later · source publication may lag",
+                text = "Calendar years · automatic foreground checks about every 15 seconds · Android background checks at 15-minute intervals or later · source publication may lag",
                 style = TextStyle(fontSize = 10.5.sp),
                 color = colors.textFaint,
             )
