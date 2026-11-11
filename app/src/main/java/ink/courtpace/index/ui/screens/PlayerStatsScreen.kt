@@ -113,14 +113,13 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
     val visibleRows = remember(rankingRows, search) {
         val query = search.trim().lowercase()
         if (query.isEmpty()) {
-            rankingRows.filter { it.qualified }.take(100)
-                .ifEmpty { rankingRows.filter { it.score != null }.take(100) }
+            rankingRows.filter { it.matches > 0 || it.score != null }
         } else {
             rankingRows.filter {
                 it.player.name.lowercase().contains(query) ||
                     (it.player.country?.lowercase()?.contains(query) == true) ||
                     it.player.id.lowercase().contains(query)
-            }.take(100)
+            }
         }
     }
     val heightResult = remember(asset, year, surface) {
@@ -193,18 +192,20 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                         }
                     }
                 }
-                Box {
-                    GlassChip(
-                        text = "SAMPLE · " + minimumGames + " GAMES",
-                        selected = minimumGames > 0,
-                        onClick = { sampleMenu = true },
-                    )
-                    DropdownMenu(expanded = sampleMenu, onDismissRequest = { sampleMenu = false }) {
-                        listOf(0, 50, 100, 250).forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(if (option == 0) "No minimum" else option.toString() + " games") },
-                                onClick = { minimumGames = option; sampleMenu = false },
-                            )
+                if (mode == PlayerStatsMode.RANKINGS) {
+                    Box {
+                        GlassChip(
+                            text = "SAMPLE · " + minimumGames + " GAMES",
+                            selected = minimumGames > 0,
+                            onClick = { sampleMenu = true },
+                        )
+                        DropdownMenu(expanded = sampleMenu, onDismissRequest = { sampleMenu = false }) {
+                            listOf(0, 50, 100, 250).forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(if (option == 0) "No minimum" else option.toString() + " games") },
+                                    onClick = { minimumGames = option; sampleMenu = false },
+                                )
+                            }
                         }
                     }
                 }
@@ -270,7 +271,7 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                     )
                     Text(
                         text = if (search.isBlank()) {
-                            "Top 100 qualified rows · " + asset.players.size + " players in the directory"
+                            "All players with archive results · " + visibleRows.size + " shown of " + asset.players.size
                         } else {
                             visibleRows.size.toString() + " matching players · search covers the full archive"
                         },
@@ -298,7 +299,7 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
 
             item {
                 GlassNote(
-                    text = "Rankings use " + minimumGames + " or more relevant service/return games by default. Players below the threshold remain in the searchable directory and are shown as low sample. Combined is H+B: Hold% plus Break%.",
+                    text = "Every player with an archive result for the selected year and surface is included. Qualified players receive ranks; those below " + minimumGames + " relevant games remain visible but are labelled low sample and left unranked. Combined is H+B: Hold% plus Break%.",
                 )
             }
         } else {
