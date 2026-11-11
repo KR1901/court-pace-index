@@ -8,7 +8,7 @@ object PlayerStatsLiveCsvParser {
     private val requiredColumns = setOf(
         "tourney_id", "surface", "indoor", "tourney_date", "tourney_level", "match_num",
         "winner_id", "winner_name", "winner_ht", "winner_ioc",
-        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score",
+        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score", "best_of",
         "w_SvGms", "w_bpSaved", "w_bpFaced", "l_SvGms", "l_bpSaved", "l_bpFaced",
     )
 
@@ -92,6 +92,7 @@ object PlayerStatsLiveAggregator {
         """(?i)(?:\bW/O\b|\bW\.O\.|\bWO\b|\bWALKOVER\b|\bDEF\b|\bABD\b|\bABN\b|\bABANDONED\b)""",
     )
     private val retirement = Regex("""(?i)\bRET(?:IRED)?\b""")
+    private val setScorePattern = Regex("""(\d+)-(\d+)(?:\(\d+\))?""")
 
     fun matchIdentityKey(
         tournamentId: String,
@@ -138,7 +139,8 @@ object PlayerStatsLiveAggregator {
 
             val key = matchIdentityKey(tournamentId, matchNumber, winnerId, loserId)
             val resultAlreadyCounted = key in seenKeys
-            if (noPlay.containsMatchIn(score)) continue
+            val isRetirement = retirement.containsMatchIn(score)
+            if (!isCompletedResult(score, row["best_of"])) continue
 
             val winnerName = row["winner_name"].orEmpty().trim().ifBlank { winnerId }
             val loserName = row["loser_name"].orEmpty().trim().ifBlank { loserId }
@@ -147,7 +149,6 @@ object PlayerStatsLiveAggregator {
             val winnerCountry = row["winner_ioc"].orEmpty().trim().ifBlank { null }
             val loserCountry = row["loser_ioc"].orEmpty().trim().ifBlank { null }
 
-            val isRetirement = retirement.containsMatchIn(score)
             val stats = if (isRetirement) null else serviceReturnStats(row)
             // A provider can publish the final score before its game counters. Count W-L once,
             // then enrich the same match later when valid service/return stats arrive.
@@ -240,6 +241,45 @@ object PlayerStatsLiveAggregator {
             players = playerRows,
         )
         return PlayerStatsLiveApplyResult(updated, addedMatches, enrichedMatches, validMatches)
+    }
+
+    /**
+     * A non-empty score can still be an in-progress set. Accept ordinary results only when
+     * a player has won the required number of complete sets for best-of-three/five. Played
+     * retirements are final results even when the last set is incomplete; no-play markers
+     * (walkovers, defaults and abandoned matches) are always rejected.
+     */
+    private fun isCompletedResult(score: String, bestOfValue: String?): Boolean {
+        if (noPlay.containsMatchIn(score)) return false
+        if (retirement.containsMatchIn(score)) return true
+
+        val bestOf = bestOfValue?.trim()?.toIntOrNull()?.takeIf { it == 3 || it == 5 } ?: return false
+        val sets = setScorePattern.findAll(score).toList()
+        if (sets.size !in 2..bestOf) return false
+
+        val remainder = setScorePattern.replace(score, "").filterNot { it.isWhitespace() }
+        if (remainder.isNotEmpty()) return false
+
+        val setsToWin = bestOf / 2 + 1
+        var winnerSets = 0
+        var loserSets = 0
+        for ((index, set) in sets.withIndex()) {
+            val first = set.groupValues[1].toIntOrNull() ?: return false
+            val second = set.groupValues[2].toIntOrNull() ?: return false
+            if (first == second) return false
+
+            val high = maxOf(first, second)
+            val low = minOf(first, second)
+            val completeSet = (high >= 6 && high - low >= 2) || (high == 7 && low == 6)
+            if (!completeSet) return false
+
+            if (first > second) winnerSets++ else loserSets++
+            if (winnerSets == setsToWin || loserSets == setsToWin) {
+                // A final match score ends on the set that first clinches the match.
+                return index == sets.lastIndex
+            }
+        }
+        return false
     }
 
     private data class ServiceReturnStats(
