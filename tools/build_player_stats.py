@@ -383,7 +383,7 @@ def aggregate_files(
         if not rows:
             raise RuntimeError(f"TML {filename} is empty")
         required = {
-            "tourney_id", "tourney_name", "surface", "indoor", "tourney_date",
+            "tourney_id", "tourney_name", "surface", "tourney_date",
             "tourney_level", "winner_id", "winner_name", "winner_ht", "winner_ioc",
             "loser_id", "loser_name", "loser_ht", "loser_ioc", "score",
         }
@@ -477,7 +477,7 @@ def build() -> dict:
     manifest = load_json_url(MANIFEST_URL)
     files = valid_manifest_files(manifest)
     current_year = date.today().year
-    years = range(1967, current_year + 1)
+    years = range(1968, current_year + 1)
     roster, roster_aliases = load_roster(files)
     players = roster
     top100 = load_top100()
@@ -516,7 +516,7 @@ def build() -> dict:
     payload = {
         "meta": {
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
-            "firstSeason": min(years),
+            "firstSeason": 1968,
             "lastSeason": current_year,
             "players": len(player_rows),
             "playersWithHeight": height_count,
