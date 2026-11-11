@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh]
+    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-screen]
   pull_request:
   workflow_dispatch:
 

@@ -49,6 +49,7 @@ Historical and live ratings use leave-one-tournament-out training, but player te
 - **Compare:** event comparisons and CPI/Speed percentile divergence.
 - **Surfaces:** surface-level distributions and trends.
 - **Method:** formulas, bands, source provenance and known limitations.
+- **Players:** calendar-year Hold%, Break% and H+B leaderboards, all-player search, surface splits and height-group analysis of the current Top 100 cohort.
 - **Live now:** discovers active ATP 1000/500/250 events, reads completed singles results and computes opponent-adjusted Surface Speed from ATP/Infosys statistics on the device. Diagnostics expose the raw score, normalisation, tour ace rate, service-point totals, matched profiles and influential server-side ratios.
 
 The live pipeline excludes walkovers, confirmed no-play records, doubles and in-progress matches. Played retirements remain eligible when valid statistics exist. Missing data remains visible; the app must not invent statistics to complete a rating. ATP/Infosys access can be device-sensitive, so a green CI build is not a substitute for live handset acceptance.
@@ -106,6 +107,7 @@ See [DATA.md](docs/DATA.md) for provenance and [DATA-LICENSES.md](DATA-LICENSES.
 python3 -m unittest discover -s tools -p "test_*.py" -v
 python3 tools/compute_speed.py --write
 python3 tools/build_dataset.py
+python3 tools/build_player_stats.py
 python3 tools/audit_event_population.py --event Montpellier --season 2026 --require-source "TennisMyLife ATP Match Database"
 python3 tools/audit_event_population.py --all-events --season 2026 --require-source "TennisMyLife ATP Match Database"
 ```
