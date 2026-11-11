@@ -1,0 +1,139 @@
+name: Refresh Player Stats
+
+# Independent annual player archive refresh. This workflow never runs the CPI/Surface Speed
+# builder and stages only the dedicated Player Stats JSON assets.
+on:
+  push:
+    branches: [main, feature/player-stats-screen]
+    paths:
+      - 'tools/build_player_stats.py'
+      - 'tools/test_build_player_stats.py'
+      - 'data/current_atp_top100.csv'
+      - '.github/workflows/refresh-player-stats.yml'
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: player-stats-refresh-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'KR1901/court-pace-index'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check Player Stats tooling syntax
+        run: python3 -m py_compile tools/build_player_stats.py tools/test_build_player_stats.py
+
+      - name: Test Player Stats formulas and data validation
+        run: python3 -m unittest discover -s tools -p 'test_build_player_stats.py' -v
+
+      - name: Build independent annual Player Stats asset
+        run: python3 tools/build_player_stats.py
+
+      - name: Validate Player Stats files and data integrity
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          bundled = Path("app/src/main/assets/player_stats.json")
+          published = Path("data/player_stats.json")
+          assert bundled.is_file() and published.is_file(), "Player Stats JSON outputs are missing"
+          assert bundled.read_bytes() == published.read_bytes(), "bundled and published Player Stats files differ"
+
+          payload = json.loads(bundled.read_text(encoding="utf-8"))
+          players = payload.get("players")
+          meta = payload.get("meta") or {}
+          assert isinstance(players, list) and len(players) >= 100
+          ids = [row.get("id") for row in players]
+          assert all(isinstance(value, str) and value for value in ids), "blank player ID"
+          assert len(set(ids)) == len(ids), "duplicate player IDs"
+
+          cohort = [row for row in players if row.get("currentRank") is not None]
+          assert len(cohort) == 100, f"expected 100 current cohort players, got {len(cohort)}"
+          ranks = [row["currentRank"] for row in cohort]
+          assert sorted(ranks) == list(range(1, 101)), "current Top 100 ranks must be exactly 1–100"
+          assert len({row["id"] for row in cohort}) == 100, "current Top 100 contains duplicate player IDs"
+
+          assert meta.get("players") == len(players)
+          assert meta.get("playersInCurrentTop100") == 100
+          assert meta.get("currentTop100AsOf") == "2026-11-09"
+          assert meta.get("source") == "TennisMyLife ATP Match Database"
+          coverage = meta.get("coverage") or {}
+          assert coverage.get("completedTourMatches", 0) > 0
+          assert coverage.get("matchesWithValidStats", 0) > 0
+
+          height_count = 0
+          season_count = 0
+          bucket_count = 0
+          for player in players:
+              height = player.get("heightCm")
+              assert height is None or 140 <= height <= 220, f"invalid height for {player.get('id')}"
+              height_count += height is not None
+              seasons = player.get("seasons") or []
+              years = [item["y"] for item in seasons]
+              assert len(years) == len(set(years)), f"duplicate calendar seasons for {player.get('id')}"
+              for season in seasons:
+                  season_count += 1
+                  year = season["y"]
+                  assert 1968 <= year <= meta.get("lastSeason", 0), f"invalid calendar year {year}"
+                  for bucket in (season.get("b") or {}).values():
+                      bucket_count += 1
+                      assert bucket.get("sp", 0) >= bucket.get("sw", 0) >= 0
+                      assert bucket.get("rp", 0) >= bucket.get("rw", 0) >= 0
+                      assert bucket.get("mp", 0) == bucket.get("w", 0) + bucket.get("l", 0)
+
+          assert height_count == meta.get("playersWithHeight")
+          assert season_count > 0 and bucket_count > 0
+          print(
+              f"Player Stats OK: {len(players)} players, {height_count} valid heights, "
+              f"100 current Top 100 IDs, {season_count} player-seasons, "
+              f"{bucket_count} surface buckets, "
+              f"{coverage['matchesWithValidStats']} matches with valid game stats."
+          )
+          PY
+
+      - name: Commit only the Player Stats assets
+        shell: bash
+        run: |
+          git config user.name "court-pace-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/player_stats.json app/src/main/assets/player_stats.json
+          if git diff --cached --quiet; then
+            echo "No Player Stats data change."
+            exit 0
+          fi
+
+          git commit -m "chore: refresh private Player Stats archive"
+          branch="$GITHUB_REF_NAME"
+          for attempt in 1 2 3; do
+            git fetch origin "refs/heads/$branch:refs/remotes/origin/$branch"
+            if ! git rebase "origin/$branch"; then
+              git rebase --abort || true
+              echo "Could not safely rebase Player Stats output onto the latest $branch."
+              exit 1
+            fi
+            if git push origin "HEAD:refs/heads/$branch"; then
+              echo "Published only Player Stats assets to $branch."
+              exit 0
+            fi
+            echo "Push raced with another branch update (attempt $attempt/3)."
+            sleep $((attempt * 2))
+          done
+          echo "Could not publish Player Stats assets after three attempts."
+          exit 1
