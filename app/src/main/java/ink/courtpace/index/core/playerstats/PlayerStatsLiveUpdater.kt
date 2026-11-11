@@ -6,6 +6,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -23,6 +26,13 @@ data class PlayerStatsLiveRefreshResult(
     val changedSources: Int,
 )
 
+data class PlayerStatsLiveState(
+    val data: PlayerStatsData,
+    val checkedAt: String? = null,
+    val addedMatches: Int = 0,
+    val error: String? = null,
+)
+
 /**
  * Fetches TML's source manifest and only downloads ATP CSVs whose published mtime changed.
  * This module is independent from AppViewModel, CPI, Surface Speed and their refresh loops.
@@ -34,6 +44,9 @@ object PlayerStatsLiveUpdater {
 
     private val mutex = Mutex()
     @Volatile private var memoryData: PlayerStatsData? = null
+    @Volatile private var lastFailure: String? = null
+    private val mutableState = MutableStateFlow<PlayerStatsLiveState?>(null)
+    val state: StateFlow<PlayerStatsLiveState?> = mutableState.asStateFlow()
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -45,6 +58,22 @@ object PlayerStatsLiveUpdater {
         val url: String,
         val modified: String,
     )
+
+    /** Publish the cache/archive immediately so the Player Stats screen never waits for network. */
+    fun publishInitial(data: PlayerStatsData) {
+        if (mutableState.value == null) {
+            memoryData = memoryData ?: data
+            mutableState.value = PlayerStatsLiveState(
+                data = memoryData ?: data,
+                error = lastFailure,
+            )
+        }
+    }
+
+    fun reportFailure(message: String) {
+        lastFailure = message
+        mutableState.value = mutableState.value?.copy(error = message)
+    }
 
     suspend fun refresh(context: Context): PlayerStatsLiveRefreshResult = mutex.withLock {
         withContext(Dispatchers.IO) {
@@ -110,12 +139,20 @@ object PlayerStatsLiveUpdater {
             }
             memoryData = data
 
-            PlayerStatsLiveRefreshResult(
+            val result = PlayerStatsLiveRefreshResult(
                 data = data,
                 checkedAt = Instant.now().toString(),
                 addedMatches = addedMatches,
                 changedSources = changedSources,
             )
+            lastFailure = null
+            mutableState.value = PlayerStatsLiveState(
+                data = data,
+                checkedAt = result.checkedAt,
+                addedMatches = result.addedMatches,
+                error = null,
+            )
+            result
         }
     }
 
