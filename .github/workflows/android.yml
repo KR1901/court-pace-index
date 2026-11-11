@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-screen]
+    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2]
   pull_request:
   workflow_dispatch:
 
@@ -26,6 +26,9 @@ jobs:
 
       - name: Check Python tooling syntax
         run: python3 -m py_compile tools/*.py
+
+      - name: Test Player Stats source aggregation
+        run: python3 -m unittest discover -s tools -p 'test_build_player_stats.py' -v
 
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
