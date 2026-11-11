@@ -95,7 +95,7 @@ object PlayerStatsAnalytics {
         val feet = inches / 12
         val remainder = inches % 12
         val metres = "\${heightCm / 100}.\${(heightCm % 100).toString().padStart(2, '0')} m"
-        return "\$metres · \$feet′\$remainder″"
+        return "$metres · $feet′$remainder″"
     }
 
     fun rankings(
