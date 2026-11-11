@@ -322,12 +322,12 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                     contentPadding = PaddingValues(14.dp),
                 ) {
                     Text(
-                        text = "Current Top 100 cohort",
+                        text = "Current ATP Top 100 · TML snapshot",
                         style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                         color = colors.text,
                     )
                     Text(
-                        text = "Ranking snapshot: " + asset.meta.currentTop100AsOf + " · " + heightResult.cohortSize + " players",
+                        text = "TML weekly ranking · " + asset.meta.currentTop100AsOf + " · " + heightResult.cohortSize + " players",
                         style = TextStyle(fontSize = 11.5.sp),
                         color = colors.textDim,
                     )
