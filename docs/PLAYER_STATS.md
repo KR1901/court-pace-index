@@ -90,3 +90,5 @@ python3 tools/build_player_stats.py
 ```
 
 The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates the exact dated 100-player cohort, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
+
+The workflow runs weekly on the default branch and refreshes the repository's private asset. The Android app reads the bundled asset; a refreshed repository snapshot is included on the handset with the next APK build/install. There is deliberately no new runtime network client or modification to the existing `AppViewModel` / dataset updater. The screen displays the bundled data date and the separate Top-100 ranking date.
