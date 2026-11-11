@@ -75,7 +75,7 @@ jobs:
           assert meta.get("currentTop100AsOf") == "2026-11-09"
           assert meta.get("source") == "TennisMyLife ATP Match Database"
           coverage = meta.get("coverage") or {}
-          assert coverage.get("completedTourMatches", 0) > 0
+          assert coverage.get("matchResults", 0) > 0
           assert coverage.get("matchesWithValidStats", 0) > 0
 
           height_count = 0
