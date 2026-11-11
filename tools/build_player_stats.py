@@ -62,11 +62,16 @@ def valid_height(value: object) -> int | None:
     return height if height is not None and 140 <= height <= 220 else None
 
 
-def match_is_completed(score: str | None, winner_id: str | None, loser_id: str | None) -> bool:
+def match_has_result(score: str | None, winner_id: str | None, loser_id: str | None) -> bool:
+    """Official played-match result; retirements count, walkovers/no-play do not."""
     if not winner_id or not loser_id or winner_id == loser_id or not (score or "").strip():
         return False
     upper = (score or "").upper()
-    return not bool(re.search(r"\b(?:RET|W/O|W\.O\.|WO|WALKOVER|DEF|ABD|ABN|ABANDONED)\b", upper))
+    return not bool(re.search(r"\b(?:W/O|W\.O\.|WO|WALKOVER|DEF|ABD|ABN|ABANDONED)\b", upper))
+
+
+def match_is_retirement(score: str | None) -> bool:
+    return bool(re.search(r"\bRET(?:IRED)?\b", (score or "").upper()))
 
 
 def service_return_contribution(row: dict[str, str]) -> tuple[int, int, int, int] | None:
@@ -362,9 +367,10 @@ def aggregate_files(
     match_aliases: dict[str, set[str]] = defaultdict(set)
     totals = {
         "sourceRows": 0,
-        "completedTourMatches": 0,
+        "matchResults": 0,
         "matchesWithValidStats": 0,
-        "excludedNoPlayOrRetirement": 0,
+        "retiredMatchResults": 0,
+        "excludedNoPlay": 0,
         "excludedIneligibleLevel": 0,
         "excludedInvalidStatsSides": 0,
     }
@@ -406,9 +412,12 @@ def aggregate_files(
             loser_id = (row.get("loser_id") or "").strip()
             winner_name = (row.get("winner_name") or "").strip()
             loser_name = (row.get("loser_name") or "").strip()
-            if not match_is_completed(row.get("score"), winner_id, loser_id):
-                totals["excludedNoPlayOrRetirement"] += 1
+            if not match_has_result(row.get("score"), winner_id, loser_id):
+                totals["excludedNoPlay"] += 1
                 continue
+            retirement = match_is_retirement(row.get("score"))
+            if retirement:
+                totals["retiredMatchResults"] += 1
             ensure_player(
                 players, winner_id, winner_name, row.get("winner_ioc"),
                 row.get("winner_ht"), season,
@@ -423,7 +432,8 @@ def aggregate_files(
                     match_aliases[key].add(player_id)
 
             buckets = match_buckets(row.get("surface"), row.get("indoor"))
-            stats = service_return_contribution(row)
+            # Retirements count in W-L results, but partial-match games do not train annual rates.
+            stats = None if retirement else service_return_contribution(row)
             if stats is None:
                 totals["excludedInvalidStatsSides"] += 1
                 add_player_match(
@@ -432,7 +442,7 @@ def aggregate_files(
                 add_player_match(
                     aggregate, loser_id, season, buckets, False, 0, 0, 0, 0, False
                 )
-                totals["completedTourMatches"] += 1
+                totals["matchResults"] += 1
                 continue
 
             winner_sg, winner_sw, loser_sg, loser_sw = stats
@@ -446,11 +456,11 @@ def aggregate_files(
                 aggregate, loser_id, season, buckets, False,
                 loser_sg, loser_sw, winner_sg, loser_return_won, True,
             )
-            totals["completedTourMatches"] += 1
+            totals["matchResults"] += 1
             totals["matchesWithValidStats"] += 1
         print(
             f"{filename}: {len(rows)} source rows processed; "
-            f"{totals['completedTourMatches']} completed tour matches so far"
+            f"{totals['matchResults']} tour match results so far"
         )
     return aggregate, match_aliases, totals
 
@@ -527,7 +537,7 @@ def build() -> dict:
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
             "statistics": "Hold% = service games won / service games played. Break% = return games won / return games played. Combined = Hold% + Break%.",
-            "sampleNote": "Only completed ATP tour-level singles matches are used. Missing or inconsistent match-stat lines contribute results but no service/return games.",
+            "sampleNote": "ATP tour-level singles match results include retirements in W-L. Walkovers and no-play defaults are excluded. Retirement match statistics are not used for Hold/Break because the match sample is partial. Missing or inconsistent stat lines contribute results but no service/return games.",
             "statsAvailableSeasons": stat_seasons,
             "tourLevels": sorted(TOUR_LEVELS),
             "coverage": totals,
@@ -556,7 +566,7 @@ def main() -> None:
     meta = payload["meta"]
     print(
         "player stats coverage: "
-        f"{meta['coverage']['completedTourMatches']} completed matches, "
+        f"{meta['coverage']['matchResults']} tour match results, "
         f"{meta['coverage']['matchesWithValidStats']} with valid service/return stats, "
         f"{meta['playersInCurrentTop100']} current Top 100 players mapped"
     )
