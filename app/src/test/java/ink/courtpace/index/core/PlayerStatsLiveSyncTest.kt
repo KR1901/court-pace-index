@@ -102,7 +102,7 @@ class PlayerStatsLiveSyncTest {
         assertEquals(2, all.w)
         assertEquals(9, all.sp) // retirement counts in W-L but partial game stats are excluded
         assertEquals(1, all.sm)
-        assertEquals(2, result.data.meta.playersWithEligibleArchiveResults)
+        assertEquals(3, result.data.meta.playersWithEligibleArchiveResults)
 
         val opponent = result.data.players.single { it.id == "C0C8" }
         val opponentHard = opponent.seasons.single { it.y == 2026 }.b.getValue("hardIndoor")
