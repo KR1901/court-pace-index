@@ -135,6 +135,7 @@ object PlayerStatsLiveUpdater {
                     meta = update.data.meta.copy(ongoingSourceMtime = ongoing.modified),
                 )
                 addedMatches += update.addedMatches
+                enrichedMatches += update.enrichedMatches
                 changedSources++
             }
 
