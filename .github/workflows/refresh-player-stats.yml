@@ -71,6 +71,10 @@ jobs:
 
           assert meta.get("players") == len(players)
           assert meta.get("playersInCurrentTop100") == 100
+          current_match_keys = meta.get("currentSeasonMatchKeys")
+          assert isinstance(current_match_keys, list) and current_match_keys, "current-season dedupe keys are missing"
+          assert len(current_match_keys) == len(set(current_match_keys)), "duplicate current-season match keys"
+          assert meta.get("currentSeasonSourceMtime"), "current-season source mtime is missing"
           from datetime import date
 
           snapshot_date = date.fromisoformat(meta.get("currentTop100AsOf", ""))
