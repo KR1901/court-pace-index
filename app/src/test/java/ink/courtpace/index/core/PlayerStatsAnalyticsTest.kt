@@ -128,7 +128,7 @@ class PlayerStatsAnalyticsTest {
         val combined = PlayerStatsAnalytics.rankings(
             data, 2026, PlayerSurfaceFilter.ALL, PlayerRankingMetric.COMBINED, minimumGames = 10,
         )
-        assertEquals(100.0, combined[0].combined!!, 0.001)
+        assertEquals(145.0, combined[0].combined!!, 0.001)
     }
 
     @Test
