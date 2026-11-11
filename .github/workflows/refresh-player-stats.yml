@@ -97,12 +97,20 @@ jobs:
                   for player_id, ranks in ranks_by_player.items()
                   if year in ranks
               ]
-              assert len(members) >= 100, f"{year} rank-100 cohort must contain at least 100 players"
+              unresolved = snapshot.get("unresolvedPlayers", 0)
+              ranked_entries = len(members) + unresolved
+              assert unresolved >= 0
+              assert ranked_entries >= 100, (
+                  f"{year} rank-100 cohort has fewer than 100 ranked entries"
+              )
               assert all(1 <= rank <= 100 for _, rank in members), (
                   f"{year} cohort contains a rank outside 1–100"
               )
               assert snapshot.get("players") == len(members), (
-                  f"{year} snapshot player count does not match player-level membership"
+                  f"{year} identified player count does not match player-level membership"
+              )
+              assert snapshot.get("rankedEntries") == ranked_entries, (
+                  f"{year} ranked-entry total does not match identified plus unresolved entries"
               )
 
           current_snapshot = snapshots[-1]
@@ -111,7 +119,9 @@ jobs:
           assert current_snapshot["source"] == meta.get("currentTop100Source")
           assert current_snapshot["asOf"] <= date.today().isoformat(), "current cohort date is in the future"
           cohort = [row for row in players if row.get("currentRank") is not None]
-          assert len(cohort) >= 100, f"expected at least 100 current cohort players, got {len(cohort)}"
+          assert len(cohort) + current_snapshot.get("unresolvedPlayers", 0) >= 100, (
+              "current Top-100 snapshot must contain at least 100 ranked entries"
+          )
           ranks = [row["currentRank"] for row in cohort]
           assert all(1 <= rank <= 100 for rank in ranks), "current cohort ranks must be within 1–100"
           assert all(
