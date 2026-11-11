@@ -390,6 +390,8 @@ def aggregate_files(
     files: dict[str, dict],
     years: range,
     players: dict[str, dict],
+    current_year: int | None = None,
+    current_season_match_keys: set[str] | None = None,
 ) -> tuple[dict[str, dict[int, dict[str, dict[str, int]]]], dict[str, set[str]], dict]:
     aggregate: dict[str, dict[int, dict[str, dict[str, int]]]] = defaultdict(dict)
     match_aliases: dict[str, set[str]] = defaultdict(set)
@@ -454,6 +456,8 @@ def aggregate_files(
                     totals["duplicateMatchRowsSkipped"] += 1
                     continue
                 seen_matches.add(identity)
+                if current_season_match_keys is not None and season == current_year:
+                    current_season_match_keys.add("|".join(identity))
             retirement = match_is_retirement(row.get("score"))
             if retirement:
                 totals["retiredMatchResults"] += 1
@@ -532,7 +536,10 @@ def build() -> dict:
     roster, roster_aliases = load_roster(files)
     players = roster
     ranking_as_of, ranking_source, top100 = load_current_top100()
-    aggregate, _match_aliases, totals = aggregate_files(files, years, players)
+    current_season_match_keys: set[str] = set()
+    aggregate, _match_aliases, totals = aggregate_files(
+        files, years, players, current_year, current_season_match_keys
+    )
     top100_ranks = resolve_current_top100(top100, players, current_year)
     season_rows = compact_player_seasons(aggregate)
     player_rows = []
@@ -566,6 +573,8 @@ def build() -> dict:
             "generated": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
             "firstSeason": 1968,
             "lastSeason": current_year,
+            "currentSeasonSourceMtime": str(files.get(f"{current_year}.csv", {}).get("mtime") or ""),
+            "currentSeasonMatchKeys": sorted(current_season_match_keys),
             "players": len(player_rows),
             "playersWithHeight": height_count,
             "playersInCurrentTop100": len(top100_ranks),
