@@ -105,6 +105,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    implementation(libs.androidx.work.runtime.ktx)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
