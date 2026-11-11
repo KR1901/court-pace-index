@@ -288,7 +288,7 @@ jobs:
                   "- Updated About, README, data provenance and source-specific licensing documentation.",
                   "",
               ]
-          elif version in ("3.3.0", "3.3.1"):
+          elif version == "3.3.0":
               lines += [
                   "### Included in 3.3.0",
                   "- Added the dedicated ATP Player Stats screen with calendar-year Hold%, Break% and combined H+B rankings, full eligible-player search, surface filters and current-Top-100 height-group analysis.",
@@ -296,6 +296,17 @@ jobs:
                   "- Added completed-score validation, stable match deduplication, delayed game-stat enrichment and a private atomic on-device cache.",
                   "- Preserved the existing CPI and Surface Speed calculations, datasets, live ATP rating path and original four navigation tabs.",
                   "- Retained the private personal/non-commercial data-use boundary for TennisMyLife-derived Player Stats.",
+                  "",
+              ]
+          elif version == "3.3.1":
+              lines += [
+                  "### Corrective Player Stats release",
+                  "- Includes the ATP Player Stats screen: calendar-year Hold%, Break% and H+B rankings, all-player search, surface filters and current-Top-100 height-group analysis.",
+                  "- Automatically ingests newly completed eligible ATP tour-level men's singles results and valid game statistics, with approximately 15-second foreground checks and network-connected WorkManager background refresh.",
+                  "- Includes completed-score validation, cross-feed match deduplication, delayed game-stat enrichment and a private atomic on-device cache.",
+                  "- Re-issued with the original v3.2.1 signing certificate so it supports an in-place update from v3.2.1.",
+                  "- Do not use v3.3.0 as an in-place update: it was signed with a different certificate. If v3.3.0 was installed, uninstall it before installing v3.3.1.",
+                  "- Preserves the existing CPI and Surface Speed calculation paths and the private personal/non-commercial data-use boundary.",
                   "",
               ]
           else:
