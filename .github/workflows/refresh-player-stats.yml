@@ -11,6 +11,12 @@ on:
       - '.github/workflows/refresh-player-stats.yml'
   schedule:
     - cron: '0 9 * * 1'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/build_player_stats.py'
+      - 'tools/test_build_player_stats.py'
+      - '.github/workflows/refresh-player-stats.yml'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -169,7 +175,7 @@ jobs:
           fi
 
           git commit -m "chore: refresh private Player Stats archive"
-          branch="$GITHUB_REF_NAME"
+          branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           for attempt in 1 2 3; do
             git fetch origin "refs/heads/$branch:refs/remotes/origin/$branch"
             if ! git rebase "origin/$branch"; then
