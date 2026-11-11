@@ -82,6 +82,6 @@ python3 -m unittest tools/test_build_player_stats.py -v
 python3 tools/build_player_stats.py
 ```
 
-The refresh workflow validates that the bundled and published JSON files are byte-identical, that exactly 100 unique Top-100 IDs are resolved, that the source player IDs are unique, that game numerators do not exceed their denominators, and that the generated asset contains both match results and valid serve/return stats.
+The dedicated `.github/workflows/refresh-player-stats.yml` workflow validates that the bundled and published JSON files are byte-identical, that exactly 100 unique Top-100 IDs are resolved, that source player IDs are unique, that game numerators do not exceed their denominators, and that the generated asset contains both match results and valid serve/return stats. It stages only `data/player_stats.json` and `app/src/main/assets/player_stats.json`; it does not invoke `tools/compute_speed.py`, `tools/build_dataset.py`, or alter `pace_dataset.json` / `data/latest.json`.
 
 The Top-100 cohort is a pinned snapshot, not an automatically updated weekly feed. A source or schema change must fail closed rather than silently remap a player by a fuzzy name match.
