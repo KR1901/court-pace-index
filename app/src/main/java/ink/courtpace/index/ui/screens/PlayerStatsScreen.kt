@@ -192,15 +192,7 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                         }
                     }
                 }
-                if (year !in asset.meta.statsAvailableSeasons) {
-            item {
-                GlassNote(
-                    text = "No eligible service/return match-stat rows are available for " + year + ". Match results may still be present, but Hold% and Break% cannot be calculated for this season.",
-                )
-            }
-        }
-
-        if (mode == PlayerStatsMode.RANKINGS) {
+                if (mode == PlayerStatsMode.RANKINGS) {
                     Box {
                         GlassChip(
                             text = "SAMPLE · " + minimumGames + " GAMES",
@@ -217,6 +209,14 @@ fun PlayerStatsScreen(asset: PlayerStatsData) {
                         }
                     }
                 }
+            }
+        }
+
+        if (year !in asset.meta.statsAvailableSeasons) {
+            item {
+                GlassNote(
+                    text = "No eligible service/return match-stat rows are available for " + year + ". Match results may still be present, but Hold% and Break% cannot be calculated for this season.",
+                )
             }
         }
 
