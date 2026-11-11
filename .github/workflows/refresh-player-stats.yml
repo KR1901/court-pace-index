@@ -4,11 +4,10 @@ name: Refresh Player Stats
 # builder and stages only the dedicated Player Stats JSON assets.
 on:
   push:
-    branches: [main, feature/player-stats-screen]
+    branches: [main, feature/player-stats-v2]
     paths:
       - 'tools/build_player_stats.py'
       - 'tools/test_build_player_stats.py'
-      - 'data/current_atp_top100.csv'
       - '.github/workflows/refresh-player-stats.yml'
   schedule:
     - cron: '0 9 * * 1'
@@ -72,11 +71,21 @@ jobs:
 
           assert meta.get("players") == len(players)
           assert meta.get("playersInCurrentTop100") == 100
-          assert meta.get("currentTop100AsOf") == "2026-11-09"
+          from datetime import date
+
+          snapshot_date = date.fromisoformat(meta.get("currentTop100AsOf", ""))
+          assert snapshot_date <= date.today(), "current cohort snapshot cannot be in the future"
+          assert meta.get("currentTop100Source") == (
+              "https://stats.tennismylife.org/api/ranking?date=" + snapshot_date.isoformat()
+          ), "current Top 100 must be tied to the exact dated TML ranking response"
           assert meta.get("source") == "TennisMyLife ATP Match Database"
+          assert meta.get("playersWithEligibleArchiveResults", 0) > 0
           coverage = meta.get("coverage") or {}
           assert coverage.get("matchResults", 0) > 0
           assert coverage.get("matchesWithValidStats", 0) > 0
+          assert coverage.get("matchResults", 0) >= coverage.get("matchesWithValidStats", 0)
+          assert coverage.get("matchesWithoutValidStats", 0) >= 0
+          assert coverage.get("hardRowsWithUnknownEnvironment", 0) >= 0
 
           height_count = 0
           season_count = 0
@@ -96,13 +105,18 @@ jobs:
                       bucket_count += 1
                       assert bucket.get("sp", 0) >= bucket.get("sw", 0) >= 0
                       assert bucket.get("rp", 0) >= bucket.get("rw", 0) >= 0
+                      assert 0 <= bucket.get("sm", 0) <= bucket.get("mp", 0)
                       assert bucket.get("mp", 0) == bucket.get("w", 0) + bucket.get("l", 0)
 
           assert height_count == meta.get("playersWithHeight")
+          archive_players = sum(bool(row.get("seasons")) for row in players)
+          assert archive_players == meta.get("playersWithEligibleArchiveResults"), (
+              "all-archive directory count does not match player-season result coverage"
+          )
           assert season_count > 0 and bucket_count > 0
           print(
               f"Player Stats OK: {len(players)} players, {height_count} valid heights, "
-              f"100 current Top 100 IDs, {season_count} player-seasons, "
+              f"100 current Top 100 IDs ({snapshot_date.isoformat()}), {season_count} player-seasons, "
               f"{bucket_count} surface buckets, "
               f"{coverage['matchesWithValidStats']} matches with valid game stats."
           )
