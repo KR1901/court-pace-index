@@ -154,7 +154,7 @@ The downloadable dataset consumed by the Android app is `data/latest.json`; the 
 
 The new Player Stats screen uses a separate `player_stats.json` asset. It does not extend or change the tournament `pace_dataset.json` schema, the CPI readings, the CALC/TA Surface Speed histories or the live Surface Speed engine.
 
-`tools/build_player_stats.py` downloads the TennisMyLife annual ATP match files and player roster into a temporary local cache, then writes `data/player_stats.json` and `app/src/main/assets/player_stats.json`. The two outputs are validated as byte-identical by the refresh workflow. Raw CSVs and raw API responses are not committed.
+`tools/build_player_stats.py` downloads the TennisMyLife annual ATP match files and player roster into a temporary local cache, then writes `data/player_stats.json` and `app/src/main/assets/player_stats.json`. The dedicated `.github/workflows/refresh-player-stats.yml` validates that the two outputs are byte-identical and commits only those two files. It is separate from `.github/workflows/refresh-data.yml`; it never invokes the existing CPI/Surface Speed builder or updates `pace_dataset.json` / `data/latest.json`. Raw CSVs and raw API responses are not committed.
 
 The player directory uses the ATP player roster and includes records with no eligible match statistics. Annual stats aggregate completed ATP tour-level main-draw singles matches only. Calendar season is read from the event/tournament ID; it is not a rolling 52-week window. Walkovers, retirements, defaults and abandoned matches are excluded from both results and rate calculations. A completed match with missing/inconsistent serve/return stats still contributes its W-L result but not hold/break games.
 
