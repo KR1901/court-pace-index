@@ -74,6 +74,10 @@ jobs:
           current_match_keys = meta.get("currentSeasonMatchKeys")
           assert isinstance(current_match_keys, list) and current_match_keys, "current-season dedupe keys are missing"
           assert len(current_match_keys) == len(set(current_match_keys)), "duplicate current-season match keys"
+          stat_match_keys = meta.get("currentSeasonStatMatchKeys")
+          assert isinstance(stat_match_keys, list), "current-season stat match keys are missing"
+          assert len(stat_match_keys) == len(set(stat_match_keys)), "duplicate current-season stat match keys"
+          assert set(stat_match_keys).issubset(set(current_match_keys)), "stat keys must also be result keys"
           assert meta.get("currentSeasonSourceMtime"), "current-season source mtime is missing"
           from datetime import date
 
