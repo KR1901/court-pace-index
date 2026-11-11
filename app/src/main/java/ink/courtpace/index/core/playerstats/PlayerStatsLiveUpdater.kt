@@ -33,6 +33,7 @@ object PlayerStatsLiveUpdater {
     private const val USER_AGENT = "CourtPaceIndex-PrivatePlayerStats/1.0 (personal research)"
 
     private val mutex = Mutex()
+    @Volatile private var memoryData: PlayerStatsData? = null
     private val json = Json { ignoreUnknownKeys = true }
     private val http = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -47,7 +48,8 @@ object PlayerStatsLiveUpdater {
 
     suspend fun refresh(context: Context): PlayerStatsLiveRefreshResult = mutex.withLock {
         withContext(Dispatchers.IO) {
-            var data = PlayerStatsRepository.load(context)
+            var data = memoryData ?: PlayerStatsRepository.load(context)
+            memoryData = data
             val manifest = json.parseToJsonElement(getText(MANIFEST_URL)).jsonObject
             val files = manifest["files"]?.jsonArray
                 ?: error("TennisMyLife file manifest has no files array")
@@ -106,6 +108,7 @@ object PlayerStatsLiveUpdater {
             if (changedSources > 0) {
                 PlayerStatsRepository.save(context, data)
             }
+            memoryData = data
 
             PlayerStatsLiveRefreshResult(
                 data = data,
