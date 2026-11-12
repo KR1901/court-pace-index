@@ -39,6 +39,18 @@
       "sourceNote": "Roland-Garros player profile for the exact Italian ATP player lists 5′11″ (approximately 180 cm); profile DOB/ranking match."
     },
     {
+      "atpId": "F0C2",
+      "name": "Andrea Fiorentini",
+      "country": "ITA",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/fiorentini-andrea/280751",
+        "https://scorego-app.com/player/andrea-fiorentini/2FRbBp",
+        "https://wiki.tennis/player/andrea-fiorentini-61574"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and wiki.tennis exact Italian player profiles (DOB 2 February 2001, Treviglio) list 178 cm / 1.78 m."
+    },
+    {
       "atpId": "A0O2",
       "name": "Anton Arzhankin",
       "country": "RUS",
@@ -238,6 +250,18 @@
         "https://olemisssports.com/sports/mens-tennis/roster/john-hallquist-lith-n/4903"
       ],
       "sourceNote": "Ole Miss Athletics 2023-24 senior roster lists 6-1 (185 cm); the 2020-21 freshman roster listed 6-0, so the later senior measurement is used."
+    },
+    {
+      "atpId": "H09W",
+      "name": "Jordan Hasson",
+      "country": "ISR",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/hasson-jordan/191894",
+        "https://psitennis.com/players/76858",
+        "https://www.tennisexplorer.com/player/hasson/"
+      ],
+      "sourceNote": "Sofascore, PSI Tennis Analytics and Tennis Explorer exact Israeli player profiles (DOB 12 October 1999, Haifa) list 183 cm / 1.83 m."
     },
     {
       "atpId": "J0BQ",
@@ -474,6 +498,18 @@
       ]
     },
     {
+      "atpId": "P0GD",
+      "name": "Rocco Piatti",
+      "country": "ITA",
+      "heightCm": 188,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/piatti-rocco/314725",
+        "https://tennisstats.com/players/rocco-piatti",
+        "https://scorego-app.com/player/rocco-piatti/1UNWJd"
+      ],
+      "sourceNote": "Sofascore, TennisStats and ScoreGO exact profile (DOB 2 August 2004, Como) list 188 cm / 1.88 m. Player databases differ on nationality (Italy/Monaco); ATP profile ID and DOB anchor the record."
+    },
+    {
       "atpId": "F0F0",
       "name": "Romain Faucon",
       "country": "BEL",
@@ -483,6 +519,18 @@
         "https://scorego-app.com/player/romain-faucon/1EDHJJ"
       ],
       "sourceNote": "TennisTemple and ScoreGO exact Belgian player profiles (DOB 4 September 2002) list 188 cm / 1.88 m."
+    },
+    {
+      "atpId": "T0GK",
+      "name": "Ruslan Tiukaev",
+      "country": "RUS",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://ausopen.com/players/ruslan-tiukaev",
+        "https://www.sofascore.com/tennis/player/tiukaev-ruslan/401470",
+        "https://en.tennistemple.com/player/ruslan-tiukaev"
+      ],
+      "sourceNote": "Australian Open player profile, Sofascore and TennisTemple exact Russian player records (DOB 8 June 2005, Penza) list 185 cm / 6′1″."
     },
     {
       "atpId": "G0EQ",
@@ -537,6 +585,18 @@
       "sourceNote": "TennisTemple exact German player profile lists 193 cm and DOB 2000."
     },
     {
+      "atpId": "S1AP",
+      "name": "Tristan Stringer",
+      "country": "USA",
+      "heightCm": 191,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/stringer-tristan/524786",
+        "https://scorego-app.com/player/tristan-stringer/4T1Ar2",
+        "https://wiki.tennis/player/tristan-stringer-65312"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and wiki.tennis exact USA player profiles (DOB 18 October 2005, Cambridge MA) list 191 cm / 6′3″."
+    },
+    {
       "atpId": "B0U1",
       "name": "Tudor Batin",
       "country": "ROU",
@@ -556,6 +616,18 @@
         "https://en.tennistemple.com/player/viacheslav-bielinskyi",
         "https://www.rolandgarros.com/en-us/players/47159-v.bielinskyi"
       ]
+    },
+    {
+      "atpId": "B0P7",
+      "name": "Vlad Cristian Breazu",
+      "country": "ROU",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/breazu-vlad-cristian/382870",
+        "https://www.atptour.com/en/players/atp-head-2-head/vlad-cristian-breazu-vs-dragos-nicolae-cazacu/b0p7/c0mx",
+        "https://goducks.com/sports/mens-tennis/roster/vlad-breazu/17481"
+      ],
+      "sourceNote": "Sofascore and the ATP Tour's player comparison explicitly list Vlad Cristian Breazu at 178 cm; DOB 24 December 2003, Bucharest, matches the exact Romanian player."
     },
     {
       "atpId": "A0EY",
