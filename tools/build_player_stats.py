@@ -672,6 +672,7 @@ def supplement_top100_from_tml(
         for entry in expanded_snapshot["players"]
     }
     unresolved_ranks = list(expanded_snapshot.get("unresolvedRanks", []))
+    unresolved_entries = list(expanded_snapshot.get("unresolvedEntries", []))
     unresolved_counts = {
         "unresolvedTop500": int(expanded_snapshot.get("unresolvedTop500", 0)),
         "unresolvedPlayers": int(expanded_snapshot.get("unresolvedPlayers", 0)),
@@ -701,12 +702,27 @@ def supplement_top100_from_tml(
         expanded_by_id.values(),
         key=lambda item: (int(item["rank"]), str(item["id"])),
     )
+
+    # The source can restore unresolved Top-100 entries by their stable TML IDs.
+    # Remove the matching stale audit rows too, preserving duplicate-rank counts.
+    remaining_by_rank: dict[int, int] = {}
+    for rank in unresolved_ranks:
+        rank_value = int(rank)
+        remaining_by_rank[rank_value] = remaining_by_rank.get(rank_value, 0) + 1
+    filtered_unresolved_entries = []
+    for row in unresolved_entries:
+        rank_value = int(row.get("rank", 0))
+        if remaining_by_rank.get(rank_value, 0) > 0:
+            filtered_unresolved_entries.append(row)
+            remaining_by_rank[rank_value] -= 1
+
     return {
         **expanded_snapshot,
         "players": players,
         "unresolvedTop100": int(top100_snapshot.get("unresolvedPlayers", 0)),
         **unresolved_counts,
         "unresolvedRanks": unresolved_ranks,
+        "unresolvedEntries": filtered_unresolved_entries,
         "rankedEntries": len(players) + unresolved_counts["unresolvedPlayers"],
     }
 

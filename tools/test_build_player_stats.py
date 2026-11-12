@@ -442,6 +442,38 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedTop100"], 0)
         self.assertEqual(result["rankedEntries"], 5)
 
+    def test_live_full_rank_list_removes_restored_top100_rows_from_unresolved_audit(self):
+        expanded = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P3", "rank": 3, "name": "Player Three"},
+            ],
+            "unresolvedPlayers": 2,
+            "unresolvedTop500": 2,
+            "rankedEntries": 4,
+            "maxRank": 1000,
+            "unresolvedRanks": [2, 400],
+            "unresolvedEntries": [
+                {"rank": 2, "name": "Player Two", "country": "USA", "reason": "no match"},
+                {"rank": 400, "name": "Unknown Four Hundred", "country": "GBR", "reason": "no match"},
+            ],
+        }
+        top100 = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P2", "rank": 2, "name": "Player Two"},
+            ],
+            "unresolvedPlayers": 0,
+        }
+
+        result = supplement_top100_from_tml(expanded, top100)
+
+        self.assertEqual(result["unresolvedRanks"], [400])
+        self.assertEqual(
+            [row["rank"] for row in result["unresolvedEntries"]],
+            [400],
+        )
+
     def test_live_full_rank_list_rejects_top100_rank_conflicts(self):
         expanded = {
             "players": [{"id": "P1", "rank": 2, "name": "Player One"}],
