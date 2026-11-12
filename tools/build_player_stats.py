@@ -730,7 +730,7 @@ def load_top1000_season_snapshots(
         "year": current_year,
         "asOf": str(top100_snapshots[current_year]["asOf"]),
         "source": live_url,
-        "provider": "KickServe + TML Top 100",
+        "provider": "KickServe/TML",
         **live_top,
     }
     live_snapshot = supplement_live_top100_from_tml(
