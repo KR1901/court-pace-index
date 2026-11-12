@@ -10,6 +10,7 @@ from build_player_stats import (
     match_identity_key,
     normalize_name,
     normalize_country_code,
+    _add_player_alias,
     parse_current_top100,
     parse_current_top1000,
     parse_kickserve_live_rankings,
@@ -384,7 +385,8 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             "rankedEntries": 1,
             "unresolvedRanks": [],
         }
-        aliases = {"stsitsipas|GRE": {"TML-TSITSIPAS"}}
+        aliases = {}
+        _add_player_alias(aliases, "Stefanos Tsitsipas", "GRE", "TML-TSITSIPAS")
 
         result = map_live_rankings_to_tml_ids(snapshot, aliases)
 
@@ -412,7 +414,8 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             "rankedEntries": 1,
             "unresolvedRanks": [],
         }
-        aliases = {"playerone|CHI": {"TML-PLAYER-1"}}
+        aliases = {}
+        _add_player_alias(aliases, "Player One", "CHI", "TML-PLAYER-1")
         result = map_live_rankings_to_tml_ids(snapshot, aliases)
         self.assertEqual(result["players"][0]["id"], "TML-PLAYER-1")
         self.assertEqual(result["unresolvedPlayers"], 0)
