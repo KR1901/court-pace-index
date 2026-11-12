@@ -35,7 +35,11 @@ TML_RANKINGS_ARCHIVE_URL = (
 )
 KICKSERVE_LIVE_RANKINGS_URL = "https://kick-serve.com/data/ratings_atp.csv"
 KICKSERVE_ATTRIBUTION_URL = "https://kick-serve.com/data/"
-SACKMANN_ATP_PLAYERS_URL = "https://raw.githubusercontent.com/sportData/tennis_atp/master/atp_players.csv"
+SACKMANN_ATP_PLAYERS_REVISION = "712be0c5ade693cdab9e69c23a71a0edf5a23c44"
+SACKMANN_ATP_PLAYERS_URL = (
+    "https://raw.githubusercontent.com/Kadantte/tennis_atp/"
+    + SACKMANN_ATP_PLAYERS_REVISION + "/atp_players.csv"
+)
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
@@ -914,13 +918,13 @@ def supplement_missing_heights_from_sackmann(
     """
     filled = 0
     for row in rows:
-        first = (row.get("first_name") or "").strip()
-        last = (row.get("last_name") or "").strip()
+        first = (row.get("name_first") or row.get("first_name") or "").strip()
+        last = (row.get("name_last") or row.get("last_name") or "").strip()
         name = " ".join(part for part in (first, last) if part).strip()
         name_key = normalize_name(name)
         if not name_key:
             continue
-        country = (row.get("country_code") or row.get("ioc") or "").strip().upper()
+        country = (row.get("ioc") or row.get("country_code") or "").strip().upper()
         country_candidates = roster_aliases.get(f"{name_key}|{country}", set()) if country else set()
         candidates = country_candidates if country_candidates else roster_aliases.get(name_key, set())
         if len(candidates) != 1:
@@ -1210,12 +1214,20 @@ def build() -> dict:
         )
         sackmann_rows = csv_rows(sackmann_payload)
         if sackmann_rows:
-            required_sackmann_columns = {"first_name", "last_name", "country_code", "height"}
-            missing_columns = required_sackmann_columns - set(sackmann_rows[0])
-            if missing_columns:
+            sackmann_header = set(sackmann_rows[0])
+            missing_groups = [
+                names for names in (
+                    {"name_first", "first_name"},
+                    {"name_last", "last_name"},
+                    {"ioc", "country_code"},
+                    {"height"},
+                ) if not (names & sackmann_header)
+            ]
+            if missing_groups:
+                missing_labels = ["/".join(sorted(group)) for group in missing_groups]
                 raise RuntimeError(
-                    "Tennis Abstract player table is missing columns: "
-                    + ", ".join(sorted(missing_columns))
+                    "Tennis Abstract player table is missing required column groups: "
+                    + ", ".join(missing_labels)
                 )
         sackmann_height_fills = supplement_missing_heights_from_sackmann(
             sackmann_rows, players, roster_aliases,
@@ -1345,6 +1357,7 @@ def build() -> dict:
             "heightEnrichment": {
                 "provider": "Jeff Sackmann / Tennis Abstract ATP player table",
                 "source": SACKMANN_ATP_PLAYERS_URL,
+                "revision": SACKMANN_ATP_PLAYERS_REVISION,
                 "license": "CC BY-NC-SA 4.0",
                 "status": sackmann_height_source_status,
                 "filledMissingHeights": sackmann_height_fills,

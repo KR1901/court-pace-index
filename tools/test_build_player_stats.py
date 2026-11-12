@@ -170,20 +170,20 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         }
         rows = [
             {
-                "first_name": "Player", "last_name": "One",
-                "country_code": "USA", "height": "188",
+                "name_first": "Player", "name_last": "One",
+                "ioc": "USA", "height": "188", "player_id": "200001",
             },
             {
-                "first_name": "Already", "last_name": "Known",
-                "country_code": "ESP", "height": "195",
+                "name_first": "Already", "name_last": "Known",
+                "ioc": "ESP", "height": "195", "player_id": "200002",
             },
             {
-                "first_name": "Ambiguous", "last_name": "Player",
-                "country_code": "FRA", "height": "193",
+                "name_first": "Ambiguous", "name_last": "Player",
+                "ioc": "FRA", "height": "193", "player_id": "200003",
             },
             {
-                "first_name": "Player", "last_name": "Without Height",
-                "country_code": "GBR", "height": "",
+                "name_first": "Player", "name_last": "Without Height",
+                "ioc": "GBR", "height": "", "player_id": "200004",
             },
         ]
 
@@ -198,6 +198,25 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(players["P2"]["heightCm"], 190)
         self.assertEqual(players["P2"]["heightSource"], "tml-player-database")
         self.assertIsNone(players["P3"]["heightCm"])
+
+    def test_sackmann_height_fallback_accepts_documented_legacy_header_variant(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Legacy Player",
+                "country": "USA", "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = {"legacyplayer|USA": {"P1"}}
+        rows = [{
+            "first_name": "Legacy",
+            "last_name": "Player",
+            "country_code": "USA",
+            "height": "192",
+        }]
+        self.assertEqual(
+            supplement_missing_heights_from_sackmann(rows, players, aliases), 1,
+        )
+        self.assertEqual(players["P1"]["heightCm"], 192)
 
     def test_latest_ranking_snapshot_is_selected_by_date_not_response_order(self):
         selected = select_ranking_snapshot_date(
