@@ -4,6 +4,18 @@
   "policy": "Fill only missing heights, keyed by exact canonical ATP/TML player ID. Each value must be explicitly published by the cited profile source. Existing TML or match-record heights are never overwritten. Values are centimetres rounded to whole centimetres as published or conventionally converted from feet/inches.",
   "players": [
     {
+      "atpId": "C0FJ",
+      "name": "Aleksa Ciric",
+      "country": "SRB",
+      "heightCm": 188,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/ciric-aleksa/294343",
+        "https://scorego-app.com/player/aleksa-ciric/2HLZAf",
+        "https://es.tennistemple.com/player/aleksa-ciric"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and TennisTemple exact Serbian player profiles (DOB 21 June 2000) list 188 cm / 1.88 m."
+    },
+    {
       "atpId": "K0QK",
       "name": "Dimitar Kisimov",
       "country": "BUL",
@@ -177,6 +189,17 @@
       "sourceUrls": [
         "https://scorego-app.com/player/robert-guna/m5a3d"
       ]
+    },
+    {
+      "atpId": "F0F0",
+      "name": "Romain Faucon",
+      "country": "BEL",
+      "heightCm": 188,
+      "sourceUrls": [
+        "https://en.tennistemple.com/player/romain-faucon/10220/",
+        "https://scorego-app.com/player/romain-faucon/1EDHJJ"
+      ],
+      "sourceNote": "TennisTemple and ScoreGO exact Belgian player profiles (DOB 4 September 2002) list 188 cm / 1.88 m."
     },
     {
       "atpId": "G0EQ",
