@@ -638,12 +638,15 @@ def map_live_rankings_to_tml_ids(
 
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
-        name_key = normalize_name(str(entry["name"]))
+        name_keys = _name_alias_keys(str(entry["name"]))
         country_key = normalize_country_code(str(entry.get("country") or ""))
-        if country_key:
-            candidate_ids = roster_aliases.get(f"{name_key}|{country_key}", set())
-        else:
-            candidate_ids = roster_aliases.get(name_key, set())
+        candidate_ids: set[str] = set()
+        for name_key in name_keys:
+            if country_key:
+                candidate_ids.update(roster_aliases.get(f"{name_key}|{country_key}", set()))
+            else:
+                candidate_ids.update(roster_aliases.get(name_key, set()))
+
         if len(candidate_ids) != 1:
             if rank <= 100:
                 unresolved_top100 += 1
@@ -934,32 +937,47 @@ def _manifest_item(files: dict[str, dict], filename: str) -> dict | None:
     return None
 
 
+def _name_alias_keys(value: str) -> set[str]:
+    """Generate conservative exact-token aliases for common ATP display-name variants.
+
+    Examples: "Taylor Harry Fritz" can match "Taylor Fritz"; "J. Tsitsipas"
+    can match "Stefanos Tsitsipas". Only complete tokens are combined; candidate
+    IDs are unioned and accepted only when the country-qualified result is unique.
+    """
+    suffixes = {"jr", "sr", "ii", "iii", "iv"}
+    parts = [
+        token
+        for raw in str(value or "").split()
+        if (token := normalize_name(raw)) and token not in suffixes
+    ]
+    if not parts:
+        return set()
+
+    keys = {"".join(parts)}
+    if len(parts) == 1:
+        return keys
+
+    first = parts[0]
+    for token in parts[1:]:
+        keys.add(first + token)
+        keys.add(first[0] + token)
+
+    for left, right in zip(parts, parts[1:]):
+        keys.add(left + right)
+    return keys
+
+
 def _add_player_alias(
     aliases: dict[str, set[str]],
     name: str,
     country: str | None,
     player_id: str,
 ) -> None:
-    key = normalize_name(name)
-    if not key or not player_id:
-        return
-    aliases[key].add(player_id)
     country_key = normalize_country_code(country)
-    if country_key:
-        aliases[f"{key}|{country_key}"].add(player_id)
-
-    # Also index first-initial + surname forms (e.g. "S. Tsitsipas") as a
-    # conservative alias. Mapping still requires a unique match in the same country.
-    name_parts = [
-        normalize_name(part)
-        for part in name.split()
-        if normalize_name(part) not in {"jr", "sr", "ii", "iii", "iv"}
-    ]
-    if len(name_parts) >= 2 and name_parts[0] and name_parts[-1]:
-        initial_key = name_parts[0][0] + name_parts[-1]
-        aliases[initial_key].add(player_id)
+    for key in _name_alias_keys(name):
+        aliases[key].add(player_id)
         if country_key:
-            aliases[f"{initial_key}|{country_key}"].add(player_id)
+            aliases[f"{key}|{country_key}"].add(player_id)
 
 
 def supplement_missing_heights_from_sackmann(

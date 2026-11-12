@@ -375,6 +375,65 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
 
+    def test_live_rankings_resolve_middle_names_against_shorter_tml_names(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 10, "name": "Taylor Harry Fritz", "country": "USA"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Taylor Fritz", "USA", "TML-FRITZ")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"][0]["id"], "TML-FRITZ")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_resolve_compound_names_with_unique_adjacent_name_tokens(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 70, "name": "Jaume Antoni Munar Clar", "country": "ESP"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Jaume Munar", "ESP", "TML-MUNAR")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"][0]["id"], "TML-MUNAR")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_keep_multi_token_aliases_unresolved_when_country_candidates_conflict(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 70, "name": "Daniel Merida Aguilar", "country": "ESP"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Daniel Merida", "ESP", "TML-MERIDA")
+        _add_player_alias(aliases, "Daniel Aguilar", "ESP", "TML-AGUILAR")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"], [])
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["unresolvedEntries"][0]["reason"], "ambiguous exact name/country match")
+
     def test_live_rankings_resolve_unique_first_initial_surname_alias_in_same_country(self):
         snapshot = {
             "players": [
