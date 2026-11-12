@@ -4,7 +4,7 @@ name: Refresh Player Stats
 # builder and stages only the dedicated Player Stats JSON assets.
 on:
   push:
-    branches: [main, feature/player-stats-v2, feature/height-group-top-500-1000]
+    branches: [main, feature/player-stats-v2, feature/height-group-top-500-1000, feature/height-groups-expanded-data]
     paths:
       - 'tools/build_player_stats.py'
       - 'tools/test_build_player_stats.py'

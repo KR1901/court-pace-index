@@ -36,7 +36,7 @@ data class PlayerStatsLiveState(
 )
 
 /**
- * Fetches TML's source manifest and only downloads ATP CSVs whose published mtime changed.
+ * Fetches TML's source manifest and only downloads changed ATP Tour, Challenger and qualifying CSVs.
  * This module is independent from AppViewModel, CPI, Surface Speed and their refresh loops.
  */
 object PlayerStatsLiveUpdater {
@@ -94,50 +94,87 @@ object PlayerStatsLiveUpdater {
                     "Unexpected ATP data URL in source manifest"
                 }
                 name to RemoteFile(url, modified)
-            }.toMap()
+            }
+
+            // The manifest may expose qualifying files with an atp_quali/ path prefix.
+            // Resolve by exact basename while retaining the trusted manifest URL.
+            fun findRemote(filename: String): RemoteFile? = remote.firstOrNull { (name, file) ->
+                name.replace("\\", "/").substringAfterLast("/") == filename ||
+                    file.url.substringBefore("?").substringAfterLast("/") == filename
+            }?.second
 
             val year = LocalDate.now().year
             var addedMatches = 0
             var enrichedMatches = 0
             var changedSources = 0
 
-            // First reconcile the annual file. The app's baseline carries all match keys already
-            // present when that asset was built; only genuinely new results are appended.
-            val annualName = year.toString() + ".csv"
-            val annual = remote[annualName]
-            if (annual != null && annual.modified != data.meta.currentSeasonSourceMtime) {
-                val rows = parse(getText(annual.url))
+            fun processSource(
+                filename: String,
+                sourceKind: String,
+                previousMtime: String,
+                updateMtime: (String) -> Unit,
+            ) {
+                val source = findRemote(filename) ?: return
+                if (source.modified == previousMtime) return
+                val rows = parse(getText(source.url))
                 val update = PlayerStatsLiveAggregator.apply(
                     baseline = data,
                     rows = rows,
                     season = year,
                     updatedAt = Instant.now().toString(),
+                    sourceKind = sourceKind,
                 )
-                data = update.data.copy(
-                    meta = update.data.meta.copy(currentSeasonSourceMtime = annual.modified),
-                )
+                data = update.data
+                updateMtime(source.modified)
                 addedMatches += update.addedMatches
                 enrichedMatches += update.enrichedMatches
                 changedSources++
             }
 
-            // The live CSV may overlap the annual archive. Both use the same stable ID key set.
-            val ongoing = remote["ongoing_tourneys.csv"]
-            if (ongoing != null && ongoing.modified != data.meta.ongoingSourceMtime) {
-                val rows = parse(getText(ongoing.url))
-                val update = PlayerStatsLiveAggregator.apply(
-                    baseline = data,
-                    rows = rows,
-                    season = year,
-                    updatedAt = Instant.now().toString(),
-                )
-                data = update.data.copy(
-                    meta = update.data.meta.copy(ongoingSourceMtime = ongoing.modified),
-                )
-                addedMatches += update.addedMatches
-                enrichedMatches += update.enrichedMatches
-                changedSources++
-            }
+            // Tour matches update the original Rankings ledger and the expanded
+            // Height Groups ledger. Their independent keys prevent double counting.
+            processSource(
+                filename = year.toString() + ".csv",
+                sourceKind = "tour",
+                previousMtime = data.meta.currentSeasonSourceMtime,
+                updateMtime = { mtime ->
+                    data = data.copy(meta = data.meta.copy(currentSeasonSourceMtime = mtime))
+                },
+            )
+            processSource(
+                filename = "ongoing_tourneys.csv",
+                sourceKind = "tour",
+                previousMtime = data.meta.ongoingSourceMtime,
+                updateMtime = { mtime ->
+                    data = data.copy(meta = data.meta.copy(ongoingSourceMtime = mtime))
+                },
+            )
+
+            // Challenger and qualifying matches feed Height Groups only.
+            processSource(
+                filename = year.toString() + "_challenger.csv",
+                sourceKind = "challenger",
+                previousMtime = data.meta.currentSeasonChallengerSourceMtime,
+                updateMtime = { mtime ->
+                    data = data.copy(meta = data.meta.copy(currentSeasonChallengerSourceMtime = mtime))
+                },
+            )
+            processSource(
+                filename = year.toString() + "_atp_quali.csv",
+                sourceKind = "qualifying",
+                previousMtime = data.meta.currentSeasonQualifyingSourceMtime,
+                updateMtime = { mtime ->
+                    data = data.copy(meta = data.meta.copy(currentSeasonQualifyingSourceMtime = mtime))
+                },
+            )
+            processSource(
+                filename = "ch_ongoing_tourney.csv",
+                sourceKind = "challenger",
+                previousMtime = data.meta.ongoingChallengerSourceMtime,
+                updateMtime = { mtime ->
+                    data = data.copy(meta = data.meta.copy(ongoingChallengerSourceMtime = mtime))
+                },
+            )
 
             if (changedSources > 0) {
                 PlayerStatsRepository.save(context, data)
