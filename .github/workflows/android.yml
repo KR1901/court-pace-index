@@ -2,13 +2,19 @@ name: Android CI
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2, feature/height-groups-expanded-data]
+    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
   actions: write
+
+# A PR push already triggers pull_request CI. Serialize builds by source branch so
+# artifact pruning never races another build for that branch.
+concurrency:
+  group: android-ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -53,11 +59,22 @@ jobs:
               .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
             for (const artifact of previous.slice(1)) {
               core.info(`Deleting superseded debug APK artifact ${artifact.id} (${artifact.size_in_bytes} bytes)`);
-              await github.rest.actions.deleteArtifact({
-                owner,
-                repo,
-                artifact_id: artifact.id,
-              });
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner,
+                  repo,
+                  artifact_id: artifact.id,
+                });
+              } catch (error) {
+                // Parallel/previous cleanup can delete the same artifact first.
+                // A missing/expired artifact is already in the desired state.
+                const status = error.status || error.response?.status;
+                if (status === 404 || status === 410) {
+                  core.warning(`Skipping already-missing debug APK artifact ${artifact.id}`);
+                  continue;
+                }
+                throw error;
+              }
             }
 
       - name: Upload APK
