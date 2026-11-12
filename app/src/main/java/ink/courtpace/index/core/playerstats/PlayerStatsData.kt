@@ -52,6 +52,8 @@ data class PlayerTop1000SeasonSnapshot(
     val unresolvedTop500: Int = 0,
     /** Ranking feed used for this size of snapshot (TML archive or KickServe live feed). */
     val provider: String = "TML archive",
+    /** Exact country-qualified rows linked through audited official ATP profile IDs. */
+    val identityOverridesApplied: Int = 0,
     /** Auditable source rows that could not be safely joined to a stable ATP/TML player ID. */
     val unresolvedEntries: List<PlayerUnresolvedRankingEntry> = emptyList(),
 )
