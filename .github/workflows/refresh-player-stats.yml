@@ -135,6 +135,38 @@ jobs:
           )
           expanded_snapshots = meta.get("top1000SeasonSnapshots")
           assert isinstance(expanded_snapshots, list) and expanded_snapshots, "year-specific Top-1000 snapshots are missing"
+
+          identity_override_payload = json.loads(
+              Path("tools/player_identity_overrides.json").read_text(encoding="utf-8")
+          )
+          identity_override_rows = identity_override_payload.get("players") or []
+          identity_override_ids = [row.get("atpId") for row in identity_override_rows]
+          assert len(identity_override_ids) == len(set(identity_override_ids)), (
+              "official ATP profile identity override IDs must be unique"
+          )
+          live_expanded_snapshot = next(
+              row for row in expanded_snapshots if row.get("year") == current_year
+          )
+          assert live_expanded_snapshot.get("identityOverridesApplied", 0) == len(identity_override_rows), (
+              "every audited official ATP profile override must resolve in the live ranking list"
+          )
+          assert live_expanded_snapshot.get("unresolvedPlayers", 0) == 0, (
+              "current live Top-1000 ranking identities should all be resolved"
+          )
+
+          height_override_payload = json.loads(
+              Path("tools/player_height_overrides.json").read_text(encoding="utf-8")
+          )
+          height_override_rows = height_override_payload.get("players") or []
+          height_override_ids = [row.get("atpId") for row in height_override_rows]
+          assert len(height_override_ids) == len(set(height_override_ids)), (
+              "verified player height override IDs must be unique"
+          )
+          height_enrichment = meta.get("heightEnrichment") or {}
+          applied_height_overrides = height_enrichment.get("curatedProfileHeightsApplied", 0)
+          assert 0 <= applied_height_overrides <= len(height_override_rows), (
+              "verified player-profile height override count is outside the curated source size"
+          )
           expanded_years = [row.get("year") for row in expanded_snapshots]
           assert expanded_years == expected_years, "every year must have exactly one ordered Top-1000 snapshot"
 
