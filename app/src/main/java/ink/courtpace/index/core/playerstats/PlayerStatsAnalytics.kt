@@ -24,6 +24,11 @@ enum class HeightGroupCohort(val limit: Int, val label: String) {
     TOP_1000(1000, "Top 1000"),
 }
 
+enum class HeightGroupMatchScope(val label: String) {
+    ALL_ATP_LEVELS("All ATP levels"),
+    ATP_TOUR_ONLY("ATP Tour only"),
+}
+
 private data class HeightBand(
     val id: String,
     val label: String,
@@ -84,6 +89,7 @@ data class HeightGroupsResult(
     val unresolvedRankRows: Int = 0,
     val availableThroughRank: Int = 0,
     val cohortAvailable: Boolean = true,
+    val unresolvedDetails: List<PlayerUnresolvedRankingEntry> = emptyList(),
 )
 
 object PlayerStatsAnalytics {
@@ -176,6 +182,7 @@ object PlayerStatsAnalytics {
         year: Int,
         surface: PlayerSurfaceFilter,
         cohort: HeightGroupCohort = HeightGroupCohort.TOP_100,
+        matchScope: HeightGroupMatchScope = HeightGroupMatchScope.ALL_ATP_LEVELS,
     ): HeightGroupsResult {
         val expandedSnapshot = data.meta.top1000SeasonSnapshots.firstOrNull { it.year == year }
         val legacySnapshot = data.meta.top100SeasonSnapshots.firstOrNull { it.year == year }
@@ -227,7 +234,12 @@ object PlayerStatsAnalytics {
             var withData = 0
             var withValidStats = 0
             players.forEach { player ->
-                val bucket = player.seasons.firstOrNull { it.y == year }?.b?.get(surface.id)
+                val seasonRows = when {
+                    matchScope == HeightGroupMatchScope.ATP_TOUR_ONLY -> player.seasons
+                    player.heightGroupSeasons.isNotEmpty() -> player.heightGroupSeasons
+                    else -> player.seasons // Backward compatibility with pre-expanded assets.
+                }
+                val bucket = seasonRows.firstOrNull { it.y == year }?.b?.get(surface.id)
                 if (bucket != null && bucket.mp > 0) withData += 1
                 if (bucket != null && bucket.sm > 0) withValidStats += 1
                 if (bucket != null) {
@@ -262,6 +274,9 @@ object PlayerStatsAnalytics {
             HeightGroupCohort.TOP_500 -> expandedSnapshot?.unresolvedTop500 ?: 0
             HeightGroupCohort.TOP_1000 -> expandedSnapshot?.unresolvedPlayers ?: 0
         }
+        val unresolvedDetails = expandedSnapshot?.unresolvedEntries
+            ?.filter { it.rank in 1..cohort.limit }
+            .orEmpty()
         return HeightGroupsResult(
             groups = groups,
             cohortSize = cohortPlayers.size,
@@ -270,6 +285,7 @@ object PlayerStatsAnalytics {
             unresolvedRankRows = unresolved,
             availableThroughRank = availableThroughRank,
             cohortAvailable = cohortAvailable,
+            unresolvedDetails = unresolvedDetails,
         )
     }
 }
