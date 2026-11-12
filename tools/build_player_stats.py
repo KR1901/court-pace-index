@@ -63,6 +63,8 @@ def normalize_name(value: str | None) -> str:
 # Legacy ATP/IOC abbreviations seen in older tennis archives are mapped to
 # their modern equivalents before joining ranking identities across providers.
 COUNTRY_CODE_CANONICAL = {
+    "GB": "GBR",  # United Kingdom (ISO alpha-2)
+    "UK": "GBR",  # United Kingdom (common alias)
     "CHI": "CHL",  # Chile
     "POR": "PRT",  # Portugal
     "SLO": "SVN",  # Slovenia
