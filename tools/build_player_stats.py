@@ -859,7 +859,7 @@ def map_live_rankings_to_tml_ids(
                         or (
                             normalize_country_code(str(entry.get("country") or "")) == row["country"]
                             and normalize_name(str(entry.get("name") or "")).endswith(
-                                normalize_name(row["name"]).split(row["name"].split()[-1].casefold())[-1]
+                                normalize_name(row["name"].split()[-1])
                             )
                         )
                     )
