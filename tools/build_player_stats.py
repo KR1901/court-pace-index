@@ -598,10 +598,11 @@ def map_live_rankings_to_tml_ids(
     snapshot: dict[str, object],
     roster_aliases: dict[str, set[str]],
 ) -> dict[str, object]:
-    """Crosswalk KickServe's internal IDs to stable TML IDs using unique exact-name keys.
+    """Crosswalk KickServe IDs using unique country-qualified full-name or initial aliases.
 
     The feed's player IDs are internal to KickServe, not ATP/TML IDs. Names are normalized
-    only for accents and punctuation; ambiguous or missing roster matches stay unresolved.
+    only for accents and punctuation. If a country is provided, a match from another country
+    is never used as a fallback; ambiguous/missing matches stay unresolved.
     """
     mapped: list[dict[str, object]] = []
     seen_ids: set[str] = set()
@@ -614,8 +615,10 @@ def map_live_rankings_to_tml_ids(
         rank = int(entry["rank"])
         name_key = normalize_name(str(entry["name"]))
         country_key = (str(entry.get("country") or "")).strip().upper()
-        country_candidates = roster_aliases.get(f"{name_key}|{country_key}", set()) if country_key else set()
-        candidate_ids = country_candidates if country_candidates else roster_aliases.get(name_key, set())
+        if country_key:
+            candidate_ids = roster_aliases.get(f"{name_key}|{country_key}", set())
+        else:
+            candidate_ids = roster_aliases.get(name_key, set())
         if len(candidate_ids) != 1:
             if rank <= 100:
                 unresolved_top100 += 1
@@ -903,6 +906,19 @@ def _add_player_alias(
     country_key = (country or "").strip().upper()
     if country_key:
         aliases[f"{key}|{country_key}"].add(player_id)
+
+    # Also index first-initial + surname forms (e.g. "S. Tsitsipas") as a
+    # conservative alias. Mapping still requires a unique match in the same country.
+    name_parts = [
+        normalize_name(part)
+        for part in name.split()
+        if normalize_name(part) not in {"jr", "sr", "ii", "iii", "iv"}
+    ]
+    if len(name_parts) >= 2 and name_parts[0] and name_parts[-1]:
+        initial_key = name_parts[0][0] + name_parts[-1]
+        aliases[initial_key].add(player_id)
+        if country_key:
+            aliases[f"{initial_key}|{country_key}"].add(player_id)
 
 
 def supplement_missing_heights_from_sackmann(

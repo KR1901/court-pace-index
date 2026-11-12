@@ -372,6 +372,47 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
 
+    def test_live_rankings_resolve_unique_first_initial_surname_alias_in_same_country(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 215, "name": "S. Tsitsipas", "country": "GRE"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = {"stsitsipas|GRE": {"TML-TSITSIPAS"}}
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(len(result["players"]), 1)
+        self.assertEqual(result["players"][0]["id"], "TML-TSITSIPAS")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_do_not_fallback_to_same_name_in_another_country(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 215, "name": "Alex Smith", "country": "GBR"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = {
+            "alexsmith": {"TML-USA"},
+            "alexsmith|USA": {"TML-USA"},
+        }
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"], [])
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["unresolvedEntries"][0]["reason"], "no exact name/country match")
+
     def test_live_full_rank_list_restores_missing_members_from_exact_tml_top100(self):
         expanded = {
             "players": [
