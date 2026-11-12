@@ -13,6 +13,7 @@ from build_player_stats import (
     parse_current_top1000,
     parse_kickserve_live_rankings,
     parse_tml_ranking_archive_snapshot,
+    map_live_rankings_to_tml_ids,
     max_published_rank,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
@@ -238,6 +239,31 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         payload = {"rankings": rows}
         self.assertEqual(max_published_rank(payload), 500)
         self.assertEqual(len(parse_current_top1000(payload)), 500)
+
+    def test_live_rankings_crosswalk_internal_ids_only_through_unique_normalized_names(self):
+        snapshot = {
+            "players": [
+                {"id": "24008", "rank": 2, "name": "Alexander Zverev"},
+                {"id": "missing-1", "rank": 450, "name": "Unknown Rank 450"},
+                {"id": "missing-2", "rank": 900, "name": "Unknown Rank 900"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 3,
+        }
+        aliases = {
+            "alexanderzverev": {"Z355"},
+            "unknownrank450": {"P450", "P450B"},
+        }
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"][0]["id"], "Z355")
+        self.assertEqual(result["unresolvedTop100"], 0)
+        self.assertEqual(result["unresolvedTop500"], 1)
+        self.assertEqual(result["unresolvedPlayers"], 2)
+        self.assertEqual(result["rankedEntries"], 3)
 
     def test_tml_archive_parser_selects_exact_year_end_date_and_keeps_cutoff_ties(self):
         payload = (
