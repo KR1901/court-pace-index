@@ -436,9 +436,15 @@ fun PlayerStatsScreen(
                         style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                         color = colors.text,
                     )
+                    val snapshotDescription = when {
+                        year == asset.meta.lastSeason && heightCohort != HeightGroupCohort.TOP_100 ->
+                            "TML Top-100 cross-check · " + (snapshotDate ?: "date unavailable")
+                        snapshotDate != null ->
+                            snapshotProvider + " ranking snapshot · " + snapshotDate
+                        else -> "No ATP ranking snapshot available for " + year
+                    }
                     Text(
-                        text = (snapshotDate?.let { snapshotProvider + " ranking snapshot · " + it }
-                            ?: "No ATP ranking snapshot available for " + year) +
+                        text = snapshotDescription +
                             " · " + heightResult.cohortSize + " identified players" +
                             (heightResult.unresolvedRankRows.takeIf { it > 0 }
                                 ?.let { " · " + it + " unresolved" } ?: ""),
