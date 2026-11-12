@@ -108,10 +108,14 @@ def height_band_id(height_cm: int | None) -> str | None:
         return None
     if height_cm < 183:
         return "under183"
-    if height_cm <= 190:
-        return "183to190"
+    if height_cm <= 185:
+        return "183to185"
+    if height_cm <= 188:
+        return "186to188"
+    if height_cm <= 191:
+        return "189to191"
     if height_cm <= 194:
-        return "191to194"
+        return "192to194"
     return "195plus"
 
 
@@ -747,8 +751,10 @@ def build() -> dict:
             "usage": "Personal, educational and non-commercial research only. Raw source CSVs are not included. Keep this derived asset private; do not redistribute or use commercially.",
             "heightBandsCm": [
                 {"id": "under183", "minCm": None, "maxCm": 182, "label": "Under 1.83 m"},
-                {"id": "183to190", "minCm": 183, "maxCm": 190, "label": "1.83–1.90 m"},
-                {"id": "191to194", "minCm": 191, "maxCm": 194, "label": "1.91–1.94 m"},
+                {"id": "183to185", "minCm": 183, "maxCm": 185, "label": "1.83–1.85 m"},
+                {"id": "186to188", "minCm": 186, "maxCm": 188, "label": "1.86–1.88 m"},
+                {"id": "189to191", "minCm": 189, "maxCm": 191, "label": "1.89–1.91 m"},
+                {"id": "192to194", "minCm": 192, "maxCm": 194, "label": "1.92–1.94 m"},
                 {"id": "195plus", "minCm": 195, "maxCm": None, "label": "1.95 m+"},
             ],
         },
