@@ -88,6 +88,16 @@
       "sourceNote": "LSU Athletics 2026-27 men's tennis roster lists 5-10."
     },
     {
+      "atpId": "MN49",
+      "name": "Mohamed Nazim Makhlouf",
+      "country": "DZA",
+      "heightCm": 193,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/makhlouf-mohamed-nazim/189831"
+      ],
+      "sourceNote": "Sofascore exact player profile (Algeria, DOB 12 September 1996) explicitly lists 193 cm."
+    },
+    {
       "atpId": "V0ES",
       "name": "Noa Vukadin",
       "country": "CRO",
@@ -165,6 +175,16 @@
         "https://wiki.tennis/player/tobia-costanzo-baragiola-mordini-379349",
         "https://scorego-app.com/player/tobia-costanzo-baragiola-mordini/z8mjI"
       ]
+    },
+    {
+      "atpId": "B0U1",
+      "name": "Tudor Batin",
+      "country": "ROU",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://en.tennistemple.com/player/tudor-batin"
+      ],
+      "sourceNote": "TennisTemple exact Romanian player profile lists 183 cm and DOB 19 January 2007."
     },
     {
       "atpId": "B0LL",
