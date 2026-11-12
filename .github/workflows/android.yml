@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2]
+    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2, feature/height-groups-expanded-data]
   pull_request:
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ permissions:
 # A PR push already triggers pull_request CI. Serialize builds by source branch so
 # artifact pruning never races another build for that branch.
 concurrency:
-  group: android-ci-${{ github.head_ref || github.ref }}
+  group: android-ci-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
