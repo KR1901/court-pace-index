@@ -170,13 +170,13 @@ jobs:
               )
               assert snapshot.get("unresolvedTop500", 0) >= 0
               if year == current_year:
-                  assert snapshot.get("provider") == "KickServe official ATP rank feed", (
+                  assert snapshot.get("provider") == "KickServe", (
                       "current year must use the full official ATP rank feed"
                   )
                   assert snapshot.get("maxRank", 0) >= 1000, "current official ATP feed must reach rank 1000"
                   assert snapshot.get("rankedEntries", 0) >= 1000, "current official ATP feed has fewer than 1000 rank entries"
               else:
-                  assert snapshot.get("provider") == "TML rankings archive", (
+                  assert snapshot.get("provider") == "TML archive", (
                       f"{year} historical cohort must use its matching TML ranking archive snapshot"
                   )
 
