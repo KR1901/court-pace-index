@@ -604,6 +604,7 @@ def map_live_rankings_to_tml_ids(
     unresolved_top100 = int(snapshot.get("unresolvedTop100", 0))
     unresolved_top500 = int(snapshot.get("unresolvedTop500", 0))
     unresolved_top1000 = int(snapshot.get("unresolvedPlayers", 0))
+    unresolved_ranks = list(snapshot.get("unresolvedRanks", []))
 
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
@@ -614,6 +615,7 @@ def map_live_rankings_to_tml_ids(
             if rank <= 500:
                 unresolved_top500 += 1
             unresolved_top1000 += 1
+            unresolved_ranks.append(rank)
             continue
         player_id = next(iter(candidate_ids))
         if player_id in seen_ids:
@@ -631,6 +633,7 @@ def map_live_rankings_to_tml_ids(
         "unresolvedTop100": unresolved_top100,
         "unresolvedTop500": unresolved_top500,
         "unresolvedPlayers": unresolved_top1000,
+        "unresolvedRanks": unresolved_ranks,
         "rankedEntries": len(mapped) + unresolved_top1000,
     }
 
@@ -648,6 +651,11 @@ def supplement_live_top100_from_tml(
         str(entry["id"]): dict(entry)
         for entry in expanded_snapshot["players"]
     }
+    unresolved_ranks = list(expanded_snapshot.get("unresolvedRanks", []))
+    unresolved_counts = {
+        "unresolvedTop500": int(expanded_snapshot.get("unresolvedTop500", 0)),
+        "unresolvedPlayers": int(expanded_snapshot.get("unresolvedPlayers", 0)),
+    }
     for entry in top100_snapshot["players"]:
         player_id = str(entry["id"])
         expected_rank = int(entry["rank"])
@@ -660,6 +668,14 @@ def supplement_live_top100_from_tml(
                 )
             continue
         expanded_by_id[player_id] = dict(entry)
+        try:
+            unresolved_ranks.remove(expected_rank)
+        except ValueError:
+            pass
+        else:
+            if expected_rank <= 500:
+                unresolved_counts["unresolvedTop500"] = max(0, unresolved_counts["unresolvedTop500"] - 1)
+            unresolved_counts["unresolvedPlayers"] = max(0, unresolved_counts["unresolvedPlayers"] - 1)
 
     players = sorted(
         expanded_by_id.values(),
@@ -669,7 +685,9 @@ def supplement_live_top100_from_tml(
         **expanded_snapshot,
         "players": players,
         "unresolvedTop100": int(top100_snapshot.get("unresolvedPlayers", 0)),
-        "rankedEntries": len(players) + int(expanded_snapshot.get("unresolvedPlayers", 0)),
+        **unresolved_counts,
+        "unresolvedRanks": unresolved_ranks,
+        "rankedEntries": len(players) + unresolved_counts["unresolvedPlayers"],
     }
 
 
