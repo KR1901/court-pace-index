@@ -170,7 +170,7 @@ jobs:
               )
               assert snapshot.get("unresolvedTop500", 0) >= 0
               if year == current_year:
-                  assert snapshot.get("provider") == "KickServe", (
+                  assert snapshot.get("provider") == "KickServe/TML", (
                       "current year must use the full official ATP rank feed"
                   )
                   assert snapshot.get("maxRank", 0) >= 1000, "current official ATP feed must reach rank 1000"
