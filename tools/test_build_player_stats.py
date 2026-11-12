@@ -28,6 +28,7 @@ from build_player_stats import (
     unresolved_ranking_count,
     service_return_contribution,
     supplement_missing_heights_from_sackmann,
+    ensure_player,
 )
 
 
