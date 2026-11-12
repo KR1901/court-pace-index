@@ -16,6 +16,19 @@
       "sourceNote": "Sofascore, ScoreGO and TennisTemple exact Serbian player profiles (DOB 21 June 2000) list 188 cm / 1.88 m."
     },
     {
+      "atpId": "A0EU",
+      "name": "Alexandre Aubriot",
+      "country": "FRA",
+      "heightCm": 188,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/aubriot-alexandre/291050",
+        "https://www.gamesetpredict.com/player/alexandre-aubriot/",
+        "https://scorego-app.com/player/alexandre-aubriot/2IsskT",
+        "https://www.espn.com/tennis/player/_/id/11680/alexandre-aubriot"
+      ],
+      "sourceNote": "Sofascore, GameSetPredict, ScoreGO and ESPN exact French player profiles (DOB 6 June 1999, Draguignan) list 188 cm / 6′2″."
+    },
+    {
       "atpId": "D0JZ",
       "name": "Andrea De Marchi",
       "country": "ITA",
@@ -68,6 +81,19 @@
         "https://scorego-app.com/player/charles-bertimon/2rYjEn"
       ],
       "sourceNote": "Sofascore, GameSetPredict and ScoreGO exact French player profiles (DOB 20 September 1999) list 183 cm / 1.83 m."
+    },
+    {
+      "atpId": "S0YB",
+      "name": "Daniil Sarksian",
+      "country": "ARM",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/sarksian-daniil/460277",
+        "https://en.tennistemple.com/player/daniil-sarksian",
+        "https://www.rolandgarros.com/en-us/players/50183-d.sarksian",
+        "https://scorego-app.com/player/daniil-sarksian/M7Yhl"
+      ],
+      "sourceNote": "Sofascore, TennisTemple, Roland-Garros and ScoreGO exact player profile (DOB 20 June 2006, Moscow) list 180 cm / 5′11″. ATP country field shows ARM while the live ranking/other bios identify Russian representation; ATP profile ID is used."
     },
     {
       "atpId": "K0QK",
@@ -158,6 +184,18 @@
         "https://scorego-app.com/player/hiromasa-koyama/CVG9J"
       ],
       "sourceNote": "Australian Open, Sofascore and ScoreGO exact Japanese player profiles (DOB 13 December 2007) list 175 cm / 1.75 m."
+    },
+    {
+      "atpId": "M0RO",
+      "name": "Iannis Miletich",
+      "country": "ITA",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/miletich-iannis/387348",
+        "https://en.tennistemple.com/player/iannis-miletich",
+        "https://www.espn.com/tennis/player/_/id/15197/iannis-miletich"
+      ],
+      "sourceNote": "Sofascore, TennisTemple and ESPN exact profile records (DOB 27 August 2005, Mendoza) list 178 cm / 5′10″. Country in the live ATP crosswalk is ITA; some databases inconsistently label birthplace/nationality."
     },
     {
       "atpId": "W215",
@@ -365,6 +403,17 @@
         "https://scorego-app.com/player/noa-vukadin/1dQPpB",
         "https://www.espn.com.sg/tennis/player/_/id/10320/noa-vukadin"
       ]
+    },
+    {
+      "atpId": "K0MB",
+      "name": "Noritaka Koizumi",
+      "country": "JPN",
+      "heightCm": 173,
+      "sourceUrls": [
+        "https://scorego-app.com/player/noritaka-koizumi/4TMyH",
+        "https://en.tennistemple.com/player/noritaka-koizumi/statistics"
+      ],
+      "sourceNote": "ScoreGO and TennisTemple exact Japanese player profiles (DOB 11 June 2003, Saitama) list 173 cm / 1.73 m."
     },
     {
       "atpId": "B0ZK",
