@@ -10,9 +10,12 @@ from build_player_stats import (
     match_identity_key,
     normalize_name,
     parse_current_top100,
+    parse_current_top1000,
+    max_published_rank,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
     unresolved_top100_count,
+    unresolved_ranking_count,
     service_return_contribution,
 )
 
@@ -195,6 +198,44 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         rank_45 = [row for row in parsed if row["rank"] == 45]
         self.assertEqual({row["id"] for row in rank_45}, {"10045", "10101"})
         self.assertEqual(parsed[-1]["rank"], 100)
+
+    def test_tml_top1000_parser_preserves_cutoff_ties_and_unresolved_ids(self):
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}", "ioc": "USA"}
+            for rank in range(1, 1001)
+        ]
+        rows.append({"id": "P1001", "rank": 1000, "name": "Co-ranked at cutoff"})
+        rows.append({"id": "NA", "rank": 500, "name": "Unknown"})
+        payload = {"rankings": rows}
+
+        parsed = parse_current_top1000(payload, "2026 snapshot")
+        self.assertEqual(len(parsed), 1001)
+        self.assertEqual(parsed[0]["rank"], 1)
+        self.assertEqual(parsed[-1]["rank"], 1000)
+        self.assertEqual(unresolved_ranking_count(payload, 500), 1)
+        self.assertEqual(unresolved_ranking_count(payload, 1000), 1)
+        self.assertEqual(max_published_rank(payload), 1000)
+        self.assertNotIn("NA", {row["id"] for row in parsed})
+
+    def test_top1000_parser_fails_closed_on_duplicate_ids_and_short_top100(self):
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 101)
+        ]
+        rows[-1]["id"] = rows[0]["id"]
+        with self.assertRaises(RuntimeError):
+            parse_current_top1000({"rankings": rows})
+        with self.assertRaises(RuntimeError):
+            parse_current_top1000({"rankings": rows[:98]})
+
+    def test_ranking_parser_records_source_depth_separately_from_requested_cutoff(self):
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 501)
+        ]
+        payload = {"rankings": rows}
+        self.assertEqual(max_published_rank(payload), 500)
+        self.assertEqual(len(parse_current_top1000(payload)), 500)
 
     def test_top100_placeholder_id_is_counted_but_not_treated_as_a_player(self):
         rows = [
