@@ -617,6 +617,8 @@ class PlayerStatsFormulaTest(unittest.TestCase):
     def test_official_atp_profile_override_file_normalizes_country_codes(self):
         self.assertEqual(normalize_country_code("GB"), "GBR")
         self.assertEqual(normalize_country_code("UK"), "GBR")
+        self.assertEqual(normalize_country_code("Great Britain"), "GBR")
+        self.assertEqual(normalize_country_code("United Kingdom"), "GBR")
         payload = {
             "version": 1,
             "source": "ATP Tour official player profile URLs",
