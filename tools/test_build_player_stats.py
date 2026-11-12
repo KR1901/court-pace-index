@@ -17,6 +17,7 @@ from build_player_stats import (
     parse_kickserve_live_rankings,
     parse_tml_ranking_archive_snapshot,
     map_live_rankings_to_tml_ids,
+    parse_official_atp_profile_id_overrides,
     supplement_top100_from_tml,
     max_published_rank,
     select_ranking_snapshot_date,
@@ -395,6 +396,98 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedTop500"], 1)
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
+
+    def test_official_atp_profile_override_resolves_ambiguous_roster_aliases(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-881", "rank": 881, "name": "Amr Elsayed", "country": "EGY"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Amr Elsayed", "EGY", "A0G8")
+        _add_player_alias(aliases, "Amr Elsayed", "EGY", "DUPLICATE-ALIAS")
+        overrides = {
+            "amrelsayed|EGY": {
+                "name": "Amr Elsayed",
+                "country": "EGY",
+                "atpId": "A0G8",
+                "profileUrl": "https://www.atptour.com/en/players/-/a0g8/overview",
+            },
+        }
+
+        result = map_live_rankings_to_tml_ids(
+            snapshot, aliases, official_id_overrides=overrides,
+        )
+
+        self.assertEqual([row["id"] for row in result["players"]], ["A0G8"])
+        self.assertEqual(result["unresolvedPlayers"], 0)
+        self.assertEqual(result["identityOverridesApplied"], 1)
+
+    def test_official_atp_profile_override_does_not_cross_country(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 410, "name": "Same Name", "country": "GBR"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        overrides = {
+            "samename|USA": {
+                "name": "Same Name",
+                "country": "USA",
+                "atpId": "P001",
+                "profileUrl": "https://www.atptour.com/en/players/-/p001/overview",
+            },
+        }
+
+        result = map_live_rankings_to_tml_ids(
+            snapshot, {}, official_id_overrides=overrides,
+        )
+
+        self.assertEqual(result["players"], [])
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["identityOverridesApplied"], 0)
+
+    def test_official_atp_profile_override_file_rejects_duplicate_profile_ids(self):
+        payload = {
+            "version": 1,
+            "source": "ATP Tour official player profile URLs",
+            "players": [
+                {
+                    "name": "Player One", "country": "USA", "atpId": "P001",
+                    "profileUrl": "https://www.atptour.com/en/players/-/p001/overview",
+                },
+                {
+                    "name": "Player Two", "country": "GBR", "atpId": "P001",
+                    "profileUrl": "https://www.atptour.com/en/players/-/p001/overview",
+                },
+            ],
+        }
+        with self.assertRaisesRegex(RuntimeError, "assigned to both"):
+            parse_official_atp_profile_id_overrides(payload)
+
+    def test_official_atp_profile_override_file_normalizes_country_codes(self):
+        payload = {
+            "version": 1,
+            "source": "ATP Tour official player profile URLs",
+            "players": [
+                {
+                    "name": "M Rifki Fitriadi", "country": "INA", "atpId": "M0D4",
+                    "profileUrl": "https://www.atptour.com/en/players/-/m0d4/overview",
+                },
+            ],
+        }
+        result = parse_official_atp_profile_id_overrides(payload)
+        self.assertIn("mrifkifitriadi|IDN", result)
+        self.assertEqual(result["mrifkifitriadi|IDN"]["atpId"], "M0D4")
 
     def test_live_rankings_prefer_canonical_roster_id_over_duplicate_match_alias(self):
         snapshot = {
