@@ -209,6 +209,21 @@ jobs:
           assert isinstance(stat_match_keys, list), "current-season stat match keys are missing"
           assert len(stat_match_keys) == len(set(stat_match_keys)), "duplicate current-season stat match keys"
           assert set(stat_match_keys).issubset(set(current_match_keys)), "stat keys must also be result keys"
+          height_group_match_keys = meta.get("heightGroupCurrentSeasonMatchKeys")
+          assert isinstance(height_group_match_keys, list), "expanded Height Groups match keys are missing"
+          assert len(height_group_match_keys) == len(set(height_group_match_keys)), "duplicate expanded Height Groups match keys"
+          assert set(current_match_keys).issubset(set(height_group_match_keys)), (
+              "expanded Height Groups keys must include every ATP Tour match key"
+          )
+          height_group_stat_keys = meta.get("heightGroupCurrentSeasonStatMatchKeys")
+          assert isinstance(height_group_stat_keys, list), "expanded Height Groups stat keys are missing"
+          assert len(height_group_stat_keys) == len(set(height_group_stat_keys)), "duplicate expanded Height Groups stat keys"
+          assert set(stat_match_keys).issubset(set(height_group_stat_keys)), (
+              "expanded Height Groups stat keys must include every ATP Tour stat key"
+          )
+          assert set(height_group_stat_keys).issubset(set(height_group_match_keys)), (
+              "expanded Height Groups stat keys must also be result keys"
+          )
           assert meta.get("currentSeasonSourceMtime"), "current-season source mtime is missing"
           snapshot_date = date.fromisoformat(meta.get("currentTop100AsOf", ""))
           assert snapshot_date <= date.today(), "current cohort snapshot cannot be in the future"
@@ -242,6 +257,48 @@ jobs:
                       assert bucket.get("rp", 0) >= bucket.get("rw", 0) >= 0
                       assert 0 <= bucket.get("sm", 0) <= bucket.get("mp", 0)
                       assert bucket.get("mp", 0) == bucket.get("w", 0) + bucket.get("l", 0)
+
+              height_group_seasons = player.get("heightGroupSeasons") or []
+              height_group_years = [item["y"] for item in height_group_seasons]
+              assert len(height_group_years) == len(set(height_group_years)), (
+                  f"duplicate Height Groups seasons for {player.get('id')}"
+              )
+              tour_by_year = {item["y"]: item for item in seasons}
+              for season in height_group_seasons:
+                  year = season["y"]
+                  assert 1968 <= year <= meta.get("lastSeason", 0), (
+                      f"invalid Height Groups calendar year {year}"
+                  )
+                  tour_buckets = (tour_by_year.get(year) or {}).get("b") or {}
+                  for name, bucket in (season.get("b") or {}).items():
+                      assert bucket.get("sp", 0) >= bucket.get("sw", 0) >= 0
+                      assert bucket.get("rp", 0) >= bucket.get("rw", 0) >= 0
+                      assert 0 <= bucket.get("sm", 0) <= bucket.get("mp", 0)
+                      assert bucket.get("mp", 0) == bucket.get("w", 0) + bucket.get("l", 0)
+                      tour_bucket = tour_buckets.get(name) or {}
+                      for field in ("mp", "w", "l", "sp", "sw", "rp", "rw", "sm"):
+                          assert bucket.get(field, 0) >= tour_bucket.get(field, 0), (
+                              f"expanded Height Groups {field} is below ATP Tour-only data "
+                              f"for {player.get('id')} {year} {name}"
+                          )
+
+          expected_height_group_stat_seasons = sorted({
+              season["y"]
+              for player in players
+              for season in (player.get("heightGroupSeasons") or [])
+              if (season.get("b") or {}).get("all", {}).get("sm", 0) > 0
+          })
+          assert meta.get("heightGroupStatsAvailableSeasons") == expected_height_group_stat_seasons, (
+              "Height Groups stats-available seasons do not match player-level data"
+          )
+          lower_tier_coverage = (meta.get("heightGroupCoverage") or {}).get("challengerAndQualifying") or {}
+          lower_results = lower_tier_coverage.get("matchResults", 0)
+          lower_valid = lower_tier_coverage.get("matchesWithValidStats", 0)
+          lower_without_stats = lower_tier_coverage.get("matchesWithoutValidStats", 0)
+          assert min(lower_results, lower_valid, lower_without_stats) >= 0
+          assert lower_valid + lower_without_stats == lower_results, (
+              "Challenger/qualifying valid and invalid-stat counts must reconcile to match results"
+          )
 
           assert height_count == meta.get("playersWithHeight")
           archive_players = sum(bool(row.get("seasons")) for row in players)
