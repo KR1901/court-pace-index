@@ -925,8 +925,11 @@ def supplement_missing_heights_from_sackmann(
         if not name_key:
             continue
         country = (row.get("ioc") or row.get("country_code") or "").strip().upper()
-        country_candidates = roster_aliases.get(f"{name_key}|{country}", set()) if country else set()
-        candidates = country_candidates if country_candidates else roster_aliases.get(name_key, set())
+        if country:
+            # Do not fall back to a same-name player from a different country.
+            candidates = roster_aliases.get(f"{name_key}|{country}", set())
+        else:
+            candidates = roster_aliases.get(name_key, set())
         if len(candidates) != 1:
             continue
 

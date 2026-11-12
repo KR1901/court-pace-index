@@ -199,6 +199,27 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(players["P2"]["heightSource"], "tml-player-database")
         self.assertIsNone(players["P3"]["heightCm"])
 
+    def test_sackmann_height_fallback_never_crosses_country_when_names_collide(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Alex Smith",
+                "country": "USA", "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = {
+            "alexsmith|USA": {"P1"},
+            "alexsmith|GBR": set(),
+            "alexsmith": {"P1"},
+        }
+        rows = [{
+            "name_first": "Alex", "name_last": "Smith",
+            "ioc": "GBR", "height": "188",
+        }]
+        self.assertEqual(
+            supplement_missing_heights_from_sackmann(rows, players, aliases), 0,
+        )
+        self.assertIsNone(players["P1"]["heightCm"])
+
     def test_sackmann_height_fallback_accepts_documented_legacy_header_variant(self):
         players = {
             "P1": {
