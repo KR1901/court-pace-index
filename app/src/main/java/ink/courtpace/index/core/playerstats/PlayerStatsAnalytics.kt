@@ -181,8 +181,14 @@ object PlayerStatsAnalytics {
         val legacySnapshot = data.meta.top100SeasonSnapshots.firstOrNull { it.year == year }
         val hasLegacyLiveCohort = year == data.meta.lastSeason &&
             data.players.any { it.currentRank != null }
+        val hasLegacySeasonCohort = data.players.any { player ->
+            player.top100RanksBySeason.any { it.y == year }
+        }
         val availableThroughRank = expandedSnapshot?.maxRank
-            ?: if (cohort == HeightGroupCohort.TOP_100 && (legacySnapshot != null || hasLegacyLiveCohort)) {
+            ?: if (
+                cohort == HeightGroupCohort.TOP_100 &&
+                (legacySnapshot != null || hasLegacyLiveCohort || hasLegacySeasonCohort)
+            ) {
                 100
             } else {
                 0
@@ -265,4 +271,5 @@ object PlayerStatsAnalytics {
             availableThroughRank = availableThroughRank,
             cohortAvailable = cohortAvailable,
         )
-    }}
+    }
+}
