@@ -241,6 +241,20 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(max_published_rank(payload), 500)
         self.assertEqual(len(parse_current_top1000(payload)), 500)
 
+    def test_rank_cutoff_does_not_require_exactly_one_row_per_rank_position(self):
+        # A source may have skipped rank numbers and/or ties. The cohort is every
+        # published row whose official rank is <= 1000, not an invented 1000 rows.
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 1000)
+            if rank % 10 != 0
+        ]
+        rows.append({"id": "P1100", "rank": 1100, "name": "Player 1100"})
+        parsed = parse_current_top1000({"rankings": rows})
+        self.assertEqual(len(parsed), 900)
+        self.assertEqual(parsed[-1]["rank"], 999)
+        self.assertEqual(max_published_rank({"rankings": rows}), 1100)
+
     def test_live_rankings_crosswalk_internal_ids_only_through_unique_normalized_names(self):
         snapshot = {
             "players": [
