@@ -515,6 +515,57 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedPlayers"], 0)
         self.assertEqual(result["identityOverridesApplied"], 1)
 
+    def test_roan_jones_abbreviated_ranking_name_resolves_to_verified_height(self):
+        identity_payload = {
+            "version": 1,
+            "source": "ATP Tour official player profile URLs",
+            "players": [{
+                "name": "R.R. Jones",
+                "country": "GBR",
+                "atpId": "J0D3",
+                "profileUrl": "https://www.atptour.com/en/players/-/j0d3/overview",
+            }],
+        }
+        identity_overrides = parse_official_atp_profile_id_overrides(identity_payload)
+        snapshot = {
+            "players": [
+                {"id": "KICK-987", "rank": 987, "name": "R.R. Jones", "country": "GBR"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+
+        mapped = map_live_rankings_to_tml_ids(
+            snapshot, {}, official_id_overrides=identity_overrides,
+        )
+        self.assertEqual([row["id"] for row in mapped["players"]], ["J0D3"])
+        self.assertEqual(mapped["identityOverridesApplied"], 1)
+
+        players = {}
+        ensure_player(players, "J0D3", "R.R. Jones", "GBR", None, 2026)
+        height_overrides = parse_verified_player_height_overrides({
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "J0D3",
+                "name": "Roan Jones",
+                "country": "GBR",
+                "heightCm": 185,
+                "sourceUrls": [
+                    "https://goheels.com/sports/mens-tennis/roster/roan-jones/27333",
+                    "https://www.atptour.com/en/players/roan-jones/j0d3/bio",
+                ],
+            }],
+        })
+        self.assertEqual(
+            apply_verified_player_height_overrides(height_overrides, players), 1,
+        )
+        self.assertEqual(players["J0D3"]["heightCm"], 185)
+        self.assertEqual(players["J0D3"]["heightSource"], "verified-player-profile")
+
     def test_official_atp_profile_override_does_not_cross_country(self):
         snapshot = {
             "players": [
