@@ -516,12 +516,12 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedPlayers"], 0)
         self.assertEqual(result["identityOverridesApplied"], 1)
 
-    def test_roan_jones_abbreviated_ranking_name_resolves_to_verified_height(self):
+    def test_roan_jones_live_ranking_name_resolves_to_verified_height(self):
         identity_payload = {
             "version": 1,
             "source": "ATP Tour official player profile URLs",
             "players": [{
-                "name": "R.R. Jones",
+                "name": "Roan Jones",
                 "country": "GBR",
                 "atpId": "J0D3",
                 "profileUrl": "https://www.atptour.com/en/players/-/j0d3/overview",
@@ -530,7 +530,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         identity_overrides = parse_official_atp_profile_id_overrides(identity_payload)
         snapshot = {
             "players": [
-                {"id": "KICK-987", "rank": 987, "name": "R.R. Jones", "country": "GB"},
+                {"id": "KICK-987", "rank": 987, "name": "Roan Jones", "country": "GBR"},
             ],
             "unresolvedTop100": 0,
             "unresolvedTop500": 0,
@@ -547,7 +547,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(mapped["identityOverridesNotApplied"], [])
 
         players = {}
-        ensure_player(players, "J0D3", "R.R. Jones", "GBR", None, 2026)
+        ensure_player(players, "J0D3", "Roan Jones", "GBR", None, 2026)
         height_overrides = parse_verified_player_height_overrides({
             "version": 1,
             "source": "Curated player-profile height records",
