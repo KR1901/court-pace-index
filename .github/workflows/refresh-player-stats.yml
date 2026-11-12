@@ -8,6 +8,8 @@ on:
     paths:
       - 'tools/build_player_stats.py'
       - 'tools/test_build_player_stats.py'
+      - 'tools/player_identity_overrides.json'
+      - 'tools/player_height_overrides.json'
       - '.github/workflows/refresh-player-stats.yml'
   schedule:
     - cron: '0 9 * * 1'
@@ -16,6 +18,8 @@ on:
     paths:
       - 'tools/build_player_stats.py'
       - 'tools/test_build_player_stats.py'
+      - 'tools/player_identity_overrides.json'
+      - 'tools/player_height_overrides.json'
       - '.github/workflows/refresh-player-stats.yml'
   workflow_dispatch:
 
