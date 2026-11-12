@@ -320,6 +320,18 @@ jobs:
                   "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
                   "",
               ]
+          elif version == "3.3.3":
+              lines += [
+                  "### Indian date/time display and six height groups",
+                  "- Player Stats dates now use DD-MM-YY and source timestamps are converted to India Standard Time (IST, Asia/Kolkata).",
+                  "- Applies Indian date/time formatting to the archive baseline, live-sync check time, last update time and year-specific ranking snapshot dates; date-only snapshots are not shifted.",
+                  "- Replaces the four broad height groups with six exhaustive, non-overlapping bands: under 1.83 m, 1.83–1.85 m, 1.86–1.88 m, 1.89–1.91 m, 1.92–1.94 m and 1.95 m+.",
+                  "- Aligns the Android analytics, annual Player Stats builder, refresh-workflow integrity checks and documentation on the same six height bands.",
+                  "- Retains year-specific Top 100 cohorts, pooled Hold%/Break%/H+B calculations, sample coverage, surface filters, player search and automatic live result/stat updates.",
+                  "- Preserves the CPI and Surface Speed formulas, live ATP rating path and pace datasets.",
+                  "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
+                  "",
+              ]
           else:
               lines += [
                   "### Included",
