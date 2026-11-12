@@ -24,6 +24,18 @@
       ]
     },
     {
+      "atpId": "G0B7",
+      "name": "Jeremy Gschwendtner",
+      "country": "GBR",
+      "heightCm": 175,
+      "sourceUrls": [
+        "https://en.tennistemple.com/player/jeremy-gschwendtner/rankings",
+        "https://scorego-app.com/player/jeremy-gschwendtner/2ekeFt",
+        "https://www.tennisexplorer.com/player/gschwendtner/"
+      ],
+      "sourceNote": "TennisTemple, ScoreGO and Tennis Explorer show 175 cm / 1.75 m for the exact Great Britain player. wiki.tennis prose has an inconsistent approximate figure, so only the value corroborated by three profile sources is used."
+    },
+    {
       "atpId": "R0JG",
       "name": "Jerry Roddick",
       "country": "USA",
@@ -42,6 +54,18 @@
         "https://olemisssports.com/sports/mens-tennis/roster/john-hallquist-lith-n/4903"
       ],
       "sourceNote": "Ole Miss Athletics 2023-24 senior roster lists 6-1 (185 cm); the 2020-21 freshman roster listed 6-0, so the later senior measurement is used."
+    },
+    {
+      "atpId": "L0HY",
+      "name": "Linus Lagerbohm",
+      "country": "FIN",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.rolandgarros.com/en-us/players/49888-l.lagerbohm",
+        "https://scorego-app.com/player/linus-lagerbohm/11cwm1",
+        "https://wiki.tennis/player/linus-lagerbohm-62945"
+      ],
+      "sourceNote": "ScoreGO and wiki.tennis list 1.83 m / 183 cm; Roland-Garros profile lists 6 ft 0 in (approximately 183 cm)."
     },
     {
       "atpId": "V0BS",
