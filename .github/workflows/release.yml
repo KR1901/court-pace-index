@@ -332,6 +332,18 @@ jobs:
                   "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
                   "",
               ]
+          elif version == "3.3.4":
+              lines += [
+                  "### Expanded year-specific ATP height-group cohorts",
+                  "- Adds selectable Top 100 (default), Top 500 and Top 1000 cohorts in Player Stats → Height groups.",
+                  "- Historical expanded cohorts use each calendar year's final TML ranking snapshot; the live season uses the latest available official ATP ranking list.",
+                  "- Preserves the established TML Top 100 membership and cross-checks the expanded live ranking against that cohort.",
+                  "- Retains tied ranks, counts unresolved or ambiguous player identities separately, and marks insufficient ranking depth unavailable instead of substituting a smaller cohort.",
+                  "- Keeps the six existing height bands, same-year match statistics, surface filters, pooled Hold%/Break%/H+B calculations and W–L coverage.",
+                  "- Preserves CPI and Surface Speed formulas, live ATP rating paths, pace datasets and automatic Player Stats match updates.",
+                  "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
+                  "",
+              ]
           else:
               lines += [
                   "### Included",
