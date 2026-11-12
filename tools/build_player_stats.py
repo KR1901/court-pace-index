@@ -42,6 +42,7 @@ SACKMANN_ATP_PLAYERS_URL = (
 )
 OFFICIAL_ATP_ID_OVERRIDES_PATH = ROOT / "tools" / "player_identity_overrides.json"
 OFFICIAL_ATP_PROFILE_BASE_URL = "https://www.atptour.com/en/players/-/"
+VERIFIED_PLAYER_HEIGHT_OVERRIDES_PATH = ROOT / "tools" / "player_height_overrides.json"
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
@@ -148,6 +149,78 @@ def load_official_atp_profile_id_overrides(
     if not isinstance(payload, dict):
         raise RuntimeError("Official ATP identity override file must contain a JSON object")
     return parse_official_atp_profile_id_overrides(payload)
+
+
+def parse_verified_player_height_overrides(
+    payload: dict[str, object],
+) -> dict[str, dict[str, object]]:
+    """Parse sourced height facts keyed by the exact ATP/TML profile ID."""
+    if payload.get("version") != 1:
+        raise RuntimeError("Unsupported verified player height override version")
+    if payload.get("source") != "Curated player-profile height records":
+        raise RuntimeError("Unexpected source for verified player height overrides")
+    rows = payload.get("players")
+    if not isinstance(rows, list):
+        raise RuntimeError("Verified player height override file has no players array")
+
+    result: dict[str, dict[str, object]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise RuntimeError("Verified player height override contains a non-object row")
+        atp_id = str(row.get("atpId") or "").strip().upper()
+        name = str(row.get("name") or "").strip()
+        country = normalize_country_code(str(row.get("country") or ""))
+        height = valid_height(row.get("heightCm"))
+        urls = row.get("sourceUrls")
+        if not re.fullmatch(r"[A-Z0-9]{4}", atp_id):
+            raise RuntimeError(f"Invalid ATP profile ID in height override: {atp_id!r}")
+        if not normalize_name(name) or not country or height is None:
+            raise RuntimeError(f"Invalid identity or height for height override {atp_id}")
+        if not isinstance(urls, list) or not urls or any(
+            not str(url).startswith("https://") for url in urls
+        ):
+            raise RuntimeError(f"Height override {atp_id} requires HTTPS source URLs")
+        if atp_id in result:
+            raise RuntimeError(f"Duplicate ATP profile ID in height overrides: {atp_id}")
+        result[atp_id] = {
+            "name": name,
+            "country": country,
+            "heightCm": height,
+            "sourceUrls": [str(url) for url in urls],
+        }
+    return result
+
+
+def load_verified_player_height_overrides(
+    path: Path = VERIFIED_PLAYER_HEIGHT_OVERRIDES_PATH,
+) -> dict[str, dict[str, object]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Unable to load verified player height overrides: {error}") from error
+    if not isinstance(payload, dict):
+        raise RuntimeError("Verified player height override file must contain a JSON object")
+    return parse_verified_player_height_overrides(payload)
+
+
+def apply_verified_player_height_overrides(
+    overrides: dict[str, dict[str, object]],
+    players: dict[str, dict],
+) -> int:
+    """Apply sourced heights only to exact ATP IDs whose height is still unknown."""
+    applied = 0
+    for atp_id, override in overrides.items():
+        record = players.get(atp_id)
+        if record is None or record.get("heightCm") is not None:
+            continue
+        height = valid_height(override.get("heightCm"))
+        if height is None:
+            raise RuntimeError(f"Invalid verified height override for ATP profile {atp_id}")
+        record["heightCm"] = height
+        record["heightSource"] = "verified-player-profile"
+        record["_heightSeason"] = 9998
+        applied += 1
+    return applied
 
 
 def integer(value: object) -> int | None:
@@ -1389,6 +1462,7 @@ def build() -> dict:
     roster, roster_aliases = load_roster(files)
     canonical_player_ids = frozenset(roster)
     official_id_overrides = load_official_atp_profile_id_overrides()
+    verified_player_height_overrides = load_verified_player_height_overrides()
     players = roster
     top100_snapshots = load_top100_season_snapshots(1973, current_year)
     current_season_match_keys: set[str] = set()
@@ -1499,6 +1573,9 @@ def build() -> dict:
             )
         _validate_top100_subset(top100_snapshots[year], snapshot)
 
+    verified_profile_height_fills = apply_verified_player_height_overrides(
+        verified_player_height_overrides, players,
+    )
     current_top100_count = len(top100_snapshots[current_year]["players"])
     current_top500_count = sum(
         1 for entry in top1000_snapshots[current_year]["players"] if int(entry["rank"]) <= 500
@@ -1568,6 +1645,9 @@ def build() -> dict:
                 "license": "CC BY-NC-SA 4.0",
                 "status": sackmann_height_source_status,
                 "filledMissingHeights": sackmann_height_fills,
+                "curatedProfileSource": "ATP/ITF/tournament/college and verified tennis player profiles",
+                "curatedProfileOverrideFile": "tools/player_height_overrides.json",
+                "curatedProfileHeightsApplied": verified_profile_height_fills,
             },
             "playersInCurrentTop100": current_top100_count,
             "playersInCurrentTop500": current_top500_count,
@@ -1701,6 +1781,10 @@ def main() -> None:
         "supplementary height fallback: "
         f"{meta['heightEnrichment']['status']}, "
         f"{meta['heightEnrichment']['filledMissingHeights']} missing heights filled"
+    )
+    print(
+        "verified player-profile height overrides: "
+        f"{meta['heightEnrichment']['curatedProfileHeightsApplied']} missing heights filled"
     )
 
     current_rank_by_id = {
