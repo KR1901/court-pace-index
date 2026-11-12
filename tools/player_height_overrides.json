@@ -142,6 +142,19 @@
       "sourceNote": "Sofascore, GameSetPredict and ScoreGO exact French player profiles (DOB 20 September 1999) list 183 cm / 1.83 m."
     },
     {
+      "atpId": "D0HI",
+      "name": "Chirag Duhan",
+      "country": "IND",
+      "heightCm": 196,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/duhan-chirag/377356",
+        "https://en.tennistemple.com/player/chirag-duhan",
+        "https://scorego-app.com/player/chirag-duhan/1NkDPd",
+        "https://www.espn.com/tennis/player/_/id/12421/chirag-duhan"
+      ],
+      "sourceNote": "Sofascore, TennisTemple, ScoreGO and ESPN exact Indian player profiles (DOB 1 January 2004, Gurgaon) list 196 cm / 6′5″."
+    },
+    {
       "atpId": "S0YB",
       "name": "Daniil Sarksian",
       "country": "ARM",
@@ -153,6 +166,17 @@
         "https://scorego-app.com/player/daniil-sarksian/M7Yhl"
       ],
       "sourceNote": "Sofascore, TennisTemple, Roland-Garros and ScoreGO exact player profile (DOB 20 June 2006, Moscow) list 180 cm / 5′11″. ATP country field shows ARM while the live ranking/other bios identify Russian representation; ATP profile ID is used."
+    },
+    {
+      "atpId": "T0CY",
+      "name": "Davide Tortora",
+      "country": "ITA",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://www.tennisexplorer.com/player/tortora/",
+        "https://www.sofascore.com/tennis/player/tortora-davide/289232"
+      ],
+      "sourceNote": "Tennis Explorer exact Italian ATP player profile (DOB 22 September 2000) lists 185 cm; Sofascore profile matches name and birth date."
     },
     {
       "atpId": "K0QK",
@@ -185,6 +209,19 @@
         "https://www.rolandgarros.com/en-us/players/51298-e.pleshivtsev"
       ],
       "sourceNote": "Roland-Garros player profile for the exact Russian player lists 6′1″ (approximately 185 cm)."
+    },
+    {
+      "atpId": "A0K2",
+      "name": "Federico Aguilar Cardozo",
+      "country": "URU",
+      "heightCm": 168,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/aguilar-federico-juan/206594",
+        "https://scorego-app.com/player/federico-aguilar-cardozo/2lbwWP",
+        "https://it.tennistemple.com/player/federico-aguilar-cardozo",
+        "https://umpiry.com/players/federico-aguilar-cardozo-uru"
+      ],
+      "sourceNote": "Sofascore, ScoreGO, TennisTemple and Umpiry exact Uruguayan player profiles (DOB 8 April 2005) list 168 cm / 5′6″."
     },
     {
       "atpId": "M0HY",
@@ -313,6 +350,17 @@
       "sourceNote": "Sofascore, TennisTemple and Umpiry exact Uruguayan player profile (DOB 8 April 2005, Buenos Aires) lists 168 cm / 5′6″."
     },
     {
+      "atpId": "G0OS",
+      "name": "Joaquin Guilleme",
+      "country": "NCA",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/guilleme-joaquin/425267",
+        "https://scorego-app.com/player/joaquin-guilleme/16Yy4n"
+      ],
+      "sourceNote": "Sofascore and ScoreGO exact Nicaraguan player profiles (DOB 24 April 2006, Managua) list 178 cm / 5′10″."
+    },
+    {
       "atpId": "H0E7",
       "name": "John Hallquist Lithen",
       "country": "SWE",
@@ -391,6 +439,18 @@
       "sourceNote": "Official Florida State University men's tennis roster lists 6-0 for Luis Felipe Miguel; ATP ID M0OT and DOB 10 March 2004 match the exact Brazilian player."
     },
     {
+      "atpId": "T0JM",
+      "name": "Luka Talan Lopatic",
+      "country": "SVN",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://scorego-app.com/player/luka-talan-lopatic/JZmtV",
+        "https://www.rolandgarros.com/en-us/players/52064-l.talan-lopatic",
+        "https://wiki.tennis/player/luka-talan-lopatic-64899"
+      ],
+      "sourceNote": "ScoreGO, Roland-Garros and wiki.tennis exact Slovenian player profiles (DOB 26 December 2007, Ljubljana) list 183 cm / 6′0″ (Roland-Garros rounds to 1.82 m)."
+    },
+    {
       "atpId": "P0LN",
       "name": "Manuel Plunger",
       "country": "ITA",
@@ -435,6 +495,18 @@
       "sourceNote": "Ubitennis interview with Italian junior champion Matteo Gribaldo; he states he was born 8 October 2008 and is 178 cm tall, matching the ATP profile birth date."
     },
     {
+      "atpId": "T0BH",
+      "name": "Matthew Thomson",
+      "country": "USA",
+      "heightCm": 191,
+      "sourceUrls": [
+        "https://www.winstonsalemopen.com/en/players/matthew-thomson/t0bh",
+        "https://scorego-app.com/player/matthew-thomson/2hheIr",
+        "https://wiki.tennis/player/matthew-thomson-59766"
+      ],
+      "sourceNote": "Winston-Salem Open official player card, ScoreGO and wiki.tennis exact USA player profiles (DOB 28 May 2000, Durham) list 191 cm / 6′3″."
+    },
+    {
       "atpId": "E0DP",
       "name": "Maxwell Exsted",
       "country": "USA",
@@ -455,6 +527,18 @@
         "https://lsusports.net/sports/mt/roster/player/michael-bassem-sobhy"
       ],
       "sourceNote": "LSU Athletics 2026-27 men's tennis roster lists 5-10."
+    },
+    {
+      "atpId": "H0GW",
+      "name": "Michel Hopp",
+      "country": "DEU",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/hopp-michel/289153",
+        "https://scorego-app.com/player/michel-hopp/2K9Hon",
+        "https://sports.bzzoiro.com/tennis/player/4334/"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and BSD Tennis exact German player profiles (DOB 21 December 1998, Erfurt) list 185 cm / 6′1″."
     },
     {
       "atpId": "T133",
@@ -588,6 +672,18 @@
       ]
     },
     {
+      "atpId": "I09U",
+      "name": "Rafael Izquierdo Luque",
+      "country": "ESP",
+      "heightCm": 191,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/izquierdo-luque-rafael/201850",
+        "https://en.tennistemple.com/player/rafael-izquierdo-luque",
+        "https://scorego-app.com/player/rafael-izquierdo-luque/2exkD3"
+      ],
+      "sourceNote": "Sofascore, TennisTemple and ScoreGO exact Spanish player profiles (DOB 10 January 2000, Santiago del Compostela) list 191 cm / 6′3″."
+    },
+    {
       "atpId": "P0MS",
       "name": "Rares Teodor Pieleanu",
       "country": "ROU",
@@ -628,6 +724,18 @@
       "sourceNote": "Sofascore, TennisStats and ScoreGO exact profile (DOB 2 August 2004, Como) list 188 cm / 1.88 m. Player databases differ on nationality (Italy/Monaco); ATP profile ID and DOB anchor the record."
     },
     {
+      "atpId": "F0HB",
+      "name": "Rodrigo Fernandes",
+      "country": "PRT",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/fernandes-rodrigo/464370",
+        "https://scorego-app.com/player/rodrigo-fernandes/Jqb0b",
+        "https://www.stevegtennis.com/stats-ranking-titles-profile/Rodrigo%20Fernandes"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and SteveGtennis exact Portuguese player profiles (DOB 18 November 2006, Braga) list 180 cm / 5′11″."
+    },
+    {
       "atpId": "F0F0",
       "name": "Romain Faucon",
       "country": "BEL",
@@ -659,6 +767,17 @@
         "https://www.sofascore.com/tennis/player/gima-sebastian/265627",
         "https://en.tennistemple.com/player/sebastian-gima"
       ]
+    },
+    {
+      "atpId": "A0HM",
+      "name": "Taym Al Azmeh",
+      "country": "SYR",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://smashrs.com/players/taym-al-azmeh",
+        "https://www.coretennis.net/tennis-player/taym-al-azmeh/130446/profile.html"
+      ],
+      "sourceNote": "Smashrs exact Syrian player profile directly lists 5′11″ / 180 cm; ATP/CoreTennis profile matches name and Syria representation."
     },
     {
       "atpId": "D0N2",
