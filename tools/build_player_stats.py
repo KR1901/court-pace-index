@@ -782,6 +782,7 @@ def map_live_rankings_to_tml_ids(
     unresolved_ranks = list(snapshot.get("unresolvedRanks", []))
     official_id_overrides = official_id_overrides or {}
     overrides_applied = 0
+    matched_override_keys: set[str] = set()
 
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
@@ -794,6 +795,7 @@ def map_live_rankings_to_tml_ids(
             # country-qualified ranking row. Never use KickServe's own feed ID.
             candidate_ids = {official_override["atpId"]}
             overrides_applied += 1
+            matched_override_keys.add(override_key)
         else:
             candidate_ids, _ = _player_alias_candidates(
                 name, country_key, roster_aliases, canonical_player_ids,
@@ -836,6 +838,15 @@ def map_live_rankings_to_tml_ids(
         "unresolvedEntries": list(snapshot.get("unresolvedEntries", [])),
         "rankedEntries": len(mapped) + unresolved_top1000,
         "identityOverridesApplied": overrides_applied,
+        "identityOverridesNotApplied": [
+            {
+                "name": row["name"],
+                "country": row["country"],
+                "atpId": row["atpId"],
+            }
+            for key, row in sorted(official_id_overrides.items())
+            if key not in matched_override_keys
+        ],
     }
 
 
@@ -1524,6 +1535,15 @@ def build() -> dict:
         official_id_overrides=official_id_overrides,
     )
     current_expanded_snapshot = top1000_snapshots[current_year]
+    identity_overrides_not_applied = current_expanded_snapshot.get("identityOverridesNotApplied") or []
+    if identity_overrides_not_applied:
+        print(
+            "official ATP profile-ID overrides not present in the live ranking feed: "
+            + "; ".join(
+                f"{row['name']} ({row['country']}) [{row['atpId']}]"
+                for row in identity_overrides_not_applied
+            )
+        )
     if int(current_expanded_snapshot.get("maxRank", 0)) < 1000:
         raise RuntimeError(
             "The live official ATP rank feed only publishes positions through rank "
