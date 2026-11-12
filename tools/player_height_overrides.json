@@ -16,6 +16,26 @@
       "sourceNote": "Sofascore, ScoreGO and TennisTemple exact Serbian player profiles (DOB 21 June 2000) list 188 cm / 1.88 m."
     },
     {
+      "atpId": "D0JZ",
+      "name": "Andrea De Marchi",
+      "country": "ITA",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://www.rolandgarros.com/en-us/players/49621-a.demarchi"
+      ],
+      "sourceNote": "Roland-Garros player profile for the exact Italian ATP player lists 5′11″ (approximately 180 cm); profile DOB/ranking match."
+    },
+    {
+      "atpId": "C0OI",
+      "name": "Carles Cordoba",
+      "country": "ESP",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/cordoba-carles/422785"
+      ],
+      "sourceNote": "Sofascore exact Spanish player profile (DOB 18 January 2006, birthplace Valencia) lists 178 cm."
+    },
+    {
       "atpId": "B0C4",
       "name": "Charles Bertimon",
       "country": "FRA",
@@ -48,6 +68,16 @@
         "https://www.espn.com/tennis/player/_/id/17023/dominick-mosejczuk"
       ],
       "sourceNote": "Australian Open player profile lists 191 cm; Roland-Garros and ESPN list 6′3″ for the exact USA player (DOB 13 January 2007)."
+    },
+    {
+      "atpId": "P0ND",
+      "name": "Egor Pleshivtsev",
+      "country": "RUS",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://www.rolandgarros.com/en-us/players/51298-e.pleshivtsev"
+      ],
+      "sourceNote": "Roland-Garros player profile for the exact Russian player lists 6′1″ (approximately 185 cm)."
     },
     {
       "atpId": "M0HY",
@@ -148,6 +178,18 @@
         "https://scorego-app.com/player/louis-larue/16BM09"
       ],
       "sourceNote": "ScoreGO exact French player profile (DOB 29 May 2004) lists 1.85 m / 185 cm."
+    },
+    {
+      "atpId": "P0LN",
+      "name": "Manuel Plunger",
+      "country": "ITA",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://en.tennistemple.com/player/manuel-plunger",
+        "https://scorego-app.com/player/manuel-plunger/pPEVd",
+        "https://www.stevegtennis.com/stats-ranking-titles-profile/Manuel%20Plunger"
+      ],
+      "sourceNote": "TennisTemple, ScoreGO and SteveGtennis exact Italian player profiles (DOB 13 July 2002) list 185 cm / 1.85 m."
     },
     {
       "atpId": "M0VH",
@@ -255,6 +297,16 @@
         "https://www.sofascore.com/tennis/player/turcanu-radu-david/448137",
         "https://scorego-app.com/player/radu-david-turcanu/"
       ]
+    },
+    {
+      "atpId": "P0MS",
+      "name": "Rares Teodor Pieleanu",
+      "country": "ROU",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/pieleanu-rares-teodor/477288"
+      ],
+      "sourceNote": "Sofascore exact Romanian player profile (Alexandria; DOB 10 February 2007) lists 180 cm."
     },
     {
       "atpId": "S19T",
@@ -397,6 +449,16 @@
       "sourceUrls": [
         "https://en.tennistemple.com/match/dzhavakian-recek-sharm-el-sheikh-2026/9459296/"
       ]
+    },
+    {
+      "atpId": "T0J8",
+      "name": "Yuta Tomida",
+      "country": "JPN",
+      "heightCm": 170,
+      "sourceUrls": [
+        "https://en.tennistemple.com/player/yuta-tomida/rankings"
+      ],
+      "sourceNote": "TennisTemple exact Japanese player profile (Nagoya; DOB 31 October 2006) lists 170 cm."
     }
   ]
 }
