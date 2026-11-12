@@ -52,6 +52,18 @@
       "sourceNote": "Sofascore, GameSetPredict, ScoreGO and ESPN exact French player profiles (DOB 6 June 1999, Draguignan) list 188 cm / 6′2″."
     },
     {
+      "atpId": "A0G8",
+      "name": "Amr Elsayed",
+      "country": "EGY",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/asrawy-amr/329816",
+        "https://en.tennistemple.com/player/amr-elsayed",
+        "https://scorego-app.com/player/amr-elsayed"
+      ],
+      "sourceNote": "Sofascore, TennisTemple and ScoreGO exact Egyptian player profile (DOB 4 March 1999, Alexandria) list 185 cm / 6′1″."
+    },
+    {
       "atpId": "I0B0",
       "name": "Andre Ilagan",
       "country": "USA",
