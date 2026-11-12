@@ -68,6 +68,28 @@
       "sourceNote": "ScoreGO and wiki.tennis list 1.83 m / 183 cm; Roland-Garros profile lists 6 ft 0 in (approximately 183 cm)."
     },
     {
+      "atpId": "L0IO",
+      "name": "Louis Larue",
+      "country": "FRA",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://scorego-app.com/player/louis-larue/16BM09"
+      ],
+      "sourceNote": "ScoreGO exact French player profile (DOB 29 May 2004) lists 1.85 m / 185 cm."
+    },
+    {
+      "atpId": "M0VH",
+      "name": "Markus Malaszszak",
+      "country": "THA",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://pl.tennistemple.com/player/markus-malaszszak",
+        "https://www.sofascore.com/tennis/player/malaszszak-markus/390992",
+        "https://scorego-app.com/player/markus-malaszszak/1PdUlt"
+      ],
+      "sourceNote": "TennisTemple, Sofascore and ScoreGO list 185 cm / 1.85 m for the exact player (DOB 8 July 2004). Nationality is inconsistent across profiles: the live ranking row/ATP crosswalk uses THA, while some profile providers display Germany; the exact profile ID, name and birth date identify the same player."
+    },
+    {
       "atpId": "V0BS",
       "name": "Martin Van Der Meerschen",
       "country": "BEL",
@@ -96,6 +118,17 @@
         "https://www.sofascore.com/tennis/player/makhlouf-mohamed-nazim/189831"
       ],
       "sourceNote": "Sofascore exact player profile (Algeria, DOB 12 September 1996) explicitly lists 193 cm."
+    },
+    {
+      "atpId": "I0B1",
+      "name": "Nikita Ianin",
+      "country": "RUS",
+      "heightCm": 193,
+      "sourceUrls": [
+        "https://en.tennistemple.com/player/nikita-ianin",
+        "https://scorego-app.com/player/nikita-ianin/1RIr1t"
+      ],
+      "sourceNote": "TennisTemple and ScoreGO exact Russian player profiles (DOB 7 September 2001) list 193 cm / 1.93 m."
     },
     {
       "atpId": "V0ES",
@@ -156,6 +189,17 @@
       ]
     },
     {
+      "atpId": "D0N2",
+      "name": "Theodore Dean",
+      "country": "USA",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/dean-theodore/523621",
+        "https://www.stevegtennis.com/stats-ranking-titles-profile/Theodore%20Dean"
+      ],
+      "sourceNote": "Sofascore and SteveGtennis exact USA player profiles (DOB 25 March 2002) list 178 cm."
+    },
+    {
       "atpId": "P0K4",
       "name": "Tiago Pereira",
       "country": "PRT",
@@ -175,6 +219,16 @@
         "https://wiki.tennis/player/tobia-costanzo-baragiola-mordini-379349",
         "https://scorego-app.com/player/tobia-costanzo-baragiola-mordini/z8mjI"
       ]
+    },
+    {
+      "atpId": "Z09G",
+      "name": "Tom Zeuch",
+      "country": "DEU",
+      "heightCm": 193,
+      "sourceUrls": [
+        "https://fr.tennistemple.com/player/tom-zeuch"
+      ],
+      "sourceNote": "TennisTemple exact German player profile lists 193 cm and DOB 2000."
     },
     {
       "atpId": "B0U1",
@@ -217,6 +271,16 @@
         "https://floridagators.com/sports/mens-tennis/roster/2022-23"
       ],
       "sourceNote": "Official University of Florida Athletics men's tennis roster lists Will Grant at 6-2. Birth date, university career and ATP record match William Grant (born 13 February 2001) in ATP profile G0DD."
+    },
+    {
+      "atpId": "C0PW",
+      "name": "Yan Cheng Chen",
+      "country": "TWN",
+      "heightCm": 175,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/chen-yan-cheng/487362"
+      ],
+      "sourceNote": "Sofascore exact Chinese Taipei player profile (DOB 1 May 2002) lists 175 cm."
     },
     {
       "atpId": "DB32",
