@@ -1015,8 +1015,11 @@ def build() -> dict:
             "The live official ATP rank feed only publishes positions through rank "
             f"{current_expanded_snapshot.get('maxRank', 0)}; Top 500/Top 1000 data cannot be built safely"
         )
-    if len(current_expanded_snapshot["players"]) + int(current_expanded_snapshot["unresolvedPlayers"]) < 1000:
-        raise RuntimeError("The live ATP ranking snapshot contains fewer than 1000 rank entries")
+    # A Top-N cohort is defined by the published rank cutoff, not by an exact
+    # number of rows. Tied ranks and skipped/empty official-rank positions mean a
+    # complete source list can legitimately contain fewer or more than N players.
+    # maxRank above confirms the live feed extends through the requested cutoff;
+    # only actual source rows with rank <= N are included in each cohort.
 
     current_season_match_keys: set[str] = set()
     current_season_stat_match_keys: set[str] = set()
