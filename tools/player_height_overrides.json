@@ -27,6 +27,17 @@
       "sourceNote": "Tennis.com, Hangzhou Open and Roland-Garros exact Japanese player profiles (DOB 22 May 1997, Tokyo) list 180 cm / 5′11″."
     },
     {
+      "atpId": "T0JO",
+      "name": "Alaa Trifi",
+      "country": "TUN",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://www.tennislive.in/atp/alaa-trifi/",
+        "https://www.itftennis.com/en/players/alaa-trifi/800553361/tun/mt/S/overview/"
+      ],
+      "sourceNote": "TennisLive lists the current Tunisian ATP profile at 180 cm; the ITF profile independently matches the exact player and birth date (16 January 2007) but does not publish height. This is a current single-source height report for a young player and may change as he matures."
+    },
+    {
       "atpId": "C0FJ",
       "name": "Aleksa Ciric",
       "country": "SRB",
@@ -672,6 +683,17 @@
         "https://www.gamesetpredict.com/match/andrea-picchione-pedro-martinez-portero-genova-challenger-2025-atp/"
       ],
       "sourceNote": "ScoreShark, SteveGtennis and GameSetPredict exact Spanish player profiles (DOB 26 April 1997, Alzira) list 185 cm / 6′1″."
+    },
+    {
+      "atpId": "B0M3",
+      "name": "Pierre Yves Bailly",
+      "country": "BEL",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://texaslonghorns.com/sports/mens-tennis/roster/pierreyves-bailly/11420",
+        "https://www.world.tennis/en/players/pierre-yves-bailly/800460903/bel/mt/s/overview/"
+      ],
+      "sourceNote": "The official University of Texas 2024–25 men's tennis roster lists 6′0″ (183 cm); the ITF profile confirms the exact Belgian player and birth year. Height is rounded from the roster's 6′0″ listing."
     },
     {
       "atpId": "T0JZ",
