@@ -26,6 +26,28 @@
       "sourceNote": "Roland-Garros player profile for the exact Italian ATP player lists 5′11″ (approximately 180 cm); profile DOB/ranking match."
     },
     {
+      "atpId": "A0O2",
+      "name": "Anton Arzhankin",
+      "country": "RUS",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://scorego-app.com/player/anton-arzhankin/4NF72x"
+      ],
+      "sourceNote": "ScoreGO exact Russian player profile (DOB 4 May 2003, Moscow) explicitly lists 1.85 m / 185 cm."
+    },
+    {
+      "atpId": "N0AF",
+      "name": "Arvid Nordquist",
+      "country": "SWE",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/nordquist-arvid/207077",
+        "https://www.tennisexplorer.com/player/nordquist/",
+        "https://scorego-app.com/player/arvid-nordquist/2lHDSb"
+      ],
+      "sourceNote": "Sofascore, Tennis Explorer and ScoreGO exact Swedish player profiles (DOB 8 June 1998) list 185 cm / 1.85 m."
+    },
+    {
       "atpId": "C0OI",
       "name": "Carles Cordoba",
       "country": "ESP",
@@ -91,6 +113,18 @@
       "sourceNote": "Official Auburn Tigers men's tennis roster lists 5′9″ for Finn Murgett (Holmfirth, Yorkshire, England), including his 2023–24 fifth-year season."
     },
     {
+      "atpId": "K0DV",
+      "name": "Geun Jun Kim",
+      "country": "KOR",
+      "heightCm": 175,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/kim-geun-jun/255360",
+        "https://scorego-app.com/player/geun-jun-kim/2csqXB",
+        "https://zh.tennistemple.com/player/geun-jun-kim"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and TennisTemple exact South Korean player profiles (DOB 27 July 2001, Yanggu) list 175 cm / 1.75 m."
+    },
+    {
       "atpId": "M0IC",
       "name": "Giannicola Misasi",
       "country": "ITA",
@@ -102,6 +136,16 @@
         "https://www.espn.com/tennis/player/_/id/17017/giannicola-misasi"
       ],
       "sourceNote": "Sofascore, TennisTemple, ScoreGO and ESPN exact Italian player profiles (DOB 12 September 2000) list 185 cm / 6′1″."
+    },
+    {
+      "atpId": "S0YN",
+      "name": "Grigory Shebekin",
+      "country": "RUS",
+      "heightCm": 193,
+      "sourceUrls": [
+        "https://hr.tennistemple.com/player/grigory-shebekin"
+      ],
+      "sourceNote": "TennisTemple exact Russian player profile (DOB 14 May 2005, Moscow) explicitly lists 193 cm."
     },
     {
       "atpId": "K0NG",
@@ -156,6 +200,19 @@
         "https://olemisssports.com/sports/mens-tennis/roster/john-hallquist-lith-n/4903"
       ],
       "sourceNote": "Ole Miss Athletics 2023-24 senior roster lists 6-1 (185 cm); the 2020-21 freshman roster listed 6-0, so the later senior measurement is used."
+    },
+    {
+      "atpId": "J0BQ",
+      "name": "Kristijan Juhas",
+      "country": "SRB",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/juhas-kristijan/321556",
+        "https://en.tennistemple.com/player/kristijan-juhas",
+        "https://scorego-app.com/player/kristijan-juhas/21mTtp",
+        "https://www.stevegtennis.com/stats-ranking-titles-profile/Kristijan%20Juhas"
+      ],
+      "sourceNote": "Sofascore, TennisTemple, ScoreGO and SteveGtennis exact Serbian player profiles (DOB 4 June 2001, Subotica) list 183 cm / 1.83 m."
     },
     {
       "atpId": "L0HY",
@@ -214,6 +271,16 @@
       ]
     },
     {
+      "atpId": "G0QB",
+      "name": "Matteo Gribaldo",
+      "country": "ITA",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://www.ubitennis.com/blog/2024/12/23/matteo-gribaldo-campione-italiano-u16-sinner-e-arnaldi-i-miei-preferiti-cerco-di-evitare-il-cellulare-esclusiva/"
+      ],
+      "sourceNote": "Ubitennis interview with Italian junior champion Matteo Gribaldo; he states he was born 8 October 2008 and is 178 cm tall, matching the ATP profile birth date."
+    },
+    {
       "atpId": "E0DP",
       "name": "Maxwell Exsted",
       "country": "USA",
@@ -234,6 +301,17 @@
         "https://lsusports.net/sports/mt/roster/player/michael-bassem-sobhy"
       ],
       "sourceNote": "LSU Athletics 2026-27 men's tennis roster lists 5-10."
+    },
+    {
+      "atpId": "J0AI",
+      "name": "Miles Jones",
+      "country": "USA",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/jones-miles/256033",
+        "https://www.atptour.com/en/players/atp-head-2-head/jones-jones-vs-smith-smith/j0ai/s0dq"
+      ],
+      "sourceNote": "Sofascore exact USA player profile (DOB 26 December 2000, Marina del Rey) lists 183 cm; the official ATP H2H profile also lists Miles Jones at 6′0″ / 183 cm."
     },
     {
       "atpId": "MN49",
@@ -277,6 +355,16 @@
         "https://scorego-app.com/player/noa-vukadin/1dQPpB",
         "https://www.espn.com.sg/tennis/player/_/id/10320/noa-vukadin"
       ]
+    },
+    {
+      "atpId": "B0ZK",
+      "name": "Oscar Brown",
+      "country": "GBR",
+      "heightCm": 180,
+      "sourceUrls": [
+        "https://scorego-app.com/player/oscar-brown/4STf1E"
+      ],
+      "sourceNote": "ScoreGO exact Great Britain player profile (DOB 12 May 2002, London) explicitly lists 1.80 m / 180 cm."
     },
     {
       "atpId": "P0O7",
