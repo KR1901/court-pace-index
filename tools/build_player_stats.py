@@ -635,6 +635,44 @@ def map_live_rankings_to_tml_ids(
     }
 
 
+def supplement_live_top100_from_tml(
+    expanded_snapshot: dict[str, object],
+    top100_snapshot: dict[str, object],
+) -> dict[str, object]:
+    """Preserve every player/rank from the established TML Top 100 in the live full list.
+
+    The external full-list feed can omit a small number of rated players. Those are restored
+    from the exact same dated TML Top-100 snapshot; existing conflicts still fail validation.
+    """
+    expanded_by_id = {
+        str(entry["id"]): dict(entry)
+        for entry in expanded_snapshot["players"]
+    }
+    for entry in top100_snapshot["players"]:
+        player_id = str(entry["id"])
+        expected_rank = int(entry["rank"])
+        existing = expanded_by_id.get(player_id)
+        if existing is not None:
+            if int(existing["rank"]) != expected_rank:
+                raise RuntimeError(
+                    f"Live full ranking feed rank conflict for Top-100 player {player_id}: "
+                    f"feed={existing['rank']}, TML={expected_rank}"
+                )
+            continue
+        expanded_by_id[player_id] = dict(entry)
+
+    players = sorted(
+        expanded_by_id.values(),
+        key=lambda item: (int(item["rank"]), str(item["id"])),
+    )
+    return {
+        **expanded_snapshot,
+        "players": players,
+        "unresolvedTop100": int(top100_snapshot.get("unresolvedPlayers", 0)),
+        "rankedEntries": len(players) + int(expanded_snapshot.get("unresolvedPlayers", 0)),
+    }
+
+
 def load_top1000_season_snapshots(
     first_year: int,
     current_year: int,
@@ -692,9 +730,13 @@ def load_top1000_season_snapshots(
         "year": current_year,
         "asOf": str(top100_snapshots[current_year]["asOf"]),
         "source": live_url,
-        "provider": "KickServe",
+        "provider": "KickServe + TML Top 100",
         **live_top,
     }
+    live_snapshot = supplement_live_top100_from_tml(
+        live_snapshot,
+        top100_snapshots[current_year],
+    )
     _validate_top100_subset(top100_snapshots[current_year], live_snapshot)
 
     with ThreadPoolExecutor(max_workers=4) as executor:
