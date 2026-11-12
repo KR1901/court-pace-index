@@ -16,6 +16,18 @@
       "sourceNote": "Sofascore, ScoreGO and TennisTemple exact Serbian player profiles (DOB 21 June 2000) list 188 cm / 1.88 m."
     },
     {
+      "atpId": "B0C4",
+      "name": "Charles Bertimon",
+      "country": "FRA",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/bertimon-charles/228665",
+        "https://www.gamesetpredict.com/player/charles-bertimon/",
+        "https://scorego-app.com/player/charles-bertimon/2rYjEn"
+      ],
+      "sourceNote": "Sofascore, GameSetPredict and ScoreGO exact French player profiles (DOB 20 September 1999) list 183 cm / 1.83 m."
+    },
+    {
       "atpId": "K0QK",
       "name": "Dimitar Kisimov",
       "country": "BUL",
@@ -24,6 +36,54 @@
         "https://en.wikipedia.org/wiki/Dimitar_Kisimov",
         "https://scorego-app.com/player/dimitar-kisimov/3iBSmp"
       ]
+    },
+    {
+      "atpId": "M0X2",
+      "name": "Dominick Mosejczuk",
+      "country": "USA",
+      "heightCm": 191,
+      "sourceUrls": [
+        "https://ausopen.com/players/united-states-america/dominick-mosejczuk",
+        "https://www.rolandgarros.com/en-us/players/53014-d.mosejczuk",
+        "https://www.espn.com/tennis/player/_/id/17023/dominick-mosejczuk"
+      ],
+      "sourceNote": "Australian Open player profile lists 191 cm; Roland-Garros and ESPN list 6′3″ for the exact USA player (DOB 13 January 2007)."
+    },
+    {
+      "atpId": "M0HY",
+      "name": "Finn Murgett",
+      "country": "GBR",
+      "heightCm": 175,
+      "sourceUrls": [
+        "https://auburntigers.com/sports/mens-tennis/roster/player/finn-murgett",
+        "https://auburntigers.com/sports/mens-tennis/roster/season/2023-24"
+      ],
+      "sourceNote": "Official Auburn Tigers men's tennis roster lists 5′9″ for Finn Murgett (Holmfirth, Yorkshire, England), including his 2023–24 fifth-year season."
+    },
+    {
+      "atpId": "M0IC",
+      "name": "Giannicola Misasi",
+      "country": "ITA",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/misasi-giannicola/297938",
+        "https://en.tennistemple.com/player/giannicola-misasi",
+        "https://scorego-app.com/player/giannicola-misasi/1o7KTh",
+        "https://www.espn.com/tennis/player/_/id/17017/giannicola-misasi"
+      ],
+      "sourceNote": "Sofascore, TennisTemple, ScoreGO and ESPN exact Italian player profiles (DOB 12 September 2000) list 185 cm / 6′1″."
+    },
+    {
+      "atpId": "K0NG",
+      "name": "Hiromasa Koyama",
+      "country": "JPN",
+      "heightCm": 175,
+      "sourceUrls": [
+        "https://ausopen.com/players/japan/hiromasa-koyama",
+        "https://www.sofascore.com/tennis/player/koyama-hiromasa/509489",
+        "https://scorego-app.com/player/hiromasa-koyama/CVG9J"
+      ],
+      "sourceNote": "Australian Open, Sofascore and ScoreGO exact Japanese player profiles (DOB 13 December 2007) list 175 cm / 1.75 m."
     },
     {
       "atpId": "W215",
@@ -112,6 +172,18 @@
       ]
     },
     {
+      "atpId": "E0DP",
+      "name": "Maxwell Exsted",
+      "country": "USA",
+      "heightCm": 175,
+      "sourceUrls": [
+        "https://ausopen.com/players/united-states-america/maxwell-exsted",
+        "https://www.rolandgarros.com/en-us/players/51258-m.exsted",
+        "https://www.sofascore.com/tennis/player/exsted-maxwell/475834"
+      ],
+      "sourceNote": "Australian Open and Roland-Garros player profiles and Sofascore list 175 cm / 5′9″ for Maxwell Exsted (DOB 12 March 2007)."
+    },
+    {
       "atpId": "B0LV",
       "name": "Michael Bassem Sobhy",
       "country": "EGY",
@@ -130,6 +202,18 @@
         "https://www.sofascore.com/tennis/player/makhlouf-mohamed-nazim/189831"
       ],
       "sourceNote": "Sofascore exact player profile (Algeria, DOB 12 September 1996) explicitly lists 193 cm."
+    },
+    {
+      "atpId": "R0I9",
+      "name": "Nicolas Robert",
+      "country": "FRA",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/robert-nicolas/410762",
+        "https://scorego-app.com/player/nicolas-robert/15MTxB",
+        "https://de.tennistemple.com/player/nicolas-robert"
+      ],
+      "sourceNote": "Sofascore, ScoreGO and TennisTemple exact French player profiles (DOB 29 August 2006) list 183 cm / 1.83 m."
     },
     {
       "atpId": "I0B1",
