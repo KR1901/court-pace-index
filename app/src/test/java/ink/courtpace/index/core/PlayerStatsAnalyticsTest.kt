@@ -1,5 +1,6 @@
 package ink.courtpace.index.core
 
+import ink.courtpace.index.core.playerstats.HeightGroupCohort
 import ink.courtpace.index.core.playerstats.HeightGroupSummary
 import ink.courtpace.index.core.playerstats.PlayerRankingMetric
 import ink.courtpace.index.core.playerstats.PlayerStatsAnalytics
@@ -9,6 +10,8 @@ import ink.courtpace.index.core.playerstats.PlayerStatsDateTime
 import ink.courtpace.index.core.playerstats.PlayerStatsMeta
 import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
 import ink.courtpace.index.core.playerstats.PlayerTop100SeasonRank
+import ink.courtpace.index.core.playerstats.PlayerTop1000SeasonRank
+import ink.courtpace.index.core.playerstats.PlayerTop1000SeasonSnapshot
 import ink.courtpace.index.core.playerstats.PlayerSeasonStats
 import ink.courtpace.index.core.playerstats.PlayerSurfaceFilter
 import org.junit.Assert.assertEquals
@@ -198,6 +201,114 @@ class PlayerStatsAnalyticsTest {
         assertEquals(2, live.cohortSize)
         assertEquals(1, live.groups.first { it.id == "192to194" }.players)
         assertEquals(1, live.groups.first { it.id == "195plus" }.players)
+    }
+
+    @Test
+    fun `height groups use the selected year-specific top 100 500 and 1000 ranks`() {
+        val ranks = listOf(1, 100, 101, 500, 501, 1000)
+        val data = PlayerStatsData(
+            meta = PlayerStatsMeta(
+                lastSeason = 2026,
+                top1000SeasonSnapshots = listOf(
+                    PlayerTop1000SeasonSnapshot(
+                        year = 2026,
+                        asOf = "2026-11-09",
+                        source = "https://stats.tennismylife.org/api/ranking?date=2026-11-09",
+                        players = 6,
+                        rankedEntries = 6,
+                        maxRank = 1000,
+                    ),
+                ),
+            ),
+            players = ranks.mapIndexed { index, rank ->
+                PlayerStatsPlayer(
+                    id = "P$index",
+                    name = "Player $rank",
+                    heightCm = 180 + index * 3,
+                    seasons = listOf(
+                        PlayerSeasonStats(2026, mapOf(
+                            "all" to PlayerStatsBucket(
+                                mp = 10, w = 7, l = 3,
+                                sp = 100, sw = 80 + index,
+                                rp = 100, rw = 20 + index,
+                                sm = 10,
+                            ),
+                        )),
+                    ),
+                    top100RanksBySeason = if (rank <= 100) {
+                        listOf(PlayerTop100SeasonRank(2026, rank))
+                    } else {
+                        emptyList()
+                    },
+                    top1000RanksBySeason = listOf(PlayerTop1000SeasonRank(2026, rank)),
+                )
+            },
+        )
+
+        val top100 = PlayerStatsAnalytics.heightGroups(
+            data, 2026, PlayerSurfaceFilter.ALL, HeightGroupCohort.TOP_100,
+        )
+        val top500 = PlayerStatsAnalytics.heightGroups(
+            data, 2026, PlayerSurfaceFilter.ALL, HeightGroupCohort.TOP_500,
+        )
+        val top1000 = PlayerStatsAnalytics.heightGroups(
+            data, 2026, PlayerSurfaceFilter.ALL, HeightGroupCohort.TOP_1000,
+        )
+
+        assertEquals(2, top100.cohortSize)
+        assertEquals(4, top500.cohortSize)
+        assertEquals(6, top1000.cohortSize)
+        assertTrue(top100.cohortAvailable)
+        assertTrue(top500.cohortAvailable)
+        assertTrue(top1000.cohortAvailable)
+        assertEquals(1000, top1000.availableThroughRank)
+        assertEquals(6, top1000.groups.sumOf { it.players } + top1000.unassignedHeight)
+    }
+
+    @Test
+    fun `height groups do not label an incomplete source snapshot as top 500 or top 1000`() {
+        val data = PlayerStatsData(
+            meta = PlayerStatsMeta(
+                lastSeason = 2026,
+                top1000SeasonSnapshots = listOf(
+                    PlayerTop1000SeasonSnapshot(
+                        year = 2026,
+                        asOf = "2026-11-09",
+                        source = "https://stats.tennismylife.org/api/ranking?date=2026-11-09",
+                        players = 2,
+                        rankedEntries = 2,
+                        maxRank = 350,
+                    ),
+                ),
+            ),
+            players = listOf(
+                PlayerStatsPlayer(
+                    id = "A", name = "Top 1", heightCm = 195,
+                    top1000RanksBySeason = listOf(PlayerTop1000SeasonRank(2026, 1)),
+                ),
+                PlayerStatsPlayer(
+                    id = "B", name = "Top 350", heightCm = 180,
+                    top1000RanksBySeason = listOf(PlayerTop1000SeasonRank(2026, 350)),
+                ),
+            ),
+        )
+
+        val top100 = PlayerStatsAnalytics.heightGroups(
+            data, 2026, PlayerSurfaceFilter.ALL, HeightGroupCohort.TOP_100,
+        )
+        val top500 = PlayerStatsAnalytics.heightGroups(
+            data, 2026, PlayerSurfaceFilter.ALL, HeightGroupCohort.TOP_500,
+        )
+        val top1000 = PlayerStatsAnalytics.heightGroups(
+            data, 2026, PlayerSurfaceFilter.ALL, HeightGroupCohort.TOP_1000,
+        )
+
+        assertTrue(top100.cohortAvailable)
+        assertEquals(1, top100.cohortSize)
+        assertTrue(!top500.cohortAvailable)
+        assertTrue(!top1000.cohortAvailable)
+        assertEquals(0, top500.cohortSize)
+        assertEquals(0, top1000.cohortSize)
     }
 
     @Test

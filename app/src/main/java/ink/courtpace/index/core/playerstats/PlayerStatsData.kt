@@ -30,6 +30,31 @@ data class PlayerTop100SeasonSnapshot(
 )
 
 @Serializable
+data class PlayerTop1000SeasonRank(
+    val y: Int,
+    val rank: Int,
+)
+
+@Serializable
+data class PlayerTop1000SeasonSnapshot(
+    val year: Int,
+    val asOf: String,
+    val source: String,
+    /** Identified players ranked 1–1000, retaining ties at the cutoff. */
+    val players: Int = 1000,
+    /** Rank-1000-or-better source rows without stable IDs. */
+    val unresolvedPlayers: Int = 0,
+    /** Total rank-1000-or-better rows, including unresolved IDs and ties. */
+    val rankedEntries: Int = 1000,
+    /** Highest rank position returned by the dated source snapshot. */
+    val maxRank: Int = 0,
+    /** Unresolved rows ranked 1–500, used for the matching cohort note. */
+    val unresolvedTop500: Int = 0,
+    /** Ranking feed used for this size of snapshot (TML archive or KickServe live feed). */
+    val provider: String = "TML archive",
+)
+
+@Serializable
 data class PlayerStatsMeta(
     val generated: String = "",
     val firstSeason: Int = 1967,
@@ -42,6 +67,11 @@ data class PlayerStatsMeta(
     val firstTop100Season: Int = 1973,
     val top100SeasonSnapshots: List<PlayerTop100SeasonSnapshot> = emptyList(),
     val top100SeasonPolicy: String = "",
+    val playersInCurrentTop500: Int = 0,
+    val playersInCurrentTop1000: Int = 0,
+    val firstTop1000Season: Int = 1973,
+    val top1000SeasonSnapshots: List<PlayerTop1000SeasonSnapshot> = emptyList(),
+    val top1000SeasonPolicy: String = "",
     val source: String = "",
     val sourceUrl: String = "",
     val seasonDefinition: String = "",
@@ -70,6 +100,8 @@ data class PlayerStatsPlayer(
     val currentRank: Int? = null,
     val seasons: List<PlayerSeasonStats> = emptyList(),
     val top100RanksBySeason: List<PlayerTop100SeasonRank> = emptyList(),
+    /** Year-specific rank membership through rank 1000; older assets may omit this field. */
+    val top1000RanksBySeason: List<PlayerTop1000SeasonRank> = emptyList(),
 )
 
 @Serializable

@@ -18,6 +18,12 @@ enum class PlayerSurfaceFilter(val id: String, val label: String) {
     CARPET("carpet", "Carpet"),
 }
 
+enum class HeightGroupCohort(val limit: Int, val label: String) {
+    TOP_100(100, "Top 100"),
+    TOP_500(500, "Top 500"),
+    TOP_1000(1000, "Top 1000"),
+}
+
 private data class HeightBand(
     val id: String,
     val label: String,
@@ -75,6 +81,9 @@ data class HeightGroupsResult(
     val cohortSize: Int,
     val heightKnown: Int,
     val unassignedHeight: Int,
+    val unresolvedRankRows: Int = 0,
+    val availableThroughRank: Int = 0,
+    val cohortAvailable: Boolean = true,
 )
 
 object PlayerStatsAnalytics {
@@ -166,15 +175,43 @@ object PlayerStatsAnalytics {
         data: PlayerStatsData,
         year: Int,
         surface: PlayerSurfaceFilter,
+        cohort: HeightGroupCohort = HeightGroupCohort.TOP_100,
     ): HeightGroupsResult {
-        val cohort = data.players.filter { player ->
-            player.top100RanksBySeason.any { it.y == year } ||
-                (player.top100RanksBySeason.isEmpty() &&
-                    year == data.meta.lastSeason && player.currentRank != null)
+        val expandedSnapshot = data.meta.top1000SeasonSnapshots.firstOrNull { it.year == year }
+        val legacySnapshot = data.meta.top100SeasonSnapshots.firstOrNull { it.year == year }
+        val hasLegacyLiveCohort = year == data.meta.lastSeason &&
+            data.players.any { it.currentRank != null }
+        val hasLegacySeasonCohort = data.players.any { player ->
+            player.top100RanksBySeason.any { it.y == year }
+        }
+        val availableThroughRank = expandedSnapshot?.maxRank
+            ?: if (
+                cohort == HeightGroupCohort.TOP_100 &&
+                (legacySnapshot != null || hasLegacyLiveCohort || hasLegacySeasonCohort)
+            ) {
+                100
+            } else {
+                0
+            }
+        val cohortAvailable = availableThroughRank >= cohort.limit
+        val cohortPlayers = if (!cohortAvailable) {
+            emptyList()
+        } else {
+            data.players.filter { player ->
+                if (expandedSnapshot != null) {
+                    player.top1000RanksBySeason.any { it.y == year && it.rank in 1..cohort.limit }
+                } else if (cohort == HeightGroupCohort.TOP_100) {
+                    player.top100RanksBySeason.any { it.y == year } ||
+                        (player.top100RanksBySeason.isEmpty() &&
+                            year == data.meta.lastSeason && player.currentRank != null)
+                } else {
+                    false
+                }
+            }
         }
         val buckets = heightBands.associate { it.id to mutableListOf<PlayerStatsPlayer>() }
         var unknown = 0
-        cohort.forEach { player ->
+        cohortPlayers.forEach { player ->
             val band = heightBandId(player.heightCm)
             if (band == null) unknown += 1 else buckets[band]?.add(player)
         }
@@ -220,11 +257,19 @@ object PlayerStatsAnalytics {
                 losses = losses,
             )
         }
+        val unresolved = when (cohort) {
+            HeightGroupCohort.TOP_100 -> legacySnapshot?.unresolvedPlayers ?: 0
+            HeightGroupCohort.TOP_500 -> expandedSnapshot?.unresolvedTop500 ?: 0
+            HeightGroupCohort.TOP_1000 -> expandedSnapshot?.unresolvedPlayers ?: 0
+        }
         return HeightGroupsResult(
             groups = groups,
-            cohortSize = cohort.size,
-            heightKnown = cohort.size - unknown,
+            cohortSize = cohortPlayers.size,
+            heightKnown = cohortPlayers.size - unknown,
             unassignedHeight = unknown,
+            unresolvedRankRows = unresolved,
+            availableThroughRank = availableThroughRank,
+            cohortAvailable = cohortAvailable,
         )
     }
 }

@@ -30,6 +30,27 @@ class PlayerStatsAssetTest {
         assertEquals(data.meta.lastSeason, snapshots.last().year)
         assertEquals(data.meta.currentTop100AsOf, snapshots.last().asOf)
 
+        val expandedSnapshots = data.meta.top1000SeasonSnapshots
+        if (expandedSnapshots.isNotEmpty()) {
+            assertEquals(data.meta.lastSeason - data.meta.firstTop1000Season + 1, expandedSnapshots.size)
+            assertEquals(1973, expandedSnapshots.first().year)
+            val currentExpanded = expandedSnapshots.last()
+            assertEquals(data.meta.lastSeason, currentExpanded.year)
+            assertTrue(currentExpanded.maxRank >= 1000)
+            // Ranking positions are the cutoff, not an expected row count: ties, gaps and
+            // rows without stable IDs mean a valid source can contain fewer than 1,000 entries.
+            assertTrue(currentExpanded.rankedEntries > 0)
+
+            val liveTop1000 = data.players.filter { player ->
+                player.top1000RanksBySeason.any { it.y == data.meta.lastSeason }
+            }
+            assertEquals(currentExpanded.players, liveTop1000.size)
+            assertEquals(data.meta.playersInCurrentTop1000, liveTop1000.size)
+            assertTrue(liveTop1000.all { player ->
+                player.top1000RanksBySeason.single { it.y == data.meta.lastSeason }.rank in 1..1000
+            })
+        }
+
         val year2015 = snapshots.single { it.year == 2015 }
         val cohort2015 = data.players.filter { player ->
             player.top100RanksBySeason.any { it.y == 2015 }

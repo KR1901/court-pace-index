@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ink.courtpace.index.core.playerstats.HeightGroupCohort
 import ink.courtpace.index.core.playerstats.HeightGroupSummary
 import ink.courtpace.index.core.playerstats.PlayerRankingMetric
 import ink.courtpace.index.core.playerstats.PlayerRankingRow
@@ -127,6 +128,7 @@ fun PlayerStatsScreen(
     }
     var mode by remember { mutableStateOf(PlayerStatsMode.RANKINGS) }
     var metric by remember { mutableStateOf(PlayerRankingMetric.HOLD) }
+    var heightCohort by remember { mutableStateOf(HeightGroupCohort.TOP_100) }
     var surface by remember { mutableStateOf(PlayerSurfaceFilter.ALL) }
     var minimumGames by remember { mutableIntStateOf(100) }
     var search by remember { mutableStateOf("") }
@@ -148,13 +150,20 @@ fun PlayerStatsScreen(
             }
         }
     }
-    val heightResult = remember(asset, year, surface) {
-        PlayerStatsAnalytics.heightGroups(asset, year, surface)
+    val heightResult = remember(asset, year, surface, heightCohort) {
+        PlayerStatsAnalytics.heightGroups(asset, year, surface, heightCohort)
     }
     val yearSnapshot = remember(asset, year) {
         asset.meta.top100SeasonSnapshots.firstOrNull { it.year == year }
     }
-    val cohortLabel = if (year == asset.meta.lastSeason) "live Top 100 players" else "year-end Top 100 players"
+    val expandedYearSnapshot = remember(asset, year) {
+        asset.meta.top1000SeasonSnapshots.firstOrNull { it.year == year }
+    }
+    val cohortLabel = if (year == asset.meta.lastSeason) {
+        "live " + heightCohort.label + " players"
+    } else {
+        "year-end " + heightCohort.label + " players"
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().statusBarsPadding(),
@@ -277,6 +286,26 @@ fun PlayerStatsScreen(
             }
         }
 
+        if (mode == PlayerStatsMode.HEIGHT_GROUPS) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SectionLabel(text = "Ranking cohort")
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    ) {
+                        HeightGroupCohort.entries.forEach { option ->
+                            GlassChip(
+                                text = option.label,
+                                selected = heightCohort == option,
+                                onClick = { heightCohort = option },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         item {
             SectionLabel(text = "Surface")
             Row(
@@ -372,11 +401,26 @@ fun PlayerStatsScreen(
                 compareByDescending<HeightGroupSummary> { it.combined ?: Double.NEGATIVE_INFINITY }
                     .thenBy { it.id },
             )
-            val unresolvedNote = yearSnapshot?.unresolvedPlayers
-                ?.takeIf { it > 0 }
+            val snapshotDateValue = expandedYearSnapshot?.asOf ?: yearSnapshot?.asOf
+            val snapshotDate = snapshotDateValue?.let {
+                PlayerStatsDateTime.formatDate(it) ?: it
+            }
+            val snapshotProvider = if (heightCohort == HeightGroupCohort.TOP_100) {
+                "TML"
+            } else {
+                expandedYearSnapshot?.provider ?: "TML"
+            }
+            val unresolvedNote = heightResult.unresolvedRankRows
+                .takeIf { it > 0 }
                 ?.let { count ->
-                    " " + count + " ranking row(s) have no stable player ID and are excluded from player-level height calculations."
+                    " " + count + " ranking row(s) in the selected cohort have no stable player ID and are excluded from player-level height calculations."
                 }.orEmpty()
+            val coverageNote = if (heightResult.availableThroughRank > 0) {
+                " The dated ranking snapshot includes published positions through #" +
+                    heightResult.availableThroughRank + "."
+            } else {
+                ""
+            }
             item {
                 GlassSurface(
                     modifier = Modifier.fillMaxWidth(),
@@ -385,21 +429,24 @@ fun PlayerStatsScreen(
                 ) {
                     Text(
                         text = if (year == asset.meta.lastSeason) {
-                            "Current ATP Top 100 · TML snapshot"
+                            "Current ATP " + heightCohort.label + " · " + snapshotProvider
                         } else {
-                            year.toString() + " ATP year-end Top 100 · TML snapshot"
+                            year.toString() + " ATP year-end " + heightCohort.label + " · " + snapshotProvider
                         },
                         style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                         color = colors.text,
                     )
-                    val snapshotDate = yearSnapshot?.asOf?.let {
-                        PlayerStatsDateTime.formatDate(it) ?: it
+                    val snapshotDescription = when {
+                        year == asset.meta.lastSeason && heightCohort != HeightGroupCohort.TOP_100 ->
+                            "TML Top-100 cross-check · " + (snapshotDate ?: "date unavailable")
+                        snapshotDate != null ->
+                            snapshotProvider + " ranking snapshot · " + snapshotDate
+                        else -> "No ATP ranking snapshot available for " + year
                     }
                     Text(
-                        text = (snapshotDate?.let { "TML ranking snapshot · " + it }
-                            ?: "No TML ranking snapshot available for " + year) +
+                        text = snapshotDescription +
                             " · " + heightResult.cohortSize + " identified players" +
-                            (yearSnapshot?.unresolvedPlayers?.takeIf { it > 0 }
+                            (heightResult.unresolvedRankRows.takeIf { it > 0 }
                                 ?.let { " · " + it + " unresolved" } ?: ""),
                         style = TextStyle(fontSize = 11.5.sp),
                         color = colors.textDim,
@@ -412,31 +459,45 @@ fun PlayerStatsScreen(
                     HairLine()
                     GlassNote(
                         text = when {
-                            yearSnapshot == null ->
-                                "No dated TML Top 100 ranking snapshot is available for " + year + ". No cohort is substituted."
+                            !heightResult.cohortAvailable ->
+                                "The " + snapshotProvider + " snapshot for " + year + " only covers ranks through #" +
+                                    heightResult.availableThroughRank + "; a complete " + heightCohort.label +
+                                    " cohort is not available. No smaller cohort is substituted." +
+                                    coverageNote
+                            yearSnapshot == null && expandedYearSnapshot == null ->
+                                "No dated ATP ranking snapshot is available for " + year + ". No cohort is substituted."
                             year == asset.meta.lastSeason ->
-                                "The live season uses the latest available ATP Top 100 ranking snapshot for " + year + ". Group performance uses match statistics from " + year + "."
+                                "The live season uses the latest available official ATP " + heightCohort.label +
+                                    " ranking list for " + year + " from " + snapshotProvider +
+                                    ". Group performance uses match statistics from " + year + "."
                             else ->
-                                "The cohort is the Top 100 from the final ATP ranking snapshot published in " + year + " (" +
-                                    (PlayerStatsDateTime.formatDate(yearSnapshot.asOf) ?: yearSnapshot.asOf) +
-                                    "). Group performance uses match statistics from that same calendar year."
+                                "The cohort is the " + heightCohort.label + " from the final ATP ranking snapshot published in " + year + " (" +
+                                    (snapshotDate ?: snapshotDateValue.orEmpty()) +
+                                    ") using " + snapshotProvider + ". Group performance uses match statistics from that same calendar year."
                         } + unresolvedNote,
                     )
                 }
             }
 
-            items(rankedGroups, key = { it.id }) { group ->
-                HeightGroupCard(
-                    group = group,
-                    rank = rankedGroups.indexOf(group) + 1,
-                    cohortLabel = cohortLabel,
-                )
-            }
-
-            item {
-                GlassNote(
-                    text = "Group percentages are pooled from all eligible games in the group, not averaged across player percentages. Results show completed ATP tour-level singles matches. Missing heights are not imputed.",
-                )
+            if (heightResult.cohortAvailable) {
+                items(rankedGroups, key = { it.id }) { group ->
+                    HeightGroupCard(
+                        group = group,
+                        rank = rankedGroups.indexOf(group) + 1,
+                        cohortLabel = cohortLabel,
+                    )
+                }
+                item {
+                    GlassNote(
+                        text = "Group percentages are pooled from all eligible games in the group, not averaged across player percentages. Results show completed ATP tour-level singles matches. Missing heights are not imputed.",
+                    )
+                }
+            } else {
+                item {
+                    EmptyPlayerStats(
+                        text = "The selected " + heightCohort.label + " cohort is not present in this year's ranking snapshot. Choose a smaller cohort or another year with sufficient ranking coverage.",
+                    )
+                }
             }
         }
 

@@ -10,9 +10,16 @@ from build_player_stats import (
     match_identity_key,
     normalize_name,
     parse_current_top100,
+    parse_current_top1000,
+    parse_kickserve_live_rankings,
+    parse_tml_ranking_archive_snapshot,
+    map_live_rankings_to_tml_ids,
+    supplement_top100_from_tml,
+    max_published_rank,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
     unresolved_top100_count,
+    unresolved_ranking_count,
     service_return_contribution,
 )
 
@@ -195,6 +202,169 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         rank_45 = [row for row in parsed if row["rank"] == 45]
         self.assertEqual({row["id"] for row in rank_45}, {"10045", "10101"})
         self.assertEqual(parsed[-1]["rank"], 100)
+
+    def test_tml_top1000_parser_preserves_cutoff_ties_and_unresolved_ids(self):
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}", "ioc": "USA"}
+            for rank in range(1, 1001)
+        ]
+        rows.append({"id": "P1001", "rank": 1000, "name": "Co-ranked at cutoff"})
+        rows.append({"id": "NA", "rank": 500, "name": "Unknown"})
+        payload = {"rankings": rows}
+
+        parsed = parse_current_top1000(payload, "2026 snapshot")
+        self.assertEqual(len(parsed), 1001)
+        self.assertEqual(parsed[0]["rank"], 1)
+        self.assertEqual(parsed[-1]["rank"], 1000)
+        self.assertEqual(unresolved_ranking_count(payload, 500), 1)
+        self.assertEqual(unresolved_ranking_count(payload, 1000), 1)
+        self.assertEqual(max_published_rank(payload), 1000)
+        self.assertNotIn("NA", {row["id"] for row in parsed})
+
+    def test_top1000_parser_fails_closed_on_duplicate_ids_and_short_top100(self):
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 101)
+        ]
+        rows[-1]["id"] = rows[0]["id"]
+        with self.assertRaises(RuntimeError):
+            parse_current_top1000({"rankings": rows})
+        with self.assertRaises(RuntimeError):
+            parse_current_top1000({"rankings": rows[:98]})
+
+    def test_ranking_parser_records_source_depth_separately_from_requested_cutoff(self):
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 501)
+        ]
+        payload = {"rankings": rows}
+        self.assertEqual(max_published_rank(payload), 500)
+        self.assertEqual(len(parse_current_top1000(payload)), 500)
+
+    def test_rank_cutoff_does_not_require_exactly_one_row_per_rank_position(self):
+        # A source may have skipped rank numbers and/or ties. The cohort is every
+        # published row whose official rank is <= 1000, not an invented 1000 rows.
+        rows = [
+            {"id": f"P{rank}", "rank": rank, "name": f"Player {rank}"}
+            for rank in range(1, 1000)
+            if rank % 10 != 0
+        ]
+        rows.append({"id": "P1100", "rank": 1100, "name": "Player 1100"})
+        parsed = parse_current_top1000({"rankings": rows})
+        self.assertEqual(len(parsed), 900)
+        self.assertEqual(parsed[-1]["rank"], 999)
+        self.assertEqual(max_published_rank({"rankings": rows}), 1100)
+
+    def test_live_rankings_crosswalk_internal_ids_only_through_unique_normalized_names(self):
+        snapshot = {
+            "players": [
+                {"id": "24008", "rank": 2, "name": "Alexander Zverev"},
+                {"id": "missing-1", "rank": 450, "name": "Unknown Rank 450"},
+                {"id": "missing-2", "rank": 900, "name": "Unknown Rank 900"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 3,
+        }
+        aliases = {
+            "alexanderzverev": {"Z355"},
+            "unknownrank450": {"P450", "P450B"},
+        }
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"][0]["id"], "Z355")
+        self.assertEqual(result["unresolvedTop100"], 0)
+        self.assertEqual(result["unresolvedTop500"], 1)
+        self.assertEqual(result["unresolvedPlayers"], 2)
+        self.assertEqual(result["rankedEntries"], 3)
+
+    def test_live_full_rank_list_restores_missing_members_from_exact_tml_top100(self):
+        expanded = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P3", "rank": 3, "name": "Player Three"},
+            ],
+            "unresolvedPlayers": 2,
+            "unresolvedTop100": 1,
+            "unresolvedTop500": 1,
+            "rankedEntries": 4,
+            "maxRank": 1000,
+        }
+        top100 = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P2", "rank": 2, "name": "Player Two"},
+            ],
+            "unresolvedPlayers": 0,
+        }
+
+        result = supplement_top100_from_tml(expanded, top100)
+
+        self.assertEqual(
+            [(row["id"], row["rank"]) for row in result["players"]],
+            [("P1", 1), ("P2", 2), ("P3", 3)],
+        )
+        self.assertEqual(result["unresolvedTop100"], 0)
+        self.assertEqual(result["rankedEntries"], 5)
+
+    def test_live_full_rank_list_rejects_top100_rank_conflicts(self):
+        expanded = {
+            "players": [{"id": "P1", "rank": 2, "name": "Player One"}],
+            "unresolvedPlayers": 0,
+        }
+        top100 = {
+            "players": [{"id": "P1", "rank": 1, "name": "Player One"}],
+        }
+        with self.assertRaises(RuntimeError):
+            supplement_top100_from_tml(expanded, top100)
+
+    def test_tml_archive_parser_selects_exact_year_end_date_and_keeps_cutoff_ties(self):
+        payload = (
+            "date,rank,name,id,points,ioc\n"
+            "20251215,1,Player One,P001,1000,USA\n"
+            "20251222,1,Player One,P001,1100,USA\n"
+            "20251222,500,Player FiveHundred,P500,20,FRA\n"
+            "20251222,1000,Player OneThousand,P1000,5,ESP\n"
+            "20251222,1000,Co-ranked Player,P1001,5,ITA\n"
+            "20251222,450,Unknown,,10,\n"
+        ).encode("utf-8")
+
+        result = parse_tml_ranking_archive_snapshot(payload, "2025-12-22")
+
+        self.assertEqual(len(result["players"]), 4)
+        self.assertEqual(result["maxRank"], 1000)
+        self.assertEqual(result["unresolvedTop100"], 0)
+        self.assertEqual(result["unresolvedTop500"], 1)
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["rankedEntries"], 5)
+        self.assertEqual(result["players"][-1]["rank"], 1000)
+
+    def test_tml_archive_parser_fails_when_selected_ranking_date_is_missing(self):
+        payload = (
+            "date,rank,name,id,points,ioc\n"
+            "20251215,1,Player One,P001,1000,USA\n"
+        ).encode("utf-8")
+        with self.assertRaises(RuntimeError):
+            parse_tml_ranking_archive_snapshot(payload, "2025-12-22")
+
+    def test_kickserve_parser_uses_official_atp_rank_and_ignores_wta(self):
+        payload = (
+            "player,id,tour,country,official_rank,points,elo\n"
+            "Player One,P001,ATP,USA,1,1000,1800\n"
+            "Player FiveHundred,P500,ATP,FRA,500,20,1500\n"
+            "Player OneThousand,P1000,ATP,ESP,1000,5,1400\n"
+            "WTA Player,W001,WTA,USA,1,1200,1900\n"
+            "Unranked Player,PX,ATP,GBR,,0,1300\n"
+        ).encode("utf-8")
+
+        result = parse_kickserve_live_rankings(payload)
+
+        self.assertEqual([row["id"] for row in result["players"]], ["P001", "P500", "P1000"])
+        self.assertEqual(result["maxRank"], 1000)
+        self.assertEqual(result["rankedEntries"], 3)
+        self.assertEqual(result["unresolvedPlayers"], 0)
 
     def test_top100_placeholder_id_is_counted_but_not_treated_as_a_player(self):
         rows = [
