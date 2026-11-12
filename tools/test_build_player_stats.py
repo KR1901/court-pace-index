@@ -189,6 +189,34 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(players["G0EQ"]["heightCm"], 188)
         self.assertEqual(players["G0EQ"]["heightSource"], "tml-player-database")
 
+    def test_roan_jones_height_override_uses_exact_atp_profile_id(self):
+        payload = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "J0D3",
+                "name": "Roan Jones",
+                "country": "GBR",
+                "heightCm": 185,
+                "sourceUrls": [
+                    "https://goheels.com/sports/mens-tennis/roster/roan-jones/27333",
+                    "https://www.atptour.com/en/players/roan-jones/j0d3/bio",
+                ],
+            }],
+        }
+        overrides = parse_verified_player_height_overrides(payload)
+        players = {
+            "J0D3": {"id": "J0D3", "name": "Roan Jones", "country": "GBR", "heightCm": None},
+            "J0X3": {"id": "J0X3", "name": "Another Jones", "country": "GBR", "heightCm": None},
+        }
+
+        applied = apply_verified_player_height_overrides(overrides, players)
+
+        self.assertEqual(applied, 1)
+        self.assertEqual(players["J0D3"]["heightCm"], 185)
+        self.assertEqual(players["J0D3"]["heightSource"], "verified-player-profile")
+        self.assertIsNone(players["J0X3"]["heightCm"])
+
     def test_verified_player_height_override_requires_a_source_url_and_valid_height(self):
         invalid_source = {
             "version": 1,
