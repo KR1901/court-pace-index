@@ -9,6 +9,7 @@ from build_player_stats import (
     match_is_retirement,
     match_identity_key,
     normalize_name,
+    normalize_country_code,
     parse_current_top100,
     parse_current_top1000,
     parse_kickserve_live_rankings,
@@ -389,6 +390,31 @@ class PlayerStatsFormulaTest(unittest.TestCase):
 
         self.assertEqual(len(result["players"]), 1)
         self.assertEqual(result["players"][0]["id"], "TML-TSITSIPAS")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_legacy_atp_country_codes_normalize_before_cross_provider_matching(self):
+        self.assertEqual(normalize_country_code("CHI"), "CHL")
+        self.assertEqual(normalize_country_code("POR"), "PRT")
+        self.assertEqual(normalize_country_code("SLO"), "SVN")
+        self.assertEqual(normalize_country_code("GRE"), "GRC")
+        self.assertEqual(normalize_country_code("INA"), "IDN")
+        self.assertEqual(normalize_country_code("TPE"), "TWN")
+        self.assertEqual(normalize_country_code("USA"), "USA")
+
+    def test_live_rankings_resolve_same_player_across_legacy_ioc_codes(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 215, "name": "Player One", "country": "CHL"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = {"playerone|CHI": {"TML-PLAYER-1"}}
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+        self.assertEqual(result["players"][0]["id"], "TML-PLAYER-1")
         self.assertEqual(result["unresolvedPlayers"], 0)
 
     def test_live_rankings_do_not_fallback_to_same_name_in_another_country(self):

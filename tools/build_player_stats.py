@@ -57,6 +57,31 @@ def normalize_name(value: str | None) -> str:
     return "".join(ch for ch in value if ch.isalnum())
 
 
+# Legacy ATP/IOC abbreviations seen in older tennis archives are mapped to
+# their modern equivalents before joining ranking identities across providers.
+COUNTRY_CODE_CANONICAL = {
+    "CHI": "CHL",  # Chile
+    "POR": "PRT",  # Portugal
+    "SLO": "SVN",  # Slovenia
+    "GRE": "GRC",  # Greece
+    "INA": "IDN",  # Indonesia
+    "TPE": "TWN",  # Chinese Taipei
+    "IRI": "IRN",  # Iran
+    "ALG": "DZA",  # Algeria
+    "RSA": "ZAF",  # South Africa
+    "SUI": "CHE",  # Switzerland
+    "GER": "DEU",  # Germany
+    "NED": "NLD",  # Netherlands
+    "CRO": "HRV",  # Croatia
+    "BUL": "BGR",  # Bulgaria
+}
+
+
+def normalize_country_code(value: str | None) -> str:
+    code = (value or "").strip().upper()
+    return COUNTRY_CODE_CANONICAL.get(code, code)
+
+
 def integer(value: object) -> int | None:
     try:
         if value is None or str(value).strip() == "":
@@ -614,7 +639,7 @@ def map_live_rankings_to_tml_ids(
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
         name_key = normalize_name(str(entry["name"]))
-        country_key = (str(entry.get("country") or "")).strip().upper()
+        country_key = normalize_country_code(str(entry.get("country") or ""))
         if country_key:
             candidate_ids = roster_aliases.get(f"{name_key}|{country_key}", set())
         else:
@@ -919,7 +944,7 @@ def _add_player_alias(
     if not key or not player_id:
         return
     aliases[key].add(player_id)
-    country_key = (country or "").strip().upper()
+    country_key = normalize_country_code(country)
     if country_key:
         aliases[f"{key}|{country_key}"].add(player_id)
 
@@ -956,7 +981,7 @@ def supplement_missing_heights_from_sackmann(
         name_key = normalize_name(name)
         if not name_key:
             continue
-        country = (row.get("ioc") or row.get("country_code") or "").strip().upper()
+        country = normalize_country_code(row.get("ioc") or row.get("country_code"))
         if country:
             # Do not fall back to a same-name player from a different country.
             candidates = roster_aliases.get(f"{name_key}|{country}", set())
