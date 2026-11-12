@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   build:
@@ -36,9 +37,33 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
+      # This private app only needs the newest debug APK. Release APKs are GitHub
+      # Release assets and are not touched by this Actions-artifact cleanup.
+      - name: Prune older debug APK artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            const previous = artifacts
+              .filter(item => item.name === "court-pace-debug-apk" && !item.expired)
+              .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+            for (const artifact of previous.slice(1)) {
+              core.info(`Deleting superseded debug APK artifact ${artifact.id} (${artifact.size_in_bytes} bytes)`);
+              await github.rest.actions.deleteArtifact({
+                owner,
+                repo,
+                artifact_id: artifact.id,
+              });
+            }
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: court-pace-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+          retention-days: 7

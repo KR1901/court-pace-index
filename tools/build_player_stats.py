@@ -1492,6 +1492,34 @@ def main() -> None:
         f"{meta['heightEnrichment']['filledMissingHeights']} missing heights filled"
     )
 
+    current_rank_by_id = {
+        player["id"]: next(
+            (entry["rank"] for entry in player.get("top1000RanksBySeason", [])
+             if entry["y"] == current_year),
+            1001,
+        )
+        for player in cohort
+    }
+    missing_height_rows = sorted(
+        (
+            current_rank_by_id[player["id"]],
+            player,
+        )
+        for player in cohort
+        if player.get("heightCm") is None
+    )
+    for rank, player in missing_height_rows:
+        country = player.get("country") or "country unavailable"
+        print(f"Top-1000 missing height: #{rank} {player['name']} ({country})")
+
+    for row in expanded_snapshot.get("unresolvedEntries", []):
+        country = row.get("country") or "country unavailable"
+        reason = row.get("reason") or "unresolved identity"
+        print(
+            f"Top-1000 unresolved identity: #{row.get('rank', 0)} "
+            f"{row.get('name', '')} ({country}) — {reason}"
+        )
+
     for band in meta["heightBandsCm"]:
         members = [player for player in cohort
                    if height_band_id(valid_height(player.get("heightCm"))) == band["id"]]
