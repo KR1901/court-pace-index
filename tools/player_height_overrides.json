@@ -737,6 +737,17 @@
       ]
     },
     {
+      "atpId": "J0D3",
+      "name": "Roan Jones",
+      "country": "GBR",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://goheels.com/sports/mens-tennis/roster/roan-jones/27333",
+        "https://www.atptour.com/en/players/roan-jones/j0d3/bio"
+      ],
+      "sourceNote": "University of North Carolina 2025-26 men's tennis roster lists 6 ft 1 in. ATP profile J0D3 confirms the player identity; 6 ft 1 in converts to 185.42 cm, rounded to 185 cm."
+    },
+    {
       "atpId": "G0KQ",
       "name": "Robert Guna",
       "country": "ROU",
