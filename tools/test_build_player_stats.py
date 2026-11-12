@@ -530,7 +530,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         identity_overrides = parse_official_atp_profile_id_overrides(identity_payload)
         snapshot = {
             "players": [
-                {"id": "KICK-987", "rank": 987, "name": "R.R. Jones", "country": "GBR"},
+                {"id": "KICK-987", "rank": 987, "name": "R.R. Jones", "country": "GB"},
             ],
             "unresolvedTop100": 0,
             "unresolvedTop500": 0,
@@ -614,6 +614,8 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             parse_official_atp_profile_id_overrides(payload)
 
     def test_official_atp_profile_override_file_normalizes_country_codes(self):
+        self.assertEqual(normalize_country_code("GB"), "GBR")
+        self.assertEqual(normalize_country_code("UK"), "GBR")
         payload = {
             "version": 1,
             "source": "ATP Tour official player profile URLs",
