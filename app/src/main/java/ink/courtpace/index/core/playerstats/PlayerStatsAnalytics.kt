@@ -79,10 +79,12 @@ data class HeightGroupsResult(
 
 object PlayerStatsAnalytics {
     private val heightBands = listOf(
-        HeightBand("under183", "Under 1.83 m / 6′0″", null, 182),
-        HeightBand("183to190", "1.83–1.90 m / 6′0″–6′2.8″", 183, 190),
-        HeightBand("191to194", "1.91–1.94 m / 6′3.2″–6′4.4″", 191, 194),
-        HeightBand("195plus", "1.95 m+ / 6′5″+", 195, null),
+        HeightBand("under183", "Under 1.83 m / under 6′0″", null, 182),
+        HeightBand("183to185", "1.83–1.85 m / 6′0.0″–6′0.8″", 183, 185),
+        HeightBand("186to188", "1.86–1.88 m / 6′1.2″–6′2.0″", 186, 188),
+        HeightBand("189to191", "1.89–1.91 m / 6′2.4″–6′3.2″", 189, 191),
+        HeightBand("192to194", "1.92–1.94 m / 6′3.6″–6′4.4″", 192, 194),
+        HeightBand("195plus", "1.95 m+ / approximately 6′5″+", 195, null),
     )
 
     fun percentage(numerator: Int, denominator: Int): Double? =
@@ -91,8 +93,10 @@ object PlayerStatsAnalytics {
     fun heightBandId(heightCm: Int?): String? = when {
         heightCm == null || heightCm !in 140..220 -> null
         heightCm < 183 -> "under183"
-        heightCm <= 190 -> "183to190"
-        heightCm <= 194 -> "191to194"
+        heightCm <= 185 -> "183to185"
+        heightCm <= 188 -> "186to188"
+        heightCm <= 191 -> "189to191"
+        heightCm <= 194 -> "192to194"
         else -> "195plus"
     }
 

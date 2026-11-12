@@ -63,14 +63,16 @@ For every completed year from 1973 onward, the builder selects the latest availa
 
 Height is stored once in centimetres. The ATP player roster is preferred; when its height is missing, the latest valid height recorded in an eligible match row is used. Implausible values outside 140–220 cm are treated as missing. The Android screen derives metres and feet/inches from that one value. Missing height is not imputed and appears in an unassigned-height count.
 
-The four bands are exhaustive and non-overlapping:
+The six bands are exhaustive and non-overlapping:
 
 | Group | Canonical height | Display |
 |---|---:|---|
 | 1 | Up to 182 cm | Under 1.83 m / under 6′0″ |
-| 2 | 183–190 cm | 1.83–1.90 m / 6′0″–6′2.8″ |
-| 3 | 191–194 cm | 1.91–1.94 m / 6′3.2″–6′4.4″ |
-| 4 | 195 cm and above | 1.95 m+ / approximately 6′5″+ |
+| 2 | 183–185 cm | 1.83–1.85 m / 6′0.0″–6′0.8″ |
+| 3 | 186–188 cm | 1.86–1.88 m / 6′1.2″–6′2.0″ |
+| 4 | 189–191 cm | 1.89–1.91 m / 6′2.4″–6′3.2″ |
+| 5 | 192–194 cm | 1.92–1.94 m / 6′3.6″–6′4.4″ |
+| 6 | 195 cm and above | 1.95 m+ / approximately 6′5″+ |
 
 Each group reports its player count, players with selected-year match results, players with valid service/return statistics, Hold%, Break%, H+B, W–L, win percentage and match count. Group rates are pooled from the group's total game counts, not the unweighted mean of player percentages. Surface filters apply to the group comparison as well as the player leaderboard.
 
@@ -109,5 +111,7 @@ When a new eligible match appears, both players' W–L, service-game and return-
 While any app screen is in the foreground, the app checks the source immediately and approximately every 15 seconds after each check completes. The Player Stats screen observes the shared live state, so updates continue while another tab is selected. WorkManager also schedules an immediate one-time check on app launch and connected-network background checks with a 15-minute periodic interval. Android may defer background work for battery and system scheduling reasons; foreground checks are more frequent. If the device is offline or the provider is unavailable, the last saved statistics remain visible and the app retries automatically.
 
 The provider describes the ongoing feed as real-time, but also describes its database refresh cadence as daily/ideally real-time. There is no published delivery-time guarantee. Therefore the app can ingest a match on the first poll after the provider publishes it, but cannot guarantee that every match appears at the exact second the on-court match ends. The interface distinguishes the bundled archive baseline from matches merged by live sync and shows the last successful addition/check state.
+
+Player Stats date displays use the Indian convention: calendar dates are `DD-MM-YY`, and timestamps are converted from UTC to `Asia/Kolkata` and labelled `IST`. Date-only ranking snapshots remain calendar dates and are not timezone-shifted.
 
 The live updater is isolated from CPI, Surface Speed, `PaceData`, and the existing `AppViewModel` refresh loops. It uses the same private personal/non-commercial source boundary as the bundled archive.

@@ -77,13 +77,18 @@ class PlayerStatsFormulaTest(unittest.TestCase):
 
     def test_height_bands_are_exhaustive_at_cut_points(self):
         cases = {
+            140: "under183",
             182: "under183",
-            183: "183to190",
-            190: "183to190",
-            191: "191to194",
-            194: "191to194",
+            183: "183to185",
+            185: "183to185",
+            186: "186to188",
+            188: "186to188",
+            189: "189to191",
+            191: "189to191",
+            192: "192to194",
+            194: "192to194",
             195: "195plus",
-            211: "195plus",
+            220: "195plus",
         }
         for height, expected in cases.items():
             with self.subTest(height=height):

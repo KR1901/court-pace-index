@@ -48,6 +48,7 @@ import ink.courtpace.index.core.playerstats.PlayerRankingMetric
 import ink.courtpace.index.core.playerstats.PlayerRankingRow
 import ink.courtpace.index.core.playerstats.PlayerStatsAnalytics
 import ink.courtpace.index.core.playerstats.PlayerStatsData
+import ink.courtpace.index.core.playerstats.PlayerStatsDateTime
 import ink.courtpace.index.core.playerstats.PlayerStatsRepository
 import ink.courtpace.index.core.playerstats.PlayerStatsLiveUpdater
 import ink.courtpace.index.core.playerstats.PlayerSurfaceFilter
@@ -88,8 +89,8 @@ fun PlayerStatsHost() {
         sharedLiveState?.let { live ->
             asset = live.data
             liveStatus = live.checkedAt?.let {
-                "Checked " + it.replace("T", " ").take(19) + " UTC · +" + live.addedMatches +
-                    " results · " + live.enrichedMatches + " stats enriched"
+                "Checked " + (PlayerStatsDateTime.formatTimestamp(it) ?: "time unavailable") +
+                    " · +" + live.addedMatches + " results · " + live.enrichedMatches + " stats enriched"
             } ?: "Automatic sync scheduled"
             error = live.error
         }
@@ -183,7 +184,8 @@ fun PlayerStatsScreen(
                     color = colors.textDim,
                 )
                 Text(
-                    text = "ARCHIVE BASELINE · " + asset.meta.generated.take(10),
+                    text = "ARCHIVE BASELINE · " +
+                        (PlayerStatsDateTime.formatDate(asset.meta.generated) ?: "—"),
                     style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp),
                     color = colors.textFaint,
                 )
@@ -192,10 +194,14 @@ fun PlayerStatsScreen(
                     style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium),
                     color = colors.textDim,
                 )
+                val lastUpdatedLabel = asset.meta.liveUpdatedAt
+                    ?.let { PlayerStatsDateTime.formatTimestamp(it, includeSeconds = false) }
+                    ?.let { " · last updated " + it }
+                    .orEmpty()
                 Text(
                     text = asset.meta.liveMatchCount.toString() + " new results · " +
                         asset.meta.liveEnrichedMatchCount + " later stat enrichments since archive snapshot" +
-                        (asset.meta.liveUpdatedAt?.let { " · last updated " + it.replace("T", " ").take(16) + " UTC" } ?: ""),
+                        lastUpdatedLabel,
                     style = TextStyle(fontSize = 10.sp),
                     color = colors.textFaint,
                 )
@@ -386,8 +392,11 @@ fun PlayerStatsScreen(
                         style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                         color = colors.text,
                     )
+                    val snapshotDate = yearSnapshot?.asOf?.let {
+                        PlayerStatsDateTime.formatDate(it) ?: it
+                    }
                     Text(
-                        text = (yearSnapshot?.asOf?.let { "TML ranking snapshot · " + it }
+                        text = (snapshotDate?.let { "TML ranking snapshot · " + it }
                             ?: "No TML ranking snapshot available for " + year) +
                             " · " + heightResult.cohortSize + " identified players" +
                             (yearSnapshot?.unresolvedPlayers?.takeIf { it > 0 }
@@ -408,7 +417,9 @@ fun PlayerStatsScreen(
                             year == asset.meta.lastSeason ->
                                 "The live season uses the latest available ATP Top 100 ranking snapshot for " + year + ". Group performance uses match statistics from " + year + "."
                             else ->
-                                "The cohort is the Top 100 from the final ATP ranking snapshot published in " + year + " (" + yearSnapshot.asOf + "). Group performance uses match statistics from that same calendar year."
+                                "The cohort is the Top 100 from the final ATP ranking snapshot published in " + year + " (" +
+                                    (PlayerStatsDateTime.formatDate(yearSnapshot.asOf) ?: yearSnapshot.asOf) +
+                                    "). Group performance uses match statistics from that same calendar year."
                         } + unresolvedNote,
                     )
                 }

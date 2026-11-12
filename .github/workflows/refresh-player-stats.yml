@@ -183,14 +183,25 @@ jobs:
 
           cohort = [row for row in players if row.get("currentRank") is not None]
           cohort_heights = [row.get("heightCm") for row in cohort if row.get("heightCm") is not None]
-          bands = {"under183": 0, "183to190": 0, "191to194": 0, "195plus": 0}
+          bands = {
+              "under183": 0,
+              "183to185": 0,
+              "186to188": 0,
+              "189to191": 0,
+              "192to194": 0,
+              "195plus": 0,
+          }
           for height in cohort_heights:
               if height < 183:
                   bands["under183"] += 1
-              elif height <= 190:
-                  bands["183to190"] += 1
+              elif height <= 185:
+                  bands["183to185"] += 1
+              elif height <= 188:
+                  bands["186to188"] += 1
+              elif height <= 191:
+                  bands["189to191"] += 1
               elif height <= 194:
-                  bands["191to194"] += 1
+                  bands["192to194"] += 1
               else:
                   bands["195plus"] += 1
           hard_buckets = {"hardAll": 0, "hardIndoor": 0, "hardOutdoor": 0, "hardUnknown": 0}

@@ -5,6 +5,7 @@ import ink.courtpace.index.core.playerstats.PlayerRankingMetric
 import ink.courtpace.index.core.playerstats.PlayerStatsAnalytics
 import ink.courtpace.index.core.playerstats.PlayerStatsBucket
 import ink.courtpace.index.core.playerstats.PlayerStatsData
+import ink.courtpace.index.core.playerstats.PlayerStatsDateTime
 import ink.courtpace.index.core.playerstats.PlayerStatsMeta
 import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
 import ink.courtpace.index.core.playerstats.PlayerTop100SeasonRank
@@ -19,14 +20,76 @@ class PlayerStatsAnalyticsTest {
 
     @Test
     fun `height cut points assign every supported height to one band`() {
+        assertEquals("under183", PlayerStatsAnalytics.heightBandId(140))
         assertEquals("under183", PlayerStatsAnalytics.heightBandId(182))
-        assertEquals("183to190", PlayerStatsAnalytics.heightBandId(183))
-        assertEquals("183to190", PlayerStatsAnalytics.heightBandId(190))
-        assertEquals("191to194", PlayerStatsAnalytics.heightBandId(191))
-        assertEquals("191to194", PlayerStatsAnalytics.heightBandId(194))
+        assertEquals("183to185", PlayerStatsAnalytics.heightBandId(183))
+        assertEquals("183to185", PlayerStatsAnalytics.heightBandId(185))
+        assertEquals("186to188", PlayerStatsAnalytics.heightBandId(186))
+        assertEquals("186to188", PlayerStatsAnalytics.heightBandId(188))
+        assertEquals("189to191", PlayerStatsAnalytics.heightBandId(189))
+        assertEquals("189to191", PlayerStatsAnalytics.heightBandId(191))
+        assertEquals("192to194", PlayerStatsAnalytics.heightBandId(192))
+        assertEquals("192to194", PlayerStatsAnalytics.heightBandId(194))
         assertEquals("195plus", PlayerStatsAnalytics.heightBandId(195))
+        assertEquals("195plus", PlayerStatsAnalytics.heightBandId(220))
         assertNull(PlayerStatsAnalytics.heightBandId(null))
+        assertNull(PlayerStatsAnalytics.heightBandId(139))
         assertNull(PlayerStatsAnalytics.heightBandId(221))
+    }
+
+    @Test
+    fun `height groups expose the six requested non-overlapping bands`() {
+        val result = PlayerStatsAnalytics.heightGroups(
+            PlayerStatsData(PlayerStatsMeta(lastSeason = 2026), emptyList()),
+            2026,
+            PlayerSurfaceFilter.ALL,
+        )
+        assertEquals(
+            listOf("under183", "183to185", "186to188", "189to191", "192to194", "195plus"),
+            result.groups.map { it.id },
+        )
+        assertEquals(
+            listOf(
+                null to 182,
+                183 to 185,
+                186 to 188,
+                189 to 191,
+                192 to 194,
+                195 to null,
+            ),
+            result.groups.map { it.minCm to it.maxCm },
+        )
+        assertEquals(
+            listOf(
+                "Under 1.83 m / under 6′0″",
+                "1.83–1.85 m / 6′0.0″–6′0.8″",
+                "1.86–1.88 m / 6′1.2″–6′2.0″",
+                "1.89–1.91 m / 6′2.4″–6′3.2″",
+                "1.92–1.94 m / 6′3.6″–6′4.4″",
+                "1.95 m+ / approximately 6′5″+",
+            ),
+            result.groups.map { it.label },
+        )
+    }
+
+    @Test
+    fun `player stats dates use Indian calendar format and timestamps use IST`() {
+        assertEquals("11-11-26", PlayerStatsDateTime.formatDate("2026-11-11"))
+        assertEquals("12-11-26", PlayerStatsDateTime.formatDate("2026-11-11T20:00:00Z"))
+        assertEquals(
+            "12-11-26 09:56:04 IST",
+            PlayerStatsDateTime.formatTimestamp("2026-11-12T04:26:04Z"),
+        )
+        assertEquals(
+            "12-11-26 08:18 IST",
+            PlayerStatsDateTime.formatTimestamp("2026-11-12T02:48:00Z", includeSeconds = false),
+        )
+        assertEquals(
+            "12-11-26 10:00:00 IST",
+            PlayerStatsDateTime.formatTimestamp("2026-11-12T10:00:00+05:30"),
+        )
+        assertNull(PlayerStatsDateTime.formatDate(null))
+        assertNull(PlayerStatsDateTime.formatTimestamp("not-a-timestamp"))
     }
 
     @Test
@@ -133,7 +196,7 @@ class PlayerStatsAnalyticsTest {
         assertEquals(1, historicalShort.playersWithValidStats)
         assertEquals(1, historicalTall.playersWithValidStats)
         assertEquals(2, live.cohortSize)
-        assertEquals(1, live.groups.first { it.id == "191to194" }.players)
+        assertEquals(1, live.groups.first { it.id == "192to194" }.players)
         assertEquals(1, live.groups.first { it.id == "195plus" }.players)
     }
 
