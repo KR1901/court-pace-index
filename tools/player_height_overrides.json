@@ -237,6 +237,16 @@
       "sourceNote": "ScoreGO exact French player profile (DOB 29 May 2004) lists 1.85 m / 185 cm."
     },
     {
+      "atpId": "M0OT",
+      "name": "Luis Felipe Miguel",
+      "country": "BRA",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://seminoles.com/sports/mens-tennis/roster/luis-felipe-miguel/8204"
+      ],
+      "sourceNote": "Official Florida State University men's tennis roster lists 6-0 for Luis Felipe Miguel; ATP ID M0OT and DOB 10 March 2004 match the exact Brazilian player."
+    },
+    {
       "atpId": "P0LN",
       "name": "Manuel Plunger",
       "country": "ITA",
