@@ -4,7 +4,7 @@ name: Refresh Player Stats
 # builder and stages only the dedicated Player Stats JSON assets.
 on:
   push:
-    branches: [main, feature/player-stats-v2]
+    branches: [main, feature/player-stats-v2, feature/height-group-top-500-1000]
     paths:
       - 'tools/build_player_stats.py'
       - 'tools/test_build_player_stats.py'
@@ -133,6 +133,61 @@ jobs:
           assert meta.get("playersInCurrentTop100") == len(cohort), (
               "current Top-100 metadata count does not match live-season membership"
           )
+          expanded_snapshots = meta.get("top1000SeasonSnapshots")
+          assert isinstance(expanded_snapshots, list) and expanded_snapshots, "year-specific Top-1000 snapshots are missing"
+          expanded_years = [row.get("year") for row in expanded_snapshots]
+          assert expanded_years == expected_years, "every year must have exactly one ordered Top-1000 snapshot"
+
+          expanded_ranks_by_player = {}
+          for player in players:
+              entries = player.get("top1000RanksBySeason") or []
+              years = [entry.get("y") for entry in entries]
+              assert len(years) == len(set(years)), f"duplicate Top-1000 season for {player.get('id')}"
+              assert all(1 <= entry.get("rank", 0) <= 1000 for entry in entries), (
+                  f"rank outside 1–1000 for {player.get('id')}"
+              )
+              expanded_ranks_by_player[player["id"]] = {entry["y"]: entry["rank"] for entry in entries}
+
+          for snapshot in expanded_snapshots:
+              year = snapshot["year"]
+              snapshot_date = date.fromisoformat(snapshot["asOf"])
+              assert snapshot_date.year == year, f"{year} Top-1000 snapshot must use a date from that year"
+              members = [
+                  (player_id, ranks[year])
+                  for player_id, ranks in expanded_ranks_by_player.items()
+                  if year in ranks
+              ]
+              unresolved = snapshot.get("unresolvedPlayers", 0)
+              assert unresolved >= 0 and snapshot.get("maxRank", 0) >= 100
+              assert len(members) == snapshot.get("players"), (
+                  f"{year} Top-1000 identified count does not match player membership"
+              )
+              assert all(1 <= rank <= 1000 for _, rank in members), (
+                  f"{year} Top-1000 cohort contains a rank outside 1–1000"
+              )
+              assert snapshot.get("rankedEntries") == len(members) + unresolved, (
+                  f"{year} Top-1000 ranked-entry total does not match membership plus unresolved IDs"
+              )
+              assert snapshot.get("unresolvedTop500", 0) >= 0
+              if year == current_year:
+                  assert snapshot.get("maxRank", 0) >= 1000, "current TML snapshot must reach rank 1000"
+                  assert snapshot.get("rankedEntries", 0) >= 1000, "current TML snapshot has fewer than 1000 rank entries"
+
+          current_expanded = expanded_snapshots[-1]
+          current_top500_members = [
+              row for row in players
+              if any(entry.get("y") == current_year and entry.get("rank", 1001) <= 500
+                     for entry in (row.get("top1000RanksBySeason") or []))
+          ]
+          current_top1000_members = [
+              row for row in players
+              if any(entry.get("y") == current_year
+                     for entry in (row.get("top1000RanksBySeason") or []))
+          ]
+          assert meta.get("playersInCurrentTop500") == len(current_top500_members)
+          assert meta.get("playersInCurrentTop1000") == len(current_top1000_members)
+          assert len(current_top500_members) + current_expanded.get("unresolvedTop500", 0) >= 500
+
           current_match_keys = meta.get("currentSeasonMatchKeys")
           assert isinstance(current_match_keys, list) and current_match_keys, "current-season dedupe keys are missing"
           assert len(current_match_keys) == len(set(current_match_keys)), "duplicate current-season match keys"
