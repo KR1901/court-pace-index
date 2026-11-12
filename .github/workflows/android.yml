@@ -55,10 +55,10 @@ jobs:
               github.rest.actions.listArtifactsForRepo,
               { owner, repo, per_page: 100 }
             );
-            const previous = artifacts
-              .filter(item => item.name === "court-pace-debug-apk" && !item.expired)
-              .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
-            for (const artifact of previous.slice(1)) {
+            const previous = artifacts.filter(
+              item => item.name === "court-pace-debug-apk" && !item.expired
+            );
+            for (const artifact of previous) {
               core.info(`Deleting superseded debug APK artifact ${artifact.id} (${artifact.size_in_bytes} bytes)`);
               try {
                 await github.rest.actions.deleteArtifact({
