@@ -1367,6 +1367,71 @@ def main() -> None:
         f"{meta['playersInCurrentTop100']} current Top 100 players mapped"
     )
 
+    current_year = int(meta["lastSeason"])
+    expanded_snapshot = next(
+        row for row in meta["top1000SeasonSnapshots"] if row["year"] == current_year
+    )
+    cohort = []
+    for player in payload["players"]:
+        rank = next(
+            (entry["rank"] for entry in player.get("top1000RanksBySeason", [])
+             if entry["y"] == current_year),
+            None,
+        )
+        if rank is not None and rank <= 1000:
+            cohort.append(player)
+
+    known = [player for player in cohort if player.get("heightCm") is not None]
+    missing = len(cohort) - len(known)
+    height_sources: dict[str, int] = defaultdict(int)
+    for player in known:
+        height_sources[str(player.get("heightSource") or "source not recorded")] += 1
+
+    print(
+        f"current Top 1000 ({current_year}): "
+        f"{len(cohort)} identified, {expanded_snapshot['unresolvedPlayers']} unresolved rank rows, "
+        f"{len(known)} heights known, {missing} heights missing"
+    )
+    print(
+        "Top-1000 height provenance: "
+        + ", ".join(f"{source}={count}" for source, count in sorted(height_sources.items()))
+    )
+
+    for band in meta["heightBandsCm"]:
+        members = [player for player in cohort
+                   if height_band_id(valid_height(player.get("heightCm"))) == band["id"]]
+        with_results = 0
+        with_valid_stats = 0
+        result_player_rows = 0
+        valid_stat_player_rows = 0
+        for player in members:
+            season = next(
+                (entry for entry in player.get("heightGroupSeasons", [])
+                 if entry["y"] == current_year),
+                {},
+            )
+            bucket = (season.get("b") or {}).get("all") or {}
+            matches = int(bucket.get("mp", 0))
+            valid_matches = int(bucket.get("sm", 0))
+            with_results += matches > 0
+            with_valid_stats += valid_matches > 0
+            result_player_rows += matches
+            valid_stat_player_rows += valid_matches
+        print(
+            f"height group {band['label']}: players={len(members)}, "
+            f"withResults={with_results}, withValidStats={with_valid_stats}, "
+            f"playerMatchResults={result_player_rows}, playerMatchStats={valid_stat_player_rows}"
+        )
+
+    lower_tier = (meta.get("heightGroupCoverage") or {}).get("challengerAndQualifying") or {}
+    print(
+        "expanded lower-tier coverage: "
+        f"{lower_tier.get('matchResults', 0)} match results, "
+        f"{lower_tier.get('matchesWithValidStats', 0)} with valid service/return stats, "
+        f"{lower_tier.get('matchesWithoutValidStats', 0)} without valid stats, "
+        f"{lower_tier.get('excludedNoPlay', 0)} no-play rows excluded"
+    )
+
 
 if __name__ == "__main__":
     main()
