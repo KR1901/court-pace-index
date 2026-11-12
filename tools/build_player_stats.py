@@ -759,6 +759,7 @@ def load_top1000_season_snapshots(
     top100_snapshots: dict[int, dict[str, object]],
     roster_aliases: dict[str, set[str]],
     today: date | None = None,
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
 ) -> dict[int, dict[str, object]]:
     """Load full year-specific ranking lists; never infer larger cohorts from a Top-200 API."""
     current = today or date.today()
@@ -1358,6 +1359,7 @@ def build() -> dict:
 
     top1000_snapshots = load_top1000_season_snapshots(
         1973, current_year, top100_snapshots, roster_aliases,
+        canonical_player_ids=canonical_player_ids,
     )
     current_expanded_snapshot = top1000_snapshots[current_year]
     if int(current_expanded_snapshot.get("maxRank", 0)) < 1000:
