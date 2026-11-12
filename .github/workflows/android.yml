@@ -51,15 +51,33 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const artifacts = await github.paginate(
+            const listAllArtifacts = () => github.paginate(
               github.rest.actions.listArtifactsForRepo,
               { owner, repo, per_page: 100 }
             );
-            const previous = artifacts.filter(
-              item => item.name === "court-pace-debug-apk" && !item.expired
+            const toMiB = (bytes) => (bytes / (1024 * 1024)).toFixed(2);
+            const before = await listAllArtifacts();
+            const active = before.filter((item) => !item.expired);
+            const previous = active.filter(
+              (item) => item.name === "court-pace-debug-apk"
             );
+            const totalBytes = active.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            const previousBytes = previous.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            core.info(
+              `Repository artifact inventory: ${active.length} active artifacts, ${toMiB(totalBytes)} MiB total.`
+            );
+            core.info(
+              `Superseded debug APK artifacts: ${previous.length}, ${toMiB(previousBytes)} MiB.`
+            );
+
             for (const artifact of previous) {
-              core.info(`Deleting superseded debug APK artifact ${artifact.id} (${artifact.size_in_bytes} bytes)`);
+              core.info(
+                `Deleting debug APK artifact ${artifact.id} (${artifact.size_in_bytes} bytes).`
+              );
               try {
                 await github.rest.actions.deleteArtifact({
                   owner,
@@ -76,6 +94,22 @@ jobs:
                 }
                 throw error;
               }
+            }
+
+            const after = await listAllArtifacts();
+            const remaining = after.filter(
+              (item) => item.name === "court-pace-debug-apk" && !item.expired
+            );
+            const remainingBytes = remaining.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            core.info(
+              `Post-prune debug APK artifacts: ${remaining.length}, ${toMiB(remainingBytes)} MiB.`
+            );
+            if (remaining.length > 0) {
+              throw new Error(
+                `Artifact cleanup left ${remaining.length} active debug APK artifact(s).`
+              );
             }
 
       - name: Upload APK
