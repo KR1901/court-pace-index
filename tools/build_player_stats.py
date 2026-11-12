@@ -638,14 +638,9 @@ def map_live_rankings_to_tml_ids(
 
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
-        name_keys = _name_alias_keys(str(entry["name"]))
+        name = str(entry.get("name") or "").strip()
         country_key = normalize_country_code(str(entry.get("country") or ""))
-        candidate_ids: set[str] = set()
-        for name_key in name_keys:
-            if country_key:
-                candidate_ids.update(roster_aliases.get(f"{name_key}|{country_key}", set()))
-            else:
-                candidate_ids.update(roster_aliases.get(name_key, set()))
+        candidate_ids, _ = _player_alias_candidates(name, country_key, roster_aliases)
 
         if len(candidate_ids) != 1:
             if rank <= 100:
@@ -967,6 +962,40 @@ def _name_alias_keys(value: str) -> set[str]:
     return keys
 
 
+def _player_alias_candidates(
+    name: str,
+    country: str | None,
+    roster_aliases: dict[str, set[str]],
+) -> tuple[set[str], str]:
+    """Prefer a unique exact name before considering weaker display-name aliases.
+
+    Initial/surname and partial-token aliases are useful for provider formatting
+    differences, but they can collide with an otherwise exact full-name match.
+    Country-qualified keys are mandatory whenever a source country is available.
+    """
+    country_key = normalize_country_code(country)
+
+    def lookup(key: str) -> set[str]:
+        if not key:
+            return set()
+        lookup_key = f"{key}|{country_key}" if country_key else key
+        return set(roster_aliases.get(lookup_key, set()))
+
+    exact_key = normalize_name(name)
+    if not exact_key:
+        return set(), "missing"
+
+    exact_candidates = lookup(exact_key)
+    if exact_candidates:
+        return exact_candidates, "exact"
+
+    # Only use generated aliases after an exact full-name lookup has failed.
+    candidates: set[str] = set()
+    for alias_key in _name_alias_keys(name):
+        candidates.update(lookup(alias_key))
+    return candidates, "alias" if candidates else "missing"
+
+
 def _add_player_alias(
     aliases: dict[str, set[str]],
     name: str,
@@ -988,23 +1017,18 @@ def supplement_missing_heights_from_sackmann(
     """Fill blank heights only from a uniquely matched Tennis Abstract/Sackmann player row.
 
     The source's numeric IDs are not treated as TML/ATP IDs. A row is joined to the
-    existing player directory only by a unique normalized full-name + country match.
-    Existing TML roster or match-record heights are never overwritten.
+    existing player directory only by a unique exact-name or conservative name-alias
+    match, country-qualified whenever possible. Existing heights are never overwritten.
     """
     filled = 0
     for row in rows:
         first = (row.get("name_first") or row.get("first_name") or "").strip()
         last = (row.get("name_last") or row.get("last_name") or "").strip()
         name = " ".join(part for part in (first, last) if part).strip()
-        name_key = normalize_name(name)
-        if not name_key:
+        if not normalize_name(name):
             continue
         country = normalize_country_code(row.get("ioc") or row.get("country_code"))
-        if country:
-            # Do not fall back to a same-name player from a different country.
-            candidates = roster_aliases.get(f"{name_key}|{country}", set())
-        else:
-            candidates = roster_aliases.get(name_key, set())
+        candidates, _ = _player_alias_candidates(name, country, roster_aliases)
         if len(candidates) != 1:
             continue
 
