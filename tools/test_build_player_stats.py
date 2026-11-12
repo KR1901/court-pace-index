@@ -544,6 +544,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         )
         self.assertEqual([row["id"] for row in mapped["players"]], ["J0D3"])
         self.assertEqual(mapped["identityOverridesApplied"], 1)
+        self.assertEqual(mapped["identityOverridesNotApplied"], [])
 
         players = {}
         ensure_player(players, "J0D3", "R.R. Jones", "GBR", None, 2026)
