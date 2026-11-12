@@ -65,6 +65,8 @@ def normalize_name(value: str | None) -> str:
 COUNTRY_CODE_CANONICAL = {
     "GB": "GBR",  # United Kingdom (ISO alpha-2)
     "UK": "GBR",  # United Kingdom (common alias)
+    "GREAT BRITAIN": "GBR",  # Full country name
+    "UNITED KINGDOM": "GBR",  # Full country name
     "CHI": "CHL",  # Chile
     "POR": "PRT",  # Portugal
     "SLO": "SVN",  # Slovenia
@@ -843,6 +845,25 @@ def map_live_rankings_to_tml_ids(
                 "name": row["name"],
                 "country": row["country"],
                 "atpId": row["atpId"],
+                "candidateRankingRows": [
+                    {
+                        "rank": int(entry["rank"]),
+                        "name": str(entry.get("name") or ""),
+                        "rawCountry": str(entry.get("country") or ""),
+                        "normalizedName": normalize_name(str(entry.get("name") or "")),
+                        "normalizedCountry": normalize_country_code(str(entry.get("country") or "")),
+                    }
+                    for entry in snapshot["players"]
+                    if (
+                        normalize_name(str(entry.get("name") or "")) == key.split("|", 1)[0]
+                        or (
+                            normalize_country_code(str(entry.get("country") or "")) == row["country"]
+                            and normalize_name(str(entry.get("name") or "")).endswith(
+                                normalize_name(row["name"]).split(row["name"].split()[-1].casefold())[-1]
+                            )
+                        )
+                    )
+                ],
             }
             for key, row in sorted(official_id_overrides.items())
             if key not in matched_override_keys
@@ -1540,7 +1561,8 @@ def build() -> dict:
         print(
             "official ATP profile-ID overrides not present in the live ranking feed: "
             + "; ".join(
-                f"{row['name']} ({row['country']}) [{row['atpId']}]"
+                f"{row['name']} ({row['country']}) [{row['atpId']}] candidates="
+                + repr(row.get("candidateRankingRows", []))
                 for row in identity_overrides_not_applied
             )
         )
