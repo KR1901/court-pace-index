@@ -11,6 +11,8 @@ from build_player_stats import (
     normalize_name,
     parse_current_top100,
     parse_current_top1000,
+    parse_kickserve_live_rankings,
+    parse_tml_ranking_archive_snapshot,
     max_published_rank,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
@@ -236,6 +238,52 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         payload = {"rankings": rows}
         self.assertEqual(max_published_rank(payload), 500)
         self.assertEqual(len(parse_current_top1000(payload)), 500)
+
+    def test_tml_archive_parser_selects_exact_year_end_date_and_keeps_cutoff_ties(self):
+        payload = (
+            "date,rank,name,id,points,ioc\n"
+            "20251215,1,Player One,P001,1000,USA\n"
+            "20251222,1,Player One,P001,1100,USA\n"
+            "20251222,500,Player FiveHundred,P500,20,FRA\n"
+            "20251222,1000,Player OneThousand,P1000,5,ESP\n"
+            "20251222,1000,Co-ranked Player,P1001,5,ITA\n"
+            "20251222,450,Unknown,,10,\n"
+        ).encode("utf-8")
+
+        result = parse_tml_ranking_archive_snapshot(payload, "2025-12-22")
+
+        self.assertEqual(len(result["players"]), 4)
+        self.assertEqual(result["maxRank"], 1000)
+        self.assertEqual(result["unresolvedTop100"], 0)
+        self.assertEqual(result["unresolvedTop500"], 1)
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["rankedEntries"], 5)
+        self.assertEqual(result["players"][-1]["rank"], 1000)
+
+    def test_tml_archive_parser_fails_when_selected_ranking_date_is_missing(self):
+        payload = (
+            "date,rank,name,id,points,ioc\n"
+            "20251215,1,Player One,P001,1000,USA\n"
+        ).encode("utf-8")
+        with self.assertRaises(RuntimeError):
+            parse_tml_ranking_archive_snapshot(payload, "2025-12-22")
+
+    def test_kickserve_parser_uses_official_atp_rank_and_ignores_wta(self):
+        payload = (
+            "player,id,tour,country,official_rank,points,elo\n"
+            "Player One,P001,ATP,USA,1,1000,1800\n"
+            "Player FiveHundred,P500,ATP,FRA,500,20,1500\n"
+            "Player OneThousand,P1000,ATP,ESP,1000,5,1400\n"
+            "WTA Player,W001,WTA,USA,1,1200,1900\n"
+            "Unranked Player,PX,ATP,GBR,,0,1300\n"
+        ).encode("utf-8")
+
+        result = parse_kickserve_live_rankings(payload)
+
+        self.assertEqual([row["id"] for row in result["players"]], ["P001", "P500", "P1000"])
+        self.assertEqual(result["maxRank"], 1000)
+        self.assertEqual(result["rankedEntries"], 3)
+        self.assertEqual(result["unresolvedPlayers"], 0)
 
     def test_top100_placeholder_id_is_counted_but_not_treated_as_a_player(self):
         rows = [
