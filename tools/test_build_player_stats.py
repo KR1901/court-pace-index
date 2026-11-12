@@ -1,4 +1,5 @@
 import unittest
+from collections import defaultdict
 from datetime import date
 
 from build_player_stats import (
@@ -385,7 +386,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             "rankedEntries": 1,
             "unresolvedRanks": [],
         }
-        aliases = {}
+        aliases = defaultdict(set)
         _add_player_alias(aliases, "Stefanos Tsitsipas", "GRE", "TML-TSITSIPAS")
 
         result = map_live_rankings_to_tml_ids(snapshot, aliases)
@@ -414,7 +415,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             "rankedEntries": 1,
             "unresolvedRanks": [],
         }
-        aliases = {}
+        aliases = defaultdict(set)
         _add_player_alias(aliases, "Player One", "CHI", "TML-PLAYER-1")
         result = map_live_rankings_to_tml_ids(snapshot, aliases)
         self.assertEqual(result["players"][0]["id"], "TML-PLAYER-1")
