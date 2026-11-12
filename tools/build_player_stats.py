@@ -587,10 +587,56 @@ def _validate_top100_subset(
             )
 
 
+def map_live_rankings_to_tml_ids(
+    snapshot: dict[str, object],
+    roster_aliases: dict[str, set[str]],
+) -> dict[str, object]:
+    """Crosswalk KickServe's internal IDs to stable TML IDs using unique exact-name keys.
+
+    The feed's player IDs are internal to KickServe, not ATP/TML IDs. Names are normalized
+    only for accents and punctuation; ambiguous or missing roster matches stay unresolved.
+    """
+    mapped: list[dict[str, object]] = []
+    seen_ids: set[str] = set()
+    unresolved_top100 = int(snapshot.get("unresolvedTop100", 0))
+    unresolved_top500 = int(snapshot.get("unresolvedTop500", 0))
+    unresolved_top1000 = int(snapshot.get("unresolvedPlayers", 0))
+
+    for entry in snapshot["players"]:
+        rank = int(entry["rank"])
+        candidate_ids = roster_aliases.get(normalize_name(str(entry["name"])), set())
+        if len(candidate_ids) != 1:
+            if rank <= 100:
+                unresolved_top100 += 1
+            if rank <= 500:
+                unresolved_top500 += 1
+            unresolved_top1000 += 1
+            continue
+        player_id = next(iter(candidate_ids))
+        if player_id in seen_ids:
+            raise RuntimeError(
+                f"KickServe names map to duplicate TML player ID {player_id}"
+            )
+        seen_ids.add(player_id)
+        mapped_entry = dict(entry)
+        mapped_entry["id"] = player_id
+        mapped.append(mapped_entry)
+
+    return {
+        **snapshot,
+        "players": mapped,
+        "unresolvedTop100": unresolved_top100,
+        "unresolvedTop500": unresolved_top500,
+        "unresolvedPlayers": unresolved_top1000,
+        "rankedEntries": len(mapped) + unresolved_top1000,
+    }
+
+
 def load_top1000_season_snapshots(
     first_year: int,
     current_year: int,
     top100_snapshots: dict[int, dict[str, object]],
+    roster_aliases: dict[str, set[str]],
     today: date | None = None,
 ) -> dict[int, dict[str, object]]:
     """Load full year-specific ranking lists; never infer larger cohorts from a Top-200 API."""
@@ -638,6 +684,7 @@ def load_top1000_season_snapshots(
         live_payload,
         f"KickServe live ATP ranking list ({current.isoformat()})",
     )
+    live_top = map_live_rankings_to_tml_ids(live_top, roster_aliases)
     live_snapshot = {
         "year": current_year,
         "asOf": str(top100_snapshots[current_year]["asOf"]),
@@ -896,7 +943,7 @@ def build() -> dict:
     players = roster
     top100_snapshots = load_top100_season_snapshots(1973, current_year)
     top1000_snapshots = load_top1000_season_snapshots(
-        1973, current_year, top100_snapshots,
+        1973, current_year, top100_snapshots, roster_aliases,
     )
     current_expanded_snapshot = top1000_snapshots[current_year]
     if int(current_expanded_snapshot.get("maxRank", 0)) < 1000:
