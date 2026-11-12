@@ -570,21 +570,24 @@ def _validate_top100_subset(
     expanded_by_id = {
         str(entry["id"]): int(entry["rank"])
         for entry in expanded_snapshot["players"]
+        if int(entry["rank"]) <= 100
     }
-    for entry in top100_snapshot["players"]:
-        player_id = str(entry["id"])
-        rank = int(entry["rank"])
-        expanded_rank = expanded_by_id.get(player_id)
-        if expanded_rank is None or expanded_rank > 100:
-            raise RuntimeError(
-                f"{expanded_snapshot['year']} expanded rankings do not contain "
-                f"Top-100 player {player_id} at rank <=100"
-            )
-        if expanded_rank != rank:
-            raise RuntimeError(
-                f"{expanded_snapshot['year']} Top-100 rank mismatch for {player_id}: "
-                f"TML API={rank}, expanded source={expanded_rank}"
-            )
+    expected_by_id = {
+        str(entry["id"]): int(entry["rank"])
+        for entry in top100_snapshot["players"]
+    }
+    if expanded_by_id != expected_by_id:
+        missing = sorted(set(expected_by_id) - set(expanded_by_id))
+        extra = sorted(set(expanded_by_id) - set(expected_by_id))
+        changed = sorted(
+            player_id
+            for player_id in set(expected_by_id) & set(expanded_by_id)
+            if expected_by_id[player_id] != expanded_by_id[player_id]
+        )
+        raise RuntimeError(
+            f"{expanded_snapshot['year']} Top-100 cross-check failed: "
+            f"missing={missing[:5]}, extra={extra[:5]}, changedRanks={changed[:5]}"
+        )
 
 
 def map_live_rankings_to_tml_ids(
