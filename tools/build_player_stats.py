@@ -35,6 +35,7 @@ TML_RANKINGS_ARCHIVE_URL = (
 )
 KICKSERVE_LIVE_RANKINGS_URL = "https://kick-serve.com/data/ratings_atp.csv"
 KICKSERVE_ATTRIBUTION_URL = "https://kick-serve.com/data/"
+SACKMANN_ATP_PLAYERS_URL = "https://raw.githubusercontent.com/sportData/tennis_atp/master/atp_players.csv"
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
@@ -900,6 +901,46 @@ def _add_player_alias(
         aliases[f"{key}|{country_key}"].add(player_id)
 
 
+def supplement_missing_heights_from_sackmann(
+    rows: list[dict[str, str]],
+    players: dict[str, dict],
+    roster_aliases: dict[str, set[str]],
+) -> int:
+    """Fill blank heights only from a uniquely matched Tennis Abstract/Sackmann player row.
+
+    The source's numeric IDs are not treated as TML/ATP IDs. A row is joined to the
+    existing player directory only by a unique normalized full-name + country match.
+    Existing TML roster or match-record heights are never overwritten.
+    """
+    filled = 0
+    for row in rows:
+        first = (row.get("first_name") or "").strip()
+        last = (row.get("last_name") or "").strip()
+        name = " ".join(part for part in (first, last) if part).strip()
+        name_key = normalize_name(name)
+        if not name_key:
+            continue
+        country = (row.get("country_code") or row.get("ioc") or "").strip().upper()
+        country_candidates = roster_aliases.get(f"{name_key}|{country}", set()) if country else set()
+        candidates = country_candidates if country_candidates else roster_aliases.get(name_key, set())
+        if len(candidates) != 1:
+            continue
+
+        player_id = next(iter(candidates))
+        record = players.get(player_id)
+        if record is None or record.get("heightCm") is not None:
+            continue
+
+        height = valid_height(row.get("height") or row.get("height_cm"))
+        if height is None:
+            continue
+        record["heightCm"] = height
+        record["heightSource"] = "jeff-sackmann-tennis-abstract-player-table"
+        record["_heightSeason"] = 9998
+        filled += 1
+    return filled
+
+
 def aggregate_match_rows(
     rows: list[dict[str, str]],
     filename: str,
@@ -1158,6 +1199,32 @@ def build() -> dict:
     # KickServe names. Country-qualified aliases disambiguate players who share a normalized name.
     for alias, player_ids in match_aliases.items():
         roster_aliases.setdefault(alias, set()).update(player_ids)
+    sackmann_height_fills = 0
+    sackmann_height_source_status = "unavailable"
+    try:
+        sackmann_payload = download_cached(
+            SACKMANN_ATP_PLAYERS_URL,
+            "sackmann_atp_players.csv",
+            None,
+            date.today().isoformat(),
+        )
+        sackmann_rows = csv_rows(sackmann_payload)
+        if sackmann_rows:
+            required_sackmann_columns = {"first_name", "last_name", "country_code", "height"}
+            missing_columns = required_sackmann_columns - set(sackmann_rows[0])
+            if missing_columns:
+                raise RuntimeError(
+                    "Tennis Abstract player table is missing columns: "
+                    + ", ".join(sorted(missing_columns))
+                )
+        sackmann_height_fills = supplement_missing_heights_from_sackmann(
+            sackmann_rows, players, roster_aliases,
+        )
+        sackmann_height_source_status = "loaded"
+    except Exception as error:
+        # TML remains the primary source; optional fallback failure must not erase valid TML data.
+        print(f"optional Tennis Abstract height fallback unavailable: {error}")
+
     top1000_snapshots = load_top1000_season_snapshots(
         1973, current_year, top100_snapshots, roster_aliases,
     )
@@ -1275,6 +1342,13 @@ def build() -> dict:
             },
             "players": len(player_rows),
             "playersWithHeight": height_count,
+            "heightEnrichment": {
+                "provider": "Jeff Sackmann / Tennis Abstract ATP player table",
+                "source": SACKMANN_ATP_PLAYERS_URL,
+                "license": "CC BY-NC-SA 4.0",
+                "status": sackmann_height_source_status,
+                "filledMissingHeights": sackmann_height_fills,
+            },
             "playersInCurrentTop100": current_top100_count,
             "playersInCurrentTop500": current_top500_count,
             "playersInCurrentTop1000": current_top1000_count,
@@ -1335,7 +1409,7 @@ def build() -> dict:
             "tourLevels": sorted(TOUR_LEVELS),
             "coverage": totals,
             "playersWithEligibleArchiveResults": len(season_rows),
-            "usage": "Personal, educational and non-commercial research only. Raw source CSVs are not included. Keep this derived asset private; do not redistribute or use commercially.",
+            "usage": "Personal, educational and non-commercial research only. Keep TML-derived assets private and do not redistribute or use commercially. Supplementary biographical heights from Jeff Sackmann / Tennis Abstract are under CC BY-NC-SA 4.0; credit Jeff Sackmann and preserve applicable share-alike terms for permitted redistribution.",
             "heightBandsCm": [
                 {"id": "under183", "minCm": None, "maxCm": 182, "label": "Under 1.83 m"},
                 {"id": "183to185", "minCm": 183, "maxCm": 185, "label": "1.83–1.85 m"},
@@ -1395,6 +1469,11 @@ def main() -> None:
     print(
         "Top-1000 height provenance: "
         + ", ".join(f"{source}={count}" for source, count in sorted(height_sources.items()))
+    )
+    print(
+        "supplementary height fallback: "
+        f"{meta['heightEnrichment']['status']}, "
+        f"{meta['heightEnrichment']['filledMissingHeights']} missing heights filled"
     )
 
     for band in meta["heightBandsCm"]:

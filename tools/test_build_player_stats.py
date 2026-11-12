@@ -21,6 +21,7 @@ from build_player_stats import (
     unresolved_top100_count,
     unresolved_ranking_count,
     service_return_contribution,
+    supplement_missing_heights_from_sackmann,
 )
 
 
@@ -146,6 +147,57 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         for value in ("", None, "unknown", "n/a"):
             with self.subTest(value=value):
                 self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardUnknown"))
+
+    def test_sackmann_height_fallback_only_fills_unique_missing_tml_players(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Player One", "country": "USA",
+                "heightCm": None, "heightSource": None,
+            },
+            "P2": {
+                "id": "P2", "name": "Already Known", "country": "ESP",
+                "heightCm": 190, "heightSource": "tml-player-database",
+            },
+            "P3": {
+                "id": "P3", "name": "Ambiguous Player", "country": "FRA",
+                "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = {
+            "playerone|USA": {"P1"},
+            "alreadyknown|ESP": {"P2"},
+            "ambiguousplayer|FRA": {"P3", "P4"},
+        }
+        rows = [
+            {
+                "first_name": "Player", "last_name": "One",
+                "country_code": "USA", "height": "188",
+            },
+            {
+                "first_name": "Already", "last_name": "Known",
+                "country_code": "ESP", "height": "195",
+            },
+            {
+                "first_name": "Ambiguous", "last_name": "Player",
+                "country_code": "FRA", "height": "193",
+            },
+            {
+                "first_name": "Player", "last_name": "Without Height",
+                "country_code": "GBR", "height": "",
+            },
+        ]
+
+        filled = supplement_missing_heights_from_sackmann(rows, players, aliases)
+
+        self.assertEqual(filled, 1)
+        self.assertEqual(players["P1"]["heightCm"], 188)
+        self.assertEqual(
+            players["P1"]["heightSource"],
+            "jeff-sackmann-tennis-abstract-player-table",
+        )
+        self.assertEqual(players["P2"]["heightCm"], 190)
+        self.assertEqual(players["P2"]["heightSource"], "tml-player-database")
+        self.assertIsNone(players["P3"]["heightCm"])
 
     def test_latest_ranking_snapshot_is_selected_by_date_not_response_order(self):
         selected = select_ranking_snapshot_date(
