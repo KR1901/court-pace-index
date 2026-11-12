@@ -40,6 +40,8 @@ SACKMANN_ATP_PLAYERS_URL = (
     "https://raw.githubusercontent.com/Kadantte/tennis_atp/"
     + SACKMANN_ATP_PLAYERS_REVISION + "/atp_players.csv"
 )
+OFFICIAL_ATP_ID_OVERRIDES_PATH = ROOT / "tools" / "player_identity_overrides.json"
+OFFICIAL_ATP_PROFILE_BASE_URL = "https://www.atptour.com/en/players/-/"
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
@@ -80,6 +82,72 @@ COUNTRY_CODE_CANONICAL = {
 def normalize_country_code(value: str | None) -> str:
     code = (value or "").strip().upper()
     return COUNTRY_CODE_CANONICAL.get(code, code)
+
+
+def parse_official_atp_profile_id_overrides(
+    payload: dict[str, object],
+) -> dict[str, dict[str, str]]:
+    """Parse exact name/country -> ATP Tour profile-ID overrides.
+
+    These are manually audited ATP Tour profile URLs, not KickServe IDs. The
+    name and country key must match the live ranking row exactly after the
+    same conservative normalization used by the cross-provider resolver.
+    """
+    if payload.get("version") != 1:
+        raise RuntimeError("Unsupported official ATP identity override version")
+    if payload.get("source") != "ATP Tour official player profile URLs":
+        raise RuntimeError("Unexpected source for official ATP identity overrides")
+    rows = payload.get("players")
+    if not isinstance(rows, list):
+        raise RuntimeError("Official ATP identity override file has no players array")
+
+    result: dict[str, dict[str, str]] = {}
+    ids_seen: dict[str, str] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise RuntimeError("Official ATP identity override contains a non-object row")
+        name = str(row.get("name") or "").strip()
+        country = normalize_country_code(str(row.get("country") or ""))
+        atp_id = str(row.get("atpId") or "").strip().upper()
+        profile_url = str(row.get("profileUrl") or "").strip()
+        if not normalize_name(name) or not country:
+            raise RuntimeError("Official ATP identity override requires a name and country")
+        if not re.fullmatch(r"[A-Z0-9]{4}", atp_id):
+            raise RuntimeError(f"Invalid ATP Tour profile ID for {name}: {atp_id!r}")
+        expected_url = OFFICIAL_ATP_PROFILE_BASE_URL + atp_id.lower() + "/overview"
+        if profile_url.rstrip("/") != expected_url.rstrip("/"):
+            raise RuntimeError(
+                f"Official ATP profile URL does not match {name}'s profile ID {atp_id}"
+            )
+        key = f"{normalize_name(name)}|{country}"
+        if key in result:
+            raise RuntimeError(f"Duplicate official ATP identity override key: {name}/{country}")
+        if atp_id in ids_seen:
+            raise RuntimeError(
+                f"Official ATP profile ID {atp_id} is assigned to both "
+                f"{ids_seen[atp_id]} and {name}/{country}"
+            )
+        result[key] = {
+            "name": name,
+            "country": country,
+            "atpId": atp_id,
+            "profileUrl": profile_url,
+        }
+        ids_seen[atp_id] = f"{name}/{country}"
+
+    return result
+
+
+def load_official_atp_profile_id_overrides(
+    path: Path = OFFICIAL_ATP_ID_OVERRIDES_PATH,
+) -> dict[str, dict[str, str]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Unable to load official ATP identity overrides: {error}") from error
+    if not isinstance(payload, dict):
+        raise RuntimeError("Official ATP identity override file must contain a JSON object")
+    return parse_official_atp_profile_id_overrides(payload)
 
 
 def integer(value: object) -> int | None:
@@ -623,6 +691,7 @@ def map_live_rankings_to_tml_ids(
     snapshot: dict[str, object],
     roster_aliases: dict[str, set[str]],
     canonical_player_ids: set[str] | frozenset[str] | None = None,
+    official_id_overrides: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, object]:
     """Crosswalk KickServe IDs using unique country-qualified full-name or initial aliases.
 
@@ -636,14 +705,24 @@ def map_live_rankings_to_tml_ids(
     unresolved_top500 = int(snapshot.get("unresolvedTop500", 0))
     unresolved_top1000 = int(snapshot.get("unresolvedPlayers", 0))
     unresolved_ranks = list(snapshot.get("unresolvedRanks", []))
+    official_id_overrides = official_id_overrides or {}
+    overrides_applied = 0
 
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
         name = str(entry.get("name") or "").strip()
         country_key = normalize_country_code(str(entry.get("country") or ""))
-        candidate_ids, _ = _player_alias_candidates(
-            name, country_key, roster_aliases, canonical_player_ids,
-        )
+        override_key = f"{normalize_name(name)}|{country_key}"
+        official_override = official_id_overrides.get(override_key)
+        if official_override is not None:
+            # The ATP Tour profile ID is the canonical identity for this exact
+            # country-qualified ranking row. Never use KickServe's own feed ID.
+            candidate_ids = {official_override["atpId"]}
+            overrides_applied += 1
+        else:
+            candidate_ids, _ = _player_alias_candidates(
+                name, country_key, roster_aliases, canonical_player_ids,
+            )
 
         if len(candidate_ids) != 1:
             if rank <= 100:
@@ -681,6 +760,7 @@ def map_live_rankings_to_tml_ids(
         "unresolvedRanks": unresolved_ranks,
         "unresolvedEntries": list(snapshot.get("unresolvedEntries", [])),
         "rankedEntries": len(mapped) + unresolved_top1000,
+        "identityOverridesApplied": overrides_applied,
     }
 
 
@@ -760,6 +840,7 @@ def load_top1000_season_snapshots(
     roster_aliases: dict[str, set[str]],
     today: date | None = None,
     canonical_player_ids: set[str] | frozenset[str] | None = None,
+    official_id_overrides: dict[str, dict[str, str]] | None = None,
 ) -> dict[int, dict[str, object]]:
     """Load full year-specific ranking lists; never infer larger cohorts from a Top-200 API."""
     current = today or date.today()
@@ -808,7 +889,10 @@ def load_top1000_season_snapshots(
         f"KickServe live ATP ranking list ({current.isoformat()})",
     )
     live_top = map_live_rankings_to_tml_ids(
-        live_top, roster_aliases, canonical_player_ids,
+        live_top,
+        roster_aliases,
+        canonical_player_ids,
+        official_id_overrides,
     )
     live_snapshot = {
         "year": current_year,
@@ -1304,6 +1388,7 @@ def build() -> dict:
     years = range(1968, current_year + 1)
     roster, roster_aliases = load_roster(files)
     canonical_player_ids = frozenset(roster)
+    official_id_overrides = load_official_atp_profile_id_overrides()
     players = roster
     top100_snapshots = load_top100_season_snapshots(1973, current_year)
     current_season_match_keys: set[str] = set()
@@ -1360,6 +1445,7 @@ def build() -> dict:
     top1000_snapshots = load_top1000_season_snapshots(
         1973, current_year, top100_snapshots, roster_aliases,
         canonical_player_ids=canonical_player_ids,
+        official_id_overrides=official_id_overrides,
     )
     current_expanded_snapshot = top1000_snapshots[current_year]
     if int(current_expanded_snapshot.get("maxRank", 0)) < 1000:
@@ -1514,6 +1600,7 @@ def build() -> dict:
                     "maxRank": int(snapshot.get("maxRank", 0)),
                     "unresolvedTop500": int(snapshot.get("unresolvedTop500", 0)),
                     "provider": str(snapshot.get("provider") or "TML rankings archive"),
+                    "identityOverridesApplied": int(snapshot.get("identityOverridesApplied", 0)),
                     "unresolvedEntries": [
                         {
                             "rank": int(entry.get("rank", 0)),
@@ -1527,6 +1614,12 @@ def build() -> dict:
                 for year, snapshot in sorted(top1000_snapshots.items())
             ],
             "top1000SeasonPolicy": "For completed seasons, the full TML Rankings archive CSV is filtered to the exact final-in-year date already used by the Top 100 snapshot. For the live year, the full KickServe ATP CSV official_rank column is used and its Top 100 membership is cross-checked against the unchanged TML Top 100 snapshot. KickServe's daily CSV is free to use with attribution to https://kick-serve.com/data/. Ties are preserved and unresolved IDs are counted separately. Snapshots that do not extend through a selected cutoff are marked unavailable. Group performance always uses match statistics from that same calendar year.",
+            "rankingIdentityResolution": {
+                "provider": "ATP Tour official player profiles",
+                "overrideFile": "tools/player_identity_overrides.json",
+                "liveOverridesApplied": int(current_expanded_snapshot.get("identityOverridesApplied", 0)),
+                "policy": "Exact normalized live ranking name plus country must match an audited ATP Tour profile ID override. KickServe provider IDs are never treated as ATP/TML IDs.",
+            },
             "source": DATA_SOURCE,
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
