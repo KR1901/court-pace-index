@@ -622,6 +622,7 @@ def _validate_top100_subset(
 def map_live_rankings_to_tml_ids(
     snapshot: dict[str, object],
     roster_aliases: dict[str, set[str]],
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
 ) -> dict[str, object]:
     """Crosswalk KickServe IDs using unique country-qualified full-name or initial aliases.
 
@@ -640,7 +641,9 @@ def map_live_rankings_to_tml_ids(
         rank = int(entry["rank"])
         name = str(entry.get("name") or "").strip()
         country_key = normalize_country_code(str(entry.get("country") or ""))
-        candidate_ids, _ = _player_alias_candidates(name, country_key, roster_aliases)
+        candidate_ids, _ = _player_alias_candidates(
+            name, country_key, roster_aliases, canonical_player_ids,
+        )
 
         if len(candidate_ids) != 1:
             if rank <= 100:
@@ -803,7 +806,9 @@ def load_top1000_season_snapshots(
         live_payload,
         f"KickServe live ATP ranking list ({current.isoformat()})",
     )
-    live_top = map_live_rankings_to_tml_ids(live_top, roster_aliases)
+    live_top = map_live_rankings_to_tml_ids(
+        live_top, roster_aliases, canonical_player_ids,
+    )
     live_snapshot = {
         "year": current_year,
         "asOf": str(top100_snapshots[current_year]["asOf"]),
@@ -966,6 +971,7 @@ def _player_alias_candidates(
     name: str,
     country: str | None,
     roster_aliases: dict[str, set[str]],
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
 ) -> tuple[set[str], str]:
     """Prefer a unique exact name before considering weaker display-name aliases.
 
@@ -985,7 +991,13 @@ def _player_alias_candidates(
     if not exact_key:
         return set(), "missing"
 
-    exact_candidates = lookup(exact_key)
+    def prefer_roster_ids(candidates: set[str]) -> set[str]:
+        if canonical_player_ids is None:
+            return candidates
+        canonical = candidates.intersection(canonical_player_ids)
+        return canonical if canonical else candidates
+
+    exact_candidates = prefer_roster_ids(lookup(exact_key))
     if exact_candidates:
         return exact_candidates, "exact"
 
@@ -993,6 +1005,7 @@ def _player_alias_candidates(
     candidates: set[str] = set()
     for alias_key in _name_alias_keys(name):
         candidates.update(lookup(alias_key))
+    candidates = prefer_roster_ids(candidates)
     return candidates, "alias" if candidates else "missing"
 
 
@@ -1013,6 +1026,7 @@ def supplement_missing_heights_from_sackmann(
     rows: list[dict[str, str]],
     players: dict[str, dict],
     roster_aliases: dict[str, set[str]],
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
 ) -> int:
     """Fill blank heights only from a uniquely matched Tennis Abstract/Sackmann player row.
 
@@ -1028,7 +1042,9 @@ def supplement_missing_heights_from_sackmann(
         if not normalize_name(name):
             continue
         country = normalize_country_code(row.get("ioc") or row.get("country_code"))
-        candidates, _ = _player_alias_candidates(name, country, roster_aliases)
+        candidates, _ = _player_alias_candidates(
+            name, country, roster_aliases, canonical_player_ids,
+        )
         if len(candidates) != 1:
             continue
 
@@ -1286,6 +1302,7 @@ def build() -> dict:
     current_year = date.today().year
     years = range(1968, current_year + 1)
     roster, roster_aliases = load_roster(files)
+    canonical_player_ids = frozenset(roster)
     players = roster
     top100_snapshots = load_top100_season_snapshots(1973, current_year)
     current_season_match_keys: set[str] = set()
@@ -1332,7 +1349,7 @@ def build() -> dict:
                     + ", ".join(missing_labels)
                 )
         sackmann_height_fills = supplement_missing_heights_from_sackmann(
-            sackmann_rows, players, roster_aliases,
+            sackmann_rows, players, roster_aliases, canonical_player_ids,
         )
         sackmann_height_source_status = "loaded"
     except Exception as error:
