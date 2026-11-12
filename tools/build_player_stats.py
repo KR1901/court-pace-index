@@ -28,6 +28,12 @@ MANIFEST_URL = "https://stats.tennismylife.org/api/data-files"
 MATCH_URL = "https://stats.tennismylife.org/data/{year}.csv"
 RANKING_DATES_URL = "https://stats.tennismylife.org/api/ranking/dates"
 RANKING_URL = "https://stats.tennismylife.org/api/ranking"
+TML_RANKINGS_ARCHIVE_URL = (
+    "https://raw.githubusercontent.com/Tennismylife/TML-Rankings-Database/main/"
+    "TML%20Rankings/{year}.csv"
+)
+KICKSERVE_LIVE_RANKINGS_URL = "https://kick-serve.com/data/ratings_atp.csv"
+KICKSERVE_ATTRIBUTION_URL = "https://kick-serve.com/data/"
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
@@ -375,6 +381,123 @@ def parse_current_top1000(payload: dict, snapshot_label: str = "") -> list[dict[
     return parse_current_top_n(payload, 1000, snapshot_label)
 
 
+def _parse_csv_rank_rows(
+    rows: list[dict[str, str]],
+    snapshot_label: str,
+    *,
+    rank_field: str,
+    id_field: str,
+    name_field: str,
+    country_field: str,
+    points_field: str,
+    date_field: str | None = None,
+    target_date: str | None = None,
+    tour_field: str | None = None,
+) -> dict[str, object]:
+    """Parse a complete dated/current CSV rank list through position 1000."""
+    placeholders = {"", "NA", "N/A", "NONE", "NULL", "UNKNOWN", "0", "-"}
+    target_compact = (target_date or "").replace("-", "")
+    ranked: list[dict[str, object]] = []
+    seen_ids: set[str] = set()
+    unresolved_top100 = 0
+    unresolved_top500 = 0
+    unresolved_top1000 = 0
+    max_rank = 0
+    matching_rows = 0
+
+    for row in rows:
+        if date_field is not None and str(row.get(date_field) or "").strip() != target_compact:
+            continue
+        if tour_field is not None and str(row.get(tour_field) or "").strip().casefold() not in {"atp", "men"}:
+            continue
+        rank = integer(row.get(rank_field))
+        if rank is None or rank < 1:
+            continue
+        matching_rows += 1
+        max_rank = max(max_rank, rank)
+        if rank <= 100:
+            cutoff = "top100"
+            unresolved_top100 += 1 if str(row.get(id_field) or "").strip().upper() in placeholders else 0
+        else:
+            cutoff = ""
+        if rank <= 500 and str(row.get(id_field) or "").strip().upper() in placeholders:
+            unresolved_top500 += 1
+        if rank <= 1000 and str(row.get(id_field) or "").strip().upper() in placeholders:
+            unresolved_top1000 += 1
+        if rank > 1000:
+            continue
+
+        player_id = str(row.get(id_field) or "").strip()
+        if player_id.upper() in placeholders:
+            continue
+        name = str(row.get(name_field) or "").strip() or player_id
+        country = str(row.get(country_field) or "").strip().upper()
+        points = integer(row.get(points_field))
+        if player_id in seen_ids:
+            raise RuntimeError(
+                f"Duplicate player ID {player_id} in rank archive {snapshot_label}"
+            )
+        seen_ids.add(player_id)
+        ranked.append(
+            {
+                "id": player_id,
+                "rank": rank,
+                "name": name,
+                "country": country,
+                "points": points,
+            }
+        )
+
+    if matching_rows == 0:
+        raise RuntimeError(f"No ranking rows found for {snapshot_label}")
+    return {
+        "players": sorted(ranked, key=lambda item: (int(item["rank"]), str(item["id"]))),
+        "unresolvedTop100": unresolved_top100,
+        "unresolvedTop500": unresolved_top500,
+        "unresolvedPlayers": unresolved_top1000,
+        "rankedEntries": len(ranked) + unresolved_top1000,
+        "maxRank": max_rank,
+        "sourceRows": matching_rows,
+    }
+
+
+def parse_tml_ranking_archive_snapshot(
+    payload: bytes,
+    target_date: str,
+    snapshot_label: str = "",
+) -> dict[str, object]:
+    """Read one year-end snapshot from TML's full historical ranking CSV."""
+    label = snapshot_label or target_date
+    return _parse_csv_rank_rows(
+        csv_rows(payload),
+        label,
+        rank_field="rank",
+        id_field="id",
+        name_field="name",
+        country_field="ioc",
+        points_field="points",
+        date_field="date",
+        target_date=target_date,
+    )
+
+
+def parse_kickserve_live_rankings(
+    payload: bytes,
+    snapshot_label: str = "",
+) -> dict[str, object]:
+    """Read KickServe's daily CSV, using only its published official ATP rank column."""
+    return _parse_csv_rank_rows(
+        csv_rows(payload),
+        snapshot_label or "KickServe current ATP rankings",
+        rank_field="official_rank",
+        id_field="id",
+        name_field="player",
+        country_field="country",
+        points_field="points",
+        tour_field="tour",
+    )
+
+
 def select_ranking_snapshot_dates(
     payload: dict,
     first_year: int,
@@ -413,12 +536,12 @@ def select_ranking_snapshot_dates(
     return {year: latest_by_year[year].isoformat() for year in range(first_year, last_year + 1)}
 
 
-def load_top1000_season_snapshots(
+def load_top100_season_snapshots(
     first_year: int,
     current_year: int,
     today: date | None = None,
 ) -> dict[int, dict[str, object]]:
-    """Load one validated rank-1000 snapshot per season, including the live current cohort."""
+    """Keep the existing dated TML Top-100 source and semantics unchanged."""
     dates_payload = load_json_url(RANKING_DATES_URL)
     ranking_dates = select_ranking_snapshot_dates(
         dates_payload, first_year, current_year, today=today,
@@ -432,17 +555,110 @@ def load_top1000_season_snapshots(
             "year": year,
             "asOf": ranking_date,
             "source": source_url,
-            "players": parse_current_top1000(snapshot, f"{year} snapshot {ranking_date}"),
-            "unresolvedPlayers": unresolved_ranking_count(snapshot, 1000),
-            "unresolvedTop500": unresolved_ranking_count(snapshot, 500),
-            "unresolvedTop100": unresolved_ranking_count(snapshot, 100),
-            "maxRank": max_published_rank(snapshot),
+            "players": parse_current_top100(snapshot, f"{year} snapshot {ranking_date}"),
+            "unresolvedPlayers": unresolved_top100_count(snapshot),
         }
 
-    # Each year still needs one ranking request; one response now supplies all three tiers.
+    # This endpoint intentionally supplies the original Top 100 cohort only.
     with ThreadPoolExecutor(max_workers=4) as executor:
         loaded = dict(executor.map(load_one, ranking_dates.items()))
     return {year: loaded[year] for year in sorted(loaded)}
+
+
+def _validate_top100_subset(
+    top100_snapshot: dict[str, object],
+    expanded_snapshot: dict[str, object],
+) -> None:
+    """Ensure the expanded source can represent every player in the original Top 100."""
+    expanded_by_id = {
+        str(entry["id"]): int(entry["rank"])
+        for entry in expanded_snapshot["players"]
+    }
+    for entry in top100_snapshot["players"]:
+        player_id = str(entry["id"])
+        rank = int(entry["rank"])
+        expanded_rank = expanded_by_id.get(player_id)
+        if expanded_rank is None or expanded_rank > 100:
+            raise RuntimeError(
+                f"{expanded_snapshot['year']} expanded rankings do not contain "
+                f"Top-100 player {player_id} at rank <=100"
+            )
+        if expanded_rank != rank:
+            raise RuntimeError(
+                f"{expanded_snapshot['year']} Top-100 rank mismatch for {player_id}: "
+                f"TML API={rank}, expanded source={expanded_rank}"
+            )
+
+
+def load_top1000_season_snapshots(
+    first_year: int,
+    current_year: int,
+    top100_snapshots: dict[int, dict[str, object]],
+    today: date | None = None,
+) -> dict[int, dict[str, object]]:
+    """Load full year-specific ranking lists; never infer larger cohorts from a Top-200 API."""
+    current = today or date.today()
+    historical_items = [
+        (year, snapshot)
+        for year, snapshot in sorted(top100_snapshots.items())
+        if year != current_year
+    ]
+
+    def load_historical(item: tuple[int, dict[str, object]]) -> tuple[int, dict[str, object]]:
+        year, top100 = item
+        archive_url = TML_RANKINGS_ARCHIVE_URL.format(year=year)
+        # Ranking archive files are refreshed daily so source corrections are not cached forever.
+        payload = download_cached(
+            archive_url,
+            f"tml_rankings_{year}.csv",
+            None,
+            current.isoformat(),
+        )
+        parsed = parse_tml_ranking_archive_snapshot(
+            payload,
+            str(top100["asOf"]),
+            f"TML {year} year-end snapshot {top100['asOf']}",
+        )
+        snapshot = {
+            "year": year,
+            "asOf": str(top100["asOf"]),
+            "source": archive_url,
+            "provider": "TML rankings archive",
+            **parsed,
+        }
+        _validate_top100_subset(top100, snapshot)
+        return year, snapshot
+
+    # The live official_rank feed is a full ATP list; TML's dated API remains authoritative for Top 100.
+    live_url = KICKSERVE_LIVE_RANKINGS_URL
+    live_payload = download_cached(
+        live_url,
+        "kickserve_live_atp_rankings.csv",
+        None,
+        current.isoformat(),
+    )
+    live_top = parse_kickserve_live_rankings(
+        live_payload,
+        f"KickServe live ATP ranking list ({current.isoformat()})",
+    )
+    live_snapshot = {
+        "year": current_year,
+        "asOf": str(top100_snapshots[current_year]["asOf"]),
+        "source": live_url,
+        "provider": "KickServe official ATP rank feed",
+        **live_top,
+    }
+    _validate_top100_subset(top100_snapshots[current_year], live_snapshot)
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        historical = dict(executor.map(load_historical, historical_items))
+    historical[current_year] = live_snapshot
+
+    expected_years = list(range(first_year, current_year + 1))
+    missing_years = sorted(set(expected_years) - set(historical))
+    if missing_years:
+        raise RuntimeError(f"Missing expanded ranking snapshots for years: {missing_years}")
+    return {year: historical[year] for year in expected_years}
 
 
 def ensure_player(
@@ -681,25 +897,18 @@ def build() -> dict:
     years = range(1968, current_year + 1)
     roster, roster_aliases = load_roster(files)
     players = roster
-    top1000_snapshots = load_top1000_season_snapshots(1973, current_year)
+    top100_snapshots = load_top100_season_snapshots(1973, current_year)
+    top1000_snapshots = load_top1000_season_snapshots(
+        1973, current_year, top100_snapshots,
+    )
     current_expanded_snapshot = top1000_snapshots[current_year]
     if int(current_expanded_snapshot.get("maxRank", 0)) < 1000:
         raise RuntimeError(
-            "The live TML ranking endpoint only publishes positions through rank "
+            "The live official ATP rank feed only publishes positions through rank "
             f"{current_expanded_snapshot.get('maxRank', 0)}; Top 500/Top 1000 data cannot be built safely"
         )
     if len(current_expanded_snapshot["players"]) + int(current_expanded_snapshot["unresolvedPlayers"]) < 1000:
-        raise RuntimeError("The live TML ranking snapshot contains fewer than 1000 rank entries")
-
-    top100_snapshots: dict[int, dict[str, object]] = {}
-    for year, snapshot in top1000_snapshots.items():
-        top100_snapshots[year] = {
-            "year": year,
-            "asOf": snapshot["asOf"],
-            "source": snapshot["source"],
-            "players": [entry for entry in snapshot["players"] if int(entry["rank"]) <= 100],
-            "unresolvedPlayers": int(snapshot["unresolvedTop100"]),
-        }
+        raise RuntimeError("The live ATP ranking snapshot contains fewer than 1000 rank entries")
 
     current_season_match_keys: set[str] = set()
     current_season_stat_match_keys: set[str] = set()
@@ -709,28 +918,44 @@ def build() -> dict:
     )
     top100_ranks_by_player: dict[str, dict[int, int]] = defaultdict(dict)
     top1000_ranks_by_player: dict[str, dict[int, int]] = defaultdict(dict)
+    for year, snapshot in top100_snapshots.items():
+        seen_ids: set[str] = set()
+        for entry in snapshot["players"]:
+            player_id = str(entry["id"])
+            rank = int(entry["rank"])
+            if not 1 <= rank <= 100:
+                raise RuntimeError(f"TML {year} rank outside the Top 100: {player_id}/{rank}")
+            if player_id in seen_ids:
+                raise RuntimeError(f"Duplicate TML player ID in {year} Top-100 cohort: {player_id}")
+            seen_ids.add(player_id)
+            ensure_player(
+                players, player_id, str(entry["name"]),
+                str(entry.get("country") or ""), None, year,
+            )
+            top100_ranks_by_player[player_id][year] = rank
+
     for year, snapshot in top1000_snapshots.items():
         seen_ids: set[str] = set()
         for entry in snapshot["players"]:
             player_id = str(entry["id"])
             rank = int(entry["rank"])
             if not 1 <= rank <= 1000:
-                raise RuntimeError(f"TML {year} rank outside the Top 1000: {player_id}/{rank}")
+                raise RuntimeError(f"{year} rank outside the Top 1000: {player_id}/{rank}")
             if player_id in seen_ids:
-                raise RuntimeError(f"Duplicate TML player ID in {year} cohort: {player_id}")
+                raise RuntimeError(f"Duplicate player ID in {year} expanded rank list: {player_id}")
             seen_ids.add(player_id)
             ensure_player(
                 players, player_id, str(entry["name"]),
                 str(entry.get("country") or ""), None, year,
             )
             top1000_ranks_by_player[player_id][year] = rank
-            if rank <= 100:
-                top100_ranks_by_player[player_id][year] = rank
         unresolved = int(snapshot.get("unresolvedPlayers", 0))
         if len(seen_ids) + unresolved < 100:
             raise RuntimeError(
-                f"TML {year} rank-1000 snapshot has fewer than 100 ranked entries"
+                f"{year} expanded ranking snapshot has fewer than 100 ranked entries"
             )
+        _validate_top100_subset(top100_snapshots[year], snapshot)
+
     current_top100_count = len(top100_snapshots[current_year]["players"])
     current_top500_count = sum(
         1 for entry in top1000_snapshots[current_year]["players"] if int(entry["rank"]) <= 500
@@ -813,10 +1038,11 @@ def build() -> dict:
                     "rankedEntries": len(snapshot["players"]) + int(snapshot.get("unresolvedPlayers", 0)),
                     "maxRank": int(snapshot.get("maxRank", 0)),
                     "unresolvedTop500": int(snapshot.get("unresolvedTop500", 0)),
+                    "provider": str(snapshot.get("provider") or "TML rankings archive"),
                 }
                 for year, snapshot in sorted(top1000_snapshots.items())
             ],
-            "top1000SeasonPolicy": "For each calendar year, use the final TML ATP ranking snapshot published in that year; for the live year, use its latest available dated snapshot. Store identified rank membership through 1000, preserve ties at the cutoff, and count unresolved IDs separately. If a dated source snapshot does not extend through the selected rank cutoff, that cohort is unavailable rather than silently reduced to a smaller group. Group performance always uses match statistics from the same calendar year.",
+            "top1000SeasonPolicy": "For completed seasons, the full TML Rankings archive CSV is filtered to the exact final-in-year date already used by the Top 100 snapshot. For the live year, the full KickServe ATP CSV official_rank column is used and its Top 100 membership is cross-checked against the unchanged TML Top 100 snapshot. KickServe's daily CSV is free to use with attribution to https://kick-serve.com/data/. Ties are preserved and unresolved IDs are counted separately. Snapshots that do not extend through a selected cutoff are marked unavailable. Group performance always uses match statistics from that same calendar year.",
             "source": DATA_SOURCE,
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
