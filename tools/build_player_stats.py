@@ -1783,6 +1783,11 @@ def main() -> None:
         f"{meta['heightEnrichment']['filledMissingHeights']} missing heights filled"
     )
     print(
+        "live ranking identity resolution: "
+        f"{expanded_snapshot.get('identityOverridesApplied', 0)} official ATP profile IDs applied, "
+        f"{expanded_snapshot.get('unresolvedPlayers', 0)} unresolved rows"
+    )
+    print(
         "verified player-profile height overrides: "
         f"{meta['heightEnrichment']['curatedProfileHeightsApplied']} missing heights filled"
     )
