@@ -483,8 +483,12 @@ fun PlayerStatsScreen(
                             snapshotProvider + " ranking snapshot · " + snapshotDate
                         else -> "No ATP ranking snapshot available for " + year
                     }
+                    val identityResolutionNote = expandedYearSnapshot?.identityOverridesApplied
+                        ?.takeIf { it > 0 }
+                        ?.let { " · " + it + " official ATP profile IDs matched" }
+                        .orEmpty()
                     Text(
-                        text = snapshotDescription +
+                        text = snapshotDescription + identityResolutionNote +
                             " · " + heightResult.cohortSize + " identified players" +
                             (heightResult.unresolvedRankRows.takeIf { it > 0 }
                                 ?.let { " · " + it + " unresolved" } ?: ""),
