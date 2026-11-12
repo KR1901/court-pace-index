@@ -4,6 +4,16 @@
   "policy": "Fill only missing heights, keyed by exact canonical ATP/TML player ID. Each value must be explicitly published by the cited profile source. Existing TML or match-record heights are never overwritten. Values are centimetres rounded to whole centimetres as published or conventionally converted from feet/inches.",
   "players": [
     {
+      "atpId": "K0QK",
+      "name": "Dimitar Kisimov",
+      "country": "BUL",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://en.wikipedia.org/wiki/Dimitar_Kisimov",
+        "https://scorego-app.com/player/dimitar-kisimov/3iBSmp"
+      ]
+    },
+    {
       "atpId": "W215",
       "name": "Jeff Wolf",
       "country": "USA",
@@ -14,14 +24,24 @@
       ]
     },
     {
-      "atpId": "G0EQ",
-      "name": "Sebastian Gima",
-      "country": "ROU",
+      "atpId": "R0JG",
+      "name": "Jerry Roddick",
+      "country": "USA",
       "heightCm": 183,
       "sourceUrls": [
-        "https://www.sofascore.com/tennis/player/gima-sebastian/265627",
-        "https://en.tennistemple.com/player/sebastian-gima"
-      ]
+        "https://tennisdatabaseapi.com/players/pl_c95dcxkd"
+      ],
+      "sourceNote": "Tennis Database API player profile explicitly reports 183 cm and matches the ATP player by name, country and birth year."
+    },
+    {
+      "atpId": "H0E7",
+      "name": "John Hallquist Lithen",
+      "country": "SWE",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://olemisssports.com/sports/mens-tennis/roster/john-hallquist-lith-n/4903"
+      ],
+      "sourceNote": "Ole Miss Athletics 2023-24 senior roster lists 6-1 (185 cm); the 2020-21 freshman roster listed 6-0, so the later senior measurement is used."
     },
     {
       "atpId": "V0BS",
@@ -31,6 +51,36 @@
       "sourceUrls": [
         "https://www.sofascore.com/es/tennis/player/van-der-meerschen-martin/258813",
         "https://en.tennistemple.com/player/martin-van-der-meerschen"
+      ]
+    },
+    {
+      "atpId": "B0LV",
+      "name": "Michael Bassem Sobhy",
+      "country": "EGY",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://lsusports.net/sports/mt/roster/player/michael-bassem-sobhy"
+      ],
+      "sourceNote": "LSU Athletics 2026-27 men's tennis roster lists 5-10."
+    },
+    {
+      "atpId": "V0ES",
+      "name": "Noa Vukadin",
+      "country": "CRO",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://scorego-app.com/player/noa-vukadin/1dQPpB",
+        "https://www.espn.com.sg/tennis/player/_/id/10320/noa-vukadin"
+      ]
+    },
+    {
+      "atpId": "P0O7",
+      "name": "Pablo Perez Navarro",
+      "country": "ESP",
+      "heightCm": 178,
+      "sourceUrls": [
+        "https://scorego-app.com/player/pablo-perez-navarro/HfkeP",
+        "https://www.espn.com.sg/tennis/player/_/id/16991/pablo-perez-navarro"
       ]
     },
     {
@@ -44,12 +94,41 @@
       ]
     },
     {
-      "atpId": "DB32",
-      "name": "Yurii Dzhavakian",
-      "country": "UKR",
-      "heightCm": 191,
+      "atpId": "S19T",
+      "name": "Rethin Pranav Senthil Kumar",
+      "country": "IND",
+      "heightCm": 185,
       "sourceUrls": [
-        "https://en.tennistemple.com/match/dzhavakian-recek-sharm-el-sheikh-2026/9459296/"
+        "https://cornellbigred.com/sports/mens-tennis/roster/rethin-pranav-senthil-kumar/85250"
+      ]
+    },
+    {
+      "atpId": "G0KQ",
+      "name": "Robert Guna",
+      "country": "ROU",
+      "heightCm": 185,
+      "sourceUrls": [
+        "https://scorego-app.com/player/robert-guna/m5a3d"
+      ]
+    },
+    {
+      "atpId": "G0EQ",
+      "name": "Sebastian Gima",
+      "country": "ROU",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://www.sofascore.com/tennis/player/gima-sebastian/265627",
+        "https://en.tennistemple.com/player/sebastian-gima"
+      ]
+    },
+    {
+      "atpId": "B0WX",
+      "name": "Tobia Costanzo Baragiola Mordini",
+      "country": "ITA",
+      "heightCm": 183,
+      "sourceUrls": [
+        "https://wiki.tennis/player/tobia-costanzo-baragiola-mordini-379349",
+        "https://scorego-app.com/player/tobia-costanzo-baragiola-mordini/z8mjI"
       ]
     },
     {
@@ -74,61 +153,12 @@
       ]
     },
     {
-      "atpId": "V0ES",
-      "name": "Noa Vukadin",
-      "country": "CRO",
-      "heightCm": 185,
+      "atpId": "DB32",
+      "name": "Yurii Dzhavakian",
+      "country": "UKR",
+      "heightCm": 191,
       "sourceUrls": [
-        "https://scorego-app.com/player/noa-vukadin/1dQPpB",
-        "https://www.espn.com.sg/tennis/player/_/id/10320/noa-vukadin"
-      ]
-    },
-    {
-      "atpId": "P0O7",
-      "name": "Pablo Perez Navarro",
-      "country": "ESP",
-      "heightCm": 178,
-      "sourceUrls": [
-        "https://scorego-app.com/player/pablo-perez-navarro/HfkeP",
-        "https://www.espn.com.sg/tennis/player/_/id/16991/pablo-perez-navarro"
-      ]
-    },
-    {
-      "atpId": "G0KQ",
-      "name": "Robert Guna",
-      "country": "ROU",
-      "heightCm": 185,
-      "sourceUrls": [
-        "https://scorego-app.com/player/robert-guna/m5a3d"
-      ]
-    },
-    {
-      "atpId": "S19T",
-      "name": "Rethin Pranav Senthil Kumar",
-      "country": "IND",
-      "heightCm": 185,
-      "sourceUrls": [
-        "https://cornellbigred.com/sports/mens-tennis/roster/rethin-pranav-senthil-kumar/85250"
-      ]
-    },
-    {
-      "atpId": "B0WX",
-      "name": "Tobia Costanzo Baragiola Mordini",
-      "country": "ITA",
-      "heightCm": 183,
-      "sourceUrls": [
-        "https://wiki.tennis/player/tobia-costanzo-baragiola-mordini-379349",
-        "https://scorego-app.com/player/tobia-costanzo-baragiola-mordini/z8mjI"
-      ]
-    },
-    {
-      "atpId": "K0QK",
-      "name": "Dimitar Kisimov",
-      "country": "BUL",
-      "heightCm": 183,
-      "sourceUrls": [
-        "https://en.wikipedia.org/wiki/Dimitar_Kisimov",
-        "https://scorego-app.com/player/dimitar-kisimov/3iBSmp"
+        "https://en.tennistemple.com/match/dzhavakian-recek-sharm-el-sheikh-2026/9459296/"
       ]
     }
   ]
