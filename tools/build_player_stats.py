@@ -1224,7 +1224,7 @@ def build() -> dict:
     height_group_season_rows = compact_player_seasons(height_group_aggregate)
     player_rows = []
     # Include all Top-1000 members, including players absent from the match archive.
-    archive_player_ids = set(season_rows) | set(top1000_ranks_by_player)
+    archive_player_ids = set(season_rows) | set(height_group_season_rows) | set(top1000_ranks_by_player)
     for player_id in archive_player_ids:
         record = players[player_id]
         height = record.get("heightCm")
@@ -1306,6 +1306,15 @@ def build() -> dict:
                     "maxRank": int(snapshot.get("maxRank", 0)),
                     "unresolvedTop500": int(snapshot.get("unresolvedTop500", 0)),
                     "provider": str(snapshot.get("provider") or "TML rankings archive"),
+                    "unresolvedEntries": [
+                        {
+                            "rank": int(entry.get("rank", 0)),
+                            "name": str(entry.get("name") or ""),
+                            "country": str(entry.get("country") or ""),
+                            "reason": str(entry.get("reason") or ""),
+                        }
+                        for entry in snapshot.get("unresolvedEntries", [])
+                    ],
                 }
                 for year, snapshot in sorted(top1000_snapshots.items())
             ],
