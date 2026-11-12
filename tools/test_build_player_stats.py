@@ -14,7 +14,7 @@ from build_player_stats import (
     parse_kickserve_live_rankings,
     parse_tml_ranking_archive_snapshot,
     map_live_rankings_to_tml_ids,
-    supplement_live_top100_from_tml,
+    supplement_top100_from_tml,
     max_published_rank,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
@@ -286,7 +286,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             "unresolvedPlayers": 0,
         }
 
-        result = supplement_live_top100_from_tml(expanded, top100)
+        result = supplement_top100_from_tml(expanded, top100)
 
         self.assertEqual(
             [(row["id"], row["rank"]) for row in result["players"]],
@@ -304,7 +304,7 @@ class PlayerStatsFormulaTest(unittest.TestCase):
             "players": [{"id": "P1", "rank": 1, "name": "Player One"}],
         }
         with self.assertRaises(RuntimeError):
-            supplement_live_top100_from_tml(expanded, top100)
+            supplement_top100_from_tml(expanded, top100)
 
     def test_tml_archive_parser_selects_exact_year_end_date_and_keeps_cutoff_ties(self):
         payload = (
