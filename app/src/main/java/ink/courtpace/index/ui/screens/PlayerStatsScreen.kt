@@ -405,6 +405,11 @@ fun PlayerStatsScreen(
             val snapshotDate = snapshotDateValue?.let {
                 PlayerStatsDateTime.formatDate(it) ?: it
             }
+            val snapshotProvider = if (heightCohort == HeightGroupCohort.TOP_100) {
+                "TML"
+            } else {
+                expandedYearSnapshot?.provider ?: "TML"
+            }
             val unresolvedNote = heightResult.unresolvedRankRows
                 .takeIf { it > 0 }
                 ?.let { count ->
@@ -424,16 +429,16 @@ fun PlayerStatsScreen(
                 ) {
                     Text(
                         text = if (year == asset.meta.lastSeason) {
-                            "Current ATP " + heightCohort.label + " · TML snapshot"
+                            "Current ATP " + heightCohort.label + " · " + snapshotProvider
                         } else {
-                            year.toString() + " ATP year-end " + heightCohort.label + " · TML snapshot"
+                            year.toString() + " ATP year-end " + heightCohort.label + " · " + snapshotProvider
                         },
                         style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                         color = colors.text,
                     )
                     Text(
-                        text = (snapshotDate?.let { "TML ranking snapshot · " + it }
-                            ?: "No TML ranking snapshot available for " + year) +
+                        text = (snapshotDate?.let { snapshotProvider + " ranking snapshot · " + it }
+                            ?: "No ATP ranking snapshot available for " + year) +
                             " · " + heightResult.cohortSize + " identified players" +
                             (heightResult.unresolvedRankRows.takeIf { it > 0 }
                                 ?.let { " · " + it + " unresolved" } ?: ""),
@@ -449,19 +454,20 @@ fun PlayerStatsScreen(
                     GlassNote(
                         text = when {
                             !heightResult.cohortAvailable ->
-                                "The TML snapshot for " + year + " only covers ranks through #" +
+                                "The " + snapshotProvider + " snapshot for " + year + " only covers ranks through #" +
                                     heightResult.availableThroughRank + "; a complete " + heightCohort.label +
                                     " cohort is not available. No smaller cohort is substituted." +
                                     coverageNote
                             yearSnapshot == null && expandedYearSnapshot == null ->
-                                "No dated TML ranking snapshot is available for " + year + ". No cohort is substituted."
+                                "No dated ATP ranking snapshot is available for " + year + ". No cohort is substituted."
                             year == asset.meta.lastSeason ->
-                                "The live season uses the latest available ATP " + heightCohort.label +
-                                    " ranking snapshot for " + year + ". Group performance uses match statistics from " + year + "."
+                                "The live season uses the latest available official ATP " + heightCohort.label +
+                                    " ranking list for " + year + " from " + snapshotProvider +
+                                    ". Group performance uses match statistics from " + year + "."
                             else ->
                                 "The cohort is the " + heightCohort.label + " from the final ATP ranking snapshot published in " + year + " (" +
                                     (snapshotDate ?: snapshotDateValue.orEmpty()) +
-                                    "). Group performance uses match statistics from that same calendar year."
+                                    ") using " + snapshotProvider + ". Group performance uses match statistics from that same calendar year."
                         } + unresolvedNote,
                     )
                 }
