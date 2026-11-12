@@ -416,10 +416,7 @@ def _parse_csv_rank_rows(
         matching_rows += 1
         max_rank = max(max_rank, rank)
         if rank <= 100:
-            cutoff = "top100"
             unresolved_top100 += 1 if str(row.get(id_field) or "").strip().upper() in placeholders else 0
-        else:
-            cutoff = ""
         if rank <= 500 and str(row.get(id_field) or "").strip().upper() in placeholders:
             unresolved_top500 += 1
         if rank <= 1000 and str(row.get(id_field) or "").strip().upper() in placeholders:
