@@ -51,7 +51,7 @@ data class PlayerTop1000SeasonSnapshot(
     /** Unresolved rows ranked 1–500, used for the matching cohort note. */
     val unresolvedTop500: Int = 0,
     /** Ranking feed used for this size of snapshot (TML archive or KickServe live feed). */
-    val provider: String = "TML rankings archive",
+    val provider: String = "TML archive",
 )
 
 @Serializable
