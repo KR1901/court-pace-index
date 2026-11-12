@@ -14,6 +14,7 @@ from build_player_stats import (
     parse_kickserve_live_rankings,
     parse_tml_ranking_archive_snapshot,
     map_live_rankings_to_tml_ids,
+    supplement_live_top100_from_tml,
     max_published_rank,
     select_ranking_snapshot_date,
     select_ranking_snapshot_dates,
@@ -264,6 +265,46 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedTop500"], 1)
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
+
+    def test_live_full_rank_list_restores_missing_members_from_exact_tml_top100(self):
+        expanded = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P3", "rank": 3, "name": "Player Three"},
+            ],
+            "unresolvedPlayers": 2,
+            "unresolvedTop100": 1,
+            "unresolvedTop500": 1,
+            "rankedEntries": 4,
+            "maxRank": 1000,
+        }
+        top100 = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P2", "rank": 2, "name": "Player Two"},
+            ],
+            "unresolvedPlayers": 0,
+        }
+
+        result = supplement_live_top100_from_tml(expanded, top100)
+
+        self.assertEqual(
+            [(row["id"], row["rank"]) for row in result["players"]],
+            [("P1", 1), ("P2", 2), ("P3", 3)],
+        )
+        self.assertEqual(result["unresolvedTop100"], 0)
+        self.assertEqual(result["rankedEntries"], 5)
+
+    def test_live_full_rank_list_rejects_top100_rank_conflicts(self):
+        expanded = {
+            "players": [{"id": "P1", "rank": 2, "name": "Player One"}],
+            "unresolvedPlayers": 0,
+        }
+        top100 = {
+            "players": [{"id": "P1", "rank": 1, "name": "Player One"}],
+        }
+        with self.assertRaises(RuntimeError):
+            supplement_live_top100_from_tml(expanded, top100)
 
     def test_tml_archive_parser_selects_exact_year_end_date_and_keeps_cutoff_ties(self):
         payload = (
