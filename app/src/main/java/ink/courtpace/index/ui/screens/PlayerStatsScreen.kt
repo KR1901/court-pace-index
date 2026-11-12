@@ -117,7 +117,7 @@ fun PlayerStatsScreen(
     val colors = PaceTheme.colors
     val years = remember(asset) {
         asset.players.asSequence()
-            .flatMap { it.seasons.asSequence() }
+            .flatMap { (it.seasons + it.heightGroupSeasons).asSequence() }
             .map { it.y }
             .distinct()
             .sortedDescending()
@@ -129,6 +129,7 @@ fun PlayerStatsScreen(
     var mode by remember { mutableStateOf(PlayerStatsMode.RANKINGS) }
     var metric by remember { mutableStateOf(PlayerRankingMetric.HOLD) }
     var heightCohort by remember { mutableStateOf(HeightGroupCohort.TOP_100) }
+    var heightMatchScope by remember { mutableStateOf(HeightGroupMatchScope.ALL_ATP_LEVELS) }
     var surface by remember { mutableStateOf(PlayerSurfaceFilter.ALL) }
     var minimumGames by remember { mutableIntStateOf(100) }
     var search by remember { mutableStateOf("") }
@@ -150,8 +151,8 @@ fun PlayerStatsScreen(
             }
         }
     }
-    val heightResult = remember(asset, year, surface, heightCohort) {
-        PlayerStatsAnalytics.heightGroups(asset, year, surface, heightCohort)
+    val heightResult = remember(asset, year, surface, heightCohort, heightMatchScope) {
+        PlayerStatsAnalytics.heightGroups(asset, year, surface, heightCohort, heightMatchScope)
     }
     val yearSnapshot = remember(asset, year) {
         asset.meta.top100SeasonSnapshots.firstOrNull { it.year == year }
@@ -278,7 +279,13 @@ fun PlayerStatsScreen(
             }
         }
 
-        if (year !in asset.meta.statsAvailableSeasons) {
+        if (
+            (mode == PlayerStatsMode.RANKINGS && year !in asset.meta.statsAvailableSeasons) ||
+            (mode == PlayerStatsMode.HEIGHT_GROUPS &&
+                year !in (if (heightMatchScope == HeightGroupMatchScope.ALL_ATP_LEVELS) {
+                    asset.meta.heightGroupStatsAvailableSeasons.ifEmpty { asset.meta.statsAvailableSeasons }
+                } else asset.meta.statsAvailableSeasons))
+        ) {
             item {
                 GlassNote(
                     text = "No eligible service/return match-stat rows are available for " + year + ". Match results may still be present, but Hold% and Break% cannot be calculated for this season.",
@@ -302,6 +309,32 @@ fun PlayerStatsScreen(
                             )
                         }
                     }
+                }
+            }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SectionLabel(text = "Match scope")
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    ) {
+                        HeightGroupMatchScope.entries.forEach { option ->
+                            GlassChip(
+                                text = option.label,
+                                selected = heightMatchScope == option,
+                                onClick = { heightMatchScope = option },
+                            )
+                        }
+                    }
+                    Text(
+                        text = if (heightMatchScope == HeightGroupMatchScope.ALL_ATP_LEVELS) {
+                            "Includes ATP Tour main draws, ATP Challenger main draws and ATP Tour qualifying."
+                        } else {
+                            "ATP Tour main-draw singles only. Challenger and qualifying matches are excluded."
+                        },
+                        style = TextStyle(fontSize = 10.5.sp),
+                        color = colors.textFaint,
+                    )
                 }
             }
         }
@@ -413,8 +446,14 @@ fun PlayerStatsScreen(
             val unresolvedNote = heightResult.unresolvedRankRows
                 .takeIf { it > 0 }
                 ?.let { count ->
-                    " " + count + " ranking row(s) in the selected cohort have no stable player ID and are excluded from player-level height calculations."
+                    " " + count + " ranking row(s) in the selected cohort could not be matched to a stable ATP/TML player ID and are excluded from player-level height calculations."
                 }.orEmpty()
+            val unresolvedExamples = heightResult.unresolvedDetails.take(5).joinToString(" · ") { row ->
+                "#" + row.rank + " " + row.name + (row.country.takeIf { it.isNotBlank() }?.let { " (" + it + ")" } ?: "")
+            }
+            val unresolvedAuditNote = unresolvedExamples.takeIf { it.isNotBlank() }?.let {
+                "Unresolved examples: " + it + (heightResult.unresolvedRankRows - heightResult.unresolvedDetails.size).takeIf { n -> n > 0 }?.let { more -> " · " + more + " other rows" }.orEmpty()
+            }.orEmpty()
             val coverageNote = if (heightResult.availableThroughRank > 0) {
                 " The dated ranking snapshot includes published positions through #" +
                     heightResult.availableThroughRank + "."
@@ -476,6 +515,9 @@ fun PlayerStatsScreen(
                                     ") using " + snapshotProvider + ". Group performance uses match statistics from that same calendar year."
                         } + unresolvedNote,
                     )
+                    if (unresolvedAuditNote.isNotBlank()) {
+                        GlassNote(text = unresolvedAuditNote)
+                    }
                 }
             }
 
@@ -489,7 +531,11 @@ fun PlayerStatsScreen(
                 }
                 item {
                     GlassNote(
-                        text = "Group percentages are pooled from all eligible games in the group, not averaged across player percentages. Results show completed ATP tour-level singles matches. Missing heights are not imputed.",
+                        text = if (heightMatchScope == HeightGroupMatchScope.ALL_ATP_LEVELS) {
+                            "Group percentages are pooled from all eligible games in the group, not averaged across player percentages. Results include completed ATP Tour main-draw, ATP Challenger main-draw and ATP Tour qualifying singles matches. Missing heights and missing match statistics are not imputed."
+                        } else {
+                            "Group percentages are pooled from all eligible games in the group, not averaged across player percentages. Results show completed ATP Tour main-draw singles matches only. Missing heights and missing match statistics are not imputed."
+                        },
                     )
                 }
             } else {
