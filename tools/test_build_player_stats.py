@@ -396,6 +396,26 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
 
+    def test_live_rankings_prefer_canonical_roster_id_over_duplicate_match_alias(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 124, "name": "Pedro Martinez Portero", "country": "ESP"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Pedro Martinez Portero", "ESP", "ATP-ROSTER")
+        _add_player_alias(aliases, "Pedro Martinez Portero", "ESP", "MATCH-ALIAS")
+        result = map_live_rankings_to_tml_ids(
+            snapshot, aliases, canonical_player_ids={"ATP-ROSTER"},
+        )
+        self.assertEqual([row["id"] for row in result["players"]], ["ATP-ROSTER"])
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
     def test_live_rankings_prefer_exact_name_before_initial_alias_collisions(self):
         snapshot = {
             "players": [
