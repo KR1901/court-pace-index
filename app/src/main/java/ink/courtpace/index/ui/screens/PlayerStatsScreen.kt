@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.playerstats.HeightGroupCohort
+import ink.courtpace.index.core.playerstats.HeightGroupMatchScope
 import ink.courtpace.index.core.playerstats.HeightGroupSummary
 import ink.courtpace.index.core.playerstats.PlayerRankingMetric
 import ink.courtpace.index.core.playerstats.PlayerRankingRow
