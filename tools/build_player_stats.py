@@ -669,7 +669,7 @@ def load_top1000_season_snapshots(
             "year": year,
             "asOf": str(top100["asOf"]),
             "source": archive_url,
-            "provider": "TML rankings archive",
+            "provider": "TML archive",
             **parsed,
         }
         _validate_top100_subset(top100, snapshot)
@@ -692,7 +692,7 @@ def load_top1000_season_snapshots(
         "year": current_year,
         "asOf": str(top100_snapshots[current_year]["asOf"]),
         "source": live_url,
-        "provider": "KickServe official ATP rank feed",
+        "provider": "KickServe",
         **live_top,
     }
     _validate_top100_subset(top100_snapshots[current_year], live_snapshot)
