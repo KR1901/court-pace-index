@@ -18,6 +18,8 @@ from build_player_stats import (
     parse_tml_ranking_archive_snapshot,
     map_live_rankings_to_tml_ids,
     parse_official_atp_profile_id_overrides,
+    parse_verified_player_height_overrides,
+    apply_verified_player_height_overrides,
     supplement_top100_from_tml,
     max_published_rank,
     select_ranking_snapshot_date,
@@ -151,6 +153,63 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         for value in ("", None, "unknown", "n/a"):
             with self.subTest(value=value):
                 self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardUnknown"))
+
+    def test_verified_player_height_overrides_fill_only_blank_exact_atp_ids(self):
+        payload = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [
+                {
+                    "atpId": "W215",
+                    "name": "Jeff Wolf",
+                    "country": "USA",
+                    "heightCm": 183,
+                    "sourceUrls": ["https://www.gamesetpredict.com/player/jeff-wolf/"],
+                },
+                {
+                    "atpId": "G0EQ",
+                    "name": "Sebastian Gima",
+                    "country": "ROU",
+                    "heightCm": 183,
+                    "sourceUrls": ["https://www.sofascore.com/tennis/player/gima-sebastian/265627"],
+                },
+            ],
+        }
+        overrides = parse_verified_player_height_overrides(payload)
+        players = {
+            "W215": {"id": "W215", "heightCm": None, "heightSource": None},
+            "G0EQ": {"id": "G0EQ", "heightCm": 188, "heightSource": "tml-player-database"},
+        }
+
+        applied = apply_verified_player_height_overrides(overrides, players)
+
+        self.assertEqual(applied, 1)
+        self.assertEqual(players["W215"]["heightCm"], 183)
+        self.assertEqual(players["W215"]["heightSource"], "verified-player-profile")
+        self.assertEqual(players["G0EQ"]["heightCm"], 188)
+        self.assertEqual(players["G0EQ"]["heightSource"], "tml-player-database")
+
+    def test_verified_player_height_override_requires_a_source_url_and_valid_height(self):
+        invalid_source = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "W215", "name": "Jeff Wolf", "country": "USA",
+                "heightCm": 183, "sourceUrls": ["http://example.com/height"],
+            }],
+        }
+        invalid_height = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "W215", "name": "Jeff Wolf", "country": "USA",
+                "heightCm": 999, "sourceUrls": ["https://example.com/height"],
+            }],
+        }
+        with self.assertRaisesRegex(RuntimeError, "HTTPS source URLs"):
+            parse_verified_player_height_overrides(invalid_source)
+        with self.assertRaisesRegex(RuntimeError, "Invalid identity or height"):
+            parse_verified_player_height_overrides(invalid_height)
 
     def test_sackmann_height_fallback_only_fills_unique_missing_tml_players(self):
         players = {
