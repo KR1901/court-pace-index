@@ -638,7 +638,7 @@ def map_live_rankings_to_tml_ids(
     }
 
 
-def supplement_live_top100_from_tml(
+def supplement_top100_from_tml(
     expanded_snapshot: dict[str, object],
     top100_snapshot: dict[str, object],
 ) -> dict[str, object]:
@@ -728,6 +728,7 @@ def load_top1000_season_snapshots(
             "provider": "TML archive",
             **parsed,
         }
+        snapshot = supplement_top100_from_tml(snapshot, top100)
         _validate_top100_subset(top100, snapshot)
         return year, snapshot
 
@@ -751,7 +752,7 @@ def load_top1000_season_snapshots(
         "provider": "KickServe/TML",
         **live_top,
     }
-    live_snapshot = supplement_live_top100_from_tml(
+    live_snapshot = supplement_top100_from_tml(
         live_snapshot,
         top100_snapshots[current_year],
     )
