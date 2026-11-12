@@ -202,6 +202,27 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(players["P2"]["heightSource"], "tml-player-database")
         self.assertIsNone(players["P3"]["heightCm"])
 
+    def test_sackmann_height_fallback_uses_safe_middle_name_aliases(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Taylor Fritz", "country": "USA",
+                "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Taylor Fritz", "USA", "P1")
+        rows = [{
+            "name_first": "Taylor",
+            "name_last": "Harry Fritz",
+            "ioc": "USA",
+            "height": "193",
+        }]
+
+        self.assertEqual(
+            supplement_missing_heights_from_sackmann(rows, players, aliases), 1,
+        )
+        self.assertEqual(players["P1"]["heightCm"], 193)
+
     def test_sackmann_height_fallback_never_crosses_country_when_names_collide(self):
         players = {
             "P1": {
@@ -374,6 +395,26 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedTop500"], 1)
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
+
+    def test_live_rankings_prefer_exact_name_before_initial_alias_collisions(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 118, "name": "Jesper De Jong", "country": "NLD"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Jesper De Jong", "NLD", "TML-JESPER")
+        _add_player_alias(aliases, "J. De Jong", "NLD", "TML-INITIAL")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual([row["id"] for row in result["players"]], ["TML-JESPER"])
+        self.assertEqual(result["unresolvedPlayers"], 0)
 
     def test_live_rankings_resolve_middle_names_against_shorter_tml_names(self):
         snapshot = {
