@@ -7,6 +7,7 @@ The output is personal/non-commercial research data and must remain in this priv
 from __future__ import annotations
 
 import csv
+import copy
 import hashlib
 import io
 import json
@@ -34,6 +35,14 @@ TML_RANKINGS_ARCHIVE_URL = (
 )
 KICKSERVE_LIVE_RANKINGS_URL = "https://kick-serve.com/data/ratings_atp.csv"
 KICKSERVE_ATTRIBUTION_URL = "https://kick-serve.com/data/"
+SACKMANN_ATP_PLAYERS_REVISION = "712be0c5ade693cdab9e69c23a71a0edf5a23c44"
+SACKMANN_ATP_PLAYERS_URL = (
+    "https://raw.githubusercontent.com/Kadantte/tennis_atp/"
+    + SACKMANN_ATP_PLAYERS_REVISION + "/atp_players.csv"
+)
+OFFICIAL_ATP_ID_OVERRIDES_PATH = ROOT / "tools" / "player_identity_overrides.json"
+OFFICIAL_ATP_PROFILE_BASE_URL = "https://www.atptour.com/en/players/-/"
+VERIFIED_PLAYER_HEIGHT_OVERRIDES_PATH = ROOT / "tools" / "player_height_overrides.json"
 OUTPUTS = (
     ROOT / "data" / "player_stats.json",
     ROOT / "app" / "src" / "main" / "assets" / "player_stats.json",
@@ -49,6 +58,173 @@ BASE_FIELDS = ("mp", "w", "l", "sp", "sw", "rp", "rw", "sm")
 def normalize_name(value: str | None) -> str:
     value = unicodedata.normalize("NFKD", str(value or "")).casefold()
     return "".join(ch for ch in value if ch.isalnum())
+
+
+# Legacy ATP/IOC abbreviations seen in older tennis archives are mapped to
+# their modern equivalents before joining ranking identities across providers.
+COUNTRY_CODE_CANONICAL = {
+    "GB": "GBR",  # United Kingdom (ISO alpha-2)
+    "UK": "GBR",  # United Kingdom (common alias)
+    "GREAT BRITAIN": "GBR",  # Full country name
+    "UNITED KINGDOM": "GBR",  # Full country name
+    "CHI": "CHL",  # Chile
+    "POR": "PRT",  # Portugal
+    "SLO": "SVN",  # Slovenia
+    "GRE": "GRC",  # Greece
+    "INA": "IDN",  # Indonesia
+    "TPE": "TWN",  # Chinese Taipei
+    "IRI": "IRN",  # Iran
+    "ALG": "DZA",  # Algeria
+    "RSA": "ZAF",  # South Africa
+    "SUI": "CHE",  # Switzerland
+    "GER": "DEU",  # Germany
+    "NED": "NLD",  # Netherlands
+    "CRO": "HRV",  # Croatia
+    "BUL": "BGR",  # Bulgaria
+}
+
+
+def normalize_country_code(value: str | None) -> str:
+    code = (value or "").strip().upper()
+    return COUNTRY_CODE_CANONICAL.get(code, code)
+
+
+def parse_official_atp_profile_id_overrides(
+    payload: dict[str, object],
+) -> dict[str, dict[str, str]]:
+    """Parse exact name/country -> ATP Tour profile-ID overrides.
+
+    These are manually audited ATP Tour profile URLs, not KickServe IDs. The
+    name and country key must match the live ranking row exactly after the
+    same conservative normalization used by the cross-provider resolver.
+    """
+    if payload.get("version") != 1:
+        raise RuntimeError("Unsupported official ATP identity override version")
+    if payload.get("source") != "ATP Tour official player profile URLs":
+        raise RuntimeError("Unexpected source for official ATP identity overrides")
+    rows = payload.get("players")
+    if not isinstance(rows, list):
+        raise RuntimeError("Official ATP identity override file has no players array")
+
+    result: dict[str, dict[str, str]] = {}
+    ids_seen: dict[str, str] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise RuntimeError("Official ATP identity override contains a non-object row")
+        name = str(row.get("name") or "").strip()
+        country = normalize_country_code(str(row.get("country") or ""))
+        atp_id = str(row.get("atpId") or "").strip().upper()
+        profile_url = str(row.get("profileUrl") or "").strip()
+        if not normalize_name(name) or not country:
+            raise RuntimeError("Official ATP identity override requires a name and country")
+        if not re.fullmatch(r"[A-Z0-9]{4}", atp_id):
+            raise RuntimeError(f"Invalid ATP Tour profile ID for {name}: {atp_id!r}")
+        expected_url = OFFICIAL_ATP_PROFILE_BASE_URL + atp_id.lower() + "/overview"
+        if profile_url.rstrip("/") != expected_url.rstrip("/"):
+            raise RuntimeError(
+                f"Official ATP profile URL does not match {name}'s profile ID {atp_id}"
+            )
+        key = f"{normalize_name(name)}|{country}"
+        if key in result:
+            raise RuntimeError(f"Duplicate official ATP identity override key: {name}/{country}")
+        if atp_id in ids_seen:
+            raise RuntimeError(
+                f"Official ATP profile ID {atp_id} is assigned to both "
+                f"{ids_seen[atp_id]} and {name}/{country}"
+            )
+        result[key] = {
+            "name": name,
+            "country": country,
+            "atpId": atp_id,
+            "profileUrl": profile_url,
+        }
+        ids_seen[atp_id] = f"{name}/{country}"
+
+    return result
+
+
+def load_official_atp_profile_id_overrides(
+    path: Path = OFFICIAL_ATP_ID_OVERRIDES_PATH,
+) -> dict[str, dict[str, str]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Unable to load official ATP identity overrides: {error}") from error
+    if not isinstance(payload, dict):
+        raise RuntimeError("Official ATP identity override file must contain a JSON object")
+    return parse_official_atp_profile_id_overrides(payload)
+
+
+def parse_verified_player_height_overrides(
+    payload: dict[str, object],
+) -> dict[str, dict[str, object]]:
+    """Parse sourced height facts keyed by the exact ATP/TML profile ID."""
+    if payload.get("version") != 1:
+        raise RuntimeError("Unsupported verified player height override version")
+    if payload.get("source") != "Curated player-profile height records":
+        raise RuntimeError("Unexpected source for verified player height overrides")
+    rows = payload.get("players")
+    if not isinstance(rows, list):
+        raise RuntimeError("Verified player height override file has no players array")
+
+    result: dict[str, dict[str, object]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            raise RuntimeError("Verified player height override contains a non-object row")
+        atp_id = str(row.get("atpId") or "").strip().upper()
+        name = str(row.get("name") or "").strip()
+        country = normalize_country_code(str(row.get("country") or ""))
+        height = valid_height(row.get("heightCm"))
+        urls = row.get("sourceUrls")
+        if not re.fullmatch(r"[A-Z0-9]{4}", atp_id):
+            raise RuntimeError(f"Invalid ATP profile ID in height override: {atp_id!r}")
+        if not normalize_name(name) or not country or height is None:
+            raise RuntimeError(f"Invalid identity or height for height override {atp_id}")
+        if not isinstance(urls, list) or not urls or any(
+            not str(url).startswith("https://") for url in urls
+        ):
+            raise RuntimeError(f"Height override {atp_id} requires HTTPS source URLs")
+        if atp_id in result:
+            raise RuntimeError(f"Duplicate ATP profile ID in height overrides: {atp_id}")
+        result[atp_id] = {
+            "name": name,
+            "country": country,
+            "heightCm": height,
+            "sourceUrls": [str(url) for url in urls],
+        }
+    return result
+
+
+def load_verified_player_height_overrides(
+    path: Path = VERIFIED_PLAYER_HEIGHT_OVERRIDES_PATH,
+) -> dict[str, dict[str, object]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Unable to load verified player height overrides: {error}") from error
+    if not isinstance(payload, dict):
+        raise RuntimeError("Verified player height override file must contain a JSON object")
+    return parse_verified_player_height_overrides(payload)
+
+
+def apply_verified_player_height_overrides(
+    overrides: dict[str, dict[str, object]],
+    players: dict[str, dict],
+) -> int:
+    """Apply sourced heights only to exact ATP IDs whose height is still unknown."""
+    applied = 0
+    for atp_id, override in overrides.items():
+        record = players.get(atp_id)
+        if record is None or record.get("heightCm") is not None:
+            continue
+        height = valid_height(override.get("heightCm"))
+        if height is None:
+            raise RuntimeError(f"Invalid verified height override for ATP profile {atp_id}")
+        record["heightCm"] = height
+        record["heightSource"] = "verified-player-profile"
+        record["_heightSeason"] = 9998
+        applied += 1
+    return applied
 
 
 def integer(value: object) -> int | None:
@@ -262,9 +438,7 @@ def load_roster(files: dict[str, dict]) -> tuple[dict[str, dict], dict[str, set[
             "_heightSeason": 9999 if height is not None else 0,
         }
         for label in (canonical, name):
-            key = normalize_name(label)
-            if key:
-                aliases[key].add(player_id)
+            _add_player_alias(aliases, label, (row.get("ioc") or "").strip(), player_id)
     if len(roster) < 100:
         raise RuntimeError(f"ATP_Database.csv returned only {len(roster)} player records")
     return roster, aliases
@@ -593,11 +767,14 @@ def _validate_top100_subset(
 def map_live_rankings_to_tml_ids(
     snapshot: dict[str, object],
     roster_aliases: dict[str, set[str]],
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
+    official_id_overrides: dict[str, dict[str, str]] | None = None,
 ) -> dict[str, object]:
-    """Crosswalk KickServe's internal IDs to stable TML IDs using unique exact-name keys.
+    """Crosswalk KickServe IDs using unique country-qualified full-name or initial aliases.
 
     The feed's player IDs are internal to KickServe, not ATP/TML IDs. Names are normalized
-    only for accents and punctuation; ambiguous or missing roster matches stay unresolved.
+    only for accents and punctuation. If a country is provided, a match from another country
+    is never used as a fallback; ambiguous/missing matches stay unresolved.
     """
     mapped: list[dict[str, object]] = []
     seen_ids: set[str] = set()
@@ -605,10 +782,27 @@ def map_live_rankings_to_tml_ids(
     unresolved_top500 = int(snapshot.get("unresolvedTop500", 0))
     unresolved_top1000 = int(snapshot.get("unresolvedPlayers", 0))
     unresolved_ranks = list(snapshot.get("unresolvedRanks", []))
+    official_id_overrides = official_id_overrides or {}
+    overrides_applied = 0
+    matched_override_keys: set[str] = set()
 
     for entry in snapshot["players"]:
         rank = int(entry["rank"])
-        candidate_ids = roster_aliases.get(normalize_name(str(entry["name"])), set())
+        name = str(entry.get("name") or "").strip()
+        country_key = normalize_country_code(str(entry.get("country") or ""))
+        override_key = f"{normalize_name(name)}|{country_key}"
+        official_override = official_id_overrides.get(override_key)
+        if official_override is not None:
+            # The ATP Tour profile ID is the canonical identity for this exact
+            # country-qualified ranking row. Never use KickServe's own feed ID.
+            candidate_ids = {official_override["atpId"]}
+            overrides_applied += 1
+            matched_override_keys.add(override_key)
+        else:
+            candidate_ids, _ = _player_alias_candidates(
+                name, country_key, roster_aliases, canonical_player_ids,
+            )
+
         if len(candidate_ids) != 1:
             if rank <= 100:
                 unresolved_top100 += 1
@@ -616,6 +810,15 @@ def map_live_rankings_to_tml_ids(
                 unresolved_top500 += 1
             unresolved_top1000 += 1
             unresolved_ranks.append(rank)
+            reason = "ambiguous exact name/country match" if len(candidate_ids) > 1 else "no exact name/country match"
+            unresolved_entries = list(snapshot.get("unresolvedEntries", []))
+            unresolved_entries.append({
+                "rank": rank,
+                "name": str(entry.get("name") or "").strip(),
+                "country": country_key,
+                "reason": reason,
+            })
+            snapshot["unresolvedEntries"] = unresolved_entries
             continue
         player_id = next(iter(candidate_ids))
         if player_id in seen_ids:
@@ -634,7 +837,37 @@ def map_live_rankings_to_tml_ids(
         "unresolvedTop500": unresolved_top500,
         "unresolvedPlayers": unresolved_top1000,
         "unresolvedRanks": unresolved_ranks,
+        "unresolvedEntries": list(snapshot.get("unresolvedEntries", [])),
         "rankedEntries": len(mapped) + unresolved_top1000,
+        "identityOverridesApplied": overrides_applied,
+        "identityOverridesNotApplied": [
+            {
+                "name": row["name"],
+                "country": row["country"],
+                "atpId": row["atpId"],
+                "candidateRankingRows": [
+                    {
+                        "rank": int(entry["rank"]),
+                        "name": str(entry.get("name") or ""),
+                        "rawCountry": str(entry.get("country") or ""),
+                        "normalizedName": normalize_name(str(entry.get("name") or "")),
+                        "normalizedCountry": normalize_country_code(str(entry.get("country") or "")),
+                    }
+                    for entry in snapshot["players"]
+                    if (
+                        normalize_name(str(entry.get("name") or "")) == key.split("|", 1)[0]
+                        or (
+                            normalize_country_code(str(entry.get("country") or "")) == row["country"]
+                            and normalize_name(str(entry.get("name") or "")).endswith(
+                                normalize_name(row["name"].split()[-1])
+                            )
+                        )
+                    )
+                ],
+            }
+            for key, row in sorted(official_id_overrides.items())
+            if key not in matched_override_keys
+        ],
     }
 
 
@@ -652,6 +885,7 @@ def supplement_top100_from_tml(
         for entry in expanded_snapshot["players"]
     }
     unresolved_ranks = list(expanded_snapshot.get("unresolvedRanks", []))
+    unresolved_entries = list(expanded_snapshot.get("unresolvedEntries", []))
     unresolved_counts = {
         "unresolvedTop500": int(expanded_snapshot.get("unresolvedTop500", 0)),
         "unresolvedPlayers": int(expanded_snapshot.get("unresolvedPlayers", 0)),
@@ -681,12 +915,27 @@ def supplement_top100_from_tml(
         expanded_by_id.values(),
         key=lambda item: (int(item["rank"]), str(item["id"])),
     )
+
+    # The source can restore unresolved Top-100 entries by their stable TML IDs.
+    # Remove the matching stale audit rows too, preserving duplicate-rank counts.
+    remaining_by_rank: dict[int, int] = {}
+    for rank in unresolved_ranks:
+        rank_value = int(rank)
+        remaining_by_rank[rank_value] = remaining_by_rank.get(rank_value, 0) + 1
+    filtered_unresolved_entries = []
+    for row in unresolved_entries:
+        rank_value = int(row.get("rank", 0))
+        if remaining_by_rank.get(rank_value, 0) > 0:
+            filtered_unresolved_entries.append(row)
+            remaining_by_rank[rank_value] -= 1
+
     return {
         **expanded_snapshot,
         "players": players,
         "unresolvedTop100": int(top100_snapshot.get("unresolvedPlayers", 0)),
         **unresolved_counts,
         "unresolvedRanks": unresolved_ranks,
+        "unresolvedEntries": filtered_unresolved_entries,
         "rankedEntries": len(players) + unresolved_counts["unresolvedPlayers"],
     }
 
@@ -697,6 +946,8 @@ def load_top1000_season_snapshots(
     top100_snapshots: dict[int, dict[str, object]],
     roster_aliases: dict[str, set[str]],
     today: date | None = None,
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
+    official_id_overrides: dict[str, dict[str, str]] | None = None,
 ) -> dict[int, dict[str, object]]:
     """Load full year-specific ranking lists; never infer larger cohorts from a Top-200 API."""
     current = today or date.today()
@@ -744,7 +995,12 @@ def load_top1000_season_snapshots(
         live_payload,
         f"KickServe live ATP ranking list ({current.isoformat()})",
     )
-    live_top = map_live_rankings_to_tml_ids(live_top, roster_aliases)
+    live_top = map_live_rankings_to_tml_ids(
+        live_top,
+        roster_aliases,
+        canonical_player_ids,
+        official_id_overrides,
+    )
     live_snapshot = {
         "year": current_year,
         "asOf": str(top100_snapshots[current_year]["asOf"]),
@@ -846,17 +1102,8 @@ def resolve_current_top100(
     return result
 
 
-def aggregate_files(
-    files: dict[str, dict],
-    years: range,
-    players: dict[str, dict],
-    current_year: int | None = None,
-    current_season_match_keys: set[str] | None = None,
-    current_season_stat_match_keys: set[str] | None = None,
-) -> tuple[dict[str, dict[int, dict[str, dict[str, int]]]], dict[str, set[str]], dict]:
-    aggregate: dict[str, dict[int, dict[str, dict[str, int]]]] = defaultdict(dict)
-    match_aliases: dict[str, set[str]] = defaultdict(set)
-    totals = {
+def _coverage_totals() -> dict[str, int]:
+    return {
         "sourceRows": 0,
         "matchResults": 0,
         "matchesWithValidStats": 0,
@@ -867,10 +1114,292 @@ def aggregate_files(
         "duplicateMatchRowsSkipped": 0,
         "hardRowsWithUnknownEnvironment": 0,
     }
-    seen_matches: set[tuple[str, str, str, str]] = set()
+
+
+def _manifest_item(files: dict[str, dict], filename: str) -> dict | None:
+    """Find a manifest file by its exact basename, even when the manifest includes folders."""
+    direct = files.get(filename)
+    if direct:
+        return direct
+    for key, item in files.items():
+        name = str(item.get("name") or key).replace("\\", "/")
+        url = str(item.get("url") or "").replace("\\", "/")
+        if name.rsplit("/", 1)[-1] == filename or url.rsplit("/", 1)[-1] == filename:
+            return item
+    return None
+
+
+def _name_alias_keys(value: str) -> set[str]:
+    """Generate conservative exact-token aliases for common ATP display-name variants.
+
+    Examples: "Taylor Harry Fritz" can match "Taylor Fritz"; "J. Tsitsipas"
+    can match "Stefanos Tsitsipas". Only complete tokens are combined; candidate
+    IDs are unioned and accepted only when the country-qualified result is unique.
+    """
+    suffixes = {"jr", "sr", "ii", "iii", "iv"}
+    parts = [
+        token
+        for raw in str(value or "").split()
+        if (token := normalize_name(raw)) and token not in suffixes
+    ]
+    if not parts:
+        return set()
+
+    keys = {"".join(parts)}
+    if len(parts) == 1:
+        return keys
+
+    first = parts[0]
+    for token in parts[1:]:
+        keys.add(first + token)
+        keys.add(first[0] + token)
+
+    for left, right in zip(parts, parts[1:]):
+        keys.add(left + right)
+    return keys
+
+
+def _player_alias_candidates(
+    name: str,
+    country: str | None,
+    roster_aliases: dict[str, set[str]],
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
+) -> tuple[set[str], str]:
+    """Prefer a unique exact name before considering weaker display-name aliases.
+
+    Initial/surname and partial-token aliases are useful for provider formatting
+    differences, but they can collide with an otherwise exact full-name match.
+    Country-qualified keys are mandatory whenever a source country is available.
+    """
+    country_key = normalize_country_code(country)
+
+    def lookup(key: str) -> set[str]:
+        if not key:
+            return set()
+        lookup_key = f"{key}|{country_key}" if country_key else key
+        return set(roster_aliases.get(lookup_key, set()))
+
+    exact_key = normalize_name(name)
+    if not exact_key:
+        return set(), "missing"
+
+    def prefer_roster_ids(candidates: set[str]) -> set[str]:
+        if canonical_player_ids is None:
+            return candidates
+        canonical = candidates.intersection(canonical_player_ids)
+        return canonical if canonical else candidates
+
+    exact_candidates = prefer_roster_ids(lookup(exact_key))
+    if exact_candidates:
+        return exact_candidates, "exact"
+
+    # Only use generated aliases after an exact full-name lookup has failed.
+    candidates: set[str] = set()
+    for alias_key in _name_alias_keys(name):
+        candidates.update(lookup(alias_key))
+    candidates = prefer_roster_ids(candidates)
+    return candidates, "alias" if candidates else "missing"
+
+
+def _add_player_alias(
+    aliases: dict[str, set[str]],
+    name: str,
+    country: str | None,
+    player_id: str,
+) -> None:
+    country_key = normalize_country_code(country)
+    for key in _name_alias_keys(name):
+        aliases[key].add(player_id)
+        if country_key:
+            aliases[f"{key}|{country_key}"].add(player_id)
+
+
+def supplement_missing_heights_from_sackmann(
+    rows: list[dict[str, str]],
+    players: dict[str, dict],
+    roster_aliases: dict[str, set[str]],
+    canonical_player_ids: set[str] | frozenset[str] | None = None,
+) -> int:
+    """Fill blank heights only from a uniquely matched Tennis Abstract/Sackmann player row.
+
+    The source's numeric IDs are not treated as TML/ATP IDs. A row is joined to the
+    existing player directory only by a unique exact-name or conservative name-alias
+    match, country-qualified whenever possible. Existing heights are never overwritten.
+    """
+    filled = 0
+    for row in rows:
+        first = (row.get("name_first") or row.get("first_name") or "").strip()
+        last = (row.get("name_last") or row.get("last_name") or "").strip()
+        name = " ".join(part for part in (first, last) if part).strip()
+        if not normalize_name(name):
+            continue
+        country = normalize_country_code(row.get("ioc") or row.get("country_code"))
+        candidates, _ = _player_alias_candidates(
+            name, country, roster_aliases, canonical_player_ids,
+        )
+        if len(candidates) != 1:
+            continue
+
+        player_id = next(iter(candidates))
+        record = players.get(player_id)
+        if record is None or record.get("heightCm") is not None:
+            continue
+
+        height = valid_height(row.get("height") or row.get("height_cm"))
+        if height is None:
+            continue
+        record["heightCm"] = height
+        record["heightSource"] = "jeff-sackmann-tennis-abstract-player-table"
+        record["_heightSeason"] = 9998
+        filled += 1
+    return filled
+
+
+def aggregate_match_rows(
+    rows: list[dict[str, str]],
+    filename: str,
+    source_kind: str,
+    aggregate: dict[str, dict[int, dict[str, dict[str, int]]]],
+    players: dict[str, dict],
+    match_aliases: dict[str, set[str]],
+    totals: dict[str, int],
+    seen_matches: set[tuple[str, str, str, str, str]],
+    *,
+    current_year: int | None = None,
+    current_match_keys: set[str] | None = None,
+    current_stat_match_keys: set[str] | None = None,
+) -> None:
+    """Aggregate a source file whose provenance determines its competition scope.
+
+    Tour rows must have a recognized ATP Tour level. Challenger and qualifying files are
+    source-scoped by their manifest path, so their rows are accepted regardless of the
+    provider's level label (which is not consistent across those separate exports).
+    """
+    required = {
+        "tourney_id", "tourney_name", "surface", "indoor", "tourney_date",
+        "tourney_level", "match_num", "winner_id", "winner_name", "winner_ht", "winner_ioc",
+        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score",
+        "w_SvGms", "w_bpFaced", "w_bpSaved", "l_SvGms", "l_bpFaced", "l_bpSaved",
+    }
+    if rows:
+        missing = required - set(rows[0])
+        if missing:
+            raise RuntimeError(f"{filename} is missing required columns: {sorted(missing)}")
+    totals["sourceRows"] += len(rows)
+
+    for row in rows:
+        if source_kind == "tour" and (row.get("tourney_level") or "").strip().upper() not in TOUR_LEVELS:
+            totals["excludedIneligibleLevel"] += 1
+            continue
+
+        tournament_id = (row.get("tourney_id") or "").strip()
+        season_text = tournament_id[:4] if len(tournament_id) >= 4 else ""
+        if not season_text.isdigit():
+            season_text = (row.get("tourney_date") or "")[:4]
+        if not season_text.isdigit():
+            continue
+        season = int(season_text)
+
+        winner_id = (row.get("winner_id") or "").strip()
+        loser_id = (row.get("loser_id") or "").strip()
+        winner_name = (row.get("winner_name") or "").strip()
+        loser_name = (row.get("loser_name") or "").strip()
+        winner_country = (row.get("winner_ioc") or "").strip()
+        loser_country = (row.get("loser_ioc") or "").strip()
+
+        # Keep identity and height enrichment even for walkovers/no-play rows. Those rows
+        # do not contribute a result, but still provide safe ATP ID/name/country/height links.
+        if winner_id:
+            ensure_player(players, winner_id, winner_name, winner_country, row.get("winner_ht"), season)
+            _add_player_alias(match_aliases, winner_name, winner_country, winner_id)
+        if loser_id:
+            ensure_player(players, loser_id, loser_name, loser_country, row.get("loser_ht"), season)
+            _add_player_alias(match_aliases, loser_name, loser_country, loser_id)
+
+        if not match_has_result(row.get("score"), winner_id, loser_id):
+            totals["excludedNoPlay"] += 1
+            continue
+
+        match_num = (row.get("match_num") or "").strip()
+        if not match_num:
+            continue
+        identity = (
+            source_kind,
+            tournament_id,
+            match_num,
+            min(winner_id, loser_id),
+            max(winner_id, loser_id),
+        )
+        if identity in seen_matches:
+            totals["duplicateMatchRowsSkipped"] += 1
+            continue
+        seen_matches.add(identity)
+
+        stable_key = match_identity_key(tournament_id, match_num, winner_id, loser_id)
+        if current_match_keys is not None and season == current_year:
+            current_match_keys.add(stable_key if source_kind == "tour" else stable_key + "|" + source_kind)
+
+        retirement = match_is_retirement(row.get("score"))
+        if retirement:
+            totals["retiredMatchResults"] += 1
+
+        buckets = match_buckets(row.get("surface"), row.get("indoor"))
+        if (row.get("surface") or "").strip().casefold() == "hard" and "hardUnknown" in buckets:
+            totals["hardRowsWithUnknownEnvironment"] += 1
+
+        # Retirements count in W-L results, but their partial-match game totals do not
+        # contribute to Hold/Break rates.
+        stats = None if retirement else service_return_contribution(row)
+        if (
+            current_stat_match_keys is not None
+            and season == current_year
+            and stats is not None
+        ):
+            current_stat_match_keys.add(stable_key if source_kind == "tour" else stable_key + "|" + source_kind)
+
+        if stats is None:
+            totals["matchesWithoutValidStats"] += 1
+            add_player_match(aggregate, winner_id, season, buckets, True, 0, 0, 0, 0, False)
+            add_player_match(aggregate, loser_id, season, buckets, False, 0, 0, 0, 0, False)
+            totals["matchResults"] += 1
+            continue
+
+        winner_sg, winner_sw, loser_sg, loser_sw = stats
+        winner_return_won = loser_sg - loser_sw
+        loser_return_won = winner_sg - winner_sw
+        add_player_match(
+            aggregate, winner_id, season, buckets, True,
+            winner_sg, winner_sw, loser_sg, winner_return_won, True,
+        )
+        add_player_match(
+            aggregate, loser_id, season, buckets, False,
+            loser_sg, loser_sw, winner_sg, loser_return_won, True,
+        )
+        totals["matchResults"] += 1
+        totals["matchesWithValidStats"] += 1
+
+
+def aggregate_files(
+    files: dict[str, dict],
+    years: range,
+    players: dict[str, dict],
+    current_year: int | None = None,
+    current_season_match_keys: set[str] | None = None,
+    current_season_stat_match_keys: set[str] | None = None,
+) -> tuple[
+    dict[str, dict[int, dict[str, dict[str, int]]]],
+    dict[str, set[str]],
+    dict,
+    set[tuple[str, str, str, str, str]],
+]:
+    aggregate: dict[str, dict[int, dict[str, dict[str, int]]]] = defaultdict(dict)
+    match_aliases: dict[str, set[str]] = defaultdict(set)
+    totals = _coverage_totals()
+    seen_matches: set[tuple[str, str, str, str, str]] = set()
+
     for year in years:
         filename = f"{year}.csv"
-        item = files.get(filename)
+        item = _manifest_item(files, filename)
         if not item:
             raise RuntimeError(f"TML data-files manifest is missing {filename}")
         payload = download_cached(
@@ -882,102 +1411,63 @@ def aggregate_files(
         rows = csv_rows(payload)
         if not rows:
             raise RuntimeError(f"TML {filename} is empty")
-        required = {
-            "tourney_id", "tourney_name", "surface", "indoor", "tourney_date",
-            "tourney_level", "match_num", "winner_id", "winner_name", "winner_ht", "winner_ioc",
-            "loser_id", "loser_name", "loser_ht", "loser_ioc", "score",
-            "w_SvGms", "w_bpFaced", "w_bpSaved", "l_SvGms", "l_bpFaced", "l_bpSaved",
-        }
-        missing = required - set(rows[0])
-        if missing:
-            raise RuntimeError(f"{filename} is missing required columns: {sorted(missing)}")
-        totals["sourceRows"] += len(rows)
-        for row in rows:
-            if (row.get("tourney_level") or "").strip().upper() not in TOUR_LEVELS:
-                totals["excludedIneligibleLevel"] += 1
-                continue
-            tournament_id = (row.get("tourney_id") or "").strip()
-            season_text = tournament_id[:4] if len(tournament_id) >= 4 else ""
-            if not season_text.isdigit():
-                season_text = (row.get("tourney_date") or "")[:4]
-            if not season_text.isdigit():
-                continue
-            season = int(season_text)
-            winner_id = (row.get("winner_id") or "").strip()
-            loser_id = (row.get("loser_id") or "").strip()
-            winner_name = (row.get("winner_name") or "").strip()
-            loser_name = (row.get("loser_name") or "").strip()
-            if not match_has_result(row.get("score"), winner_id, loser_id):
-                totals["excludedNoPlay"] += 1
-                continue
-            match_num = (row.get("match_num") or "").strip()
-            stable_key = None
-            if match_num:
-                identity = (tournament_id, match_num, min(winner_id, loser_id), max(winner_id, loser_id))
-                stable_key = match_identity_key(tournament_id, match_num, winner_id, loser_id)
-                if identity in seen_matches:
-                    totals["duplicateMatchRowsSkipped"] += 1
-                    continue
-                seen_matches.add(identity)
-                if current_season_match_keys is not None and season == current_year:
-                    current_season_match_keys.add(stable_key)
-            retirement = match_is_retirement(row.get("score"))
-            if retirement:
-                totals["retiredMatchResults"] += 1
-            ensure_player(
-                players, winner_id, winner_name, row.get("winner_ioc"),
-                row.get("winner_ht"), season,
-            )
-            ensure_player(
-                players, loser_id, loser_name, row.get("loser_ioc"),
-                row.get("loser_ht"), season,
-            )
-            for alias, player_id in ((winner_name, winner_id), (loser_name, loser_id)):
-                key = normalize_name(alias)
-                if key:
-                    match_aliases[key].add(player_id)
-
-            buckets = match_buckets(row.get("surface"), row.get("indoor"))
-            if (row.get("surface") or "").strip().casefold() == "hard" and "hardUnknown" in buckets:
-                totals["hardRowsWithUnknownEnvironment"] += 1
-            # Retirements count in W-L results, but partial-match games do not train annual rates.
-            stats = None if retirement else service_return_contribution(row)
-            if (
-                current_season_stat_match_keys is not None
-                and season == current_year
-                and stable_key is not None
-                and stats is not None
-            ):
-                current_season_stat_match_keys.add(stable_key)
-            if stats is None:
-                totals["matchesWithoutValidStats"] += 1
-                add_player_match(
-                    aggregate, winner_id, season, buckets, True, 0, 0, 0, 0, False
-                )
-                add_player_match(
-                    aggregate, loser_id, season, buckets, False, 0, 0, 0, 0, False
-                )
-                totals["matchResults"] += 1
-                continue
-
-            winner_sg, winner_sw, loser_sg, loser_sw = stats
-            winner_return_won = loser_sg - loser_sw
-            loser_return_won = winner_sg - winner_sw
-            add_player_match(
-                aggregate, winner_id, season, buckets, True,
-                winner_sg, winner_sw, loser_sg, winner_return_won, True,
-            )
-            add_player_match(
-                aggregate, loser_id, season, buckets, False,
-                loser_sg, loser_sw, winner_sg, loser_return_won, True,
-            )
-            totals["matchResults"] += 1
-            totals["matchesWithValidStats"] += 1
+        aggregate_match_rows(
+            rows, filename, "tour", aggregate, players, match_aliases, totals, seen_matches,
+            current_year=current_year,
+            current_match_keys=current_season_match_keys,
+            current_stat_match_keys=current_season_stat_match_keys,
+        )
         print(
             f"{filename}: {len(rows)} source rows processed; "
-            f"{totals['matchResults']} tour match results so far"
+            f"{totals['matchResults']} ATP Tour match results so far"
         )
-    return aggregate, match_aliases, totals
+    return aggregate, match_aliases, totals, seen_matches
+
+
+def aggregate_height_group_extra_files(
+    files: dict[str, dict],
+    years: range,
+    players: dict[str, dict],
+    aggregate: dict[str, dict[int, dict[str, dict[str, int]]]],
+    match_aliases: dict[str, set[str]],
+    seen_matches: set[tuple[str, str, str, str, str]],
+    current_year: int,
+    current_match_keys: set[str],
+    current_stat_match_keys: set[str],
+) -> tuple[dict, dict[str, int], dict[str, str]]:
+    """Add ATP Challenger and ATP Tour qualifying results without changing Ranking stats."""
+    totals = _coverage_totals()
+    source_mtimes: dict[str, str] = {}
+    for year in years:
+        for source_kind, filename in (
+            ("challenger", f"{year}_challenger.csv"),
+            ("qualifying", f"{year}_atp_quali.csv"),
+        ):
+            item = _manifest_item(files, filename)
+            if not item:
+                continue
+            payload = download_cached(
+                str(item["url"]),
+                f"height-groups-{filename}",
+                integer(item.get("size")),
+                str(item.get("mtime") or ""),
+            )
+            rows = csv_rows(payload)
+            if rows:
+                aggregate_match_rows(
+                    rows, filename, source_kind, aggregate, players, match_aliases, totals, seen_matches,
+                    current_year=current_year,
+                    current_match_keys=current_match_keys,
+                    current_stat_match_keys=current_stat_match_keys,
+                )
+            if year == current_year:
+                source_mtimes[source_kind] = str(item.get("mtime") or "")
+            print(
+                f"{filename}: {len(rows)} source rows processed; "
+                f"{totals['matchResults']} additional ATP results so far"
+            )
+
+    return aggregate, totals, source_mtimes
 
 
 def compact_player_seasons(
@@ -1004,12 +1494,78 @@ def build() -> dict:
     current_year = date.today().year
     years = range(1968, current_year + 1)
     roster, roster_aliases = load_roster(files)
+    canonical_player_ids = frozenset(roster)
+    official_id_overrides = load_official_atp_profile_id_overrides()
+    verified_player_height_overrides = load_verified_player_height_overrides()
     players = roster
     top100_snapshots = load_top100_season_snapshots(1973, current_year)
+    current_season_match_keys: set[str] = set()
+    current_season_stat_match_keys: set[str] = set()
+    aggregate, match_aliases, totals, seen_matches = aggregate_files(
+        files, years, players, current_year,
+        current_season_match_keys, current_season_stat_match_keys,
+    )
+    height_group_current_match_keys = set(current_season_match_keys)
+    height_group_current_stat_match_keys = set(current_season_stat_match_keys)
+    height_group_aggregate = copy.deepcopy(aggregate)
+    height_group_aggregate, extra_coverage, extra_source_mtimes = aggregate_height_group_extra_files(
+        files, years, players, height_group_aggregate, match_aliases, seen_matches,
+        current_year, height_group_current_match_keys, height_group_current_stat_match_keys,
+    )
+    # Use stable ATP IDs exposed by the ATP Tour, Challenger and qualifying feeds to crosswalk
+    # KickServe names. Country-qualified aliases disambiguate players who share a normalized name.
+    for alias, player_ids in match_aliases.items():
+        roster_aliases.setdefault(alias, set()).update(player_ids)
+    sackmann_height_fills = 0
+    sackmann_height_source_status = "unavailable"
+    try:
+        sackmann_payload = download_cached(
+            SACKMANN_ATP_PLAYERS_URL,
+            "sackmann_atp_players.csv",
+            None,
+            date.today().isoformat(),
+        )
+        sackmann_rows = csv_rows(sackmann_payload)
+        if sackmann_rows:
+            sackmann_header = set(sackmann_rows[0])
+            missing_groups = [
+                names for names in (
+                    {"name_first", "first_name"},
+                    {"name_last", "last_name"},
+                    {"ioc", "country_code"},
+                    {"height"},
+                ) if not (names & sackmann_header)
+            ]
+            if missing_groups:
+                missing_labels = ["/".join(sorted(group)) for group in missing_groups]
+                raise RuntimeError(
+                    "Tennis Abstract player table is missing required column groups: "
+                    + ", ".join(missing_labels)
+                )
+        sackmann_height_fills = supplement_missing_heights_from_sackmann(
+            sackmann_rows, players, roster_aliases, canonical_player_ids,
+        )
+        sackmann_height_source_status = "loaded"
+    except Exception as error:
+        # TML remains the primary source; optional fallback failure must not erase valid TML data.
+        print(f"optional Tennis Abstract height fallback unavailable: {error}")
+
     top1000_snapshots = load_top1000_season_snapshots(
         1973, current_year, top100_snapshots, roster_aliases,
+        canonical_player_ids=canonical_player_ids,
+        official_id_overrides=official_id_overrides,
     )
     current_expanded_snapshot = top1000_snapshots[current_year]
+    identity_overrides_not_applied = current_expanded_snapshot.get("identityOverridesNotApplied") or []
+    if identity_overrides_not_applied:
+        print(
+            "official ATP profile-ID overrides not present in the live ranking feed: "
+            + "; ".join(
+                f"{row['name']} ({row['country']}) [{row['atpId']}] candidates="
+                + repr(row.get("candidateRankingRows", []))
+                for row in identity_overrides_not_applied
+            )
+        )
     if int(current_expanded_snapshot.get("maxRank", 0)) < 1000:
         raise RuntimeError(
             "The live official ATP rank feed only publishes positions through rank "
@@ -1021,12 +1577,6 @@ def build() -> dict:
     # maxRank above confirms the live feed extends through the requested cutoff;
     # only actual source rows with rank <= N are included in each cohort.
 
-    current_season_match_keys: set[str] = set()
-    current_season_stat_match_keys: set[str] = set()
-    aggregate, _match_aliases, totals = aggregate_files(
-        files, years, players, current_year,
-        current_season_match_keys, current_season_stat_match_keys,
-    )
     top100_ranks_by_player: dict[str, dict[int, int]] = defaultdict(dict)
     top1000_ranks_by_player: dict[str, dict[int, int]] = defaultdict(dict)
     for year, snapshot in top100_snapshots.items():
@@ -1067,6 +1617,9 @@ def build() -> dict:
             )
         _validate_top100_subset(top100_snapshots[year], snapshot)
 
+    verified_profile_height_fills = apply_verified_player_height_overrides(
+        verified_player_height_overrides, players,
+    )
     current_top100_count = len(top100_snapshots[current_year]["players"])
     current_top500_count = sum(
         1 for entry in top1000_snapshots[current_year]["players"] if int(entry["rank"]) <= 500
@@ -1075,9 +1628,10 @@ def build() -> dict:
     current_top100_as_of = str(top100_snapshots[current_year]["asOf"])
     current_top100_source = str(top100_snapshots[current_year]["source"])
     season_rows = compact_player_seasons(aggregate)
+    height_group_season_rows = compact_player_seasons(height_group_aggregate)
     player_rows = []
     # Include all Top-1000 members, including players absent from the match archive.
-    archive_player_ids = set(season_rows) | set(top1000_ranks_by_player)
+    archive_player_ids = set(season_rows) | set(height_group_season_rows) | set(top1000_ranks_by_player)
     for player_id in archive_player_ids:
         record = players[player_id]
         height = record.get("heightCm")
@@ -1098,6 +1652,7 @@ def build() -> dict:
                     for year, rank in sorted(top1000_ranks_by_player.get(player_id, {}).items())
                 ],
                 "seasons": season_rows.get(player_id, []),
+                "heightGroupSeasons": height_group_season_rows.get(player_id, []),
             }
         )
     player_rows.sort(key=lambda item: (item["name"].casefold(), item["id"]))
@@ -1117,8 +1672,27 @@ def build() -> dict:
             "currentSeasonSourceMtime": str(files.get(f"{current_year}.csv", {}).get("mtime") or ""),
             "currentSeasonMatchKeys": sorted(current_season_match_keys),
             "currentSeasonStatMatchKeys": sorted(current_season_stat_match_keys),
+            "heightGroupCurrentSeasonMatchKeys": sorted(height_group_current_match_keys),
+            "heightGroupCurrentSeasonStatMatchKeys": sorted(height_group_current_stat_match_keys),
+            "currentSeasonChallengerSourceMtime": extra_source_mtimes.get("challenger", ""),
+            "currentSeasonQualifyingSourceMtime": extra_source_mtimes.get("qualifying", ""),
+            "heightGroupCoverage": {
+                "tour": totals,
+                "challengerAndQualifying": extra_coverage,
+            },
             "players": len(player_rows),
             "playersWithHeight": height_count,
+            "heightEnrichment": {
+                "provider": "Jeff Sackmann / Tennis Abstract ATP player table",
+                "source": SACKMANN_ATP_PLAYERS_URL,
+                "revision": SACKMANN_ATP_PLAYERS_REVISION,
+                "license": "CC BY-NC-SA 4.0",
+                "status": sackmann_height_source_status,
+                "filledMissingHeights": sackmann_height_fills,
+                "curatedProfileSource": "ATP/ITF/tournament/college and verified tennis player profiles",
+                "curatedProfileOverrideFile": "tools/player_height_overrides.json",
+                "curatedProfileHeightsApplied": verified_profile_height_fills,
+            },
             "playersInCurrentTop100": current_top100_count,
             "playersInCurrentTop500": current_top500_count,
             "playersInCurrentTop1000": current_top1000_count,
@@ -1150,21 +1724,43 @@ def build() -> dict:
                     "maxRank": int(snapshot.get("maxRank", 0)),
                     "unresolvedTop500": int(snapshot.get("unresolvedTop500", 0)),
                     "provider": str(snapshot.get("provider") or "TML rankings archive"),
+                    "identityOverridesApplied": int(snapshot.get("identityOverridesApplied", 0)),
+                    "unresolvedEntries": [
+                        {
+                            "rank": int(entry.get("rank", 0)),
+                            "name": str(entry.get("name") or ""),
+                            "country": str(entry.get("country") or ""),
+                            "reason": str(entry.get("reason") or ""),
+                        }
+                        for entry in snapshot.get("unresolvedEntries", [])
+                    ],
                 }
                 for year, snapshot in sorted(top1000_snapshots.items())
             ],
             "top1000SeasonPolicy": "For completed seasons, the full TML Rankings archive CSV is filtered to the exact final-in-year date already used by the Top 100 snapshot. For the live year, the full KickServe ATP CSV official_rank column is used and its Top 100 membership is cross-checked against the unchanged TML Top 100 snapshot. KickServe's daily CSV is free to use with attribution to https://kick-serve.com/data/. Ties are preserved and unresolved IDs are counted separately. Snapshots that do not extend through a selected cutoff are marked unavailable. Group performance always uses match statistics from that same calendar year.",
+            "rankingIdentityResolution": {
+                "provider": "ATP Tour official player profiles",
+                "overrideFile": "tools/player_identity_overrides.json",
+                "liveOverridesApplied": int(current_expanded_snapshot.get("identityOverridesApplied", 0)),
+                "policy": "Exact normalized live ranking name plus country must match an audited ATP Tour profile ID override. KickServe provider IDs are never treated as ATP/TML IDs.",
+            },
             "source": DATA_SOURCE,
             "sourceUrl": DATA_SOURCE_URL,
             "seasonDefinition": "Calendar year in the TML tournament ID; not a rolling 52-week window.",
             "statistics": "Hold% = service games won / service games played. Break% = return games won / return games played. Combined = Hold% + Break%.",
-            "sampleNote": "ATP tour-level singles match results include retirements in W-L. Walkovers and no-play defaults are excluded. Retirement match statistics are not used for Hold/Break because the match sample is partial. Missing or inconsistent stat lines contribute results but no service/return games.",
+            "sampleNote": "Ranking tables use ATP Tour-level singles main-draw results. Height-group statistics use the separate heightGroupSeasons scope: ATP Tour main draws plus ATP Challenger main draws and ATP Tour qualifying where the source is available. Results include retirements in W-L; walkovers and no-play defaults are excluded. Retirement match statistics are not used for Hold/Break because the match sample is partial. Missing or inconsistent stat lines contribute results but no service/return games.",
             "environmentNote": "TML indoor Yes/No values and equivalent I/O, Boolean and 1/0 encodings are normalized. Unknown hard-court settings stay in All hard but not in Indoor hard or Outdoor hard.",
             "statsAvailableSeasons": stat_seasons,
+            "heightGroupStatsAvailableSeasons": sorted({
+                season["y"]
+                for player in player_rows
+                for season in player["heightGroupSeasons"]
+                if season["b"].get("all", {}).get("sm", 0) > 0
+            }),
             "tourLevels": sorted(TOUR_LEVELS),
             "coverage": totals,
             "playersWithEligibleArchiveResults": len(season_rows),
-            "usage": "Personal, educational and non-commercial research only. Raw source CSVs are not included. Keep this derived asset private; do not redistribute or use commercially.",
+            "usage": "Personal, educational and non-commercial research only. Keep TML-derived assets private and do not redistribute or use commercially. Supplementary biographical heights from Jeff Sackmann / Tennis Abstract are under CC BY-NC-SA 4.0; credit Jeff Sackmann and preserve applicable share-alike terms for permitted redistribution.",
             "heightBandsCm": [
                 {"id": "under183", "minCm": None, "maxCm": 182, "label": "Under 1.83 m"},
                 {"id": "183to185", "minCm": 183, "maxCm": 185, "label": "1.83–1.85 m"},
@@ -1194,6 +1790,113 @@ def main() -> None:
         f"{meta['coverage']['matchResults']} tour match results, "
         f"{meta['coverage']['matchesWithValidStats']} with valid service/return stats, "
         f"{meta['playersInCurrentTop100']} current Top 100 players mapped"
+    )
+
+    current_year = int(meta["lastSeason"])
+    expanded_snapshot = next(
+        row for row in meta["top1000SeasonSnapshots"] if row["year"] == current_year
+    )
+    cohort = []
+    for player in payload["players"]:
+        rank = next(
+            (entry["rank"] for entry in player.get("top1000RanksBySeason", [])
+             if entry["y"] == current_year),
+            None,
+        )
+        if rank is not None and rank <= 1000:
+            cohort.append(player)
+
+    known = [player for player in cohort if player.get("heightCm") is not None]
+    missing = len(cohort) - len(known)
+    height_sources: dict[str, int] = defaultdict(int)
+    for player in known:
+        height_sources[str(player.get("heightSource") or "source not recorded")] += 1
+
+    print(
+        f"current Top 1000 ({current_year}): "
+        f"{len(cohort)} identified, {expanded_snapshot['unresolvedPlayers']} unresolved rank rows, "
+        f"{len(known)} heights known, {missing} heights missing"
+    )
+    print(
+        "Top-1000 height provenance: "
+        + ", ".join(f"{source}={count}" for source, count in sorted(height_sources.items()))
+    )
+    print(
+        "supplementary height fallback: "
+        f"{meta['heightEnrichment']['status']}, "
+        f"{meta['heightEnrichment']['filledMissingHeights']} missing heights filled"
+    )
+    print(
+        "live ranking identity resolution: "
+        f"{expanded_snapshot.get('identityOverridesApplied', 0)} official ATP profile IDs applied, "
+        f"{expanded_snapshot.get('unresolvedPlayers', 0)} unresolved rows"
+    )
+    print(
+        "verified player-profile height overrides: "
+        f"{meta['heightEnrichment']['curatedProfileHeightsApplied']} missing heights filled"
+    )
+
+    current_rank_by_id = {
+        player["id"]: next(
+            (entry["rank"] for entry in player.get("top1000RanksBySeason", [])
+             if entry["y"] == current_year),
+            1001,
+        )
+        for player in cohort
+    }
+    missing_height_rows = sorted(
+        (
+            current_rank_by_id[player["id"]],
+            player,
+        )
+        for player in cohort
+        if player.get("heightCm") is None
+    )
+    for rank, player in missing_height_rows:
+        country = player.get("country") or "country unavailable"
+        print(f"Top-1000 missing height: #{rank} {player['name']} ({country})")
+
+    for row in expanded_snapshot.get("unresolvedEntries", []):
+        country = row.get("country") or "country unavailable"
+        reason = row.get("reason") or "unresolved identity"
+        print(
+            f"Top-1000 unresolved identity: #{row.get('rank', 0)} "
+            f"{row.get('name', '')} ({country}) — {reason}"
+        )
+
+    for band in meta["heightBandsCm"]:
+        members = [player for player in cohort
+                   if height_band_id(valid_height(player.get("heightCm"))) == band["id"]]
+        with_results = 0
+        with_valid_stats = 0
+        result_player_rows = 0
+        valid_stat_player_rows = 0
+        for player in members:
+            season = next(
+                (entry for entry in player.get("heightGroupSeasons", [])
+                 if entry["y"] == current_year),
+                {},
+            )
+            bucket = (season.get("b") or {}).get("all") or {}
+            matches = int(bucket.get("mp", 0))
+            valid_matches = int(bucket.get("sm", 0))
+            with_results += matches > 0
+            with_valid_stats += valid_matches > 0
+            result_player_rows += matches
+            valid_stat_player_rows += valid_matches
+        print(
+            f"height group {band['label']}: players={len(members)}, "
+            f"withResults={with_results}, withValidStats={with_valid_stats}, "
+            f"playerMatchResults={result_player_rows}, playerMatchStats={valid_stat_player_rows}"
+        )
+
+    lower_tier = (meta.get("heightGroupCoverage") or {}).get("challengerAndQualifying") or {}
+    print(
+        "expanded lower-tier coverage: "
+        f"{lower_tier.get('matchResults', 0)} match results, "
+        f"{lower_tier.get('matchesWithValidStats', 0)} with valid service/return stats, "
+        f"{lower_tier.get('matchesWithoutValidStats', 0)} without valid stats, "
+        f"{lower_tier.get('excludedNoPlay', 0)} no-play rows excluded"
     )
 
 

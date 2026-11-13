@@ -52,6 +52,18 @@ data class PlayerTop1000SeasonSnapshot(
     val unresolvedTop500: Int = 0,
     /** Ranking feed used for this size of snapshot (TML archive or KickServe live feed). */
     val provider: String = "TML archive",
+    /** Exact country-qualified rows linked through audited official ATP profile IDs. */
+    val identityOverridesApplied: Int = 0,
+    /** Auditable source rows that could not be safely joined to a stable ATP/TML player ID. */
+    val unresolvedEntries: List<PlayerUnresolvedRankingEntry> = emptyList(),
+)
+
+@Serializable
+data class PlayerUnresolvedRankingEntry(
+    val rank: Int,
+    val name: String,
+    val country: String = "",
+    val reason: String = "",
 )
 
 @Serializable
@@ -84,6 +96,16 @@ data class PlayerStatsMeta(
     val currentSeasonSourceMtime: String = "",
     val currentSeasonMatchKeys: List<String> = emptyList(),
     val currentSeasonStatMatchKeys: List<String> = emptyList(),
+    /** Dedupe keys for ATP Tour + Challenger + qualifying matches used only by Height Groups. */
+    val heightGroupCurrentSeasonMatchKeys: List<String> = emptyList(),
+    val heightGroupCurrentSeasonStatMatchKeys: List<String> = emptyList(),
+    val currentSeasonChallengerSourceMtime: String = "",
+    val currentSeasonQualifyingSourceMtime: String = "",
+    val ongoingChallengerSourceMtime: String = "",
+    val heightGroupLiveMatchCount: Int = 0,
+    val heightGroupLiveEnrichedMatchCount: Int = 0,
+    val heightGroupStatsAvailableSeasons: List<Int> = emptyList(),
+    val heightGroupCoverage: Map<String, Map<String, Int>> = emptyMap(),
     val ongoingSourceMtime: String = "",
     val liveUpdatedAt: String? = null,
     val liveMatchCount: Int = 0,
@@ -102,6 +124,8 @@ data class PlayerStatsPlayer(
     val top100RanksBySeason: List<PlayerTop100SeasonRank> = emptyList(),
     /** Year-specific rank membership through rank 1000; older assets may omit this field. */
     val top1000RanksBySeason: List<PlayerTop1000SeasonRank> = emptyList(),
+    /** ATP Tour + Challenger + ATP qualifying stats, kept separate from the Tour-only Rankings view. */
+    val heightGroupSeasons: List<PlayerSeasonStats> = emptyList(),
 )
 
 @Serializable

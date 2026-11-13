@@ -2,15 +2,29 @@ name: Android CI
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2]
+    branches: [main, fix/live-tournament-discovery-and-refresh, feature/player-stats-v2, feature/height-groups-expanded-data]
   pull_request:
   workflow_dispatch:
+    inputs:
+      upload_debug_apk:
+        description: Upload the debug APK artifact (requires available Actions storage quota)
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
+  actions: write
+
+# Feature-branch validation uses its push run; the matching PR event is skipped.
+# Keep event types in separate concurrency groups so a PR event cannot cancel the push build.
+concurrency:
+  group: android-ci-${{ github.event.pull_request.head.ref || github.ref_name }}-${{ github.event_name }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    if: ${{ github.repository == 'KR1901/court-pace-index' && (github.event_name != 'pull_request' || github.head_ref != 'feature/height-groups-expanded-data') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,9 +50,79 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 
+      # This private app only needs the newest debug APK. Release APKs are GitHub
+      # Release assets and are not touched by this Actions-artifact cleanup.
+      - name: Prune older debug APK artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const listAllArtifacts = () => github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            const toMiB = (bytes) => (bytes / (1024 * 1024)).toFixed(2);
+            const before = await listAllArtifacts();
+            const active = before.filter((item) => !item.expired);
+            const previous = active.filter(
+              (item) => item.name === "court-pace-debug-apk"
+            );
+            const totalBytes = active.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            const previousBytes = previous.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            core.info(
+              `Repository artifact inventory: ${active.length} active artifacts, ${toMiB(totalBytes)} MiB total.`
+            );
+            core.info(
+              `Superseded debug APK artifacts: ${previous.length}, ${toMiB(previousBytes)} MiB.`
+            );
+
+            for (const artifact of previous) {
+              core.info(
+                `Deleting debug APK artifact ${artifact.id} (${artifact.size_in_bytes} bytes).`
+              );
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner,
+                  repo,
+                  artifact_id: artifact.id,
+                });
+              } catch (error) {
+                // Parallel/previous cleanup can delete the same artifact first.
+                // A missing/expired artifact is already in the desired state.
+                const status = error.status || error.response?.status;
+                if (status === 404 || status === 410) {
+                  core.warning(`Skipping already-missing debug APK artifact ${artifact.id}`);
+                  continue;
+                }
+                throw error;
+              }
+            }
+
+            const after = await listAllArtifacts();
+            const remaining = after.filter(
+              (item) => item.name === "court-pace-debug-apk" && !item.expired
+            );
+            const remainingBytes = remaining.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            core.info(
+              `Post-prune debug APK artifacts: ${remaining.length}, ${toMiB(remainingBytes)} MiB.`
+            );
+            if (remaining.length > 0) {
+              throw new Error(
+                `Artifact cleanup left ${remaining.length} active debug APK artifact(s).`
+              );
+            }
+
       - name: Upload APK
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_debug_apk }}
         uses: actions/upload-artifact@v4
         with:
           name: court-pace-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+          retention-days: 1

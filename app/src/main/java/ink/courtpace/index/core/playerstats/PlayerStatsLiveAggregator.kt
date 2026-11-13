@@ -114,20 +114,36 @@ object PlayerStatsLiveAggregator {
         rows: List<Map<String, String>>,
         season: Int,
         updatedAt: String,
+        sourceKind: String = "tour",
     ): PlayerStatsLiveApplyResult {
+        require(sourceKind in setOf("tour", "challenger", "qualifying")) {
+            "Unsupported ATP match source: " + sourceKind
+        }
+
         val players = baseline.players.associateBy { it.id }.toMutableMap()
-        val seenKeys = baseline.meta.currentSeasonMatchKeys.toMutableSet()
-        val seenStatKeys = baseline.meta.currentSeasonStatMatchKeys.toMutableSet()
-        var addedMatches = 0
-        var enrichedMatches = 0
-        var validMatches = 0
+        val seenTourKeys = baseline.meta.currentSeasonMatchKeys.toMutableSet()
+        val seenTourStatKeys = baseline.meta.currentSeasonStatMatchKeys.toMutableSet()
+        val seenHeightKeys = baseline.meta.heightGroupCurrentSeasonMatchKeys.toMutableSet()
+        val seenHeightStatKeys = baseline.meta.heightGroupCurrentSeasonStatMatchKeys.toMutableSet()
+
+        var addedTourMatches = 0
+        var enrichedTourMatches = 0
+        var validTourMatches = 0
+        var addedHeightMatches = 0
+        var enrichedHeightMatches = 0
+        var validHeightMatches = 0
 
         for (row in rows) {
             val tournamentId = row["tourney_id"].orEmpty().trim()
             val tournamentYear = tournamentId.take(4).toIntOrNull()
                 ?: row["tourney_date"].orEmpty().take(4).toIntOrNull()
             if (tournamentYear != season) continue
-            if (row["tourney_level"].orEmpty().trim().uppercase() !in eligibleLevels) continue
+
+            // Main-tour rows are validated by tourney_level. Challenger and qualifying
+            // exports are source-scoped by their manifest filename; their level labels vary.
+            if (sourceKind == "tour" &&
+                row["tourney_level"].orEmpty().trim().uppercase() !in eligibleLevels
+            ) continue
 
             val winnerId = row["winner_id"].orEmpty().trim()
             val loserId = row["loser_id"].orEmpty().trim()
@@ -138,7 +154,11 @@ object PlayerStatsLiveAggregator {
             ) continue
 
             val key = matchIdentityKey(tournamentId, matchNumber, winnerId, loserId)
-            val resultAlreadyCounted = key in seenKeys
+            val heightKey = if (sourceKind == "tour") key else key + "|" + sourceKind
+            val tourResultAlreadyCounted = sourceKind == "tour" && key in seenTourKeys
+            val tourStatsAlreadyCounted = sourceKind == "tour" && key in seenTourStatKeys
+            val heightResultAlreadyCounted = heightKey in seenHeightKeys
+            val heightStatsAlreadyCounted = heightKey in seenHeightStatKeys
             val isRetirement = retirement.containsMatchIn(score)
             if (!isCompletedResult(score, row["best_of"])) continue
 
@@ -148,24 +168,24 @@ object PlayerStatsLiveAggregator {
             val loserHeight = validHeight(row["loser_ht"])
             val winnerCountry = row["winner_ioc"].orEmpty().trim().ifBlank { null }
             val loserCountry = row["loser_ioc"].orEmpty().trim().ifBlank { null }
-
             val stats = if (isRetirement) null else serviceReturnStats(row)
-            // A provider can publish the final score before its game counters. Count W-L once,
-            // then enrich the same match later when valid service/return stats arrive.
-            if (resultAlreadyCounted && (stats == null || key in seenStatKeys)) continue
-            val buckets = matchBuckets(row["surface"], row["indoor"])
 
+            // Results may appear before service-game counters. Enrich later without
+            // incrementing W/L twice in either statistics ledger.
+            val updateTour = sourceKind == "tour" &&
+                (!tourResultAlreadyCounted || (stats != null && !tourStatsAlreadyCounted))
+            val updateHeight = !heightResultAlreadyCounted ||
+                (stats != null && !heightStatsAlreadyCounted)
+            if (!updateTour && !updateHeight) continue
+
+            val buckets = matchBuckets(row["surface"], row["indoor"])
             var winner = players[winnerId] ?: PlayerStatsPlayer(
-                id = winnerId,
-                name = winnerName,
-                country = winnerCountry,
+                id = winnerId, name = winnerName, country = winnerCountry,
                 heightCm = winnerHeight,
                 heightSource = if (winnerHeight != null) "tml-live-match-database" else null,
             )
             var loser = players[loserId] ?: PlayerStatsPlayer(
-                id = loserId,
-                name = loserName,
-                country = loserCountry,
+                id = loserId, name = loserName, country = loserCountry,
                 heightCm = loserHeight,
                 heightSource = if (loserHeight != null) "tml-live-match-database" else null,
             )
@@ -189,7 +209,10 @@ object PlayerStatsLiveAggregator {
                 returnPlayed = stats?.loserServePlayed ?: 0,
                 returnWon = stats?.loserBreaksConceded ?: 0,
                 hasStats = stats != null,
-                countResult = !resultAlreadyCounted,
+                includeTourStats = updateTour,
+                includeHeightGroupStats = updateHeight,
+                countTourResult = updateTour && !tourResultAlreadyCounted,
+                countHeightGroupResult = updateHeight && !heightResultAlreadyCounted,
             )
             loser = addPlayerMatch(
                 loser, season, buckets, won = false,
@@ -198,24 +221,41 @@ object PlayerStatsLiveAggregator {
                 returnPlayed = stats?.winnerServePlayed ?: 0,
                 returnWon = stats?.winnerBreaksConceded ?: 0,
                 hasStats = stats != null,
-                countResult = !resultAlreadyCounted,
+                includeTourStats = updateTour,
+                includeHeightGroupStats = updateHeight,
+                countTourResult = updateTour && !tourResultAlreadyCounted,
+                countHeightGroupResult = updateHeight && !heightResultAlreadyCounted,
             )
             players[winnerId] = winner
             players[loserId] = loser
-            if (!resultAlreadyCounted) {
-                seenKeys += key
-                addedMatches++
+
+            if (updateTour) {
+                if (!tourResultAlreadyCounted) {
+                    seenTourKeys += key
+                    addedTourMatches++
+                }
+                if (stats != null && !tourStatsAlreadyCounted) {
+                    seenTourStatKeys += key
+                    validTourMatches++
+                    if (tourResultAlreadyCounted) enrichedTourMatches++
+                }
             }
-            if (stats != null) {
-                seenStatKeys += key
-                validMatches++
-                if (resultAlreadyCounted) enrichedMatches++
+            if (updateHeight) {
+                if (!heightResultAlreadyCounted) {
+                    seenHeightKeys += heightKey
+                    addedHeightMatches++
+                }
+                if (stats != null && !heightStatsAlreadyCounted) {
+                    seenHeightStatKeys += heightKey
+                    validHeightMatches++
+                    if (heightResultAlreadyCounted) enrichedHeightMatches++
+                }
             }
         }
 
-        if (addedMatches == 0 && enrichedMatches == 0) {
-            return PlayerStatsLiveApplyResult(baseline, 0, 0, 0)
-        }
+        if (addedTourMatches == 0 && enrichedTourMatches == 0 &&
+            addedHeightMatches == 0 && enrichedHeightMatches == 0
+        ) return PlayerStatsLiveApplyResult(baseline, 0, 0, 0)
 
         val playerRows = players.values.sortedWith(
             compareBy<PlayerStatsPlayer> { it.name.lowercase() }.thenBy { it.id },
@@ -223,7 +263,9 @@ object PlayerStatsLiveAggregator {
         val heightCount = playerRows.count { it.heightCm != null }
         val eligibleArchivePlayerCount = playerRows.count { it.seasons.isNotEmpty() }
         val availableSeasons = (baseline.meta.statsAvailableSeasons +
-            if (validMatches > 0) listOf(season) else emptyList()).distinct().sorted()
+            if (validTourMatches > 0) listOf(season) else emptyList()).distinct().sorted()
+        val heightAvailableSeasons = (baseline.meta.heightGroupStatsAvailableSeasons +
+            if (validHeightMatches > 0) listOf(season) else emptyList()).distinct().sorted()
 
         val updated = baseline.copy(
             meta = baseline.meta.copy(
@@ -232,15 +274,26 @@ object PlayerStatsLiveAggregator {
                 playersWithHeight = heightCount,
                 playersWithEligibleArchiveResults = eligibleArchivePlayerCount,
                 statsAvailableSeasons = availableSeasons,
-                currentSeasonMatchKeys = seenKeys.sorted(),
-                currentSeasonStatMatchKeys = seenStatKeys.sorted(),
+                heightGroupStatsAvailableSeasons = heightAvailableSeasons,
+                currentSeasonMatchKeys = seenTourKeys.sorted(),
+                currentSeasonStatMatchKeys = seenTourStatKeys.sorted(),
+                heightGroupCurrentSeasonMatchKeys = seenHeightKeys.sorted(),
+                heightGroupCurrentSeasonStatMatchKeys = seenHeightStatKeys.sorted(),
                 liveUpdatedAt = updatedAt,
-                liveMatchCount = baseline.meta.liveMatchCount + addedMatches,
-                liveEnrichedMatchCount = baseline.meta.liveEnrichedMatchCount + enrichedMatches,
+                liveMatchCount = baseline.meta.liveMatchCount + addedTourMatches,
+                liveEnrichedMatchCount = baseline.meta.liveEnrichedMatchCount + enrichedTourMatches,
+                heightGroupLiveMatchCount = baseline.meta.heightGroupLiveMatchCount + addedHeightMatches,
+                heightGroupLiveEnrichedMatchCount =
+                    baseline.meta.heightGroupLiveEnrichedMatchCount + enrichedHeightMatches,
             ),
             players = playerRows,
         )
-        return PlayerStatsLiveApplyResult(updated, addedMatches, enrichedMatches, validMatches)
+        return PlayerStatsLiveApplyResult(
+            updated,
+            maxOf(addedTourMatches, addedHeightMatches),
+            maxOf(enrichedTourMatches, enrichedHeightMatches),
+            maxOf(validTourMatches, validHeightMatches),
+        )
     }
 
     /**
@@ -351,27 +404,39 @@ object PlayerStatsLiveAggregator {
         returnPlayed: Int,
         returnWon: Int,
         hasStats: Boolean,
-        countResult: Boolean = true,
+        includeTourStats: Boolean,
+        includeHeightGroupStats: Boolean,
+        countTourResult: Boolean,
+        countHeightGroupResult: Boolean,
     ): PlayerStatsPlayer {
-        val seasons = player.seasons.associateBy { it.y }.toMutableMap()
-        val current = seasons[season] ?: PlayerSeasonStats(y = season)
-        val updatedBuckets = current.b.toMutableMap()
-
-        for (bucketId in buckets) {
-            val counter = updatedBuckets[bucketId] ?: PlayerStatsBucket()
-            updatedBuckets[bucketId] = counter.copy(
-                mp = counter.mp + if (countResult) 1 else 0,
-                w = counter.w + if (countResult && won) 1 else 0,
-                l = counter.l + if (countResult && !won) 1 else 0,
-                sp = counter.sp + if (hasStats) servePlayed else 0,
-                sw = counter.sw + if (hasStats) serveWon else 0,
-                rp = counter.rp + if (hasStats) returnPlayed else 0,
-                rw = counter.rw + if (hasStats) returnWon else 0,
-                sm = counter.sm + if (hasStats) 1 else 0,
-            )
+        fun update(source: List<PlayerSeasonStats>, countResult: Boolean): List<PlayerSeasonStats> {
+            val seasons = source.associateBy { it.y }.toMutableMap()
+            val current = seasons[season] ?: PlayerSeasonStats(y = season)
+            val updatedBuckets = current.b.toMutableMap()
+            for (bucketId in buckets) {
+                val counter = updatedBuckets[bucketId] ?: PlayerStatsBucket()
+                updatedBuckets[bucketId] = counter.copy(
+                    mp = counter.mp + if (countResult) 1 else 0,
+                    w = counter.w + if (countResult && won) 1 else 0,
+                    l = counter.l + if (countResult && !won) 1 else 0,
+                    sp = counter.sp + if (hasStats) servePlayed else 0,
+                    sw = counter.sw + if (hasStats) serveWon else 0,
+                    rp = counter.rp + if (hasStats) returnPlayed else 0,
+                    rw = counter.rw + if (hasStats) returnWon else 0,
+                    sm = counter.sm + if (hasStats) 1 else 0,
+                )
+            }
+            seasons[season] = current.copy(b = updatedBuckets.toSortedMap())
+            return seasons.values.sortedBy { it.y }
         }
 
-        seasons[season] = current.copy(b = updatedBuckets.toSortedMap())
-        return player.copy(seasons = seasons.values.sortedBy { it.y })
+        return player.copy(
+            seasons = if (includeTourStats) update(player.seasons, countTourResult) else player.seasons,
+            heightGroupSeasons = if (includeHeightGroupStats) {
+                update(player.heightGroupSeasons, countHeightGroupResult)
+            } else {
+                player.heightGroupSeasons
+            },
+        )
     }
 }

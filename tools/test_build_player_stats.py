@@ -1,4 +1,5 @@
 import unittest
+from collections import defaultdict
 from datetime import date
 
 from build_player_stats import (
@@ -9,11 +10,16 @@ from build_player_stats import (
     match_is_retirement,
     match_identity_key,
     normalize_name,
+    normalize_country_code,
+    _add_player_alias,
     parse_current_top100,
     parse_current_top1000,
     parse_kickserve_live_rankings,
     parse_tml_ranking_archive_snapshot,
     map_live_rankings_to_tml_ids,
+    parse_official_atp_profile_id_overrides,
+    parse_verified_player_height_overrides,
+    apply_verified_player_height_overrides,
     supplement_top100_from_tml,
     max_published_rank,
     select_ranking_snapshot_date,
@@ -21,6 +27,8 @@ from build_player_stats import (
     unresolved_top100_count,
     unresolved_ranking_count,
     service_return_contribution,
+    supplement_missing_heights_from_sackmann,
+    ensure_player,
 )
 
 
@@ -146,6 +154,203 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         for value in ("", None, "unknown", "n/a"):
             with self.subTest(value=value):
                 self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardUnknown"))
+
+    def test_verified_player_height_overrides_fill_only_blank_exact_atp_ids(self):
+        payload = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [
+                {
+                    "atpId": "W215",
+                    "name": "Jeff Wolf",
+                    "country": "USA",
+                    "heightCm": 183,
+                    "sourceUrls": ["https://www.gamesetpredict.com/player/jeff-wolf/"],
+                },
+                {
+                    "atpId": "G0EQ",
+                    "name": "Sebastian Gima",
+                    "country": "ROU",
+                    "heightCm": 183,
+                    "sourceUrls": ["https://www.sofascore.com/tennis/player/gima-sebastian/265627"],
+                },
+            ],
+        }
+        overrides = parse_verified_player_height_overrides(payload)
+        players = {
+            "W215": {"id": "W215", "heightCm": None, "heightSource": None},
+            "G0EQ": {"id": "G0EQ", "heightCm": 188, "heightSource": "tml-player-database"},
+        }
+
+        applied = apply_verified_player_height_overrides(overrides, players)
+
+        self.assertEqual(applied, 1)
+        self.assertEqual(players["W215"]["heightCm"], 183)
+        self.assertEqual(players["W215"]["heightSource"], "verified-player-profile")
+        self.assertEqual(players["G0EQ"]["heightCm"], 188)
+        self.assertEqual(players["G0EQ"]["heightSource"], "tml-player-database")
+
+    def test_roan_jones_height_override_uses_exact_atp_profile_id(self):
+        payload = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "J0D3",
+                "name": "Roan Jones",
+                "country": "GBR",
+                "heightCm": 185,
+                "sourceUrls": [
+                    "https://goheels.com/sports/mens-tennis/roster/roan-jones/27333",
+                    "https://www.atptour.com/en/players/roan-jones/j0d3/bio",
+                ],
+            }],
+        }
+        overrides = parse_verified_player_height_overrides(payload)
+        players = {
+            "J0D3": {"id": "J0D3", "name": "Roan Jones", "country": "GBR", "heightCm": None},
+            "J0X3": {"id": "J0X3", "name": "Another Jones", "country": "GBR", "heightCm": None},
+        }
+
+        applied = apply_verified_player_height_overrides(overrides, players)
+
+        self.assertEqual(applied, 1)
+        self.assertEqual(players["J0D3"]["heightCm"], 185)
+        self.assertEqual(players["J0D3"]["heightSource"], "verified-player-profile")
+        self.assertIsNone(players["J0X3"]["heightCm"])
+
+    def test_verified_player_height_override_requires_a_source_url_and_valid_height(self):
+        invalid_source = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "W215", "name": "Jeff Wolf", "country": "USA",
+                "heightCm": 183, "sourceUrls": ["http://example.com/height"],
+            }],
+        }
+        invalid_height = {
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "W215", "name": "Jeff Wolf", "country": "USA",
+                "heightCm": 999, "sourceUrls": ["https://example.com/height"],
+            }],
+        }
+        with self.assertRaisesRegex(RuntimeError, "HTTPS source URLs"):
+            parse_verified_player_height_overrides(invalid_source)
+        with self.assertRaisesRegex(RuntimeError, "Invalid identity or height"):
+            parse_verified_player_height_overrides(invalid_height)
+
+    def test_sackmann_height_fallback_only_fills_unique_missing_tml_players(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Player One", "country": "USA",
+                "heightCm": None, "heightSource": None,
+            },
+            "P2": {
+                "id": "P2", "name": "Already Known", "country": "ESP",
+                "heightCm": 190, "heightSource": "tml-player-database",
+            },
+            "P3": {
+                "id": "P3", "name": "Ambiguous Player", "country": "FRA",
+                "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = {
+            "playerone|USA": {"P1"},
+            "alreadyknown|ESP": {"P2"},
+            "ambiguousplayer|FRA": {"P3", "P4"},
+        }
+        rows = [
+            {
+                "name_first": "Player", "name_last": "One",
+                "ioc": "USA", "height": "188", "player_id": "200001",
+            },
+            {
+                "name_first": "Already", "name_last": "Known",
+                "ioc": "ESP", "height": "195", "player_id": "200002",
+            },
+            {
+                "name_first": "Ambiguous", "name_last": "Player",
+                "ioc": "FRA", "height": "193", "player_id": "200003",
+            },
+            {
+                "name_first": "Player", "name_last": "Without Height",
+                "ioc": "GBR", "height": "", "player_id": "200004",
+            },
+        ]
+
+        filled = supplement_missing_heights_from_sackmann(rows, players, aliases)
+
+        self.assertEqual(filled, 1)
+        self.assertEqual(players["P1"]["heightCm"], 188)
+        self.assertEqual(
+            players["P1"]["heightSource"],
+            "jeff-sackmann-tennis-abstract-player-table",
+        )
+        self.assertEqual(players["P2"]["heightCm"], 190)
+        self.assertEqual(players["P2"]["heightSource"], "tml-player-database")
+        self.assertIsNone(players["P3"]["heightCm"])
+
+    def test_sackmann_height_fallback_uses_safe_middle_name_aliases(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Taylor Fritz", "country": "USA",
+                "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Taylor Fritz", "USA", "P1")
+        rows = [{
+            "name_first": "Taylor",
+            "name_last": "Harry Fritz",
+            "ioc": "USA",
+            "height": "193",
+        }]
+
+        self.assertEqual(
+            supplement_missing_heights_from_sackmann(rows, players, aliases), 1,
+        )
+        self.assertEqual(players["P1"]["heightCm"], 193)
+
+    def test_sackmann_height_fallback_never_crosses_country_when_names_collide(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Alex Smith",
+                "country": "USA", "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = {
+            "alexsmith|USA": {"P1"},
+            "alexsmith|GBR": set(),
+            "alexsmith": {"P1"},
+        }
+        rows = [{
+            "name_first": "Alex", "name_last": "Smith",
+            "ioc": "GBR", "height": "188",
+        }]
+        self.assertEqual(
+            supplement_missing_heights_from_sackmann(rows, players, aliases), 0,
+        )
+        self.assertIsNone(players["P1"]["heightCm"])
+
+    def test_sackmann_height_fallback_accepts_documented_legacy_header_variant(self):
+        players = {
+            "P1": {
+                "id": "P1", "name": "Legacy Player",
+                "country": "USA", "heightCm": None, "heightSource": None,
+            },
+        }
+        aliases = {"legacyplayer|USA": {"P1"}}
+        rows = [{
+            "first_name": "Legacy",
+            "last_name": "Player",
+            "country_code": "USA",
+            "height": "192",
+        }]
+        self.assertEqual(
+            supplement_missing_heights_from_sackmann(rows, players, aliases), 1,
+        )
+        self.assertEqual(players["P1"]["heightCm"], 192)
 
     def test_latest_ranking_snapshot_is_selected_by_date_not_response_order(self):
         selected = select_ranking_snapshot_date(
@@ -280,6 +485,321 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(result["unresolvedPlayers"], 2)
         self.assertEqual(result["rankedEntries"], 3)
 
+    def test_official_atp_profile_override_resolves_ambiguous_roster_aliases(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-881", "rank": 881, "name": "Amr Elsayed", "country": "EGY"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Amr Elsayed", "EGY", "A0G8")
+        _add_player_alias(aliases, "Amr Elsayed", "EGY", "DUPLICATE-ALIAS")
+        overrides = {
+            "amrelsayed|EGY": {
+                "name": "Amr Elsayed",
+                "country": "EGY",
+                "atpId": "A0G8",
+                "profileUrl": "https://www.atptour.com/en/players/-/a0g8/overview",
+            },
+        }
+
+        result = map_live_rankings_to_tml_ids(
+            snapshot, aliases, official_id_overrides=overrides,
+        )
+
+        self.assertEqual([row["id"] for row in result["players"]], ["A0G8"])
+        self.assertEqual(result["unresolvedPlayers"], 0)
+        self.assertEqual(result["identityOverridesApplied"], 1)
+
+    def test_roan_jones_live_ranking_name_resolves_to_verified_height(self):
+        identity_payload = {
+            "version": 1,
+            "source": "ATP Tour official player profile URLs",
+            "players": [{
+                "name": "Roan Jones",
+                "country": "GBR",
+                "atpId": "J0D3",
+                "profileUrl": "https://www.atptour.com/en/players/-/j0d3/overview",
+            }],
+        }
+        identity_overrides = parse_official_atp_profile_id_overrides(identity_payload)
+        snapshot = {
+            "players": [
+                {"id": "KICK-987", "rank": 987, "name": "Roan Jones", "country": "GBR"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+
+        mapped = map_live_rankings_to_tml_ids(
+            snapshot, {}, official_id_overrides=identity_overrides,
+        )
+        self.assertEqual([row["id"] for row in mapped["players"]], ["J0D3"])
+        self.assertEqual(mapped["identityOverridesApplied"], 1)
+        self.assertEqual(mapped["identityOverridesNotApplied"], [])
+
+        players = {}
+        ensure_player(players, "J0D3", "Roan Jones", "GBR", None, 2026)
+        height_overrides = parse_verified_player_height_overrides({
+            "version": 1,
+            "source": "Curated player-profile height records",
+            "players": [{
+                "atpId": "J0D3",
+                "name": "Roan Jones",
+                "country": "GBR",
+                "heightCm": 185,
+                "sourceUrls": [
+                    "https://goheels.com/sports/mens-tennis/roster/roan-jones/27333",
+                    "https://www.atptour.com/en/players/roan-jones/j0d3/bio",
+                ],
+            }],
+        })
+        self.assertEqual(
+            apply_verified_player_height_overrides(height_overrides, players), 1,
+        )
+        self.assertEqual(players["J0D3"]["heightCm"], 185)
+        self.assertEqual(players["J0D3"]["heightSource"], "verified-player-profile")
+
+    def test_official_atp_profile_override_does_not_cross_country(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 410, "name": "Same Name", "country": "GBR"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        overrides = {
+            "samename|USA": {
+                "name": "Same Name",
+                "country": "USA",
+                "atpId": "P001",
+                "profileUrl": "https://www.atptour.com/en/players/-/p001/overview",
+            },
+        }
+
+        result = map_live_rankings_to_tml_ids(
+            snapshot, {}, official_id_overrides=overrides,
+        )
+
+        self.assertEqual(result["players"], [])
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["identityOverridesApplied"], 0)
+
+    def test_official_atp_profile_override_file_rejects_duplicate_profile_ids(self):
+        payload = {
+            "version": 1,
+            "source": "ATP Tour official player profile URLs",
+            "players": [
+                {
+                    "name": "Player One", "country": "USA", "atpId": "P001",
+                    "profileUrl": "https://www.atptour.com/en/players/-/p001/overview",
+                },
+                {
+                    "name": "Player Two", "country": "GBR", "atpId": "P001",
+                    "profileUrl": "https://www.atptour.com/en/players/-/p001/overview",
+                },
+            ],
+        }
+        with self.assertRaisesRegex(RuntimeError, "assigned to both"):
+            parse_official_atp_profile_id_overrides(payload)
+
+    def test_official_atp_profile_override_file_normalizes_country_codes(self):
+        self.assertEqual(normalize_country_code("GB"), "GBR")
+        self.assertEqual(normalize_country_code("UK"), "GBR")
+        self.assertEqual(normalize_country_code("Great Britain"), "GBR")
+        self.assertEqual(normalize_country_code("United Kingdom"), "GBR")
+        payload = {
+            "version": 1,
+            "source": "ATP Tour official player profile URLs",
+            "players": [
+                {
+                    "name": "M Rifki Fitriadi", "country": "INA", "atpId": "M0D4",
+                    "profileUrl": "https://www.atptour.com/en/players/-/m0d4/overview",
+                },
+            ],
+        }
+        result = parse_official_atp_profile_id_overrides(payload)
+        self.assertIn("mrifkifitriadi|IDN", result)
+        self.assertEqual(result["mrifkifitriadi|IDN"]["atpId"], "M0D4")
+
+    def test_live_rankings_prefer_canonical_roster_id_over_duplicate_match_alias(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 124, "name": "Pedro Martinez Portero", "country": "ESP"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Pedro Martinez Portero", "ESP", "ATP-ROSTER")
+        _add_player_alias(aliases, "Pedro Martinez Portero", "ESP", "MATCH-ALIAS")
+        result = map_live_rankings_to_tml_ids(
+            snapshot, aliases, canonical_player_ids={"ATP-ROSTER"},
+        )
+        self.assertEqual([row["id"] for row in result["players"]], ["ATP-ROSTER"])
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_prefer_exact_name_before_initial_alias_collisions(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 118, "name": "Jesper De Jong", "country": "NLD"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Jesper De Jong", "NLD", "TML-JESPER")
+        _add_player_alias(aliases, "J. De Jong", "NLD", "TML-INITIAL")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual([row["id"] for row in result["players"]], ["TML-JESPER"])
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_resolve_middle_names_against_shorter_tml_names(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 10, "name": "Taylor Harry Fritz", "country": "USA"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Taylor Fritz", "USA", "TML-FRITZ")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"][0]["id"], "TML-FRITZ")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_resolve_compound_names_with_unique_adjacent_name_tokens(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 70, "name": "Jaume Antoni Munar Clar", "country": "ESP"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Jaume Munar", "ESP", "TML-MUNAR")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"][0]["id"], "TML-MUNAR")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_keep_multi_token_aliases_unresolved_when_country_candidates_conflict(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 70, "name": "Daniel Merida Aguilar", "country": "ESP"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Daniel Merida", "ESP", "TML-MERIDA")
+        _add_player_alias(aliases, "Daniel Aguilar", "ESP", "TML-AGUILAR")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"], [])
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["unresolvedEntries"][0]["reason"], "ambiguous exact name/country match")
+
+    def test_live_rankings_resolve_unique_first_initial_surname_alias_in_same_country(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 215, "name": "S. Tsitsipas", "country": "GRE"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Stefanos Tsitsipas", "GRE", "TML-TSITSIPAS")
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(len(result["players"]), 1)
+        self.assertEqual(result["players"][0]["id"], "TML-TSITSIPAS")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_legacy_atp_country_codes_normalize_before_cross_provider_matching(self):
+        self.assertEqual(normalize_country_code("CHI"), "CHL")
+        self.assertEqual(normalize_country_code("POR"), "PRT")
+        self.assertEqual(normalize_country_code("SLO"), "SVN")
+        self.assertEqual(normalize_country_code("GRE"), "GRC")
+        self.assertEqual(normalize_country_code("INA"), "IDN")
+        self.assertEqual(normalize_country_code("TPE"), "TWN")
+        self.assertEqual(normalize_country_code("USA"), "USA")
+
+    def test_live_rankings_resolve_same_player_across_legacy_ioc_codes(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 215, "name": "Player One", "country": "CHL"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = defaultdict(set)
+        _add_player_alias(aliases, "Player One", "CHI", "TML-PLAYER-1")
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+        self.assertEqual(result["players"][0]["id"], "TML-PLAYER-1")
+        self.assertEqual(result["unresolvedPlayers"], 0)
+
+    def test_live_rankings_do_not_fallback_to_same_name_in_another_country(self):
+        snapshot = {
+            "players": [
+                {"id": "KICK-1", "rank": 215, "name": "Alex Smith", "country": "GBR"},
+            ],
+            "unresolvedTop100": 0,
+            "unresolvedTop500": 0,
+            "unresolvedPlayers": 0,
+            "rankedEntries": 1,
+            "unresolvedRanks": [],
+        }
+        aliases = {
+            "alexsmith": {"TML-USA"},
+            "alexsmith|USA": {"TML-USA"},
+        }
+
+        result = map_live_rankings_to_tml_ids(snapshot, aliases)
+
+        self.assertEqual(result["players"], [])
+        self.assertEqual(result["unresolvedPlayers"], 1)
+        self.assertEqual(result["unresolvedEntries"][0]["reason"], "no exact name/country match")
+
     def test_live_full_rank_list_restores_missing_members_from_exact_tml_top100(self):
         expanded = {
             "players": [
@@ -308,6 +828,38 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         )
         self.assertEqual(result["unresolvedTop100"], 0)
         self.assertEqual(result["rankedEntries"], 5)
+
+    def test_live_full_rank_list_removes_restored_top100_rows_from_unresolved_audit(self):
+        expanded = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P3", "rank": 3, "name": "Player Three"},
+            ],
+            "unresolvedPlayers": 2,
+            "unresolvedTop500": 2,
+            "rankedEntries": 4,
+            "maxRank": 1000,
+            "unresolvedRanks": [2, 400],
+            "unresolvedEntries": [
+                {"rank": 2, "name": "Player Two", "country": "USA", "reason": "no match"},
+                {"rank": 400, "name": "Unknown Four Hundred", "country": "GBR", "reason": "no match"},
+            ],
+        }
+        top100 = {
+            "players": [
+                {"id": "P1", "rank": 1, "name": "Player One"},
+                {"id": "P2", "rank": 2, "name": "Player Two"},
+            ],
+            "unresolvedPlayers": 0,
+        }
+
+        result = supplement_top100_from_tml(expanded, top100)
+
+        self.assertEqual(result["unresolvedRanks"], [400])
+        self.assertEqual(
+            [row["rank"] for row in result["unresolvedEntries"]],
+            [400],
+        )
 
     def test_live_full_rank_list_rejects_top100_rank_conflicts(self):
         expanded = {

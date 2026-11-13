@@ -34,9 +34,10 @@ class PlayerStatsLiveSyncTest {
         loserBpSaved: String,
         loserBpFaced: String,
         bestOf: String = "3",
+        level: String = "250",
     ): String = listOf(
         tournament, "\"" + tournamentName.replace("\"", "\"\"") + "\"",
-        surface, indoor, "20261109", "250", matchNumber,
+        surface, indoor, "20261109", level, matchNumber,
         winnerId, winnerName, winnerHeight, "USA",
         loserId, loserName, loserHeight, "ESP", score, bestOf,
         winnerServeGames, winnerBpSaved, winnerBpFaced,
@@ -224,6 +225,71 @@ class PlayerStatsLiveSyncTest {
         assertTrue(result.data.players.none { it.id in setOf("P001", "P002", "P003", "P004") })
         assertEquals(setOf("P005", "P006", "P007", "P008"), result.data.players.map { it.id }.toSet())
         assertEquals(2, result.data.meta.currentSeasonMatchKeys.size)
+    }
+
+    @Test
+    fun challengerAndQualifyingFeedsUpdateHeightGroupsWithoutChangingTourRankings() {
+        val challengerCsv = listOf(
+            header,
+            row(
+                "2026-CH-01", "Challenger Event", "Clay", "O", "51",
+                "C001", "Challenger Winner", "190", "C002", "Challenger Loser", "185",
+                "6-4 6-3", "9", "1", "2", "8", "2", "3",
+                level = "C",
+            ),
+        ).joinToString("\n")
+
+        val challenger = PlayerStatsLiveAggregator.apply(
+            baseline = baseline(),
+            rows = PlayerStatsLiveCsvParser.parse(challengerCsv),
+            season = 2026,
+            updatedAt = "2026-11-12T11:00:00Z",
+            sourceKind = "challenger",
+        )
+        assertEquals(1, challenger.addedMatches)
+        assertEquals(1, challenger.matchesWithValidStats)
+        assertTrue(challenger.data.players.all { it.seasons.isEmpty() })
+        assertEquals(1, challenger.data.players.single { it.id == "C001" }
+            .heightGroupSeasons.single { it.y == 2026 }.b.getValue("clay").mp)
+        assertEquals(1, challenger.data.meta.heightGroupLiveMatchCount)
+        assertEquals(0, challenger.data.meta.liveMatchCount)
+
+        val replay = PlayerStatsLiveAggregator.apply(
+            baseline = challenger.data,
+            rows = PlayerStatsLiveCsvParser.parse(challengerCsv),
+            season = 2026,
+            updatedAt = "2026-11-12T11:01:00Z",
+            sourceKind = "challenger",
+        )
+        assertEquals(0, replay.addedMatches)
+        assertEquals(challenger.data, replay.data)
+    }
+
+    @Test
+    fun qualifyingFeedIsAcceptedBySourceAndDoesNotLeakIntoTourStats() {
+        val qualifyingCsv = listOf(
+            header,
+            row(
+                "2026-Q-01", "Qualifying Event", "Hard", "I", "52",
+                "Q001", "Qualifier Winner", "188", "Q002", "Qualifier Loser", "182",
+                "6-3 6-4", "8", "1", "2", "8", "2", "3",
+                level = "Q",
+            ),
+        ).joinToString("\n")
+
+        val result = PlayerStatsLiveAggregator.apply(
+            baseline = baseline(),
+            rows = PlayerStatsLiveCsvParser.parse(qualifyingCsv),
+            season = 2026,
+            updatedAt = "2026-11-12T11:02:00Z",
+            sourceKind = "qualifying",
+        )
+        assertEquals(1, result.addedMatches)
+        assertTrue(result.data.players.all { it.seasons.isEmpty() })
+        assertEquals(1, result.data.players.single { it.id == "Q001" }
+            .heightGroupSeasons.single { it.y == 2026 }.b.getValue("hardIndoor").mp)
+        assertEquals(0, result.data.meta.liveMatchCount)
+        assertEquals(1, result.data.meta.heightGroupLiveMatchCount)
     }
 
     @Test
