@@ -198,6 +198,9 @@ jobs:
 
       - name: Retain recovered signing key for future releases
         if: steps.signing.outputs.recovered_from_artifact == 'true'
+        # Best-effort: keep the existing signing-key recovery artifact usable even
+        # when the monthly Actions artifact-storage allowance has been exhausted.
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: court-pace-release-signing-key-v${{ steps.meta.outputs.version }}
@@ -341,6 +344,18 @@ jobs:
                   "- Retains tied ranks, counts unresolved or ambiguous player identities separately, and marks insufficient ranking depth unavailable instead of substituting a smaller cohort.",
                   "- Keeps the six existing height bands, same-year match statistics, surface filters, pooled Hold%/Break%/H+B calculations and W–L coverage.",
                   "- Preserves CPI and Surface Speed formulas, live ATP rating paths, pace datasets and automatic Player Stats match updates.",
+                  "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
+                  "",
+              ]
+          elif version == "3.3.5":
+              lines += [
+                  "### Expanded ATP-level Height Groups coverage",
+                  "- Adds separate All ATP levels and ATP Tour only scopes for Height Groups; Challenger and ATP qualifying data enriches Height Groups without changing the Tour-only Player Rankings ledger.",
+                  "- Extends automatic current-season ingestion to completed ATP Challenger main-draw and ATP Tour qualifying matches, including ongoing Challenger feeds.",
+                  "- Uses source-specific match identities and deduplication so delayed statistics enrichment does not double-count results across ATP sources.",
+                  "- Adds auditable unresolved ranking-row details, exact official ATP identity overrides and verified missing-height enrichments for expanded Top 500 and Top 1000 cohorts.",
+                  "- Retains year-specific ranking cohorts, six height bands, surface filters, pooled Hold%/Break%/H+B calculations and match-coverage reporting.",
+                  "- Preserves CPI and Surface Speed formulas, live ATP rating paths and existing pace datasets.",
                   "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
                   "",
               ]
