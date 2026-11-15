@@ -31,7 +31,7 @@ class AtpLiveClient(context: Context) {
     private val infosys = AtpInfosysStatsClient()
     private val store = MatchStatsStore(context)
 
-    /** Discover every currently listed ATP 1000/500/250 event from the ATP current-scores hub. */
+    /** Discover standard tour events and the explicit Next Gen format-specific target. */
     suspend fun discoverEvents(
         tournaments: List<Tournament>,
         fallback: List<LiveEvent>,
@@ -59,7 +59,8 @@ class AtpLiveClient(context: Context) {
         val events = if (hubReadable) {
             (discovered + scheduled).distinctBy { it.tournamentId }
         } else {
-            AtpEvents.fallback(fallback, year)
+            // Keep date-active scheduled events available even when ATP's scores hub is blocked.
+            (AtpEvents.fallback(fallback, year) + scheduled).distinctBy { it.tournamentId }
         }
         val completed = AtpEvents.recentCompletedFromSchedule(
             liveSchedule = liveSchedule,

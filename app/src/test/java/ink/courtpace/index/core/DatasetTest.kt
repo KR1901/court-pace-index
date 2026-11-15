@@ -5,6 +5,7 @@ import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.data.isCurrentLiveEvent
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.LiveEvent
+import ink.courtpace.index.core.model.PaceReading
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -100,11 +101,33 @@ class DatasetTest {
             reading.speed?.let {
                 val validStandardRating = it in 0.30..2.0
                 val validFormatSpecificNextGenRating =
-                    reading.t == "nextgen" && reading.src == "computed" && it.isFinite() && it >= 0.30
+                    reading.t == "nextgen" && reading.src in setOf("computed", "live") && it.isFinite() && it >= 0.30
                 assertTrue("speed $it at ${reading.t}", validStandardRating || validFormatSpecificNextGenRating)
             }
             reading.ace?.let { assertTrue("ace $it at ${reading.t}", it in 0.0..30.0) }
         }
+    }
+
+    @Test
+    fun `format-specific Next Gen live readings may exceed two while other live events may not`() {
+        val readingsWithoutNextGenLive = data.dataset.readings.filterNot {
+            it.t == "nextgen" && it.s == 2026 && it.src == "live"
+        }
+        val nextGenLive = data.dataset.copy(
+            readings = readingsWithoutNextGenLive + PaceReading(
+                t = "nextgen", s = 2026, speed = 2.15, src = "live",
+                live = true, matches = 1,
+            ),
+        )
+        assertTrue("Next Gen live CALC should use the format-specific range", DatasetPolicy.isAcceptable(nextGenLive))
+
+        val standardLive = data.dataset.copy(
+            readings = readingsWithoutNextGenLive + PaceReading(
+                t = "atpfinals", s = 2026, speed = 2.15, src = "live",
+                live = true, matches = 1,
+            ),
+        )
+        assertTrue("standard-format live ratings must keep the normal upper bound", !DatasetPolicy.isAcceptable(standardLive))
     }
 
     @Test

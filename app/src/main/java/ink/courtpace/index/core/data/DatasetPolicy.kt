@@ -91,7 +91,7 @@ object DatasetPolicy {
             val speed = reading.speed
             val speedIsValid = speed == null || (
                 speed.isFinite() && speed >= 0.30 &&
-                    (speed <= 2.0 || (reading.t == "nextgen" && reading.src == "computed"))
+                    (speed <= 2.0 || (reading.t == "nextgen" && reading.src in setOf("computed", "live")))
             )
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
                 speedIsValid &&
