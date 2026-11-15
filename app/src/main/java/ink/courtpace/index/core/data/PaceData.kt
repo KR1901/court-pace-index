@@ -30,6 +30,12 @@ class PaceData(val dataset: PaceDataset) {
 
     fun isLive(id: String): Boolean = liveById.containsKey(id)
 
+    /** Current live status for one tournament edition; a same-ID event in another season
+     * must not mark this season's historical row as live.
+     */
+    fun isLive(id: String, season: Int): Boolean =
+        currentLiveEvents().any { it.t == id && it.s == season }
+
     /** Live events for a season that do not have a rating yet, so the board can still list them. */
     /** Every live event for a season, whether or not it has a rating yet. */
     fun liveEvents(season: Int, metric: ink.courtpace.index.core.model.Metric):
