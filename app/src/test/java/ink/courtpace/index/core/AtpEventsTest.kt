@@ -123,6 +123,22 @@ class AtpEventsTest {
     }
 
     @Test
+    fun `ATP Finals is included when the readable scores hub has not listed its route yet`() {
+        val scheduled = LiveEvent(
+            t = "atpfinals", s = 2026, status = "scheduled",
+            start = "2026-11-15", end = "2026-11-22",
+            atpId = 605, slug = "nitto-atp-finals",
+        )
+        val refs = AtpEvents.scheduledFromSchedule(
+            liveSchedule = listOf(scheduled),
+            tournaments = tournaments,
+            year = 2026,
+            today = LocalDate.of(2026, 11, 15),
+        )
+        assertEquals("atpfinals", refs.single().tournamentId)
+    }
+
+    @Test
     fun `ATP Finals route is discovered as a standard live tour event`() {
         val found = AtpEvents.fromCurrentScoresPage(
             source = """/en/scores/current/nitto-atp-finals/605/results""",
