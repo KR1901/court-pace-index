@@ -260,6 +260,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     slug = ref.slug,
                 )
             }
+            val latest = _data.value ?: initial
             // A live rating is a season observation, not an ephemeral event card. Retain it
             // after the event leaves the active ATP slate; only metadata stays active-only.
             publish(
@@ -277,8 +278,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 status("$note · ${discovery.pageBytes}B current page")
             }
 
-            // Restore cached figures for the events still active; they remain visible while the
-            // fresh match pages render, and each row reads only its own cached value.
+            // Restore valid per-event figures from the local cache while fresh pages render.
             val activeBaseline = _data.value?.dataset?.speedBaseline
             if (activeBaseline != null) {
                 ratingStore.readAll()
