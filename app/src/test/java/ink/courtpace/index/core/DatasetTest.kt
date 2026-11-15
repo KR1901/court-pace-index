@@ -2,6 +2,7 @@ package ink.courtpace.index.core
 
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.data.isCurrentLiveEvent
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.core.model.LiveEvent
 import java.time.LocalDate
