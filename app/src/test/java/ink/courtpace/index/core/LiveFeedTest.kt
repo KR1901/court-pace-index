@@ -132,6 +132,21 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a completed event rating remains in season readings after live metadata expires`() {
+        val finished = withParisLive().copy(
+            live = emptyList(),
+            readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
+                t = "paris", s = 2026, speed = 1.12, src = "live",
+                live = true, matches = 30,
+            ),
+        )
+        val merged = PaceData(finished)
+        assertTrue(merged.liveEvents(2026, Metric.SPEED).none { it.first.id == "paris" })
+        assertEquals(1.12, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals("live", merged.reading("paris", 2026, Metric.SPEED)!!.src)
+    }
+
+    @Test
     fun `a live event stays listed once it has a rating`() {
         val withRating = withParisLive().copy(
             readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(

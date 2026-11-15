@@ -20,10 +20,13 @@ object AtpEvents {
         val pageBytes: Int,
         /** True when the current-scores hub returned a readable page, even if no event is active. */
         val hubReadable: Boolean,
+        /** Recently completed supported tour events, rated without being shown in Live now. */
+        val completedEvents: List<Ref> = emptyList(),
     )
 
     private val legacyRefs = mapOf(
         "paris" to Ref(tournamentId = "paris", atpId = 352, slug = "paris", year = 2026),
+        "atpfinals" to Ref(tournamentId = "atpfinals", atpId = 605, slug = "nitto-atp-finals", year = 2026),
     )
 
     // Match the route inside either an absolute URL, relative href or full rendered HTML.
@@ -31,11 +34,12 @@ object AtpEvents {
         """(?i)scores/current/([^/?#"'\s]+)/([0-9]+)"""
     )
 
-    private val eligibleLevels = setOf(Level.M1000, Level.ATP500, Level.ATP250)
+    // Standard tour scoring formats; special-format events (for example Next Gen) stay excluded.
+    private val eligibleLevels = setOf(Level.GS, Level.FINALS, Level.M1000, Level.ATP500, Level.ATP250)
 
     fun forTournament(id: String): Ref? = legacyRefs[id]
 
-    /** Only main-tour ATP 1000, 500 and 250 events are returned. */
+    /** Standard-format Slams, ATP Finals, Masters 1000, 500 and 250 events are returned. */
     fun fromCurrentScoresPage(
         source: String,
         tournaments: List<Tournament>,
@@ -73,6 +77,66 @@ object AtpEvents {
                 ?: return@mapNotNull null
             Ref(event.t, atpId, slug, event.s.takeIf { it > 0 } ?: year)
         }.distinctBy { it.tournamentId }
+
+    /**
+     * Include explicitly scheduled events once their event window has begun, even when a
+     * readable ATP hub has not yet published that event's current-scores route.
+     */
+    fun scheduledFromSchedule(
+        liveSchedule: List<LiveEvent>,
+        tournaments: List<Tournament>,
+        year: Int,
+        today: LocalDate = LocalDate.now(),
+    ): List<Ref> {
+        val eligibleIds = tournaments.asSequence()
+            .filter { it.level in eligibleLevels }
+            .map { it.id }
+            .toSet()
+        return liveSchedule.mapNotNull { event ->
+            if (event.s != year || event.t !in eligibleIds ||
+                event.status.lowercase() != "scheduled") return@mapNotNull null
+            val startDate = event.start?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            if (startDate == null || endDate == null || startDate.isAfter(today) || endDate.isBefore(today)) {
+                return@mapNotNull null
+            }
+            val atpId = event.atpId?.takeIf { it > 0 } ?: return@mapNotNull null
+            val slug = event.slug?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            Ref(event.t, atpId, slug, year)
+        }.distinctBy { it.tournamentId }
+    }
+
+    /**
+     * Recently finished events are rated into the selected season's table, but never returned
+     * to the active Live now slate. A short lookback avoids crawling old results indefinitely.
+     */
+    fun recentCompletedFromSchedule(
+        liveSchedule: List<LiveEvent>,
+        tournaments: List<Tournament>,
+        year: Int,
+        today: LocalDate = LocalDate.now(),
+        lookbackDays: Long = 7,
+    ): List<Ref> {
+        val eligibleIds = tournaments.asSequence()
+            .filter { it.level in eligibleLevels }
+            .map { it.id }
+            .toSet()
+        val cutoff = today.minusDays(lookbackDays.coerceAtLeast(0))
+        return liveSchedule.mapNotNull { event ->
+            if (event.s != year || event.t !in eligibleIds) return@mapNotNull null
+            val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                ?: return@mapNotNull null
+            val completed = event.status.lowercase() in setOf(
+                "completed", "complete", "finished", "final",
+            ) || endDate.isBefore(today)
+            if (!completed || endDate.isAfter(today) || endDate.isBefore(cutoff)) {
+                return@mapNotNull null
+            }
+            val atpId = event.atpId?.takeIf { it > 0 } ?: return@mapNotNull null
+            val slug = event.slug?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            Ref(event.t, atpId, slug, year)
+        }.distinctBy { it.tournamentId }
+    }
 
     private fun isExpired(event: LiveEvent, today: LocalDate): Boolean {
         val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }

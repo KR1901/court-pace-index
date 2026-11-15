@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-15T00:00:00Z",
-  "note": "Event windows are retained for stale-route rejection; only current events are included in the app's Live now list.",
+  "generated": "2026-11-15T06:30:00Z",
+  "note": "Active event windows support the ATP live feed fallback; ended windows remain as completed-rating backfill metadata and stale-route guards.",
   "events": [
     {
       "t": "paris",
@@ -25,6 +25,18 @@
       "asOf": "2026-11-15T00:00:00Z",
       "atpId": 429,
       "slug": "stockholm"
+    },
+    {
+      "t": "atpfinals",
+      "s": 2026,
+      "status": "scheduled",
+      "start": "2026-11-15",
+      "end": "2026-11-22",
+      "round": "RR",
+      "matches": null,
+      "asOf": "2026-11-15T06:30:00Z",
+      "atpId": 605,
+      "slug": "nitto-atp-finals"
     }
   ]
 }

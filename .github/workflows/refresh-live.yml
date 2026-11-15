@@ -79,7 +79,21 @@ jobs:
               raise SystemExit("Stockholm 2026 schedule tombstone was dropped from the generated dataset.")
           if stockholm_key in visible_ids:
               raise SystemExit("Completed Stockholm 2026 must not appear in the visible Live now fallback list.")
-          print("Paris/Stockholm live-schedule checks passed.")
+          finals_key = ("atpfinals", 2026)
+          finals_source = next(
+              (event for event in json.load(open("data/live.json", encoding="utf-8")).get("events", [])
+               if (event.get("t"), event.get("s")) == finals_key),
+              None,
+          )
+          if finals_source is None or finals_source.get("status") != "scheduled":
+              raise SystemExit("ATP Finals 2026 must remain a scheduled fallback event.")
+          if finals_source.get("atpId") != 605 or finals_source.get("slug") != "nitto-atp-finals":
+              raise SystemExit("ATP Finals fallback route metadata is incomplete.")
+          if finals_key not in {(event.get("t"), event.get("s")) for event in schedule}:
+              raise SystemExit("ATP Finals 2026 was dropped from the generated live schedule.")
+          if finals_key not in {(event.get("t"), event.get("s")) for event in visible}:
+              raise SystemExit("ATP Finals 2026 must be available in the visible active-event fallback list.")
+          print("Paris/Stockholm/ATP Finals live-schedule checks passed.")
           PY
 
       - name: Commit if anything changed
