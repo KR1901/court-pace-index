@@ -20,6 +20,7 @@ class AtpEventsTest {
         Tournament("rolandgarros", "Roland Garros", "Paris", "FRA", Surface.CLAY, false, Level.GS),
         Tournament("nextgen", "Next Gen Finals", "Jeddah", "SAU", Surface.HARD, true, Level.SPECIAL),
         Tournament("stockholm", "Stockholm Open", "Stockholm", "SWE", Surface.HARD, true, Level.ATP250),
+        Tournament("atpfinals", "ATP Finals", "Turin", "ITA", Surface.HARD, true, Level.FINALS),
     )
 
     @Test
@@ -30,13 +31,17 @@ class AtpEventsTest {
             <a href="/en/scores/current/toronto/421/results">Canada</a>
             <a href="/en/scores/current/brisbane/990/results">Brisbane</a>
             <a href="/en/scores/current/roland-garros/520/results">Roland Garros</a>
+            <a href="/en/scores/current/nitto-atp-finals/605/results">ATP Finals</a>
             <a href="/en/scores/current/next-gen-finals/999/results">Next Gen</a>
         """.trimIndent()
 
         val found = AtpEvents.fromCurrentScoresPage(page, tournaments, 2026)
 
-        assertEquals(listOf("paris", "indianwells", "canada", "brisbane"), found.map { it.tournamentId })
-        assertEquals(listOf(352, 404, 421, 990), found.map { it.atpId })
+        assertEquals(
+            listOf("paris", "indianwells", "canada", "brisbane", "rolandgarros", "atpfinals"),
+            found.map { it.tournamentId },
+        )
+        assertEquals(listOf(352, 404, 421, 990, 520, 605), found.map { it.atpId })
         assertTrue(found.all { it.year == 2026 })
     }
 
@@ -92,12 +97,40 @@ class AtpEventsTest {
     @Test
     fun `ignores unknown routes and non target tournament levels`() {
         val page = """
-            /en/scores/current/roland-garros/520/results
             /en/scores/current/next-gen-finals/999/results
             /en/scores/current/not-in-our-dataset/1001/results
         """.trimIndent()
 
         assertTrue(AtpEvents.fromCurrentScoresPage(page, tournaments, 2026).isEmpty())
+    }
+
+    @Test
+    fun `recent completed Stockholm is queued for rating but excluded from active fallback`() {
+        val stock = LiveEvent(
+            t = "stockholm", s = 2026, status = "completed",
+            start = "2026-11-08", end = "2026-11-14",
+            atpId = 429, slug = "stockholm",
+        )
+        val older = stock.copy(t = "paris", end = "2026-11-07", atpId = 352, slug = "paris")
+        val refs = AtpEvents.recentCompletedFromSchedule(
+            liveSchedule = listOf(stock, older),
+            tournaments = tournaments,
+            year = 2026,
+            today = LocalDate.of(2026, 11, 15),
+        )
+        assertEquals(listOf("stockholm"), refs.map { it.tournamentId })
+        assertTrue(AtpEvents.fallback(listOf(stock), 2026).isEmpty())
+    }
+
+    @Test
+    fun `ATP Finals route is discovered as a standard live tour event`() {
+        val found = AtpEvents.fromCurrentScoresPage(
+            source = """/en/scores/current/nitto-atp-finals/605/results""",
+            tournaments = tournaments,
+            year = 2026,
+        )
+        assertEquals("atpfinals", found.single().tournamentId)
+        assertEquals(605, found.single().atpId)
     }
 
     @Test
