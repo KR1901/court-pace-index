@@ -19,11 +19,12 @@ class PaceData(val dataset: PaceDataset) {
      * old rows, but the app must never render a completed event if a scheduled publication
      * failed or a device is still holding an older dataset.
      */
-    private val activeLiveEvents: List<LiveEvent> =
+    private fun currentLiveEvents(): List<LiveEvent> =
         dataset.live.filter { isCurrentLiveEvent(it, LocalDate.now()) }
 
     /** Events that have not reached a terminal status or their scheduled end date. */
-    val liveById: Map<String, LiveEvent> = activeLiveEvents.associateBy { it.t }
+    val liveById: Map<String, LiveEvent>
+        get() = currentLiveEvents().associateBy { it.t }
 
     fun liveEvent(id: String): ink.courtpace.index.core.model.LiveEvent? = liveById[id]
 
@@ -34,7 +35,7 @@ class PaceData(val dataset: PaceDataset) {
     fun liveEvents(season: Int, metric: ink.courtpace.index.core.model.Metric):
         List<Pair<Tournament, ink.courtpace.index.core.model.LiveEvent>> {
         if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
-        return activeLiveEvents
+        return currentLiveEvents()
             .filter { it.s == season }
             .mapNotNull { event -> tournament(event.t, season)?.let { it to event } }
             .sortedBy { it.first.name }
