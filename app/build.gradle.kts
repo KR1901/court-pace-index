@@ -123,7 +123,7 @@ dependencies {
     testImplementation(libs.androidx.test.junit)
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.compose.ui.test.manifest)
     testImplementation(libs.kotlinx.coroutines.android)
 }
 
