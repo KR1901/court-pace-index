@@ -123,6 +123,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         PaceData(DatasetPolicy.choose(current.dataset, result.dataset))
                     }
                     publish(merged, keepSeason = current != null)
+                    // DatasetPolicy intentionally drops volatile live rows from a downloaded
+                    // snapshot; restore our locally calculated ratings, including completed ones.
+                    showCachedLiveRatings()
                     if (reportStatus) {
                         refreshState = RefreshState.Done(
                             "Updated to the ${result.dataset.meta.generated} dataset · " +
@@ -278,14 +281,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // Restore cached figures for the events still active; they remain visible while the
             // fresh match pages render, and each row reads only its own cached value.
             val activeBaseline = _data.value?.dataset?.speedBaseline
-            refs.forEach { ref ->
-                val cached = ratingStore.read(ref.tournamentId)
-                if (cached != null && cached.season == ref.year &&
-                    cached.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
-                    activeBaseline != null && cached.baselineGenerated == activeBaseline.generated
-                ) {
-                    restoreCachedLiveRating(cached)
-                }
+            if (activeBaseline != null) {
+                ratingStore.readAll()
+                    .filter {
+                        it.season == activeBaseline.season &&
+                            it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
+                            it.baselineGenerated == activeBaseline.generated
+                    }
+                    .forEach(::restoreCachedLiveRating)
             }
 
             for (ref in refs) {
