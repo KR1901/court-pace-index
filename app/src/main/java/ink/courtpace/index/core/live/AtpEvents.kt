@@ -79,6 +79,34 @@ object AtpEvents {
         }.distinctBy { it.tournamentId }
 
     /**
+     * Include explicitly scheduled events once their event window has begun, even when a
+     * readable ATP hub has not yet published that event's current-scores route.
+     */
+    fun scheduledFromSchedule(
+        liveSchedule: List<LiveEvent>,
+        tournaments: List<Tournament>,
+        year: Int,
+        today: LocalDate = LocalDate.now(),
+    ): List<Ref> {
+        val eligibleIds = tournaments.asSequence()
+            .filter { it.level in eligibleLevels }
+            .map { it.id }
+            .toSet()
+        return liveSchedule.mapNotNull { event ->
+            if (event.s != year || event.t !in eligibleIds ||
+                event.status.lowercase() != "scheduled") return@mapNotNull null
+            val startDate = event.start?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            if (startDate == null || endDate == null || startDate.isAfter(today) || endDate.isBefore(today)) {
+                return@mapNotNull null
+            }
+            val atpId = event.atpId?.takeIf { it > 0 } ?: return@mapNotNull null
+            val slug = event.slug?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            Ref(event.t, atpId, slug, year)
+        }.distinctBy { it.tournamentId }
+    }
+
+    /**
      * Recently finished events are rated into the selected season's table, but never returned
      * to the active Live now slate. A short lookback avoids crawling old results indefinitely.
      */
