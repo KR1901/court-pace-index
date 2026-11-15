@@ -51,10 +51,16 @@ class AtpLiveClient(context: Context) {
         // A readable hub with no active routes is authoritative; dated fallback rows are only
         // used when the ATP page failed to load or was blocked.
         val events = if (hubReadable) discovered else AtpEvents.fallback(fallback, year)
+        val completed = AtpEvents.recentCompletedFromSchedule(
+            liveSchedule = liveSchedule,
+            tournaments = tournaments,
+            year = year,
+        ).filterNot { ref -> events.any { it.tournamentId == ref.tournamentId } }
         return AtpEvents.Discovery(
             events = events,
             pageBytes = html.toByteArray(Charsets.UTF_8).size,
             hubReadable = hubReadable,
+            completedEvents = completed,
         )
     }
 
