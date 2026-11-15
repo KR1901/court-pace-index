@@ -40,6 +40,8 @@ class LiveFeedTest {
     fun `live is per event, not global`() {
         val liveData = PaceData(withParisLive())
         assertTrue(liveData.isLive("paris"))
+        assertTrue(liveData.isLive("paris", 2026))
+        assertFalse(liveData.isLive("paris", 2025))
         assertFalse(liveData.isLive("miami"))
         assertNull(liveData.liveEvent("miami"))
     }
@@ -133,16 +135,25 @@ class LiveFeedTest {
 
     @Test
     fun `a completed event rating remains in season readings after live metadata expires`() {
+        val ended = activeParis.copy(
+            status = "completed",
+            start = LocalDate.now().minusDays(7).toString(),
+            end = LocalDate.now().minusDays(1).toString(),
+        )
         val finished = withParisLive().copy(
-            live = emptyList(),
+            // A stale snapshot may still carry this row; terminal status and date must win.
+            live = listOf(ended),
+            liveSchedule = listOf(ended),
             readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
                 t = "paris", s = 2026, speed = 1.12, src = "live",
                 live = true, matches = 30,
             ),
         )
         val merged = PaceData(finished)
+        assertFalse("A completed event must not be marked active", merged.isLive("paris", 2026))
         assertTrue(merged.liveEvents(2026, Metric.SPEED).none { it.first.id == "paris" })
         assertEquals(1.12, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+        // The rating's provenance remains live even after the red current-status badge disappears.
         assertEquals("live", merged.reading("paris", 2026, Metric.SPEED)!!.src)
     }
 
