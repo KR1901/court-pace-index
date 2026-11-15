@@ -990,6 +990,30 @@ class LiveEventExclusionTests(unittest.TestCase):
         filtered = compute_speed.exclude_live_event_rows(rows, {"paris"})
         self.assertEqual(["Rome Masters"], [row["tourney_name"] for row in filtered])
 
+    def test_scheduled_event_is_excluded_only_inside_its_live_date_window(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "live.json"
+            manifest.write_text(json.dumps({
+                "generated": "2026-12-09T00:00:00Z",
+                "events": [
+                    {
+                        "t": "nextgen", "s": 2026, "status": "scheduled",
+                        "start": "2026-12-09", "end": "2026-12-13",
+                    },
+                    {
+                        "t": "paris", "s": 2026, "status": "scheduled",
+                        "start": "2026-12-10", "end": "2026-12-15",
+                    },
+                ],
+            }), encoding="utf-8")
+            active = compute_speed.live_event_exclusion(
+                live_path=manifest,
+                today=date(2026, 12, 9),
+                now=datetime(2026, 12, 9, 1, 0, tzinfo=timezone.utc),
+            )
+            self.assertTrue(active["fresh"])
+            self.assertEqual(["nextgen"], active["eventIds"])
+
 
 class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
     def test_match_cluster_interval_is_reproducible(self):
@@ -1076,6 +1100,19 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
         self.assertIsNone(ratings["paris"]["speedCiHigh"])
 
 
+
+
+
+class HistoricalEventAliasRegressionTests(unittest.TestCase):
+    def test_adelaide_archive_editions_map_to_one_annual_event(self):
+        self.assertEqual("adelaide", compute_speed.tournament_id("Adelaide 1"))
+        self.assertEqual("adelaide", compute_speed.tournament_id("Adelaide 2"))
+        self.assertEqual("adelaide", compute_speed.tournament_id("Adelaide International 1"))
+        self.assertEqual("adelaide", compute_speed.tournament_id("Adelaide International 2"))
+
+    def test_rio_2020_archive_label_maps_to_existing_rio_event(self):
+        self.assertEqual("rio", compute_speed.tournament_id("ATP Rio de Janeiro"))
+        self.assertEqual("rio", compute_speed.tournament_id("Rio De Janeiro"))
 
 
 if __name__ == "__main__":

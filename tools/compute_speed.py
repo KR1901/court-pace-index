@@ -47,9 +47,13 @@ NAMES = {
     # TennisMyLife uses these shorter/alternate event labels in its ATP CSV.
     "Monte Carlo": "montecarlo", "Cincinnati": "cincinnati", "Shanghai": "shanghai",
     "'s-Hertogenbosch": "shertogenbosch", "’s-Hertogenbosch": "shertogenbosch",
-    "Adelaide": "adelaide", "Adelaide International": "adelaide", "Montpellier": "montpellier", "Dallas": "dallas",
+    "Adelaide": "adelaide", "Adelaide International": "adelaide",
+    "Adelaide 1": "adelaide", "Adelaide 2": "adelaide",
+    "Adelaide International 1": "adelaide", "Adelaide International 2": "adelaide",
+    "Montpellier": "montpellier", "Dallas": "dallas",
     "Rotterdam": "rotterdam", "Delray Beach": "delraybeach",
-    "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Rio Open": "rio", "Doha": "doha",
+    "Buenos Aires": "buenosaires", "Rio de Janeiro": "rio", "Rio De Janeiro": "rio",
+    "ATP Rio de Janeiro": "rio", "Rio Open": "rio", "Doha": "doha",
     "Acapulco": "acapulco", "Dubai": "dubai", "Santiago": "santiago",
     "Marseille": "marseille", "Open 13 Provence": "marseille",
     "Stockholm": "stockholm", "Stockholm Open": "stockholm",
@@ -1247,7 +1251,7 @@ def season_ratings(year, rows):
 
 
 def live_event_exclusion(live_path=None, today=None, now=None):
-    """Return active tournament IDs only from a recent, date-valid live manifest."""
+    """Return active tournament IDs from current in-progress or date-active scheduled rows."""
     live_path = live_path or os.path.join(os.path.dirname(__file__), "..", "data", "live.json")
     today = today or date.today()
     now = now or datetime.now(timezone.utc)
@@ -1264,7 +1268,8 @@ def live_event_exclusion(live_path=None, today=None, now=None):
             return {"fresh": False, "generated": generated.isoformat(), "eventIds": [], "reason": f"manifest age {age} outside freshness window"}
         active = set()
         for event in payload.get("events", []):
-            if event.get("status") != "in_progress" or int(event.get("s", 0)) != today.year:
+            status = str(event.get("status", "")).strip().lower()
+            if status not in {"in_progress", "scheduled"} or int(event.get("s", 0)) != today.year:
                 continue
             try:
                 start = date.fromisoformat(event["start"])
