@@ -72,9 +72,13 @@ jobs:
                if event.get("t") == "stockholm" and event.get("s") == 2026),
               None,
           )
-          if stockholm_source is not None and stockholm_source.get("status") == "in_progress":
-              if not any(event.get("t") == "stockholm" and event.get("s") == 2026 for event in visible):
-                  raise SystemExit("Active Stockholm 2026 was unexpectedly omitted from the visible live list.")
+          stockholm_key = ("stockholm", 2026)
+          if stockholm_source is None or stockholm_source.get("status") != "completed":
+              raise SystemExit("Stockholm 2026 must remain a completed schedule tombstone.")
+          if stockholm_key not in {(event.get("t"), event.get("s")) for event in schedule}:
+              raise SystemExit("Stockholm 2026 schedule tombstone was dropped from the generated dataset.")
+          if stockholm_key in visible_ids:
+              raise SystemExit("Completed Stockholm 2026 must not appear in the visible Live now fallback list.")
           print("Paris/Stockholm live-schedule checks passed.")
           PY
 
