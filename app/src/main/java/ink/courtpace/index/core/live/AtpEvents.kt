@@ -29,6 +29,7 @@ object AtpEvents {
     private val legacyRefs = mapOf(
         "paris" to Ref(tournamentId = "paris", atpId = 352, slug = "paris", year = 2026),
         "atpfinals" to Ref(tournamentId = "atpfinals", atpId = 605, slug = "nitto-atp-finals", year = 2026),
+        "nextgen" to Ref(tournamentId = "nextgen", atpId = 7696, slug = "next-gen-atp-finals", year = 2026),
     )
 
     // Match the route inside either an absolute URL, relative href or full rendered HTML.
@@ -36,8 +37,13 @@ object AtpEvents {
         """(?i)scores/current/([^/?#"'\s]+)/([0-9]+)"""
     )
 
-    // Standard tour scoring formats; special-format events (for example Next Gen) stay excluded.
+    // Next Gen is the only special-format event admitted as a target. Its matches never
+    // contribute to standard-tour player profiles or the standard season normaliser.
     private val eligibleLevels = setOf(Level.GS, Level.FINALS, Level.M1000, Level.ATP500, Level.ATP250)
+    private const val TARGET_ONLY_FORMAT_EVENT_ID = "nextgen"
+
+    private fun isEligible(tournament: Tournament): Boolean =
+        tournament.level in eligibleLevels || tournament.id == TARGET_ONLY_FORMAT_EVENT_ID
 
     fun forTournament(id: String): Ref? = legacyRefs[id]
 
@@ -48,7 +54,7 @@ object AtpEvents {
         "https://www.atptour.com/en/scores/current/${ref.slug}/${ref.atpId}/results"
     }
 
-    /** Standard-format Slams, ATP Finals, Masters 1000, 500 and 250 events are returned. */
+    /** Standard tour events plus the explicit format-specific Next Gen target are returned. */
     fun fromCurrentScoresPage(
         source: String,
         tournaments: List<Tournament>,
@@ -56,7 +62,7 @@ object AtpEvents {
         liveSchedule: List<LiveEvent> = emptyList(),
         today: LocalDate = LocalDate.now(),
     ): List<Ref> {
-        val eligible = tournaments.filter { it.level in eligibleLevels }
+        val eligible = tournaments.filter(::isEligible)
         val discovered = linkedMapOf<String, Ref>()
         currentRoute.findAll(source).forEach { match ->
             val slug = match.groupValues[1].trim()
@@ -69,6 +75,10 @@ object AtpEvents {
                 it.t == tournament.id && it.s == year
             }
             if (scheduled != null && isExpired(scheduled, today)) return@forEach
+            if (scheduled?.status?.lowercase() == "scheduled") {
+                val startDate = scheduled.start?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                if (startDate != null && startDate.isAfter(today)) return@forEach
+            }
             discovered.putIfAbsent(tournament.id, Ref(tournament.id, atpId, slug, year))
         }
         return discovered.values.toList()
@@ -98,7 +108,7 @@ object AtpEvents {
         today: LocalDate = LocalDate.now(),
     ): List<Ref> {
         val eligibleIds = tournaments.asSequence()
-            .filter { it.level in eligibleLevels }
+            .filter(::isEligible)
             .map { it.id }
             .toSet()
         return liveSchedule.mapNotNull { event ->
@@ -127,7 +137,7 @@ object AtpEvents {
         lookbackDays: Long = 7,
     ): List<Ref> {
         val eligibleIds = tournaments.asSequence()
-            .filter { it.level in eligibleLevels }
+            .filter(::isEligible)
             .map { it.id }
             .toSet()
         val cutoff = today.minusDays(lookbackDays.coerceAtLeast(0))
@@ -163,6 +173,7 @@ object AtpEvents {
             addAll(suffixes)
             when (normalise(slug)) {
                 "toronto", "montreal" -> add("canada")
+                "nextgenatpfinals", "nextgenfinals", "nextgenerationatpfinals" -> add("nextgen")
             }
         }.distinct()
 

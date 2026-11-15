@@ -96,6 +96,7 @@ SEASON_VENUES = {
     ("lavercup", 2024): ("Berlin", "GER"),
     ("lavercup", 2025): ("San Francisco", "USA"),
     ("lavercup", 2026): ("London", "GBR"),
+    ("nextgen", 2026): ("Reggio Calabria", "ITA"),
 }
 
 # CPI readings: (tournament id, season, value). Source: Court Speed / The Racquet ATP Court Speed Database,
@@ -398,8 +399,8 @@ if os.path.exists(COMPUTED):
 else:
     print("no computed history found; run tools/compute_speed.py --write first")
 
-# Retain all event windows so Android can reject completed routes that the ATP hub
-# still exposes. Only not-yet-expired rows are published in the visible live list.
+# Retain all event windows so Android can reject stale routes and activate scheduled events
+# on their start date. Only started, non-expired, non-terminal rows enter the visible live list.
 live_schedule = []
 live_events = []
 if os.path.exists(LIVE_FEED):
@@ -418,6 +419,13 @@ if os.path.exists(LIVE_FEED):
                 pass
         if str(event.get("status", "")).lower() in {"completed", "complete", "finished", "final", "cancelled"}:
             continue
+        start_date = event.get("start")
+        if start_date:
+            try:
+                if datetime_date.fromisoformat(start_date) > datetime_date.today():
+                    continue
+            except ValueError:
+                pass
         live_events.append(event)
         # Never publish an unversioned/legacy pooled-rate live reading as if it used the
         # current opponent-adjusted method. Runtime live ratings are computed on-device.

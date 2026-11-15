@@ -18,7 +18,8 @@ class AtpEventsTest {
         Tournament("canada", "Canadian Open", "Toronto", "CAN", Surface.HARD, false, Level.M1000),
         Tournament("brisbane", "Brisbane International", "Brisbane", "AUS", Surface.HARD, false, Level.ATP250),
         Tournament("rolandgarros", "Roland Garros", "Paris", "FRA", Surface.CLAY, false, Level.GS),
-        Tournament("nextgen", "Next Gen Finals", "Jeddah", "SAU", Surface.HARD, true, Level.SPECIAL),
+        Tournament("nextgen", "Next Gen ATP Finals", "Reggio Calabria", "ITA", Surface.HARD, true, Level.SPECIAL),
+        Tournament("unitedcup", "United Cup", "Perth", "AUS", Surface.HARD, false, Level.SPECIAL),
         Tournament("stockholm", "Stockholm Open", "Stockholm", "SWE", Surface.HARD, true, Level.ATP250),
         Tournament("atpfinals", "ATP Finals", "Turin", "ITA", Surface.HARD, true, Level.FINALS),
     )
@@ -32,16 +33,16 @@ class AtpEventsTest {
             <a href="/en/scores/current/brisbane/990/results">Brisbane</a>
             <a href="/en/scores/current/roland-garros/520/results">Roland Garros</a>
             <a href="/en/scores/current/nitto-atp-finals/605/results">ATP Finals</a>
-            <a href="/en/scores/current/next-gen-finals/999/results">Next Gen</a>
+            <a href="/en/scores/current/next-gen-atp-finals/7696/results">Next Gen ATP Finals</a>
         """.trimIndent()
 
         val found = AtpEvents.fromCurrentScoresPage(page, tournaments, 2026)
 
         assertEquals(
-            listOf("paris", "indianwells", "canada", "brisbane", "rolandgarros", "atpfinals"),
+            listOf("paris", "indianwells", "canada", "brisbane", "rolandgarros", "atpfinals", "nextgen"),
             found.map { it.tournamentId },
         )
-        assertEquals(listOf(352, 404, 421, 990, 520, 605), found.map { it.atpId })
+        assertEquals(listOf(352, 404, 421, 990, 520, 605, 7696), found.map { it.atpId })
         assertTrue(found.all { it.year == 2026 })
     }
 
@@ -95,9 +96,9 @@ class AtpEventsTest {
     }
 
     @Test
-    fun `ignores unknown routes and non target tournament levels`() {
+    fun `ignores unknown routes and unrelated special event levels`() {
         val page = """
-            /en/scores/current/next-gen-finals/999/results
+            /en/scores/current/united-cup/999/results
             /en/scores/current/not-in-our-dataset/1001/results
         """.trimIndent()
 
@@ -165,6 +166,42 @@ class AtpEventsTest {
             today = LocalDate.of(2026, 11, 15),
         )
         assertEquals("atpfinals", refs.single().tournamentId)
+    }
+
+    @Test
+    fun `Next Gen is date-gated into the live schedule fallback`() {
+        val scheduled = LiveEvent(
+            t = "nextgen", s = 2026, status = "scheduled",
+            start = "2026-12-09", end = "2026-12-13",
+            atpId = 7696, slug = "next-gen-atp-finals",
+        )
+        val beforeStart = AtpEvents.scheduledFromSchedule(
+            liveSchedule = listOf(scheduled),
+            tournaments = tournaments,
+            year = 2026,
+            today = LocalDate.of(2026, 12, 8),
+        )
+        assertTrue(beforeStart.isEmpty())
+
+        val onOpeningDay = AtpEvents.scheduledFromSchedule(
+            liveSchedule = listOf(scheduled),
+            tournaments = tournaments,
+            year = 2026,
+            today = LocalDate.of(2026, 12, 9),
+        )
+        assertEquals("nextgen", onOpeningDay.single().tournamentId)
+        assertEquals(7696, onOpeningDay.single().atpId)
+    }
+
+    @Test
+    fun `Next Gen current results route resolves to its format-specific target`() {
+        val found = AtpEvents.fromCurrentScoresPage(
+            source = """/en/scores/current/next-gen-atp-finals/7696/results""",
+            tournaments = tournaments,
+            year = 2026,
+        )
+        assertEquals("nextgen", found.single().tournamentId)
+        assertEquals(7696, found.single().atpId)
     }
 
     @Test

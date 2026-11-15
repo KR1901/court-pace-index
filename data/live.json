@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-15T06:30:00Z",
+  "generated": "2026-11-15T08:00:25Z",
   "note": "Active event windows support the ATP live feed fallback; ended windows remain as completed-rating backfill metadata and stale-route guards.",
   "events": [
     {
@@ -37,6 +37,18 @@
       "asOf": "2026-11-15T06:30:00Z",
       "atpId": 605,
       "slug": "nitto-atp-finals"
+    },
+    {
+      "t": "nextgen",
+      "s": 2026,
+      "status": "scheduled",
+      "start": "2026-12-09",
+      "end": "2026-12-13",
+      "round": "RR",
+      "matches": null,
+      "asOf": "2026-11-15T07:15:00Z",
+      "atpId": 7696,
+      "slug": "next-gen-atp-finals"
     }
   ]
 }
