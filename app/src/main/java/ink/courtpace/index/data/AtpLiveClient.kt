@@ -48,9 +48,19 @@ class AtpLiveClient(context: Context) {
         )
         val hubReadable = html.isNotBlank() &&
             !html.contains(AtpWebReader.BLOCKED, ignoreCase = true)
-        // A readable hub with no active routes is authoritative; dated fallback rows are only
-        // used when the ATP page failed to load or was blocked.
-        val events = if (hubReadable) discovered else AtpEvents.fallback(fallback, year)
+        // The readable hub is authoritative for matches already in its active slate. However,
+        // a scheduled event whose date window has begun can precede its first current-scores route.
+        // Merge only those explicit scheduled rows; completed/in-progress tombstones cannot revive.
+        val scheduled = AtpEvents.scheduledFromSchedule(
+            liveSchedule = liveSchedule,
+            tournaments = tournaments,
+            year = year,
+        )
+        val events = if (hubReadable) {
+            (discovered + scheduled).distinctBy { it.tournamentId }
+        } else {
+            AtpEvents.fallback(fallback, year)
+        }
         val completed = AtpEvents.recentCompletedFromSchedule(
             liveSchedule = liveSchedule,
             tournaments = tournaments,
