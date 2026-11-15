@@ -697,7 +697,7 @@ private fun HeightGroupCard(
             )
         }
         Text(
-            text = "Service " + group.serviceGamesWon + "/" + group.serviceGames + " games · Return " + group.returnGamesWon + "/" + group.returnGames + " games",
+            text = "Service games held " + group.serviceGamesWon + "/" + group.serviceGames + " · Return games won " + group.returnGamesWon + "/" + group.returnGames,
             style = TextStyle(fontSize = 10.sp),
             color = colors.textFaint,
         )
