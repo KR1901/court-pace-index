@@ -7,7 +7,7 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs]
     paths:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
@@ -58,6 +58,19 @@ jobs:
 
       - name: Refresh calendar-year TA and CPI source tables
         run: python3 tools/fetch_reference_data.py --start-year 1991 --end-year "$(date -u +%Y)"
+
+      - name: Refresh live event manifest timestamp for baseline freshness
+        run: |
+          python3 - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          path = Path("data/live.json")
+          payload = json.loads(path.read_text(encoding="utf-8"))
+          payload["generated"] = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+          path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          PY
 
       - name: Recompute the speed series from the match archive
         run: python3 tools/compute_speed.py --write
@@ -207,6 +220,25 @@ jobs:
                           assert row is not None, f"{filename} missing provisional {season}/{tournament_id}"
                           assert row.get("provisionalSpeed") == round(values["provisionalSpeed"], 3), f"{filename} stale provisional speed for {season}/{tournament_id}"
                           assert row.get("provisionalServerSides") == values.get("provisionalServerSides"), f"{filename} stale provisional coverage for {season}/{tournament_id}"
+              required_calc = {
+                  (2020, "rio"): 31,
+                  (2022, "adelaide"): 54,
+                  (2023, "adelaide"): 58,
+              }
+              for (required_season, required_event), minimum_matches in required_calc.items():
+                  values = history["seasons"].get(str(required_season), {}).get(required_event)
+                  assert values and values.get("speed") is not None, (
+                      f"{filename} missing restored CALC {required_season}/{required_event}"
+                  )
+                  assert values.get("matches", 0) >= minimum_matches, (
+                      f"{filename} has partial archive coverage for {required_season}/{required_event}: "
+                      f"{values.get('matches', 0)} of at least {minimum_matches} matches"
+                  )
+                  assert values.get("adjustedServerSides") == values.get("matches", 0) * 2
+                  restored = indexed.get((required_event, required_season))
+                  assert restored and restored.get("src") == "computed", (
+                      f"{filename} did not publish CALC {required_season}/{required_event}"
+                  )
               assert checked > 0, f"{filename} has no calculated readings"
           print(f"Bundled and downloadable datasets contain the validated baseline and {checked} current CALC rows match speed_history.json.")
           PY

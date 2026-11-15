@@ -37,6 +37,7 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from datetime import date as dt_date
           with open("app/src/main/assets/pace_dataset.json", encoding="utf-8") as stream:
               dataset = json.load(stream)
           visible = dataset.get("live", [])
@@ -93,7 +94,22 @@ jobs:
               raise SystemExit("ATP Finals 2026 was dropped from the generated live schedule.")
           if finals_key not in {(event.get("t"), event.get("s")) for event in visible}:
               raise SystemExit("ATP Finals 2026 must be available in the visible active-event fallback list.")
-          print("Paris/Stockholm/ATP Finals live-schedule checks passed.")
+          nextgen_key = ("nextgen", 2026)
+          nextgen_source = next(
+              (event for event in json.load(open("data/live.json", encoding="utf-8")).get("events", [])
+               if (event.get("t"), event.get("s")) == nextgen_key),
+              None,
+          )
+          if nextgen_source is None or nextgen_source.get("status") != "scheduled":
+              raise SystemExit("Next Gen ATP Finals 2026 must remain scheduled.")
+          if nextgen_source.get("atpId") != 7696 or nextgen_source.get("slug") != "next-gen-atp-finals":
+              raise SystemExit("Next Gen ATP Finals route metadata is incomplete.")
+          if nextgen_key not in {(event.get("t"), event.get("s")) for event in schedule}:
+              raise SystemExit("Next Gen ATP Finals was dropped from the generated live schedule.")
+          nextgen_start = dt_date.fromisoformat(nextgen_source["start"])
+          if dt_date.today() < nextgen_start and nextgen_key in visible_ids:
+              raise SystemExit("Future Next Gen ATP Finals must not appear in Live now before its start date.")
+          print("Paris/Stockholm/ATP Finals/Next Gen live-schedule checks passed.")
           PY
 
       - name: Commit if anything changed
