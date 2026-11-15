@@ -260,7 +260,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     slug = ref.slug,
                 )
             }
-            val latest = _data.value ?: initial
             // A live rating is a season observation, not an ephemeral event card. Retain it
             // after the event leaves the active ATP slate; only metadata stays active-only.
             publish(
@@ -385,9 +384,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         it.baselineGenerated == baseline.generated
                 }?.toAceRatingResultOrNull()
                 if (cachedResult != null) {
-                    if (_data.value?.reading(ref.tournamentId, ref.year)?.src != "live") {
-                        restoreCachedLiveRating(cached!!)
-                    }
+                    restoreCachedLiveRating(cached!!)
                     continue
                 }
 
