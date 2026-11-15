@@ -13,6 +13,8 @@ object AtpEvents {
         val atpId: Int,
         val slug: String,
         val year: Int,
+        /** Completed-event refs must use ATP's year-specific archive results route. */
+        val completed: Boolean = false,
     )
 
     data class Discovery(
@@ -38,6 +40,13 @@ object AtpEvents {
     private val eligibleLevels = setOf(Level.GS, Level.FINALS, Level.M1000, Level.ATP500, Level.ATP250)
 
     fun forTournament(id: String): Ref? = legacyRefs[id]
+
+    /** Build the correct ATP results route for an active or completed season event. */
+    fun resultsUrl(ref: Ref): String = if (ref.completed) {
+        "https://www.atptour.com/en/scores/archive/${ref.slug}/${ref.atpId}/${ref.year}/results"
+    } else {
+        "https://www.atptour.com/en/scores/current/${ref.slug}/${ref.atpId}/results"
+    }
 
     /** Standard-format Slams, ATP Finals, Masters 1000, 500 and 250 events are returned. */
     fun fromCurrentScoresPage(
@@ -134,7 +143,7 @@ object AtpEvents {
             }
             val atpId = event.atpId?.takeIf { it > 0 } ?: return@mapNotNull null
             val slug = event.slug?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-            Ref(event.t, atpId, slug, year)
+            Ref(event.t, atpId, slug, year, completed = true)
         }.distinctBy { it.tournamentId }
     }
 

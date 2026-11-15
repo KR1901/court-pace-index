@@ -112,8 +112,7 @@ class AtpLiveClient(context: Context) {
         val failuresByMatch = ConcurrentHashMap<String, String>()
         val gate = Semaphore(PARALLEL_PAGES)
 
-        val resultsUrl =
-            "https://www.atptour.com/en/scores/current/${event.slug}/${event.atpId}/results"
+        val resultsUrl = AtpEvents.resultsUrl(event)
         val source = web.readPageSource(resultsUrl, RESULTS_RENDER_MS).orEmpty()
         // The results page supplies the completed singles match IDs. Match statistics themselves
         // come from ATP/Infosys JSON, not by scraping the visible HTML or guessing per-match URLs.

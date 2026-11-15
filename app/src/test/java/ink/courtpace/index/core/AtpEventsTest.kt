@@ -105,6 +105,35 @@ class AtpEventsTest {
     }
 
     @Test
+    fun `completed events use their explicit season archive results route`() {
+        val stock = AtpEvents.Ref(
+            tournamentId = "stockholm",
+            atpId = 429,
+            slug = "stockholm",
+            year = 2026,
+            completed = true,
+        )
+        assertEquals(
+            "https://www.atptour.com/en/scores/archive/stockholm/429/2026/results",
+            AtpEvents.resultsUrl(stock),
+        )
+    }
+
+    @Test
+    fun `active ATP Finals uses the current results route`() {
+        val finals = AtpEvents.Ref(
+            tournamentId = "atpfinals",
+            atpId = 605,
+            slug = "nitto-atp-finals",
+            year = 2026,
+        )
+        assertEquals(
+            "https://www.atptour.com/en/scores/current/nitto-atp-finals/605/results",
+            AtpEvents.resultsUrl(finals),
+        )
+    }
+
+    @Test
     fun `recent completed Stockholm is queued for rating but excluded from active fallback`() {
         val stock = LiveEvent(
             t = "stockholm", s = 2026, status = "completed",
