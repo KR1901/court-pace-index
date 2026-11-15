@@ -46,7 +46,7 @@ class PaceData(val dataset: PaceDataset) {
         // Live ratings are ace-based, so they belong to the speed metric only. A live event
         // has nothing to say about the physical CPI.
         if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
-        return activeLiveEvents
+        return currentLiveEvents()
             // Published/computed season ratings are not a current live calculation. An active
             // event remains pending until its own ATP match-feed rating is written.
             .filter { it.s == season && liveReading(it.t, it.s) == null }
