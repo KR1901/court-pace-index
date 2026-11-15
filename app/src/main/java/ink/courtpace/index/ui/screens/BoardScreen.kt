@@ -298,7 +298,7 @@ fun BoardScreen(
                     metric = metric,
                     min = min,
                     max = max,
-                    live = metric == Metric.SPEED && source == "live",
+                    live = metric == Metric.SPEED && data.isLive(row.tournament.id, season),
                     speedSource = source,
                     publishedSpeed = if (metric == Metric.SPEED) data.publishedSpeed(row.tournament.id, season) else null,
                     sampleNote = smallSampleNote,
