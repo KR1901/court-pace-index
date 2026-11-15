@@ -465910,7 +465910,20 @@
    "src": "computed"
   }
  ],
- "live": [],
+ "live": [
+  {
+   "t": "atpfinals",
+   "s": 2026,
+   "status": "scheduled",
+   "start": "2026-11-15",
+   "end": "2026-11-22",
+   "round": "RR",
+   "matches": null,
+   "asOf": "2026-11-15T06:30:00Z",
+   "atpId": 605,
+   "slug": "nitto-atp-finals"
+  }
+ ],
  "liveSchedule": [
   {
    "t": "paris",
@@ -465935,6 +465948,18 @@
    "asOf": "2026-11-15T00:00:00Z",
    "atpId": 429,
    "slug": "stockholm"
+  },
+  {
+   "t": "atpfinals",
+   "s": 2026,
+   "status": "scheduled",
+   "start": "2026-11-15",
+   "end": "2026-11-22",
+   "round": "RR",
+   "matches": null,
+   "asOf": "2026-11-15T06:30:00Z",
+   "atpId": 605,
+   "slug": "nitto-atp-finals"
   }
  ],
  "speedBaseline": {
