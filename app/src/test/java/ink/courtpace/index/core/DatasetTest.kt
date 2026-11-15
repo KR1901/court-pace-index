@@ -2,7 +2,10 @@ package ink.courtpace.index.core
 
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
+import ink.courtpace.index.core.data.isCurrentLiveEvent
 import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.core.model.LiveEvent
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,6 +23,33 @@ class DatasetTest {
         assertEquals(2026, data.dataset.meta.season)
         assertEquals(3, data.dataset.meta.sources.size)
         assertTrue(data.dataset.meta.sources.all { it.url.startsWith("https://") })
+    }
+
+    @Test
+    fun `expired and terminal live events are hidden from the speed live now list`() {
+        val staleStockholm = LiveEvent(
+            t = "stockholm",
+            s = 2026,
+            status = "in_progress",
+            start = "2026-11-08",
+            end = "2026-11-14",
+            atpId = 429,
+            slug = "stockholm",
+        )
+        val terminalWithoutDates = LiveEvent(
+            t = "paris",
+            s = 2026,
+            status = "completed",
+        )
+
+        assertTrue(!isCurrentLiveEvent(staleStockholm, LocalDate.of(2026, 11, 15)))
+        assertTrue(!isCurrentLiveEvent(terminalWithoutDates, LocalDate.of(2026, 11, 15)))
+        assertTrue(isCurrentLiveEvent(staleStockholm, LocalDate.of(2026, 11, 14)))
+
+        val withStaleEvents = PaceData(data.dataset.copy(live = listOf(staleStockholm, terminalWithoutDates)))
+        assertTrue(withStaleEvents.liveEvents(2026, Metric.SPEED).isEmpty())
+        assertTrue(withStaleEvents.liveWithoutRating(2026, Metric.SPEED).isEmpty())
+        assertTrue(withStaleEvents.liveById.isEmpty())
     }
 
     @Test

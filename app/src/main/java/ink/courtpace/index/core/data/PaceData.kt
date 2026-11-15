@@ -1,20 +1,30 @@
 package ink.courtpace.index.core.data
 
 import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.core.model.LiveEvent
 import ink.courtpace.index.core.model.PaceDataset
 import ink.courtpace.index.core.model.PaceReading
 import ink.courtpace.index.core.model.Surface
 import ink.courtpace.index.core.model.Tournament
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
 
 /**
  * An indexed view over the bundled dataset. Built once, read by every screen.
  */
 class PaceData(val dataset: PaceDataset) {
 
-    /** Events in progress, by tournament id. */
-    val liveById: Map<String, ink.courtpace.index.core.model.LiveEvent> =
-        dataset.live.associateBy { it.t }
+    /**
+     * Defensive client-side filter for stale published snapshots. The builder also expires
+     * old rows, but the app must never render a completed event if a scheduled publication
+     * failed or a device is still holding an older dataset.
+     */
+    private fun currentLiveEvents(): List<LiveEvent> =
+        dataset.live.filter { isCurrentLiveEvent(it, LocalDate.now()) }
+
+    /** Events that have not reached a terminal status or their scheduled end date. */
+    val liveById: Map<String, LiveEvent>
+        get() = currentLiveEvents().associateBy { it.t }
 
     fun liveEvent(id: String): ink.courtpace.index.core.model.LiveEvent? = liveById[id]
 
@@ -25,7 +35,7 @@ class PaceData(val dataset: PaceDataset) {
     fun liveEvents(season: Int, metric: ink.courtpace.index.core.model.Metric):
         List<Pair<Tournament, ink.courtpace.index.core.model.LiveEvent>> {
         if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
-        return dataset.live
+        return currentLiveEvents()
             .filter { it.s == season }
             .mapNotNull { event -> tournament(event.t, season)?.let { it to event } }
             .sortedBy { it.first.name }
@@ -36,7 +46,7 @@ class PaceData(val dataset: PaceDataset) {
         // Live ratings are ace-based, so they belong to the speed metric only. A live event
         // has nothing to say about the physical CPI.
         if (metric != ink.courtpace.index.core.model.Metric.SPEED) return emptyList()
-        return dataset.live
+        return currentLiveEvents()
             // Published/computed season ratings are not a current live calculation. An active
             // event remains pending until its own ATP match-feed rating is written.
             .filter { it.s == season && liveReading(it.t, it.s) == null }
@@ -206,4 +216,15 @@ class PaceData(val dataset: PaceDataset) {
 
         fun parse(text: String): PaceData = PaceData(json.decodeFromString(PaceDataset.serializer(), text))
     }
+}
+
+
+/** A bundled live row is current only through its inclusive end date and before terminal status. */
+internal fun isCurrentLiveEvent(event: LiveEvent, today: LocalDate = LocalDate.now()): Boolean {
+    val terminalStatus = event.status.lowercase() in setOf(
+        "completed", "complete", "finished", "final", "cancelled",
+    )
+    if (terminalStatus) return false
+    val endDate = event.end?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    return endDate == null || !endDate.isBefore(today)
 }

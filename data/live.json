@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-09T16:00:00Z",
+  "generated": "2026-11-15T00:00:00Z",
   "note": "Event windows are retained for stale-route rejection; only current events are included in the app's Live now list.",
   "events": [
     {
@@ -17,12 +17,12 @@
     {
       "t": "stockholm",
       "s": 2026,
-      "status": "in_progress",
+      "status": "completed",
       "start": "2026-11-08",
       "end": "2026-11-14",
       "round": null,
       "matches": null,
-      "asOf": "2026-11-09T16:00:00Z",
+      "asOf": "2026-11-15T00:00:00Z",
       "atpId": 429,
       "slug": "stockholm"
     }
