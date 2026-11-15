@@ -12,6 +12,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 
 class LiveFeedTest {
 
@@ -20,8 +21,8 @@ class LiveFeedTest {
         t = "paris",
         s = 2026,
         status = "in_progress",
-        start = "2026-11-02",
-        end = "2026-11-12",
+        start = LocalDate.now().minusDays(1).toString(),
+        end = LocalDate.now().plusDays(2).toString(),
         atpId = 352,
         slug = "paris",
     )
