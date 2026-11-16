@@ -493,8 +493,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         /** Bound each event walk while retaining partial results. */
         const val WALK_TIMEOUT_MS = 900_000L
 
-        /** Refresh the published CPI/CALC/TA payload while the app is open. */
-        const val DATASET_REFRESH_INTERVAL_MS = 60 * 60 * 1_000L
+        /** Pick up newly published CPI/CALC/TA snapshots promptly while the app is open. */
+        const val DATASET_REFRESH_INTERVAL_MS = 5 * 60 * 1_000L
 
         /** Keep the event slate and ace-based reading current while the app is open. */
         const val LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1_000L
