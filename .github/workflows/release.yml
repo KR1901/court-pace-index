@@ -362,8 +362,9 @@ jobs:
           elif version == "3.3.11":
               lines += [
                   "### CPI snapshot and live Player Stats freshness",
-                  "- Uses a complete validated Court Speed CPI table as the authoritative snapshot instead of merging it with a stale hard-coded list; withdrawn or superseded readings no longer reappear from fallback data.",
-                  "- Includes the published ATP Finals 2026 physical CPI reading and removes the withdrawn Rome 2026 reading from the 2026 CPI table.",
+                  "- Uses the complete current Court Speed CPI table as the authoritative snapshot instead of merging it with a stale hard-coded list.",
+                  "- Correctly maps the source's \"Rome Clay\" row to Rome Masters, restoring its seven published readings (2016, 2017, 2018, 2023–2026); Rome 2026 remains 25.4.",
+                  "- Preserves the current source's actual coverage (106 readings); ATP Finals 2026 remains blank because Court Speed has not published a 2026 physical reading.",
                   "- Refreshes the published CPI/CALC/TA dataset every five minutes while the app is open and bypasses stale HTTP cache responses.",
                   "- Shows the ATP match-data provider's last source-file modification time separately from the app's last successful poll on Player Stats.",
                   "- Warns when the ATP provider has not changed its current-season ATP Tour files for 12 hours, distinguishing an upstream publication delay from an app refresh failure.",
