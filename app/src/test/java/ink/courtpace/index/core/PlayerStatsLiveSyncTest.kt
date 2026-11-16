@@ -1,5 +1,6 @@
 package ink.courtpace.index.core.playerstats
 
+import java.time.Instant
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -51,6 +52,29 @@ class PlayerStatsLiveSyncTest {
         ),
         players = emptyList(),
     )
+
+    @Test
+    fun providerFreshnessUsesSourceModificationTimeRatherThanSuccessfulPollTime() {
+        val now = Instant.parse("2026-11-16T16:00:00Z")
+        assertFalse(
+            PlayerStatsLiveUpdater.providerFeedIsStale("2026-11-16T14:00:00Z", now),
+        )
+        assertTrue(
+            PlayerStatsLiveUpdater.providerFeedIsStale("2026-11-15T22:00:43Z", now),
+        )
+        assertTrue(PlayerStatsLiveUpdater.providerFeedIsStale(null, now))
+    }
+
+    @Test
+    fun newestProviderTimestampSelectsTheMostRecentlyChangedAtpTourFeed() {
+        assertEquals(
+            "2026-11-15T22:00:43Z",
+            PlayerStatsLiveUpdater.newestProviderTimestamp(
+                listOf("2026-11-15T21:52:39Z", "2026-11-15T22:00:43Z", ""),
+            ),
+        )
+        assertEquals(null, PlayerStatsLiveUpdater.newestProviderTimestamp(emptyList()))
+    }
 
     @Test
     fun completedMatchesUpdateEveryPlayerAndSurfaceBucket() {
