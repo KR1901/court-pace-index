@@ -44,7 +44,7 @@ def select_cpi_readings(
         for tournament, season, value in fallback_rows
     }
 
-    if source_payload is not None:
+    if isinstance(source_payload, Mapping):
         try:
             source = _normalise_rows(source_payload.get("readings") or [])
         except (KeyError, TypeError, ValueError):
