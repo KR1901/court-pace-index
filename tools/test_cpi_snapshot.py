@@ -10,6 +10,7 @@ class CpiSnapshotTests(unittest.TestCase):
             ("rome", 2026, 25.4),
             ("atpfinals", 2025, 40.1),
         ]
+        self.sorted_fallback = sorted(self.fallback)
         self.source_rows = [
             {"t": f"event-{year}-{index}", "s": year, "cpi": 30.0 + index / 10}
             for year in range(2012, 2026)
@@ -43,10 +44,7 @@ class CpiSnapshotTests(unittest.TestCase):
             2026,
         )
         self.assertFalse(authoritative)
-        self.assertEqual(
-            self.fallback,
-            rows,
-        )
+        self.assertEqual(self.sorted_fallback, rows)
 
     def test_source_without_enough_current_season_rows_is_not_authoritative(self):
         mostly_historical = [
@@ -59,7 +57,7 @@ class CpiSnapshotTests(unittest.TestCase):
             2026,
         )
         self.assertFalse(authoritative)
-        self.assertEqual(self.fallback, rows)
+        self.assertEqual(self.sorted_fallback, rows)
 
     def test_invalid_source_row_falls_back_atomically(self):
         invalid = list(self.source_rows)
