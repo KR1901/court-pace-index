@@ -104,6 +104,7 @@ def tournament_lookup() -> tuple[dict[str, str], dict[str, set[str]]]:
         "shanghaimasters": "shanghai",
         "montecarlomasters": "montecarlo",
         "madridmasters": "madrid",
+        "rome": "rome",
         "romemasters": "rome",
     }
     return {normalize(k): v for k, v in aliases.items()}, exact

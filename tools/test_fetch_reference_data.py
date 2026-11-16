@@ -120,17 +120,25 @@ class ReferenceRefreshTests(unittest.TestCase):
     def test_courtspeed_year_columns_are_parsed(self):
         html = """
         <table>
-          <tr><th>Tournament</th><th>'19</th><th>'20</th><th>'21</th><th>'22</th><th>'23</th><th>'24</th><th>'25</th><th>'26</th></tr>
-          <tr><td>◆Australian Open Aus Open Hard</td><td>–</td><td>–</td><td>50</td><td>–</td><td>–</td><td>–</td><td>–</td><td>50</td></tr>
-          <tr><td>Indian Wells Hard</td><td>32.1</td><td>COVID</td><td>32</td><td>–</td><td>35.4</td><td>36.9</td><td>30.9</td><td>39.3</td></tr>
-          <tr><td>Paris Hard indoor</td><td>40.6</td><td>–</td><td>37.1</td><td>37.1</td><td>40.4</td><td>46.6</td><td>35.1</td><td>50</td></tr>
+          <tr><th>Tournament</th><th>'16</th><th>'17</th><th>'18</th><th>'19</th><th>'20</th><th>'21</th><th>'22</th><th>'23</th><th>'24</th><th>'25</th><th>'26</th></tr>
+          <tr><td>◆Australian Open Aus Open Hard</td><td>–</td><td>42</td><td>–</td><td>–</td><td>43</td><td>50</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+          <tr><td>Indian Wells Hard</td><td>30</td><td>27.4</td><td>27.9</td><td>32.1</td><td>COVID</td><td>32</td><td>–</td><td>35.4</td><td>36.9</td><td>30.9</td><td>39.3</td></tr>
+          <tr><td>Paris Hard indoor</td><td>39.1</td><td>37.5</td><td>34.6</td><td>40.6</td><td>–</td><td>37.1</td><td>37.1</td><td>40.4</td><td>46.6</td><td>35.1</td><td>50</td></tr>
+          <tr><td>Rome Clay</td><td>24</td><td>22</td><td>18.9</td><td>–</td><td>–</td><td>–</td><td>–</td><td>28.6</td><td>29.3</td><td>28.9</td><td>25.4</td></tr>
         </table>
         """
         rows = parse_cpi_page(html, self.aliases, self.exact)
         by_key = {(row["t"], row["s"]): row["cpi"] for row in rows}
-        self.assertEqual(50.0, by_key[("ausopen", 2026)])
+        self.assertEqual(50.0, by_key[("ausopen", 2021)])
         self.assertEqual(30.9, by_key[("indianwells", 2025)])
         self.assertEqual(50.0, by_key[("paris", 2026)])
+        self.assertEqual(24.0, by_key[("rome", 2016)])
+        self.assertEqual(22.0, by_key[("rome", 2017)])
+        self.assertEqual(18.9, by_key[("rome", 2018)])
+        self.assertEqual(28.6, by_key[("rome", 2023)])
+        self.assertEqual(29.3, by_key[("rome", 2024)])
+        self.assertEqual(28.9, by_key[("rome", 2025)])
+        self.assertEqual(25.4, by_key[("rome", 2026)])
 
 
 if __name__ == "__main__":

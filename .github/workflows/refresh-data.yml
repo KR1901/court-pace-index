@@ -7,7 +7,7 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias]
     paths:
       - 'tools/compute_speed.py'
       - 'tools/test_compute_speed.py'
