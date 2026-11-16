@@ -359,6 +359,18 @@ jobs:
                   "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
                   "",
               ]
+          elif version == "3.3.11":
+              lines += [
+                  "### CPI snapshot and live Player Stats freshness",
+                  "- Uses a complete validated Court Speed CPI table as the authoritative snapshot instead of merging it with a stale hard-coded list; withdrawn or superseded readings no longer reappear from fallback data.",
+                  "- Includes the published ATP Finals 2026 physical CPI reading and removes the withdrawn Rome 2026 reading from the 2026 CPI table.",
+                  "- Refreshes the published CPI/CALC/TA dataset every five minutes while the app is open and bypasses stale HTTP cache responses.",
+                  "- Shows the ATP match-data provider's last source-file modification time separately from the app's last successful poll on Player Stats.",
+                  "- Warns when the ATP provider has not changed its current-season ATP Tour files for 12 hours, distinguishing an upstream publication delay from an app refresh failure.",
+                  "- Retains all-player match aggregation, player-ID discovery, stable match deduplication and delayed service/return statistics enrichment.",
+                  "- Preserves the existing CPI formula, CALC methodology, ATP live rating pipeline, all-player Player Stats calculations and private personal/non-commercial data-use boundary.",
+                  "",
+              ]
           else:
               lines += [
                   "### Included",
@@ -404,7 +416,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
-          name: Court Pace ${{ steps.meta.outputs.version }} — Player Stats and automatic live ATP updates
+          name: Court Pace ${{ steps.meta.outputs.version }} — CPI snapshot and live Player Stats freshness
           body_path: ${{ runner.temp }}/RELEASE_NOTES.md
           files: ${{ steps.verify.outputs.apk }}
           draft: false
