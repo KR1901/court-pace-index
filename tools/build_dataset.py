@@ -13,6 +13,7 @@ before publishing both the bundled asset and data/latest.json.
 """
 import json, os
 from datetime import date as datetime_date
+from cpi_snapshot import select_cpi_readings
 
 # id, name, city, country, surface, indoor, level, altitude
 TOURNAMENTS = [
@@ -296,15 +297,23 @@ for t in TOURNAMENTS:
 known = {t["id"] for t in tournaments}
 readings = []
 
-cpi_by_key = {(tid, int(season)): float(value) for tid, season, value in CPI}
+cpi_source = None
 if os.path.exists(CPI_HISTORY):
-    cpi_source = json.load(open(CPI_HISTORY))
-    for row in cpi_source.get("readings", []):
-        cpi_by_key[(row["t"], int(row["s"]))] = float(row["cpi"])
-cpi_rows = [
-    (tid, season, value)
-    for (tid, season), value in sorted(cpi_by_key.items(), key=lambda item: item[0])
-]
+    try:
+        cpi_source = json.load(open(CPI_HISTORY))
+    except (OSError, json.JSONDecodeError):
+        cpi_source = None
+
+cpi_rows, cpi_source_authoritative = select_cpi_readings(
+    CPI,
+    cpi_source,
+    datetime_date.today().year,
+)
+cpi_source_generated = (
+    cpi_source.get("generated")
+    if cpi_source_authoritative and isinstance(cpi_source, dict)
+    else None
+)
 for tid, season, value in cpi_rows:
     assert tid in known, tid
     readings.append({"t": tid, "s": season, "cpi": value, "src": "courtspeed"})
@@ -461,10 +470,13 @@ doc = {
                 "id": "courtspeed",
                 "name": "Court Pace Index database (courtspeed.com)",
                 "metric": "CPI",
-                "detail": "Court Pace Index readings 2012-2026 for the Grand Slams, Masters 1000s and "
-                          "ATP Finals, compiled from ATP / Tennis TV broadcast data. CPI table "
-                          "reconciled to the public 7 November 2026 snapshot (107 readings); "
-                          "centre-court readings; no altitude adjustment.",
+                "detail": (
+                    "Court Pace Index readings from the complete Court Speed table"
+                    + (f" ({len(cpi_rows)} readings; source snapshot {cpi_source_generated})"
+                       if cpi_source_authoritative and cpi_source_generated
+                       else f" ({len(cpi_rows)} last-known fallback readings; current source snapshot unavailable or incomplete)")
+                    + ". Centre-court readings; no altitude adjustment."
+                ),
                 "url": "https://courtspeed.com/",
             },
             {
