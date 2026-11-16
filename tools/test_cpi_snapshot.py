@@ -68,7 +68,7 @@ class CpiSnapshotTests(unittest.TestCase):
             2026,
         )
         self.assertFalse(authoritative)
-        self.assertEqual(self.fallback, rows)
+        self.assertEqual(self.sorted_fallback, rows)
 
 
 if __name__ == "__main__":
