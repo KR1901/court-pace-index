@@ -129,7 +129,7 @@ class ReferenceRefreshTests(unittest.TestCase):
         """
         rows = parse_cpi_page(html, self.aliases, self.exact)
         by_key = {(row["t"], row["s"]): row["cpi"] for row in rows}
-        self.assertEqual(50.0, by_key[("ausopen", 2026)])
+        self.assertEqual(50.0, by_key[("ausopen", 2021)])
         self.assertEqual(30.9, by_key[("indianwells", 2025)])
         self.assertEqual(50.0, by_key[("paris", 2026)])
         self.assertEqual(24.0, by_key[("rome", 2016)])
