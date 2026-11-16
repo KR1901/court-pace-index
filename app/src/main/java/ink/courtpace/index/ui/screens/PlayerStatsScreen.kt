@@ -71,6 +71,8 @@ fun PlayerStatsHost() {
     var asset by remember { mutableStateOf<PlayerStatsData?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var liveStatus by remember { mutableStateOf<String?>(null) }
+    var providerStatus by remember { mutableStateOf<String?>(null) }
+    var providerIsStale by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     val sharedLiveState by PlayerStatsLiveUpdater.state.collectAsState()
 
@@ -94,6 +96,11 @@ fun PlayerStatsHost() {
                 "Checked " + (PlayerStatsDateTime.formatTimestamp(it) ?: "time unavailable") +
                     " · +" + live.addedMatches + " results · " + live.enrichedMatches + " stats enriched"
             } ?: "Automatic sync scheduled"
+            providerStatus = live.providerDataUpdatedAt?.let {
+                "ATP files last changed " +
+                    (PlayerStatsDateTime.formatTimestamp(it, includeSeconds = false) ?: "time unavailable")
+            } ?: "ATP source timestamp unavailable"
+            providerIsStale = live.providerDataIsStale
             error = live.error
         }
     }
@@ -102,6 +109,8 @@ fun PlayerStatsHost() {
         asset != null -> PlayerStatsScreen(
             asset = asset!!,
             liveStatus = liveStatus,
+            providerStatus = providerStatus,
+            providerIsStale = providerIsStale,
             liveError = error,
         )
         loading -> PlayerStatsLoading()
@@ -113,6 +122,8 @@ fun PlayerStatsHost() {
 fun PlayerStatsScreen(
     asset: PlayerStatsData,
     liveStatus: String? = null,
+    providerStatus: String? = null,
+    providerIsStale: Boolean = false,
     liveError: String? = null,
 ) {
     val colors = PaceTheme.colors
@@ -205,6 +216,16 @@ fun PlayerStatsScreen(
                     style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium),
                     color = colors.textDim,
                 )
+                Text(
+                    text = "PROVIDER · " + (providerStatus ?: "Waiting for source check"),
+                    style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium),
+                    color = colors.textFaint,
+                )
+                if (providerIsStale) {
+                    GlassNote(
+                        text = "The ATP match-data provider has not changed its current-season files for at least 12 hours. The app keeps checking automatically; new results and game statistics will appear after the provider publishes them.",
+                    )
+                }
                 val lastUpdatedLabel = asset.meta.liveUpdatedAt
                     ?.let { PlayerStatsDateTime.formatTimestamp(it, includeSeconds = false) }
                     ?.let { " · last updated " + it }

@@ -79,7 +79,10 @@ class DatasetUpdater(private val context: Context) {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 20_000
+            useCaches = false
             setRequestProperty("Accept", "application/json")
+            setRequestProperty("Cache-Control", "no-cache")
+            setRequestProperty("Pragma", "no-cache")
             setRequestProperty("User-Agent", "CourtPace/${BuildConfig.VERSION_NAME}")
         }
         try {
