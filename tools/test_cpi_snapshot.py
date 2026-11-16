@@ -8,34 +8,45 @@ class CpiSnapshotTests(unittest.TestCase):
         self.fallback = [
             ("paris", 2026, 50.0),
             ("rome", 2026, 25.4),
-            ("atpfinals", 2025, 40.1),
+            ("atpfinals", 2025, 40.4),
+            ("atpfinals", 2026, 45.8),
+            ("usopen", 2024, 42.8),
         ]
         self.sorted_fallback = sorted(self.fallback)
+
+        # 97 historical source readings plus the nine values currently published
+        # for 2026 gives the Court Speed table's current total of 106 readings.
         self.source_rows = [
-            {"t": f"event-{year}-{index}", "s": year, "cpi": 30.0 + index / 10}
-            for year in range(2012, 2026)
-            for index in range(4)
+            {"t": f"event-{index}", "s": 2012 + (index % 14), "cpi": 30.0 + (index % 30) / 10}
+            for index in range(96)
         ]
+        self.source_rows.append({"t": "atpfinals", "s": 2025, "cpi": 40.1})
         self.source_rows.extend([
-            {"t": "paris", "s": 2026, "cpi": 50.0},
-            {"t": "atpfinals", "s": 2026, "cpi": 45.8},
             {"t": "indianwells", "s": 2026, "cpi": 39.3},
             {"t": "miami", "s": 2026, "cpi": 39.2},
+            {"t": "montecarlo", "s": 2026, "cpi": 27.1},
+            {"t": "madrid", "s": 2026, "cpi": 29.8},
+            {"t": "rome", "s": 2026, "cpi": 25.4},
+            {"t": "canada", "s": 2026, "cpi": 36.5},
             {"t": "cincinnati", "s": 2026, "cpi": 40.4},
+            {"t": "shanghai", "s": 2026, "cpi": 43.3},
+            {"t": "paris", "s": 2026, "cpi": 50.0},
         ])
 
-    def test_complete_source_replaces_fallback_and_drops_withdrawn_rows(self):
+    def test_complete_source_replaces_fallback_and_preserves_published_rome(self):
         rows, authoritative = select_cpi_readings(
             self.fallback,
-            {"generated": "2026-11-16T14:33:49Z", "readings": self.source_rows},
+            {"generated": "2026-11-16T16:24:00Z", "readings": self.source_rows},
             2026,
         )
         by_key = {(tournament, season): value for tournament, season, value in rows}
         self.assertTrue(authoritative)
-        self.assertEqual(45.8, by_key[("atpfinals", 2026)])
+        self.assertEqual(106, len(rows))
+        self.assertEqual(25.4, by_key[("rome", 2026)])
         self.assertEqual(50.0, by_key[("paris", 2026)])
-        self.assertNotIn(("rome", 2026), by_key)
-        self.assertNotIn(("atpfinals", 2025), by_key)
+        self.assertEqual(40.1, by_key[("atpfinals", 2025)])
+        self.assertNotIn(("atpfinals", 2026), by_key)
+        self.assertNotIn(("usopen", 2024), by_key)
 
     def test_incomplete_source_keeps_last_known_fallback(self):
         rows, authoritative = select_cpi_readings(
