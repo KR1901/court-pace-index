@@ -25,6 +25,8 @@ data class PlayerStatsLiveRefreshResult(
     val addedMatches: Int,
     val enrichedMatches: Int,
     val changedSources: Int,
+    val providerDataUpdatedAt: String? = null,
+    val providerDataIsStale: Boolean = true,
 )
 
 data class PlayerStatsLiveState(
@@ -33,6 +35,8 @@ data class PlayerStatsLiveState(
     val addedMatches: Int = 0,
     val enrichedMatches: Int = 0,
     val error: String? = null,
+    val providerDataUpdatedAt: String? = null,
+    val providerDataIsStale: Boolean = true,
 )
 
 /**
@@ -43,6 +47,7 @@ object PlayerStatsLiveUpdater {
     private const val MANIFEST_URL = "https://stats.tennismylife.org/api/data-files"
     private const val SOURCE_PREFIX = "https://stats.tennismylife.org/data/"
     private const val USER_AGENT = "CourtPaceIndex-PrivatePlayerStats/1.0 (personal research)"
+    private const val PROVIDER_STALE_AFTER_SECONDS = 12L * 60L * 60L
 
     private val mutex = Mutex()
     @Volatile private var memoryData: PlayerStatsData? = null
@@ -65,9 +70,14 @@ object PlayerStatsLiveUpdater {
     fun publishInitial(data: PlayerStatsData) {
         if (mutableState.value == null) {
             memoryData = memoryData ?: data
+            val providerUpdatedAt = newestProviderTimestamp(
+                listOf(data.meta.currentSeasonSourceMtime, data.meta.ongoingSourceMtime),
+            )
             mutableState.value = PlayerStatsLiveState(
                 data = memoryData ?: data,
                 error = lastFailure,
+                providerDataUpdatedAt = providerUpdatedAt,
+                providerDataIsStale = providerFeedIsStale(providerUpdatedAt, Instant.now()),
             )
         }
     }
@@ -104,6 +114,19 @@ object PlayerStatsLiveUpdater {
             }?.second
 
             val year = LocalDate.now().year
+            // These are the two ATP Tour feeds used by the Rankings ledger. The manifest
+            // timestamp is separate from the local poll timestamp: a successful check can
+            // still be reading a provider snapshot that has stopped advancing.
+            val providerDataUpdatedAt = newestProviderTimestamp(
+                listOfNotNull(
+                    findRemote(year.toString() + ".csv")?.modified,
+                    findRemote("ongoing_tourneys.csv")?.modified,
+                    data.meta.currentSeasonSourceMtime,
+                    data.meta.ongoingSourceMtime,
+                ),
+            )
+            val providerDataIsStale = providerFeedIsStale(providerDataUpdatedAt, Instant.now())
+
             var addedMatches = 0
             var enrichedMatches = 0
             var changedSources = 0
@@ -187,6 +210,8 @@ object PlayerStatsLiveUpdater {
                 addedMatches = addedMatches,
                 enrichedMatches = enrichedMatches,
                 changedSources = changedSources,
+                providerDataUpdatedAt = providerDataUpdatedAt,
+                providerDataIsStale = providerDataIsStale,
             )
             lastFailure = null
             mutableState.value = PlayerStatsLiveState(
@@ -195,9 +220,26 @@ object PlayerStatsLiveUpdater {
                 addedMatches = result.addedMatches,
                 enrichedMatches = result.enrichedMatches,
                 error = null,
+                providerDataUpdatedAt = result.providerDataUpdatedAt,
+                providerDataIsStale = result.providerDataIsStale,
             )
             result
         }
+    }
+
+    internal fun newestProviderTimestamp(values: Iterable<String>): String? =
+        values.asSequence()
+            .filter { it.isNotBlank() }
+            .mapNotNull { value ->
+                runCatching { Instant.parse(value) }.getOrNull()?.let { instant -> instant to value }
+            }
+            .maxByOrNull { it.first }
+            ?.second
+
+    internal fun providerFeedIsStale(lastModified: String?, now: Instant): Boolean {
+        val lastUpdate = lastModified?.let { runCatching { Instant.parse(it) }.getOrNull() }
+            ?: return true
+        return lastUpdate.isBefore(now.minusSeconds(PROVIDER_STALE_AFTER_SECONDS))
     }
 
     private fun getText(url: String): String {
