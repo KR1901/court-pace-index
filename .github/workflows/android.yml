@@ -44,6 +44,9 @@ jobs:
       - name: Test CPI source snapshot selection
         run: python3 -m unittest discover -s tools -p 'test_cpi_snapshot.py' -v
 
+      - name: Test CPI reference table parser
+        run: python3 -m unittest discover -s tools -p 'test_fetch_reference_data.py' -v
+
       - name: Test Player Stats source aggregation
         run: python3 -m unittest discover -s tools -p 'test_build_player_stats.py' -v
 
