@@ -102,7 +102,7 @@ Do not zero-fill missing readings, use results-only feeds to fabricate ace-based
 
 ### Phase 2 — first-party open data contribution design
 
-Create a documented contribution format for match statistics and physical court measurements. Each row needs stable source IDs, match/event date, surface, both player identities, all original fields, provenance URL or contributor record, submission time, validation status and correction history. Require contributors to dedicate submitted facts to CC0 or publish them under CC BY 4.0 with attribution; record that grant per contribution. No automated ATP page collection is used as a substitute.
+Implement the contribution format documented in [FIRST_PARTY_OPEN_DATA_SCHEMA.md](FIRST_PARTY_OPEN_DATA_SCHEMA.md) for independently collected match statistics, player facts and physical court measurements. Each row needs stable source IDs, match/event date, surface, both player identities, all original fields, provenance URL or contributor record, submission time, validation status and correction history. Require contributors to dedicate submitted facts to CC0 or publish them under CC BY 4.0 with attribution; record that grant per contribution. No automated ATP page collection is used as a substitute.
 
 ### Phase 3 — historical match-stat adapter evaluation
 
