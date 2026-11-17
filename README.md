@@ -4,9 +4,13 @@ Court Pace is an independent Android app and research toolkit for comparing how 
 
 The app is a reader and analysis tool, not a court-measuring instrument. It does not use the microphone or phone sensors to estimate court pace. Bundled readings are available offline; internet access is used for optional dataset refreshes and live ATP match statistics.
 
+**App identity note:** Court Pace 4.0.0 uses the separate application ID `ink.courtpace.index.public` and a new independent signing certificate. It installs alongside the legacy `ink.courtpace.index` app rather than updating it. Android keeps each installation's private settings and cached data separate; those are not automatically migrated.
+
 | | |
 |---|---|
 | Platform | Android |
+| New public app ID (4.0.0+) | `ink.courtpace.index.public` |
+| Legacy app ID | `ink.courtpace.index` |
 | Language and UI | Kotlin, Jetpack Compose |
 | Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21 |
 | SDK | compileSdk 37, targetSdk 37, minSdk 26 |
