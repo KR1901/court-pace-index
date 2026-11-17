@@ -50,6 +50,9 @@ jobs:
       - name: Test Player Stats source aggregation
         run: python3 -m unittest discover -s tools -p 'test_build_player_stats.py' -v
 
+      - name: Test CALC speed computation
+        run: python3 -m unittest discover -s tools -p 'test_compute_speed.py' -v
+
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
 
