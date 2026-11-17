@@ -88,7 +88,9 @@ The bundled asset and downloadable `data/latest.json` are generated from the ful
 Lower-tier profile backfill is research-only and is not used in production. The first 2019–2025 holdout and the new partial-2026 forward test both showed coverage gains but inconclusive overall predictive-loss improvements, worsening calibration, and mixed surface effects. ATP-only profiles remain the production policy pending a stronger independent validation set and data-rights review.
 ## Data provider migration
 
-A source-by-source migration assessment and staged implementation plan is maintained in [DATA_PROVIDER_MIGRATION.md](docs/DATA_PROVIDER_MIGRATION.md). This is a public repository and public app; no third-party data source is treated as cleared merely because its files or endpoints are publicly accessible. Provider cutover requires documented permission for the exact processing, caching, derived-output and distribution model. No production feed is switched by the migration-design PR.
+The strict open-data source audit is documented in [OPEN_DATA_SOURCE_AUDIT.md](docs/OPEN_DATA_SOURCE_AUDIT.md), with the staged engineering plan in [DATA_PROVIDER_MIGRATION.md](docs/DATA_PROVIDER_MIGRATION.md). The replacement policy requires a published licence that allows use, modification and redistribution for any purpose, including commercial use.
+
+**Important current-state note:** the released app and existing generated assets still contain/use legacy source-derived data (including Sackmann CC BY-NC-SA, TML, ATP/Infosys, Tennis Abstract and Court Speed). This documentation PR does not make the current APK or bundled JSON fully open-data compliant. The audit found no complete open replacement for current-season match stats, live match stats, ranking cohorts and event-level CPI. No production feed or feature has been cut over in this PR. The project must either build independently contributed CC0/CC BY 4.0 data or accept clearly disclosed feature/coverage reductions before a strict-open release.
 
 ## Data and provenance
 
