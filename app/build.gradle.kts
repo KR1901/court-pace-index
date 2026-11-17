@@ -22,6 +22,7 @@ android {
     compileSdk = 37
 
 // Public 4.0.0 identity: standalone package with a new, independent release certificate.
+// Trigger the first signed 4.0.0 production build after repository signing secrets were configured.
     defaultConfig {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
