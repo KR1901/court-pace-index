@@ -359,6 +359,15 @@ jobs:
                   "- Retains the private personal/non-commercial boundary for TennisMyLife-derived Player Stats data.",
                   "",
               ]
+          elif version == "3.3.12":
+              lines += [
+                  "### Dataset refresh and reliability",
+                  "- Makes the current-season Tennis Abstract comparison checks refresh-safe for Rio, Adelaide, Montpellier and Laver Cup, validating presence, finite supported ranges and accessor consistency.",
+                  "- Reduces the full historical dataset refresh to twice daily while retaining the lightweight three-hour live snapshot publisher.",
+                  "- Runs the CALC speed-computation Python regression tests in Android CI and avoids full historical rebuilds for test-only or workflow-only edits.",
+                  "- Regenerated and validated the published archive against refreshed source tables and retained historical CALC diagnostics.",
+                  "",
+              ]
           elif version == "3.3.11":
               lines += [
                   "### CPI snapshot and live Player Stats freshness",
@@ -417,7 +426,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
-          name: Court Pace ${{ steps.meta.outputs.version }} — CPI snapshot and live Player Stats freshness
+          name: Court Pace ${{ steps.meta.outputs.version }} — production release
           body_path: ${{ runner.temp }}/RELEASE_NOTES.md
           files: ${{ steps.verify.outputs.apk }}
           draft: false

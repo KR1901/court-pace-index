@@ -21,13 +21,13 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Release workflow trigger: publish Court Pace 3.3.11 with the established v3.2.1 signing certificate.
+// Release workflow trigger: publish Court Pace 3.3.12 with the established v3.2.1 signing certificate.
     defaultConfig {
         applicationId = "ink.courtpace.index"
         minSdk = 26
         targetSdk = 37
-        versionCode = 49
-        versionName = "3.3.11"
+        versionCode = 50
+        versionName = "3.3.12"
     }
 
     signingConfigs {
