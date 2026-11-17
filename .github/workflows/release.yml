@@ -1,16 +1,12 @@
 name: Release signed Android APK
 
+# Keep this manual-only until all four new signing secrets are configured.
+# Re-enable main-branch automatic releases after the first 4.0.0 release.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "app/build.gradle.kts"
-      - "gradle.properties"
   workflow_dispatch:
 
 permissions:
   contents: write
-  actions: read
 
 concurrency:
   group: court-pace-release
@@ -67,126 +63,45 @@ jobs:
             exit 1
           fi
 
-      - name: Restore the established Court Pace signing certificate
+      - name: Load and verify the new public-release signing key
         id: signing
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KEYSTORE_BASE64: ${{ secrets.COURT_PACE_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.COURT_PACE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.COURT_PACE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.COURT_PACE_KEY_PASSWORD }}
-          EXPECTED_CERT_SHA256: "12b96967077bd1ffcf1904d1095a8408fde1d462e07669f00059e51c9391d6ab"
+          EXPECTED_CERT_SHA256: "b926c85062406061557bd1557c2edaa3f7710189ac4084c0a4cecb363c9223e9"
         run: |
           set -euo pipefail
-          keyfile="$RUNNER_TEMP/court-pace-release.jks"
-          recovery="$RUNNER_TEMP/signing-recovery"
-          download_dir="$RUNNER_TEMP/prior-signing-recovery"
-          mkdir -p "$recovery" "$download_dir"
-          umask 077
-          recovered_from_artifact=false
-
-          if [[ -n "$KEYSTORE_BASE64" && -n "$KEYSTORE_PASSWORD" && -n "$KEY_ALIAS" && -n "$KEY_PASSWORD" ]]; then
-            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
-            echo "Signing key restored from repository Actions secrets."
-          elif [[ -z "$KEYSTORE_BASE64" && -z "$KEYSTORE_PASSWORD" && -z "$KEY_ALIAS" && -z "$KEY_PASSWORD" ]]; then
-            # Search every Actions-artifact page. Filtering only the newest 100 artifacts
-            # previously missed the retained v3.2.1 signer after many CI artifacts accumulated.
-            artifact_records="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" --jq '.artifacts[] | select(.expired == false and (.name | startswith("court-pace-release-signing-key-v")))' )"
-            candidates="$(jq -s 'sort_by(.created_at) | reverse' <<<"$artifact_records")"
-
-            while IFS=$'\t' read -r recovery_run_id artifact_name artifact_id; do
-              [[ -n "$recovery_run_id" && -n "$artifact_name" && -n "$artifact_id" ]] || continue
-              candidate_dir="$download_dir/$artifact_id"
-              mkdir -p "$candidate_dir"
-
-              if ! gh run download "$recovery_run_id" --repo "$GITHUB_REPOSITORY" --name "$artifact_name" --dir "$candidate_dir" >/dev/null 2>&1; then
-                rm -rf "$candidate_dir"
-                continue
-              fi
-
-              prior_keystore="$(find "$candidate_dir" -type f -name court-pace-signing-key.jks -print -quit)"
-              prior_secrets="$(find "$candidate_dir" -type f -name GITHUB_ACTIONS_SECRETS.txt -print -quit)"
-              [[ -s "$prior_keystore" && -s "$prior_secrets" ]] || { rm -rf "$candidate_dir"; continue; }
-
-              candidate_base64=""
-              candidate_store_password=""
-              candidate_alias=""
-              candidate_key_password=""
-              while IFS= read -r line; do
-                name="${line%%=*}"
-                value="${line#*=}"
-                case "$name" in
-                  COURT_PACE_KEYSTORE_BASE64) candidate_base64="$value" ;;
-                  COURT_PACE_KEYSTORE_PASSWORD) candidate_store_password="$value" ;;
-                  COURT_PACE_KEY_ALIAS) candidate_alias="$value" ;;
-                  COURT_PACE_KEY_PASSWORD) candidate_key_password="$value" ;;
-                esac
-              done < "$prior_secrets"
-
-              if [[ -n "$candidate_base64" && -n "$candidate_store_password" && -n "$candidate_alias" && -n "$candidate_key_password" ]]; then
-                candidate_fingerprint="$(keytool -exportcert -keystore "$prior_keystore" -storepass "$candidate_store_password" -alias "$candidate_alias" | sha256sum | awk '{print $1}')"
-                if [[ "$candidate_fingerprint" == "$EXPECTED_CERT_SHA256" ]]; then
-                  cp "$prior_keystore" "$keyfile"
-                  KEYSTORE_BASE64="$candidate_base64"
-                  KEYSTORE_PASSWORD="$candidate_store_password"
-                  KEY_ALIAS="$candidate_alias"
-                  KEY_PASSWORD="$candidate_key_password"
-                  recovered_from_artifact=true
-                  echo "Recovered the established v3.2.1 signing certificate from artifact $artifact_name."
-                  break
-                fi
-                echo "Skipping artifact $artifact_name: its signing certificate is not the established Court Pace signer."
-              fi
-              rm -rf "$candidate_dir"
-            done < <(jq -r '.[] | [.workflow_run.id, .name, (.id | tostring)] | @tsv' <<<"$candidates")
-
-            if [[ "$recovered_from_artifact" != "true" ]]; then
-              echo "::error::Could not recover the established Court Pace signing certificate. No new key will be generated. Configure all four COURT_PACE_* repository Actions secrets from the retained v3.2.1 recovery artifact."
-              exit 1
-            fi
-
-            printf '%s' "$KEYSTORE_BASE64" > "$recovery/COURT_PACE_KEYSTORE_BASE64.txt"
-            cat > "$recovery/GITHUB_ACTIONS_SECRETS.txt" <<EOF
-          COURT_PACE_KEYSTORE_BASE64=$KEYSTORE_BASE64
-          COURT_PACE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD
-          COURT_PACE_KEY_ALIAS=$KEY_ALIAS
-          COURT_PACE_KEY_PASSWORD=$KEY_PASSWORD
-          EOF
-            cp "$keyfile" "$recovery/court-pace-signing-key.jks"
-            chmod 600 "$recovery/"*
-          else
-            echo "::error::Signing secrets are partially configured. Configure all four COURT_PACE_* secrets or clear all four so the workflow can recover the established signer."
+          keyfile="$RUNNER_TEMP/court-pace-public-release-v1.jks"
+          if [[ -z "$KEYSTORE_BASE64" || -z "$KEYSTORE_PASSWORD" || -z "$KEY_ALIAS" || -z "$KEY_PASSWORD" ]]; then
+            echo "::error::The new public-release signing identity is not configured. Add all four COURT_PACE_* repository Actions secrets from the private signing kit before dispatching this workflow."
             exit 1
           fi
 
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keyfile"
+          test -s "$keyfile"
           keytool -list -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
           actual_fingerprint="$(keytool -exportcert -keystore "$keyfile" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" | sha256sum | awk '{print $1}')"
           if [[ "$actual_fingerprint" != "$EXPECTED_CERT_SHA256" ]]; then
-            echo "::error::Signing certificate fingerprint does not match the established v3.2.1 signer. Release blocked to protect in-place upgrades."
+            echo "::error::The configured signing certificate does not match the new Court Pace public-release identity. Release blocked."
             exit 1
           fi
-          echo "Established signing certificate verified: $actual_fingerprint"
 
-          # Mask every credential before GITHUB_ENV exposes it to later steps.
-          [[ -z "$KEYSTORE_BASE64" ]] || echo "::add-mask::$KEYSTORE_BASE64"
-          [[ -z "$KEYSTORE_PASSWORD" ]] || echo "::add-mask::$KEYSTORE_PASSWORD"
-          [[ -z "$KEY_ALIAS" ]] || echo "::add-mask::$KEY_ALIAS"
-          [[ -z "$KEY_PASSWORD" ]] || echo "::add-mask::$KEY_PASSWORD"
-
+          # Mask credentials before exposing them to Gradle through GITHUB_ENV.
+          echo "::add-mask::$KEYSTORE_BASE64"
+          echo "::add-mask::$KEYSTORE_PASSWORD"
+          echo "::add-mask::$KEY_ALIAS"
+          echo "::add-mask::$KEY_PASSWORD"
           {
             echo "COURT_PACE_KEYSTORE=$keyfile"
             echo "COURT_PACE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
             echo "COURT_PACE_KEY_ALIAS=$KEY_ALIAS"
             echo "COURT_PACE_KEY_PASSWORD=$KEY_PASSWORD"
-            echo "KEY_RECOVERY_DIR=$recovery"
           } >> "$GITHUB_ENV"
-          echo "recovered_from_artifact=$recovered_from_artifact" >> "$GITHUB_OUTPUT"
-          echo "key_transition=false" >> "$GITHUB_OUTPUT"
-
-      # Do not upload the keystore or exported Actions-secret values as a public
-      # workflow artifact. The existing recovery artifact is temporary; migrate its
-      # four values into repository Actions secrets, then retire artifact recovery.
+          echo "New public-release certificate verified: $actual_fingerprint"
 
       - name: Run unit tests
         run: |
@@ -212,14 +127,14 @@ jobs:
           signature_report="$("$build_tools/apksigner" verify --verbose --print-certs "$apk")"
           printf '%s\\n' "$signature_report"
           actual_signer="$(printf '%s\\n' "$signature_report" | awk '/certificate SHA-256 digest:/ {print $NF; exit}')"
-          expected_signer="12b96967077bd1ffcf1904d1095a8408fde1d462e07669f00059e51c9391d6ab"
+          expected_signer="b926c85062406061557bd1557c2edaa3f7710189ac4084c0a4cecb363c9223e9"
           if [[ "$actual_signer" != "$expected_signer" ]]; then
-            echo "::error::APK signer fingerprint does not match the established v3.2.1 certificate."
+            echo "::error::APK signer fingerprint does not match the new Court Pace public-release certificate."
             exit 1
           fi
           echo "APK signer continuity verified: $actual_signer"
           "$build_tools/aapt" dump badging "$apk" | head -n 1 | tee package.txt
-          grep -F "name='ink.courtpace.index'" package.txt
+          grep -F "name='ink.courtpace.index.public'" package.txt
           grep -F "versionCode='$VERSION_CODE'" package.txt
           grep -F "versionName='$VERSION'" package.txt
 
@@ -234,7 +149,6 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           VERSION_CODE: ${{ steps.meta.outputs.version_code }}
           SHA256: ${{ steps.verify.outputs.sha256 }}
-          KEY_TRANSITION: ${{ steps.signing.outputs.key_transition }}
         shell: bash
         run: |
           python3 - <<'PY'
@@ -243,10 +157,9 @@ jobs:
 
           version = os.environ["VERSION"]
           version_code = os.environ["VERSION_CODE"]
-          package = "ink.courtpace.index"
+          package = "ink.courtpace.index.public"
           asset = f"court-pace-{version}.apk"
           sha256 = os.environ["SHA256"]
-          key_transition = os.environ.get("KEY_TRANSITION", "false") == "true"
 
           if not sha256 or len(sha256) != 64:
               raise SystemExit("Missing or invalid APK SHA-256 for release notes.")
@@ -258,7 +171,16 @@ jobs:
               "",
           ]
 
-          if version == "3.2.1":
+          if version == "4.0.0":
+              lines += [
+                  "### New standalone app identity",
+                  "- Introduces the new application ID `ink.courtpace.index.public` and a new independent RSA-4096 release signing certificate.",
+                  "- Installs alongside the legacy `ink.courtpace.index` app; it does not replace or update the legacy installation.",
+                  "- App-private settings and cached data are separate and are not automatically migrated from the legacy app.",
+                  "- Future releases under `ink.courtpace.index.public` use the same new certificate for normal in-place updates.",
+                  "",
+              ]
+          elif version == "3.2.1":
               lines += [
                   "### Included in 3.2.1",
                   "- Corrected Paris Masters 2026 to a completed schedule tombstone while retaining its event window to reject stale ATP routes.",
@@ -374,15 +296,14 @@ jobs:
               "",
           ]
 
-          if key_transition:
+          if version == "4.0.0":
               lines += [
-                  "### Signing-key transition",
-                  "This APK uses a newly generated replacement key. Android does not permit in-place updates across different signing certificates; uninstall the previously installed app before installing this APK. Download the private Actions recovery artifact, configure the four repository Actions secrets from its GITHUB_ACTIONS_SECRETS.txt, and keep an offline backup. Never share the artifact or credentials.",
+                  "This APK is signed with the new Court Pace public-release certificate. Keep the signing kit in at least two secure offline backups; never upload it to the public repository.",
                   "",
               ]
           else:
               lines += [
-                  "This APK uses the retained Court Pace signing certificate and supports in-place upgrades from releases signed with the same certificate.",
+                  "This APK uses the Court Pace public-release certificate and supports in-place upgrades from earlier releases of the same application ID.",
                   "",
               ]
 

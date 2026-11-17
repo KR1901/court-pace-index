@@ -119,6 +119,43 @@ jobs:
               );
             }
 
+      # Public repository: retire every legacy signing-key recovery artifact. Their
+      # keystores and credential exports were exposed to repository readers before rotation.
+      - name: Delete exposed legacy signing-key recovery artifacts
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const artifacts = (await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            )).filter((item) => !item.expired &&
+              item.name.startsWith("court-pace-release-signing-key-v"));
+            core.info(`Found ${artifacts.length} exposed legacy signing-key recovery artifact(s).`);
+            let deleted = 0;
+            for (const artifact of artifacts) {
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner, repo, artifact_id: artifact.id,
+                });
+                deleted += 1;
+                core.info(`Deleted exposed signing-key recovery artifact ${artifact.id}.`);
+              } catch (error) {
+                const status = error.status || error.response?.status;
+                if ([404, 410].includes(status)) {
+                  core.warning(`Legacy key artifact ${artifact.id} was already unavailable.`);
+                  continue;
+                }
+                if (status >= 500 || status === 429) {
+                  core.warning(`GitHub artifact API temporarily failed for legacy key artifact ${artifact.id}; it will be retried on the next main CI run.`);
+                  continue;
+                }
+                throw error;
+              }
+            }
+            core.info(`Removed ${deleted} exposed legacy signing-key artifact(s).`);
+
       # Keep only the newest successful result for each research-report name.
       # Signing-key recovery artifacts are intentionally never included in this cleanup.
       - name: Prune superseded research audit artifacts
