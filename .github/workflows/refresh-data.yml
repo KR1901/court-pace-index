@@ -1,7 +1,7 @@
 name: Refresh dataset
 
 # Regenerates the bundled dataset from the public match archive and source year tables,
-# then publishes the validated payload consumed by the app. Runs twice daily and on demand.
+# then publishes the validated payload consumed by the app. Runs every six hours and on demand.
 # If main advances during a refresh and the generated commit cannot be rebased safely,
 # start a fresh run from the latest main tip; never force-push over concurrent app/data changes.
 
@@ -15,7 +15,7 @@ on:
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
   schedule:
-    - cron: '0 */12 * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 permissions:
