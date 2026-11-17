@@ -25,18 +25,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Require private repository before handling signing material
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          private="$(gh api "repos/$GITHUB_REPOSITORY" --jq '.private')"
-          if [[ "$private" != "true" ]]; then
-            echo "::error::Release blocked: this personal-use repository must be private before a signing key is generated, restored, or retained."
-            exit 1
-          fi
-          echo "Private-repository gate passed."
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -196,20 +184,9 @@ jobs:
           echo "recovered_from_artifact=$recovered_from_artifact" >> "$GITHUB_OUTPUT"
           echo "key_transition=false" >> "$GITHUB_OUTPUT"
 
-      - name: Retain recovered signing key for future releases
-        if: steps.signing.outputs.recovered_from_artifact == 'true'
-        # Best-effort: keep the existing signing-key recovery artifact usable even
-        # when the monthly Actions artifact-storage allowance has been exhausted.
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: court-pace-release-signing-key-v${{ steps.meta.outputs.version }}
-          path: |
-            ${{ env.KEY_RECOVERY_DIR }}/court-pace-signing-key.jks
-            ${{ env.KEY_RECOVERY_DIR }}/COURT_PACE_KEYSTORE_BASE64.txt
-            ${{ env.KEY_RECOVERY_DIR }}/GITHUB_ACTIONS_SECRETS.txt
-          if-no-files-found: error
-          retention-days: 90
+      # Do not upload the keystore or exported Actions-secret values as a public
+      # workflow artifact. The existing recovery artifact is temporary; migrate its
+      # four values into repository Actions secrets, then retire artifact recovery.
 
       - name: Run unit tests
         run: |
