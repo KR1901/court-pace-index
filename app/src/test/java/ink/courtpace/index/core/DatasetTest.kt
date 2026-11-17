@@ -179,13 +179,30 @@ class DatasetTest {
         assertEquals(2.669, nextGen2024.speedCiHigh!!, 0.001)
 
         // The 2026 Rio and Adelaide CALC values exist in speed_history.json; make sure
-        // the public dataset builder actually promotes those calculations over TA-only.
+        // the public dataset builder promotes those calculations and retains each live TA
+        // comparison. The current-season TA reference table is refreshed, so its exact
+        // published values must not be pinned in this regression test.
         val rio2026 = computed.first { it.t == "rio" && it.s == 2026 }
-        assertEquals(0.95, rio2026.publishedSpeed!!, 0.001)
         assertEquals("computed", data.speedSource("rio", 2026))
+        val rioPublished = requireNotNull(rio2026.publishedSpeed) {
+            "2026 Rio CALC must retain its published TA comparison"
+        }
+        assertTrue(
+            "2026 Rio published comparison is outside the valid range: $rioPublished",
+            rioPublished.isFinite() && rioPublished in 0.30..2.0,
+        )
+        assertEquals(rioPublished, data.publishedSpeed("rio", 2026))
+
         val adelaide2026 = computed.first { it.t == "adelaide" && it.s == 2026 }
-        assertEquals(1.04, adelaide2026.publishedSpeed!!, 0.001)
         assertEquals("computed", data.speedSource("adelaide", 2026))
+        val adelaidePublished = requireNotNull(adelaide2026.publishedSpeed) {
+            "2026 Adelaide CALC must retain its published TA comparison"
+        }
+        assertTrue(
+            "2026 Adelaide published comparison is outside the valid range: $adelaidePublished",
+            adelaidePublished.isFinite() && adelaidePublished in 0.30..2.0,
+        )
+        assertEquals(adelaidePublished, data.publishedSpeed("adelaide", 2026))
         assertTrue(computed.all { it.s in 1991..2026 })
         assertTrue(
             "the archive should calculate at least one event in its first supported season",
