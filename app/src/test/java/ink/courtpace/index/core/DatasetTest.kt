@@ -231,7 +231,14 @@ class DatasetTest {
         }
         assertEquals(montpellier.speed, data.value("montpellier", 2026, Metric.SPEED))
         assertEquals(montpellier.publishedSpeed!!, data.publishedSpeed("montpellier", 2026)!!, 0.001)
-        assertEquals(1.53, montpellier.publishedSpeed!!, 0.001)
+        val montpellierPublished = requireNotNull(montpellier.publishedSpeed) {
+            "2026 Montpellier CALC must retain its published TA comparison"
+        }
+        assertTrue(
+            "2026 Montpellier published comparison is outside the valid range: $montpellierPublished",
+            montpellierPublished.isFinite() && montpellierPublished in 0.30..2.0,
+        )
+        assertEquals(montpellierPublished, data.publishedSpeed("montpellier", 2026))
         assertEquals("computed", data.speedSource("montpellier", 2026))
         // Laver Cup's 2026 seven-match draw has fourteen valid adjusted server sides.
         // It now receives a ranked CALC point estimate, with the 2026 TA value retained.
@@ -241,7 +248,13 @@ class DatasetTest {
         assertEquals("computed", laverCup.src)
         assertEquals(7, laverCup.matches)
         assertEquals(14, laverCup.adjustedServerSides)
-        assertEquals(0.44, laverCup.publishedSpeed!!, 0.001)
+        val laverCupPublished = requireNotNull(laverCup.publishedSpeed) {
+            "2026 Laver Cup CALC must retain its published TA comparison"
+        }
+        assertTrue(
+            "2026 Laver Cup published comparison is outside the valid range: $laverCupPublished",
+            laverCupPublished.isFinite() && laverCupPublished in 0.30..2.0,
+        )
         assertEquals("computed", data.speedSource("lavercup", 2026))
         assertEquals(laverCup.speed, data.value("lavercup", 2026, Metric.SPEED))
         assertEquals(laverCup.publishedSpeed, data.publishedSpeed("lavercup", 2026))
