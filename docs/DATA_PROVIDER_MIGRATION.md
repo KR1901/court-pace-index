@@ -1,230 +1,151 @@
-# Data-provider migration plan
+# Strict open-data migration plan
 
-**Status: Phase 1 — source-rights remediation and migration design. No production feed has been switched.**  
+**Status: Phase 1 — strict source audit and cutover blockers. No production feed has been switched.**  
 **Reviewed: 17 November 2026**
 
-This document defines a migration path that keeps the Court Pace Android experience and its calculation semantics stable while replacing data providers. It is an engineering plan and provenance record, not legal advice or a statement that any uncontracted provider has granted permission.
+This plan follows the project's request to use genuinely open data rather than waiting for bespoke provider permissions. “Open” means a published licence that allows use, modification and redistribution for any purpose, including commercial use. A free API, public website, public GitHub repository or non-commercial research licence does not by itself qualify.
+
+The detailed source evidence is in [OPEN_DATA_SOURCE_AUDIT.md](OPEN_DATA_SOURCE_AUDIT.md). This document is an engineering plan and source-provenance record, not legal advice.
 
 ## Executive decision
 
-Use a hybrid provider architecture rather than trying to find one universal tennis API:
+**There is no verified, feature-preserving, strictly open replacement for the current Court Pace data stack.** A safe migration cannot be completed by switching every existing URL to another public tennis feed:
 
-- **Historical match-stat foundation:** the Jeff Sackmann ATP archive mirror, under its stated CC BY-NC-SA 4.0 terms, for seasons and fields where its records are available.
-- **Current/live match statistics:** evaluate Live Tennis API as a service provider. Its terms permit limited use of API responses inside a subscriber's app, but this is not an open-data licence and does not grant ATP rights. Written confirmation is required for our derived, persisted and distributed output before production adoption.
-- **Current rankings:** evaluate KickServe's official-rank CSV with its requested dated attribution. Do not use its internal player IDs as cross-provider identity keys.
-- **Supplementary player facts:** Wikidata structured data (CC0) may fill selected biography fields, subject to provenance and validation.
-- **Physical CPI and published TA reference values:** do not redistribute without permissions. Prefer independently sourced measurements and Court Pace's own calculated Surface Speed series.
+- Jeff Sackmann ATP data is CC BY-NC-SA 4.0. It is useful historical data, but the non-commercial restriction means it is not suitable for a fully open-data build.
+- The `serve-and-volley/atp-world-tour-tennis-data` repository declares CC BY 4.0 and contains detailed match statistics for 1991–2022. Its README also says its source collection scraped ATP pages, so the declared repository licence does not, by itself, resolve upstream ATP terms. Treat it as a historical candidate, not an approved automatic source.
+- ValueBet publishes CC BY 4.0 match results for 2021–2026, but not the serve-stat fields required by CALC or Hold%/Break%.
+- Wikidata structured data is CC0 and can supplement player metadata, but it cannot provide full match statistics, dated ranking cohorts, live match stats or physical CPI.
+- TML, Live Tennis API, KickServe, ATP/Infosys, Tennis Abstract and Court Speed do not provide a verified unrestricted open-data grant for the uses needed here.
 
-No single source found in this review covers all of historical ATP match stats, 2026-current live stats, dated rankings, player heights and physical court measurements under one clear, permissive data licence.
+Therefore this PR deliberately does **not** cut over production data or remove current features. The existing APK/assets are not transformed into a fully open-data product by this documentation-only phase. A full strict-open cutover requires either independently collected/contributed data under CC0/CC BY 4.0 or an accepted reduction in feature coverage.
 
-## Current dependency map
+## Existing source dependency map
 
-| Existing module / builder | Current source dependency | Function in Court Pace | Migration target |
+| Module / builder | Current source | Purpose | Strict-open target status |
 |---|---|---|---|
-| `tools/compute_speed.py` | Sackmann historical archive + TML current-season files | Historical and current CALC inputs, player profiles and baseline | Keep Sackmann history; replace TML current season only after a licensed current-stat feed is approved |
-| `tools/build_player_stats.py` | TML annual CSVs, roster, rankings; KickServe live ranking CSV; Sackmann IDs for crosswalk | Player W–L, Hold%, Break%, H+B, surface/environment splits, heights and year-specific cohorts | Sackmann historical match rows/rankings where schema and coverage pass; licensed current-year feed; KickServe rankings; CC0 metadata supplement |
-| `AtpLiveClient` | ATP results pages | Event discovery, completed match identifiers, walkover/retirement classification | Licensed event/match endpoint via server-side adapter; retain existing status and eligibility rules |
-| `AtpInfosysStatsClient` | ATP/Infosys Stats Plus JSON | Live and final ace/service-point statistics | Licensed match-stat adapter; do not replace with results-only data |
-| `tools/fetch_reference_data.py` | Tennis Abstract and Court Speed pages | TA comparison/fallback values and CPI | Remove third-party table ingestion absent permission; maintain separately sourced CPI only when its rights and measurement provenance are clear |
-| `tools/build_dataset.py` | Canonical pace dataset and metadata | Bundled/downloadable app payload | Keep the output schema stable; include only fields whose rights permit the exact distribution method |
+| `tools/compute_speed.py` | Sackmann history + TML current-season files | CALC history, current-season event ratings and player profiles | No approved feed for full history plus current season |
+| `tools/build_player_stats.py` | TML annual CSVs, roster and dated ranking API; KickServe current rankings; Sackmann ID crosswalk | W–L, Hold%, Break%, H+B, surface/environment splits, heights and Top 100/500/1000 cohorts | No complete permissive match-stat + ranking + identity + height source |
+| `AtpLiveClient` | ATP results pages | Event discovery, match links and lifecycle status | No verified strict-open live results feed |
+| `AtpInfosysStatsClient` | ATP/Infosys Stats Plus JSON | Live and final ace/service-point statistics | No verified strict-open live-stat replacement |
+| `tools/fetch_reference_data.py` | Tennis Abstract and Court Speed pages | TA reference values and CPI | No verified open reference table or event CPI feed |
+| `tools/build_dataset.py` | Canonical dataset builder | Bundled/downloadable app payload | Must publish only source-eligible fields in any strict-open edition |
 
-The current implementation already keeps the Android UI and the core calculation functions mostly separate from their source loaders. The provider migration should therefore happen at the ingestion boundary, not in the Compose screens or rating formula.
+## Strict-open source candidates
 
-## Candidate sources and restrictions
+### Candidate: serve-and-volley ATP match-stat archive
 
-### 1. Jeff Sackmann historical ATP archive
+Repository: [serve-and-volley/atp-world-tour-tennis-data](https://github.com/serve-and-volley/atp-world-tour-tennis-data)  
+Declared repository licence: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-Repository: [Aneeshers/tennis-sackmann-archive](https://github.com/Aneeshers/tennis-sackmann-archive)  
-Licence: [CC BY-NC-SA 4.0](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE)
+The repository README declares CC BY 4.0 and its historical CSV collection includes match-stat files from 1991 through 2022. The 2022 sample includes match/tournament identifiers, duration, winner/loser identifiers, aces, double faults, serve points, first-serve values, service games and break-point counters.
 
-The archive contains ATP annual match files, player data and ranking history. Match files expose the key columns needed for historical ace-based Surface Speed and service-game statistics, including aces, service points, service games and break-point counters. It is the best available open-licensed historical backbone found in this review.
+Limits that prevent cutover now:
 
-Important limitations:
+- There are no 2023–2026 match-stat CSV files in the repository tree reviewed on 17 November 2026.
+- Its README describes scraping ATP pages. The declared CC BY 4.0 licence is recorded, but the upstream collection provenance and ATP's separate systematic-retrieval terms need review before automated ingestion or bundled redistribution can be treated as cleared.
+- The source's abbreviated player slugs need ambiguity-safe crosswalks. Ranking snapshots, full player biography and heights are not a complete replacement for current Player Stats.
+- Per-year and per-event coverage has not yet been compared against the current 1991–2026 calculation archive.
 
-- CC BY-NC-SA permits sharing/adaptation only with attribution, non-commercial use and ShareAlike compliance. It is not a commercially permissive replacement.
-- The mirror does not own the upstream data and does not grant additional rights.
-- The live mirror's 2026 ATP match file checked on 17 November 2026 contained records only through 7 February 2026. Do not treat it as a complete 2026/current feed.
-- Historical player identifiers and ranking identifiers need explicit crosswalks. Keep unresolved and ambiguous identities separate.
-- Validate each year, tour level and statistic rather than assuming a file's existence means complete coverage.
+This is the best historical technical candidate found, but it remains **not approved for production**. Do not imply it solves current-season/live data.
 
-### 2. Live Tennis API
+### Candidate: ValueBet Tennis match results
 
-Provider: [Live Tennis API](https://livetennisapi.com/)  
-Terms: [Terms of Use](https://livetennisapi.com/terms)  
-Reference: [API documentation](https://docs.livetennisapi.com/reference.html)
+Source: [ValueBet Tennis open downloads](https://www.valuebetennis.com/en/donnees.htm)  
+Declared licence: CC BY 4.0
 
-The terms provide a limited, non-exclusive, non-transferable and revocable licence for using responses within the subscriber's own application/service. They prohibit republishing raw responses as a feed or bulk dataset, disallow unnecessary storage/caching, and require paid credentials to remain server-side. This is a contracted-service model, not open-source/open-data.
+The source publishes ATP/WTA match results, date/time, category, surface, players, score, winner and duration for 2021–2026. It is usable for result and event metadata with attribution. It does not provide aces, service points, service games or break-point faced/saved fields. It cannot drive CALC or the existing Player Stats game-denominator formulas.
 
-The documentation describes:
+### Candidate: Wikidata metadata
 
-- ATP/WTA historical match results for 1968–2022, with match-level serving statistics where the source recorded them.
-- Current and completed match data from 2023 onward, with coverage differences between tours and fields.
-- Live match statistics including aces, service splits, break points and service/return point/game measures.
-- Player biography fields including height in the archive and player endpoints.
-- Coverage reporting for the API's current history corpus.
+Source: [Wikidata licensing policy](https://www.wikidata.org/wiki/Wikidata:Licensing)  
+Structured-data licence: CC0
 
-Open blockers before production:
+Use only as a supplementary source for player identifiers and biography facts, such as some heights. Coverage is incomplete and should be recorded by entity/property/revision. Do not silently substitute a Wikidata height where the entity match is ambiguous or the field is absent.
 
-1. Obtain written confirmation that Court Pace may calculate and persist its own event ratings and player aggregates from the responses.
-2. Confirm whether the resulting derived ratings, Player Stats values and confidence/coverage summaries may be bundled in a public APK or downloadable JSON.
-3. Confirm what completed-match statistics remain available after a match ends, and for how long.
-4. Confirm rights and permitted display for ATP-derived names, scores, rankings and statistics, including any upstream restrictions.
-5. Confirm the applicable plan, quota and service continuity terms for the required polling rate.
+## Rejected sources for a strict-open build
 
-Do not assume that a paid API subscription alone clears upstream rights. Do not copy raw API responses into Git, public assets or a bulk-download endpoint. Do not embed a paid API key in the APK. Use a server-side relay with minimal fields and cache duration approved by the provider.
+| Source | Reason it is not eligible |
+|---|---|
+| Sackmann ATP archive / mirrors | CC BY-NC-SA 4.0 excludes commercial use; therefore not “open for any purpose”. |
+| TennisMyLife | Personal/educational/non-commercial research conditions; no unrestricted redistribution licence. |
+| Live Tennis API | Subscription/service terms, raw-feed/bulk-redistribution and caching restrictions; not open data. |
+| KickServe | No standard unrestricted open-data licence verified; commercial redistribution is separately restricted/queried. |
+| ATP / Infosys | ATP terms restrict systematic retrieval/compilation without prior express permission; accessible endpoints do not make the data openly licensed. |
+| Tennis Abstract | No open redistribution licence found for its surface-speed tables. |
+| Court Speed | No open-data licence found for published CPI readings. |
+| AcesAPI | Published tennis match example does not expose the serve-stat fields required by CALC. |
+| Tennis-Data.co.uk | Results/odds-oriented and source terms do not provide the unrestricted match-stat redistribution grant needed here. |
+| Wolfram ATP match dataset | Its source metadata identifies Jeff Sackmann; no independent permissive licence overriding the source provenance was verified. |
+| Open Tennis Data research release | Source registry includes non-commercial and source-specific restrictions; not a complete match-stat provider. |
 
-### 3. KickServe rankings
+## Feature impact if the project insists on strict-open data only
 
-Source: [KickServe tennis ratings data](https://kick-serve.com/data/)
+| Feature | What can remain with evidence found | What cannot currently be maintained at existing coverage |
+|---|---|---|
+| Pace board / tournament detail | Existing app structure and calculation code can remain; ValueBet may support results metadata for its covered seasons once its feed is integrated | Current and full-history CALC data cannot be recomputed from a verified, fully open, complete feed |
+| Surface Speed | The formula can remain unchanged | No verified 2023–current open serve-stat feed; historical 1991–2022 candidate not yet approved |
+| Player Stats | Existing formulas and UI code can remain; CC0 height facts may supplement a subset of players | Complete W–L/hold/break history, exact year-end ranking cohorts and broad height coverage cannot all be rebuilt from verified open sources |
+| Live now | UI can remain as dormant/unavailable state | No verified strict-open ATP event + results + live/final match-stat feed |
+| CPI | CPI formula/scale explanation can remain | Published tournament/court readings must be removed from a strict-open dataset until independently sourced open measurements exist |
+| TA reference comparison | Calculation can be explained independently | TA comparison values/fallbacks must be removed unless an open reference dataset is identified |
 
-The data page permits reuse with a dated citation and directs users to contact the publisher for commercial redistribution. The CSV contains an `official_rank` column and a provider-specific ID. It can be evaluated as a current ranking snapshot only, not a match-stat feed or a historical ranking archive.
+Do not zero-fill missing readings, use results-only feeds to fabricate ace-based ratings, use current rankings as historical year-end snapshots, or infer unknown heights.
 
-Requirements:
+## Implementation sequence
 
-- Store the retrieval date and cited snapshot date.
-- Attribute the feed using the wording requested by the publisher.
-- Crosswalk provider identities through verified country-qualified full-name matching and ambiguity detection; do not treat KickServe IDs as ATP/TML/Sackmann IDs.
-- Seek written confirmation for the project's actual public-distribution model if that model could be considered commercial redistribution.
+### Phase 1 — source and provenance baseline (this PR)
 
-### 4. Wikidata
+- Define the strict-open eligibility rule.
+- Record each source's published licence and actual field/coverage limitations.
+- Identify the features that cannot be preserved from the currently verified open data.
+- Keep all changes on a feature branch. Do not modify `main`.
 
-Source: [Wikidata licensing policy](https://www.wikidata.org/wiki/Wikidata:Licensing)
+### Phase 2 — first-party open data contribution design
 
-Wikidata's structured data is CC0. It is a permissible supplementary candidate for player heights and basic facts, but it is not a complete, authoritative or tennis-specialist roster. Store the Wikidata entity ID, property, source revision/retrieval time and value. Keep missing and disputed facts as unknown; do not silently overwrite a better verified ATP/Sackmann measurement.
+Create a documented contribution format for match statistics and physical court measurements. Each row needs stable source IDs, match/event date, surface, both player identities, all original fields, provenance URL or contributor record, submission time, validation status and correction history. Require contributors to dedicate submitted facts to CC0 or publish them under CC BY 4.0 with attribution; record that grant per contribution. No automated ATP page collection is used as a substitute.
 
-### 5. Sources not suitable for immediate cutover
+### Phase 3 — historical match-stat adapter evaluation
 
-- **AcesAPI:** the published tennis `get_match` example returns `serve_stats: null` and says aces, double faults and break-point match statistics are not served in that response. It is therefore not a replacement for the current match-stat path. See [get_match](https://acesapi.com/docs/get-match).
-- **Tennis-Data.co.uk:** its public contact notice says the data is intended for private individuals and excludes commercial/data-training products. Its schema is also results/odds focused rather than sufficient match-stat coverage. See [contact notice](https://www.tennis-data.co.uk/contact.php).
-- **Tennis Abstract:** its Surface Speed table has no identified open-data licence for republishing. Keep Court Pace's own CALC as the primary behavioural rating; remove or separately license external reference/fallback rows.
-- **Court Speed / courtspeed.com:** no explicit open-data licence for its CPI table was identified. Its method notes say its values are sourced from ATP/TennisTV CPI charts. Do not redistribute the table without permission from the relevant rights holders.
-- **ATP/Infosys direct retrieval:** ATP's [terms](https://www.atptour.com/en/terms-and-conditions-app) restrict systematic retrieval and compilation of scores, statistics and rankings absent prior express written permission. An unofficial endpoint or scraper does not create that permission.
-- **ITF classified surfaces:** useful as product classification context, but its slow-to-fast surface categories are not event-specific measured CPI records and cannot be substituted as though they were the same metric.
+Build a non-production parser/adapter for the declared CC BY 4.0 serve-and-volley archive only after the upstream provenance issue is resolved. Run fixtures and year-by-year comparisons for 1991–2022. Retain it as an experimental source until every field, event-level population and licence condition is verified. It cannot be used to fill 2023 onward.
 
-## Canonical contract and architecture
+### Phase 4 — result metadata and player facts
 
-All source adapters should map into canonical project-owned types before calculations run. The Android app should not know which provider supplied a record.
+Evaluate ValueBet for the fields it supplies (results/date/surface only) and Wikidata for supplementary CC0 metadata. Do not use either source to synthesize match stats or historical ranking snapshots. Keep a separate exact-source field for every value.
 
-### Canonical match record
+### Phase 5 — current/live and physical measurement data
 
-Minimum fields:
+Until first-party contributions or a genuinely open provider exists, show no strict-open Live now stats and no third-party CPI readings. A manual/community workflow must publish measurements under an explicit CC0/CC BY 4.0 grant and preserve test method, court identity, date and measurement conditions.
 
-- Stable internal match key and original provider/match ID.
-- Tournament ID, season, event start date, match date when actually present, surface, indoor/outdoor setting and draw/tier.
-- Player IDs as namespaced values (for example `sackmann:...`, `livetennisapi:...`), names and country codes.
-- Result status (completed, in-progress, retirement, walkover, abandoned, unknown) and score.
-- For each player/server role: aces, service points, service games, break points faced and saved; optional extended counters.
-- Per-field availability and validation state. Unknown is distinct from zero.
+### Phase 6 — strict-open release and legacy-data removal
 
-### Canonical player and ranking records
+Only after the complete replacements pass all checks should a separate cutover PR remove TML, Sackmann NC-SA, ATP/Infosys, Tennis Abstract, Court Speed and KickServe from production collection and generated assets. Regenerate every bundled/downloadable JSON, audit Git history and workflow artefacts for legacy payloads, and verify the strict-open attribution and notices. If data coverage is not there, disclose the narrower feature set rather than retaining restricted data under a misleading label.
 
-- Namespaced provider ID; verified cross-provider identity link and match confidence.
-- Height in centimetres, source, retrieval date, and verification status.
-- Ranking position, ranking points, exact snapshot date, source and rank-tie handling.
-- No implicit rank interpolation, backfilling or identity joins on fuzzy names.
+## Non-negotiable calculation and UI invariants
 
-### Provenance record
+- CALC keeps the existing opponent-adjusted expected-ace method, the 0.5 expected-aces floor, seasonal normalisation and player profile fallback hierarchy.
+- Player Stats keeps Hold% = service games held / service games played; Break% = return games won / return games played; H+B = Hold% + Break%.
+- Previous years use that calendar year's own final ranking snapshot; the current year uses its latest available snapshot. Do not invent a Top 100/500/1000 cohort from a non-ranking file.
+- Live eligibility keeps completed singles only, excludes doubles, walkovers/no-play and in-progress matches, and retains played retirements when valid stats exist.
+- Nulls stay null. No zero-filling, inferred statistics, unqualified fuzzy player joins or fabricated court readings.
 
-Every output family should retain:
+## Acceptance criteria
 
-- Provider and dataset/product name.
-- Original source URL and provider record ID.
-- Retrieved-at UTC and provider's as-of timestamp/date (separate fields).
-- Licence/terms URL and version/effective date where available.
-- Permitted uses: internal computation, caching, in-app display, derived output, offline bundle, redistribution.
-- Adapter/schema version and source checksum for reproducibility where storage is allowed.
+A strict-open production cutover is ready only when:
 
-### Data flow
-
-`Provider API / licensed archive -> Source adapter -> Canonical validation -> Existing calculation -> Rights-aware output publisher -> Existing Android model/UI`
-
-For subscription APIs, the paid API key stays in a server-side secret. The server should return only the data/derived fields the provider has confirmed may be served. Public assets must not be a back door for redistributing a raw feed.
-
-## Calculation and UI invariants
-
-Provider migration must not change the mathematical definitions or eligibility rules without a separate, reviewed methodology proposal.
-
-Keep:
-
-- Surface Speed expected-ace odds formula, the 0.5 expected-aces floor, season normalisation and current player-profile/shrinkage rules.
-- Player Stats definitions: Hold% = service games held / service games played; Break% = return games won / return games played; H+B = Hold% + Break%.
-- Calendar-year cohorts: each previous year uses that year's own final ranking snapshot; the live year uses its latest valid snapshot.
-- Existing height bands and metric/imperial rendering.
-- Singles-only rating population, Next Gen's separately identified format treatment, walkover/no-play exclusion, and played-retirement handling.
-- Missing values remain missing. Do not replace unknowns with zeros or estimates simply to increase apparent coverage.
-- Existing Android screens, filters, sorting, offline dataset schema and user-facing labels unless a field genuinely cannot be sourced.
-
-The expected result is a provider change with unchanged user experience, not a formula rewrite. Numerical values may still differ where the original providers have different match populations, corrections or field definitions; those differences must be quantified and attributed.
-
-## Staged implementation plan
-
-### Phase 1 — documentation and rights baseline (this PR)
-
-- Correct the stale statement that the repository is private.
-- Publish source-by-source rights and candidate-provider findings.
-- Document a canonical provider boundary and an explicit release gate.
-- Make no production source, data asset, formula, app UI, secrets or workflow changes.
-
-### Phase 2 — schema fixtures and historical adapter
-
-- Capture permitted, non-sensitive example records and write parser fixtures.
-- Build a Sackmann-to-canonical adapter for ATP historical matches and ranking files.
-- Compare year-by-year population and statistic coverage against the current build.
-- Confirm the CC BY-NC-SA attribution and ShareAlike obligations for any derived distribution.
-- Keep 2026 after 7 February out of any claim that the archive is complete until a separate current source supplies it.
-
-### Phase 3 — current/live licensed service adapter
-
-- Resolve the Live Tennis API rights questions in writing.
-- Add a server-side credentialed client and endpoint-specific parser.
-- Test final statistics, live updates, coverage flags, rate limits, retries, caching expiry and provider outages using test fixtures.
-- Maintain a no-provider-key local test mode.
-- Do not expose paid keys to the mobile client or distribute raw provider responses.
-
-### Phase 4 — Player Stats source swap
-
-- Source historical annual match stats from the archive adapter.
-- Source recent/current matches from an approved licensed feed.
-- Source dated historical ranking snapshots from licensed archive rankings; use KickServe only for the current ranking if its terms fit the actual use.
-- Use explicit, stable identity crosswalks; validate unresolved and ambiguous players.
-- Use CC0 metadata only as a supplementary height source.
-- Preserve the current year's and historical cohort definitions.
-
-### Phase 5 — CPI and TA cleanup
-
-- Stop automatically importing and redistributing Tennis Abstract values unless permission is secured.
-- Stop automatically importing/repackaging Court Speed CPI readings unless permission is secured.
-- Keep original independently sourced measurements only where the collection process, measurement method, court identity and redistribution rights are documented.
-- Keep CPI blank where no properly sourced reading exists.
-
-### Phase 6 — dual-run, acceptance and release
-
-- Run old and new builds in parallel without changing the public production branch.
-- Compare match counts, eligible server sides, unrateable reasons, rating ranks and absolute differences by event/season.
-- Compare Player Stats numerators, denominators, heights, unknowns and Top 100/500/1000 membership.
-- Exercise live discovery, finals, Next Gen and completed-event transitions on a physical Android device.
-- Obtain a human review of the source-rights evidence before merging the cutover PR.
-- Keep a tested rollback to the old data snapshot and adapter until the new source is stable.
-
-## Acceptance criteria for any source cutover
-
-A production source change is ready only when all of the following are met:
-
-1. Written rights confirmation or an applicable published licence covers collection, processing, persistence, derived output and the exact distribution method.
-2. The source schema maps to the canonical contract without fabricated values.
-3. Per-field coverage is measured across seasons and competition levels.
-4. The Surface Speed formula and player-profile tests pass unchanged.
-5. Player Stats formula, ranking cohort, height grouping and denominator tests pass unchanged.
-6. Live now discovers and updates supported tournaments on a real handset and correctly distinguishes in-progress, completed, walkover and retirement cases.
-7. Provenance is visible in generated metadata and documentation.
-8. CI passes and the release notes disclose any genuine source-coverage differences.
+1. Every raw source and each derived/bundled data family has an explicit eligible licence and attribution record.
+2. Collection and distribution methods comply with the source's published terms; public visibility alone is not treated as permission.
+3. Provider IDs and player/event identities map through stable, ambiguity-safe crosswalks.
+4. Per-field, per-year and per-event coverage is measured against the existing outputs.
+5. The existing CALC, Player Stats and live lifecycle tests pass without changing formulas to compensate for missing fields.
+6. Every asset and downloadable JSON contains only eligible values and complete provenance.
+7. CPI readings have independent documented measurements and an open contribution licence.
+8. CI passes, the changed coverage is disclosed and a rollback plan exists.
 
 ## Confidence
 
-- **High** that the adapter-based migration can preserve the existing formulas and UI: the current project already separates its main ingestion paths from calculation and presentation.
-- **Moderate** that Sackmann can replace the TML historical Player Stats inputs: the required historical fields exist, but full year-by-year coverage and ranking-cohort parity still need executable comparisons.
-- **Moderate** that Live Tennis API can replace the current/live service technically: the documented endpoints appear to expose the relevant categories of data, but exact final-stat field coverage, quotas and the project's persisted derived outputs need tests and written rights confirmation.
-- **Low** that a fully open, one-provider replacement exists: none was identified in this review.
-- **Low** that CPI can be recreated from a permissively licensed public dataset without collecting or commissioning new measurements.
+- **High** that existing UI and calculation modules can remain largely separate from ingestion: the current codebase already has distinct builders and runtime clients.
+- **Moderate** that the CC BY 4.0 historical archive can technically provide a useful 1991–2022 stat adapter; schemas look adequate, but coverage comparisons and source-provenance review remain uncompleted.
+- **Low** that current ATP live statistics, complete player ranking cohorts and CPI can be replaced by existing verified open datasets in the near term.
+- **High** confidence in the conclusion that no complete strict-open, feature-preserving provider was verified in this audit.
 
-**No production cutover is approved by this document.** Phase 1 is documentation and risk control only. Later implementation PRs must be independent, testable and remain off `main` until reviewed and approved.
+**No production data cutover is included in this PR.** It updates the source audit and migration plan only; it does not change Android/Python runtime code, generated datasets, workflows, API keys or signing configuration. The branch is `research/data-provider-migration-phase-1` and `main` remains untouched.
