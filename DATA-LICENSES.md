@@ -121,3 +121,18 @@ A provider migration must not alter the app's calculation definitions merely to 
 6. Keep the previous production snapshot and adapter available for rollback until the new provider has passed the complete regression suite and a real-device live acceptance test.
 
 The detailed adapter and cutover plan is maintained in [DATA_PROVIDER_MIGRATION.md](docs/DATA_PROVIDER_MIGRATION.md).
+
+
+## 13. Strict open-data eligibility audit
+
+This project now uses a strict open-data test for provider replacement: a data licence must allow use, modification and redistribution for **any purpose**, including commercial use. A free endpoint, public repository or research-only permission is not sufficient.
+
+The audit found the following:
+
+- **Not eligible:** the Jeff Sackmann archive is CC BY-NC-SA 4.0. Its non-commercial condition excludes unrestricted use.
+- **Historical candidate, not approved:** [serve-and-volley/atp-world-tour-tennis-data](https://github.com/serve-and-volley/atp-world-tour-tennis-data) declares CC BY 4.0 and publishes detailed ATP match statistics for 1991–2022. Its README states that the records were collected by scraping ATP pages. The upstream provenance/terms issue has not been resolved, and no 2023–2026 stats files were found. Do not treat this as a fully verified production source yet.
+- **Results-only candidate:** [ValueBet Tennis](https://www.valuebetennis.com/en/donnees.htm) declares CC BY 4.0 for match results from 2021–2026. The documented fields include dates, event/surface, players, scores, winner and duration, but not the aces, service points, service games and break-point fields needed by Court Pace's rating and Player Stats calculations.
+- **Supplementary metadata only:** [Wikidata structured data](https://www.wikidata.org/wiki/Wikidata:Licensing) is CC0; it can supplement some player facts such as heights but is not a complete player roster or match-stat/ranking source.
+- **Not eligible:** TML, Live Tennis API, KickServe, ATP/Infosys, Tennis Abstract, Court Speed, Tennis-Data.co.uk and the reviewed research-only tennis collections do not provide the unrestricted licence and/or fields required for this product.
+
+The complete field-by-field analysis and feature impact are in [OPEN_DATA_SOURCE_AUDIT.md](docs/OPEN_DATA_SOURCE_AUDIT.md). The result is that **no complete, feature-preserving, strictly open data replacement has been verified**. A fully open-data release requires first-party/contributor data under CC0 or CC BY 4.0, or a reduced feature set. Do not relabel NC, research-only, service-licensed or unlicensed content as open data.
