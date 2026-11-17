@@ -1,7 +1,15 @@
 name: Surface-specific lower-tier backfill audit
 
 on:
-  # High-cost research audits are manual; product correctness remains covered by Android CI.
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/surface-specific-lower-tier-backfill.yml"
+      - "tools/audit_surface_specific_lower_tier_backfill.py"
+      - "tools/test_surface_specific_lower_tier_backfill.py"
+      - "tools/audit_lower_tier_profile_backfill.py"
+      - "tools/compute_speed.py"
   workflow_dispatch:
 
 permissions:
