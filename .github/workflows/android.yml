@@ -170,17 +170,26 @@ jobs:
                 });
               } catch (error) {
                 const status = error.status || error.response?.status;
-                if (status === 404 || status === 410) {
+                if ([404, 410].includes(status)) {
                   core.warning(`Artifact ${artifact.id} was already removed.`);
+                  continue;
+                }
+                if (status >= 500 || status === 429) {
+                  core.warning(`GitHub artifact API temporarily failed while deleting ${artifact.id} (HTTP ${status || "unknown"}); continuing with remaining cleanup.`);
                   continue;
                 }
                 throw error;
               }
             }
-            const after = (await github.paginate(
-              github.rest.actions.listArtifactsForRepo,
-              { owner, repo, per_page: 100 }
-            )).filter((item) => !item.expired);
+            let after = active;
+            try {
+              after = (await github.paginate(
+                github.rest.actions.listArtifactsForRepo,
+                { owner, repo, per_page: 100 }
+              )).filter((item) => !item.expired);
+            } catch (error) {
+              core.warning(`Could not refresh the artifact inventory after cleanup (HTTP ${error.status || error.response?.status || "unknown"}); the deletion attempts above have completed.`);
+            }
             const remainingReports = after.filter((item) =>
               reportPrefixes.some((prefix) => item.name.startsWith(prefix))
             );
