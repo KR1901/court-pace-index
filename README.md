@@ -86,6 +86,10 @@ The bundled asset and downloadable `data/latest.json` are generated from the ful
 
 
 Lower-tier profile backfill is research-only and is not used in production. The first 2019–2025 holdout and the new partial-2026 forward test both showed coverage gains but inconclusive overall predictive-loss improvements, worsening calibration, and mixed surface effects. ATP-only profiles remain the production policy pending a stronger independent validation set and data-rights review.
+## Data provider migration
+
+A source-by-source migration assessment and staged implementation plan is maintained in [DATA_PROVIDER_MIGRATION.md](docs/DATA_PROVIDER_MIGRATION.md). This is a public repository and public app; no third-party data source is treated as cleared merely because its files or endpoints are publicly accessible. Provider cutover requires documented permission for the exact processing, caching, derived-output and distribution model. No production feed is switched by the migration-design PR.
+
 ## Data and provenance
 
 | Purpose | Source | Role |
