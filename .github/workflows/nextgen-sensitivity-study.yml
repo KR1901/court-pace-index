@@ -1,17 +1,7 @@
 name: Next Gen sensitivity study
 
 on:
-  pull_request:
-    branches:
-      - fix/live-tournament-discovery-and-refresh
-    paths:
-      - ".github/workflows/nextgen-sensitivity-study.yml"
-      - "tools/nextgen_sensitivity_study.py"
-      - "tools/test_nextgen_sensitivity_study.py"
-      - "tools/compute_speed.py"
-      - "tools/deep_calculation_audit.py"
-      - "tools/test_deep_calculation_audit.py"
-      - "data/speed_history.json"
+  # High-cost research audits are manual; product correctness remains covered by Android CI.
   workflow_dispatch:
 
 permissions:

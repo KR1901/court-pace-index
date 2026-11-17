@@ -1,21 +1,7 @@
 name: Lower-tier profile backfill audit
 
 on:
-  pull_request:
-    branches:
-      - fix/live-tournament-discovery-and-refresh
-    paths:
-      - ".github/workflows/lower-tier-profile-backfill.yml"
-      - "tools/audit_lower_tier_profile_backfill.py"
-      - "tools/test_lower_tier_profile_backfill.py"
-      - "tools/compute_speed.py"
-      - "tools/audit_surface_backfill_2026_forward.py"
-      - "tools/test_surface_backfill_2026_forward.py"
-  # Run after the Monday 06:00 UTC production data refresh. When this workflow
-  # is present on the default branch, it re-fetches the available-to-date 2026
-  # ATP, Challenger and qualifying sources and re-runs the chronological audit.
-  schedule:
-    - cron: "0 8 * * 1"
+  # The full archive backfill is a long-running research task; run it manually when needed.
   workflow_dispatch:
 
 permissions:
@@ -74,4 +60,4 @@ jobs:
             build/surface-backfill-2026/README.md
             surface-backfill-2026.txt
           if-no-files-found: error
-          retention-days: 90
+          retention-days: 30

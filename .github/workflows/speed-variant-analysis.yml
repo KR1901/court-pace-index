@@ -1,16 +1,7 @@
 name: Expected-aces formula comparison
 
 on:
-  pull_request:
-    branches:
-      - fix/live-tournament-discovery-and-refresh
-    paths:
-      - ".github/workflows/speed-variant-analysis.yml"
-      - "tools/compute_speed.py"
-      - "tools/compare_speed_variants.py"
-      - "tools/test_compare_speed_variants.py"
-      - "tools/test_compute_speed.py"
-      - "app/src/main/assets/pace_dataset.json"
+  # High-cost research audits are manual; product correctness remains covered by Android CI.
   workflow_dispatch:
 
 permissions:

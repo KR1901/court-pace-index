@@ -1,22 +1,7 @@
 name: Deep calculation audit
 
 on:
-  pull_request:
-    branches:
-      - fix/live-tournament-discovery-and-refresh
-    paths:
-      - ".github/workflows/deep-calculation-audit.yml"
-      - "tools/compute_speed.py"
-      - "tools/compare_speed_variants.py"
-      - "tools/deep_calculation_audit.py"
-      - "tools/test_deep_calculation_audit.py"
-      - "tools/test_compute_speed.py"
-      - "tools/audit_event_population.py"
-      - "tools/test_audit_event_population.py"
-      - "tools/build_dataset.py"
-      - "tools/test_physical_cpi_snapshot.py"
-      - "docs/PHYSICAL_VALIDATION.md"
-      - "app/src/main/assets/pace_dataset.json"
+  # High-cost research audits are manual; product correctness remains covered by Android CI.
   workflow_dispatch:
 
 permissions:

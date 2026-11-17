@@ -41,17 +41,8 @@ jobs:
       - name: Check Python tooling syntax
         run: python3 -m py_compile tools/*.py
 
-      - name: Test CPI source snapshot selection
-        run: python3 -m unittest discover -s tools -p 'test_cpi_snapshot.py' -v
-
-      - name: Test CPI reference table parser
-        run: python3 -m unittest discover -s tools -p 'test_fetch_reference_data.py' -v
-
-      - name: Test Player Stats source aggregation
-        run: python3 -m unittest discover -s tools -p 'test_build_player_stats.py' -v
-
-      - name: Test CALC speed computation
-        run: python3 -m unittest discover -s tools -p 'test_compute_speed.py' -v
+      - name: Run all Python tooling unit tests
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
 
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest --stacktrace
@@ -126,6 +117,76 @@ jobs:
                 `Artifact cleanup left ${remaining.length} active debug APK artifact(s).`
               );
             }
+
+      # Keep only the newest successful result for each research-report name.
+      # Signing-key recovery artifacts are intentionally never included in this cleanup.
+      - name: Prune superseded research audit artifacts
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            const active = artifacts.filter((item) => !item.expired);
+            const reportPrefixes = [
+              "expected-aces-formula-comparison-",
+              "court-pace-deep-calculation-audit",
+              "court-pace-nextgen-sensitivity-study",
+              "surface-specific-tier-backfill-",
+              "all-event-profile-coverage-",
+              "lower-tier-profile-and-2026-forward-audit",
+            ];
+            const reports = active.filter((item) =>
+              reportPrefixes.some((prefix) => item.name.startsWith(prefix))
+            );
+            const newestByName = new Map();
+            const obsolete = [];
+            for (const artifact of [...reports].sort(
+              (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)
+            )) {
+              if (newestByName.has(artifact.name)) {
+                obsolete.push(artifact);
+              } else {
+                newestByName.set(artifact.name, artifact);
+              }
+            }
+            const bytes = obsolete.reduce(
+              (sum, item) => sum + (item.size_in_bytes || 0), 0
+            );
+            const toMiB = (value) => (value / (1024 * 1024)).toFixed(2);
+            core.info(
+              `Research reports: ${reports.length} active; retaining ${newestByName.size} newest reports and pruning ${obsolete.length} duplicates (${toMiB(bytes)} MiB).`
+            );
+            for (const artifact of obsolete) {
+              core.info(
+                `Deleting superseded report ${artifact.name} (${artifact.id}, ${artifact.size_in_bytes} bytes).`
+              );
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner, repo, artifact_id: artifact.id,
+                });
+              } catch (error) {
+                const status = error.status || error.response?.status;
+                if (status === 404 || status === 410) {
+                  core.warning(`Artifact ${artifact.id} was already removed.`);
+                  continue;
+                }
+                throw error;
+              }
+            }
+            const after = (await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            )).filter((item) => !item.expired);
+            const remainingReports = after.filter((item) =>
+              reportPrefixes.some((prefix) => item.name.startsWith(prefix))
+            );
+            core.info(
+              `Remaining active research reports: ${remainingReports.length}; preserved release signing-key recovery artifacts: ${after.filter((item) => item.name.startsWith("court-pace-release-signing-key-v")).length}.`
+            );
 
       - name: Upload APK
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_debug_apk }}

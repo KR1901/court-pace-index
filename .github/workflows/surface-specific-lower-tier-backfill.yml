@@ -1,15 +1,7 @@
 name: Surface-specific lower-tier backfill audit
 
 on:
-  pull_request:
-    branches:
-      - fix/live-tournament-discovery-and-refresh
-    paths:
-      - ".github/workflows/surface-specific-lower-tier-backfill.yml"
-      - "tools/audit_surface_specific_lower_tier_backfill.py"
-      - "tools/test_surface_specific_lower_tier_backfill.py"
-      - "tools/audit_lower_tier_profile_backfill.py"
-      - "tools/compute_speed.py"
+  # High-cost research audits are manual; product correctness remains covered by Android CI.
   workflow_dispatch:
 
 permissions:
@@ -50,4 +42,4 @@ jobs:
             build/surface-tier-weight-backfill/README.md
             surface-tier-weight-backfill.txt
           if-no-files-found: error
-          retention-days: 90
+          retention-days: 30
