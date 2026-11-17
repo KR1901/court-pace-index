@@ -9,18 +9,11 @@ on:
   push:
     branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias]
     paths:
+      # Test-only changes run in Android CI; workflow-only edits do not need a data rebuild.
       - 'tools/compute_speed.py'
-      - 'tools/test_compute_speed.py'
-      - 'app/src/test/java/ink/courtpace/index/core/AtpStatsParserTest.kt'
-      - 'app/src/test/java/ink/courtpace/index/core/DatasetTest.kt'
-      - 'app/src/test/java/ink/courtpace/index/core/LiveFeedTest.kt'
-      - 'app/src/test/java/ink/courtpace/index/core/PaceAnalyticsTest.kt'
-      - 'app/src/test/java/ink/courtpace/index/ui/ScreenshotTest.kt'
       - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
-      - 'tools/test_fetch_reference_data.py'
-      - '.github/workflows/refresh-data.yml'
   schedule:
     - cron: '0 */12 * * *'
   workflow_dispatch:
