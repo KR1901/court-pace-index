@@ -1,7 +1,16 @@
 name: Event population audit
 
 on:
-  # High-cost research audits are manual; product correctness remains covered by Android CI.
+  pull_request:
+    branches:
+      - fix/live-tournament-discovery-and-refresh
+    paths:
+      - ".github/workflows/event-population-audit.yml"
+      - "tools/audit_event_population.py"
+      - "tools/test_audit_event_population.py"
+      - "tools/aggregate_event_profile_coverage.py"
+      - "tools/test_aggregate_event_profile_coverage.py"
+      - "tools/compute_speed.py"
   workflow_dispatch:
 
 permissions:
