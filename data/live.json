@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-17T20:38:04Z",
+  "generated": "2026-11-18T06:32:50Z",
   "note": "Active event windows support the ATP live feed fallback; ended windows remain as completed-rating backfill metadata and stale-route guards.",
   "events": [
     {
