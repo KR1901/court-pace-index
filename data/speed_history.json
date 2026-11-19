@@ -44,11 +44,11 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-19T06:35:59.836956+00:00",
+   "fetchedAtUtc": "2026-11-19T20:15:16.885980+00:00",
    "latestMatchDate": "20261114",
    "matchRows": 2801,
-   "bytes": 592616,
-   "sha256": "fd979642827a9cc17068f3fd27e8fa6b773fa14225fa514fd2d79a7a17d6611c"
+   "bytes": 592602,
+   "sha256": "1da091b1c86f12d67423b8837e000b4517e5dd664638bd2cfd3dc2d92fc86781"
   }
  },
  "seasons": {
