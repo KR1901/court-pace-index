@@ -83,7 +83,7 @@ object H2HAnalytics {
 
     fun formatHeight(heightCm: Int?): String {
         if (heightCm == null || heightCm !in 140..220) return "Unavailable"
-        val totalInches = (heightCm / 2.54).toInt()
+        val totalInches = kotlin.math.round(heightCm / 2.54).toInt()
         val feet = totalInches / 12
         val inches = totalInches % 12
         return "${heightCm} cm · ${feet}′${inches}″"
