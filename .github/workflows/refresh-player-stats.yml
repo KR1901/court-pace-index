@@ -69,6 +69,13 @@ jobs:
           payload = json.loads(bundled.read_text(encoding="utf-8"))
           players = payload.get("players")
           meta = payload.get("meta") or {}
+          venue_map = meta.get("tournamentIndoorById") or {}
+          assert isinstance(venue_map, dict), "tournament venue lookup must be an object"
+          assert all(
+              isinstance(tournament_id, str) and tournament_id
+              and setting in {"indoor", "outdoor", "unknown"}
+              for tournament_id, setting in venue_map.items()
+          ), "tournament venue lookup contains an invalid ID or setting"
           assert isinstance(players, list) and len(players) >= 100
           ids = [row.get("id") for row in players]
           assert all(isinstance(value, str) and value for value in ids), "blank player ID"
