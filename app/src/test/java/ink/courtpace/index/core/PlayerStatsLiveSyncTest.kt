@@ -155,7 +155,7 @@ class PlayerStatsLiveSyncTest {
                 "M0QI", "Alex Michelsen", "193", "P004", "Other Opponent", "185",
                 "6-4 6-3", "9", "1", "2", "8", "3", "4",
             ),
-        ).joinToString("\\n")
+        ).joinToString("\n")
 
         val result = PlayerStatsLiveAggregator.apply(baseline(), PlayerStatsLiveCsvParser.parse(csv), 2026, "2026-11-22")
         assertEquals("unknown", result.data.meta.tournamentIndoorById["2026-429"])
