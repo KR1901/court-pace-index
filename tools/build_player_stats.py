@@ -345,7 +345,12 @@ def empty_counter() -> dict[str, int]:
 
 def load_json_url(url: str) -> dict:
     """Fetch a small JSON endpoint with bounded retry for transient source failures."""
-    request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
+    request = Request(url, headers={
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+    })
     last_error: Exception | None = None
     for attempt in range(3):
         try:
@@ -1514,7 +1519,9 @@ def compact_player_seasons(
 
 
 def build() -> dict:
-    manifest = load_json_url(MANIFEST_URL)
+    # The mutable manifest can be served stale by a CDN. Bypass that cache so
+    # its file sizes/mtimes describe the same source versions we download below.
+    manifest = load_json_url(f"{MANIFEST_URL}?_={time.time_ns()}")
     files = valid_manifest_files(manifest)
     current_year = date.today().year
     years = range(1968, current_year + 1)
