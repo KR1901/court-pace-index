@@ -12,8 +12,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
@@ -37,7 +35,7 @@ data class H2HMatch(
     val date: LocalDate?,
     val year: Int?,
     val surface: String?,
-    val indoor: Boolean?,
+    val teamEvent: Boolean?,
     val round: String?,
     val level: String?,
     val winnerId: String,
@@ -126,11 +124,23 @@ object H2HRepository {
         // Optional biography/ranking endpoints must not suppress valid match history.
         // Missing profile facts remain null and are rendered as Unavailable/Unranked.
         val profileRequest = async {
-            runCatching { getJson("/api/players?id=$id").asObject() }.getOrNull()
+            try {
+                getJson("/api/players?id=$id").asObject()
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                null
+            }
         }
         val matchesRequest = async { getMatches("/api/players/performance?id=$id") }
         val rankRequest = async {
-            runCatching { getJson("/api/players/current-ranking?id=$id").asObject() }.getOrNull()
+            try {
+                getJson("/api/players/current-ranking?id=$id").asObject()
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                null
+            }
         }
 
         val profile = profileRequest.await()
@@ -190,7 +200,7 @@ object H2HRepository {
             date = date,
             year = year,
             surface = normalizeSurface(row.string("surface")),
-            indoor = normalizeIndoor(row.string("indoor")),
+            teamEvent = row.bool("team_event"),
             round = row.string("round"),
             level = row.string("tourney_level"),
             winnerId = winnerId,
@@ -212,12 +222,6 @@ object H2HRepository {
         "clay", "clay court" -> "clay"
         "grass", "grass court" -> "grass"
         "carpet" -> "carpet"
-        else -> null
-    }
-
-    private fun normalizeIndoor(value: String?): Boolean? = when (value?.trim()?.lowercase(Locale.ROOT)) {
-        "i", "indoor", "yes", "y", "true", "1" -> true
-        "o", "outdoor", "no", "n", "false", "0" -> false
         else -> null
     }
 
