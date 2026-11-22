@@ -25,6 +25,7 @@ data class H2HRecord(
 
 object H2HAnalytics {
     private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ROOT)
+    private val titleLevels = setOf("G", "M", "A", "F", "250", "500")
     private val nonTitleEvents = listOf(
         "davis cup",
         "united cup",
@@ -80,7 +81,7 @@ object H2HAnalytics {
 
     fun isTitleFinal(match: H2HMatch): Boolean {
         if (match.round?.uppercase(Locale.ROOT) !in setOf("F", "FINAL")) return false
-        if (match.teamEvent == true || match.level?.uppercase(Locale.ROOT) == "D") return false
+        if (match.teamEvent == true || match.level?.uppercase(Locale.ROOT) !in titleLevels) return false
         val name = match.eventName.lowercase(Locale.ROOT)
         return nonTitleEvents.none(name::contains)
     }
