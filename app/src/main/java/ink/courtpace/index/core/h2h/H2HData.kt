@@ -123,23 +123,29 @@ object H2HRepository {
 
     private suspend fun loadPlayer(selected: H2HPlayer): H2HPlayerProfile = coroutineScope {
         val id = encode(selected.id)
-        val profileRequest = async { getJson("/api/players?id=$id").asObject() }
+        // Optional biography/ranking endpoints must not suppress valid match history.
+        // Missing profile facts remain null and are rendered as Unavailable/Unranked.
+        val profileRequest = async {
+            runCatching { getJson("/api/players?id=$id").asObject() }.getOrNull()
+        }
         val matchesRequest = async { getMatches("/api/players/performance?id=$id") }
-        val rankRequest = async { getJson("/api/players/current-ranking?id=$id").asObject() }
+        val rankRequest = async {
+            runCatching { getJson("/api/players/current-ranking?id=$id").asObject() }.getOrNull()
+        }
 
         val profile = profileRequest.await()
         val rankingRoot = rankRequest.await()
-        val ranking = (rankingRoot["ranking"] as? JsonObject)
+        val ranking = rankingRoot?.get("ranking") as? JsonObject
 
         val canonical = H2HPlayer(
-            id = profile.string("id") ?: selected.id,
-            name = profile.string("atpname") ?: profile.string("player") ?: selected.name,
-            country = profile.string("ioc") ?: selected.country,
+            id = profile?.string("id") ?: selected.id,
+            name = profile?.string("atpname") ?: profile?.string("player") ?: selected.name,
+            country = profile?.string("ioc") ?: selected.country,
         )
         H2HPlayerProfile(
             player = canonical,
-            birthDate = parseDate(profile.string("birthdate")),
-            heightCm = parseHeight(profile["height"]),
+            birthDate = parseDate(profile?.string("birthdate")),
+            heightCm = parseHeight(profile?.get("height")),
             currentRank = ranking?.int("rank"),
             rankingDate = parseDate(ranking?.string("date")),
             bestRank = ranking?.int("bestRank"),
