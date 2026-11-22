@@ -123,9 +123,13 @@ class H2HAnalyticsTest {
         val final = match("final-a", 2026, "hard", round = "F", eventName = "Sydney Open")
         val sameEvent = match("same-event-final", 2026, "hard", round = "F", eventName = "Sydney Open")
             .copy(eventId = final.eventId)
+        val nextSeasonSameEvent = match(
+            "next-season-final", 2025, "hard", round = "F", eventName = "Sydney Open",
+        ).copy(eventId = final.eventId)
         val matches = listOf(
             final,
             sameEvent,
+            nextSeasonSameEvent,
             match("davis-final", 2026, "hard", round = "F", eventName = "Davis Cup", level = "D"),
             match("team-final", 2026, "hard", round = "F", eventName = "Laver Cup", teamEvent = true),
             match("semifinal", 2026, "clay", round = "SF", eventName = "Rome Open"),
@@ -134,8 +138,10 @@ class H2HAnalyticsTest {
 
         val all = H2HAnalytics.record("p1", statsPlayer(), matches, 2026, H2HSurfaceFilter.ALL)
         val clay = H2HAnalytics.record("p1", statsPlayer(), matches, 2026, H2HSurfaceFilter.CLAY)
+        val career = H2HAnalytics.record("p1", statsPlayer(), matches, null, H2HSurfaceFilter.ALL)
         assertEquals(1, all.titles)
         assertEquals(1, clay.titles)
+        assertEquals(2, career.titles)
     }
 
     @Test
