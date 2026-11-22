@@ -329,6 +329,7 @@ fun GlassChip(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
+    labelFontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
     modifier: Modifier = Modifier,
 ) {
     val colors = PaceTheme.colors
@@ -638,7 +639,7 @@ fun GlassTabBar(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (items.size >= 6) 2.dp else 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEachIndexed { index, (glyph, label) ->
@@ -647,6 +648,7 @@ fun GlassTabBar(
                     label = label,
                     selected = index == selected,
                     onClick = { onSelect(index) },
+                    labelFontSize = if (items.size >= 6) 9.sp else 10.sp,
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                 )
             }
@@ -695,7 +697,7 @@ private fun TabItem(
         Text(
             text = label,
             style = TextStyle(
-                fontSize = 10.sp,
+                fontSize = labelFontSize,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 letterSpacing = 0.2.sp,
             ),
