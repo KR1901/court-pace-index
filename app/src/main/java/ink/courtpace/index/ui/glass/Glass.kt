@@ -662,6 +662,7 @@ private fun TabItem(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    labelFontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
     modifier: Modifier = Modifier,
 ) {
     val colors = PaceTheme.colors
