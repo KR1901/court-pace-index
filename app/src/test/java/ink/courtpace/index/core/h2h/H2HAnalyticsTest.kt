@@ -131,6 +131,7 @@ class H2HAnalyticsTest {
             sameEvent,
             nextSeasonSameEvent,
             match("davis-final", 2026, "hard", round = "F", eventName = "Davis Cup", level = "D"),
+            match("challenger-final", 2026, "clay", round = "F", eventName = "Challenger Open", level = "C"),
             match("team-final", 2026, "hard", round = "F", eventName = "Laver Cup", teamEvent = true),
             match("semifinal", 2026, "clay", round = "SF", eventName = "Rome Open"),
             match("loss-final", 2026, "grass", round = "F", winner = "p2", eventName = "Queens Club"),
