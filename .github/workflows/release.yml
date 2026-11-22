@@ -194,6 +194,16 @@ jobs:
                   "- Preserves the existing CPI/CALC formulas, Surface Speed calculations, Live Now pipeline and Player Stats refresh logic.",
                   "",
               ]
+          elif version == "4.1.1":
+              lines += [
+                  "### H2H record accuracy and surface breakdown",
+                  "- Adds Win% immediately below W/L in both Year-to-date and Career player comparison cards.",
+                  "- Win% is calculated from the selected surface's wins and losses and is shown to one decimal place; it remains unavailable when no valid W/L denominator exists.",
+                  "- Makes ATP title counts follow the selected All, Hard, Outdoor Hard, Indoor Hard, Grass or Clay filter in both record sections.",
+                  "- Uses source-derived tournament venue metadata for Indoor Hard/Outdoor Hard title attribution; unknown or conflicting venue settings are not guessed.",
+                  "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
+                  "",
+              ]
           elif version == "3.2.1":
               lines += [
                   "### Included in 3.2.1",
