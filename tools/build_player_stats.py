@@ -51,6 +51,11 @@ DATA_SOURCE = "TennisMyLife ATP Match Database"
 DATA_SOURCE_URL = "https://stats.tennismylife.org/tennis-match-database"
 USER_AGENT = "CourtPaceIndex-PrivatePlayerStats/1.0 (personal research)"
 TOUR_LEVELS = {"G", "M", "A", "F", "250", "500"}
+NON_TITLE_EVENT_NAMES = (
+    "davis cup", "united cup", "laver cup", "atp cup", "olympic",
+    "hopman cup", "world team cup", "fed cup", "federation cup",
+    "billie jean king cup", "wightman cup",
+)
 BUCKETS = ("all", "clay", "grass", "hardAll", "hardOutdoor", "hardIndoor", "hardUnknown", "carpet")
 BASE_FIELDS = ("mp", "w", "l", "sp", "sw", "rp", "rw", "sm")
 
@@ -320,6 +325,18 @@ def match_buckets(surface: str | None, indoor: str | None) -> tuple[str, ...]:
     mapping = {"clay": "clay", "grass": "grass", "carpet": "carpet"}
     bucket = mapping.get(surface)
     return ("all", bucket) if bucket else ("all",)
+
+
+def is_atp_title_final(row: dict[str, str]) -> bool:
+    """Return true only for an eligible ATP singles tournament final result."""
+    if (row.get("round") or "").strip().upper() not in {"F", "FINAL"}:
+        return False
+    if (row.get("tourney_level") or "").strip().upper() not in TOUR_LEVELS:
+        return False
+    if (row.get("team_event") or "").strip().casefold() in {"1", "true", "yes", "y"}:
+        return False
+    event_name = (row.get("tourney_name") or "").casefold()
+    return not any(name in event_name for name in NON_TITLE_EVENT_NAMES)
 
 
 def empty_counter() -> dict[str, int]:
@@ -1069,12 +1086,15 @@ def add_player_match(
     return_played: int,
     return_won: int,
     has_stats: bool,
+    title: bool = False,
 ) -> None:
     years = aggregate.setdefault(player_id, {})
     for bucket in buckets:
         counter = years.setdefault(season, {}).setdefault(bucket, empty_counter())
         counter["mp"] += 1
         counter["w" if won else "l"] += 1
+        if title and won:
+            counter["titles"] = counter.get("titles", 0) + 1
         if has_stats:
             counter["sp"] += serve_played
             counter["sw"] += serve_won
@@ -1344,6 +1364,7 @@ def aggregate_match_rows(
             totals["retiredMatchResults"] += 1
 
         buckets = match_buckets(row.get("surface"), row.get("indoor"))
+        title_final = source_kind == "tour" and is_atp_title_final(row)
         if (row.get("surface") or "").strip().casefold() == "hard" and "hardUnknown" in buckets:
             totals["hardRowsWithUnknownEnvironment"] += 1
 
@@ -1359,7 +1380,10 @@ def aggregate_match_rows(
 
         if stats is None:
             totals["matchesWithoutValidStats"] += 1
-            add_player_match(aggregate, winner_id, season, buckets, True, 0, 0, 0, 0, False)
+            add_player_match(
+                aggregate, winner_id, season, buckets, True, 0, 0, 0, 0, False,
+                title=title_final,
+            )
             add_player_match(aggregate, loser_id, season, buckets, False, 0, 0, 0, 0, False)
             totals["matchResults"] += 1
             continue
@@ -1370,6 +1394,7 @@ def aggregate_match_rows(
         add_player_match(
             aggregate, winner_id, season, buckets, True,
             winner_sg, winner_sw, loser_sg, winner_return_won, True,
+            title=title_final,
         )
         add_player_match(
             aggregate, loser_id, season, buckets, False,

@@ -53,7 +53,6 @@ data class H2HPlayerProfile(
     val rankingDate: LocalDate?,
     val bestRank: Int?,
     val rankingAvailable: Boolean = true,
-    val matches: List<H2HMatch>,
 )
 
 data class H2HComparison(
@@ -122,7 +121,7 @@ object H2HRepository {
 
     private suspend fun loadPlayer(selected: H2HPlayer): H2HPlayerProfile = coroutineScope {
         val id = encode(selected.id)
-        // Optional biography/ranking endpoints must not suppress valid match history.
+        // Optional biography/ranking endpoints must not suppress pair-meeting history.
         // Missing profile facts remain null and are rendered as Unavailable/Unranked.
         val profileRequest = async {
             try {
@@ -133,7 +132,6 @@ object H2HRepository {
                 null
             }
         }
-        val matchesRequest = async { getMatches("/api/players/performance?id=$id") }
         val rankRequest = async {
             try {
                 getJson("/api/players/current-ranking?id=$id").asObject()
@@ -161,7 +159,6 @@ object H2HRepository {
             rankingDate = parseDate(ranking?.string("date")),
             bestRank = ranking?.int("bestRank"),
             rankingAvailable = ranking != null,
-            matches = matchesRequest.await(),
         )
     }
 

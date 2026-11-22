@@ -52,6 +52,7 @@ import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
 import java.time.LocalDate
+import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -258,16 +259,12 @@ fun H2HScreen(
 
             item {
                 val firstRecord = H2HAnalytics.record(
-                    playerId = loaded.player1.player.id,
                     playerStats = asset?.players?.firstOrNull { it.id == loaded.player1.player.id },
-                    matches = loaded.player1.matches,
                     year = currentYear,
                     surface = ytdSurface,
                 )
                 val secondRecord = H2HAnalytics.record(
-                    playerId = loaded.player2.player.id,
                     playerStats = asset?.players?.firstOrNull { it.id == loaded.player2.player.id },
-                    matches = loaded.player2.matches,
                     year = currentYear,
                     surface = ytdSurface,
                 )
@@ -284,16 +281,12 @@ fun H2HScreen(
 
             item {
                 val firstRecord = H2HAnalytics.record(
-                    playerId = loaded.player1.player.id,
                     playerStats = asset?.players?.firstOrNull { it.id == loaded.player1.player.id },
-                    matches = loaded.player1.matches,
                     year = null,
                     surface = careerSurface,
                 )
                 val secondRecord = H2HAnalytics.record(
-                    playerId = loaded.player2.player.id,
                     playerStats = asset?.players?.firstOrNull { it.id == loaded.player2.player.id },
-                    matches = loaded.player2.matches,
                     year = null,
                     surface = careerSurface,
                 )
@@ -591,7 +584,7 @@ private fun RecordSection(
             }
         }
         GlassNote(
-            "Hard combines all hard-court results. Indoor Hard and Outdoor Hard use the source's explicit venue classification. The surface filter applies to W/L; titles remain overall for the selected period."
+            "The selected surface filters W/L, Win% and titles. Hard combines indoor, outdoor and unknown-setting hard results; Indoor Hard and Outdoor Hard use only the source's explicit venue classification."
         )
         GlassSurface(
             modifier = Modifier.fillMaxWidth(),
@@ -649,7 +642,14 @@ private fun RecordPlayerColumn(
             color = colors.accent,
         )
         Text(
-            text = "${record.titles} titles",
+            text = record.winPercentage?.let {
+                String.format(Locale.ROOT, "Win%% %.1f%%", it)
+            } ?: "Win% —",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
+        Text(
+            text = record.titles?.let { "$it titles" } ?: "Titles —",
             style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
             color = colors.textDim,
         )

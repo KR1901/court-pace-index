@@ -10,9 +10,9 @@ The H2H tab lets a user search for and select two ATP players. It displays:
 
 - Head-to-head match wins for both players.
 - Current ATP rank, age and height.
-- Current calendar-year W/L and titles.
-- Career W/L and titles.
-- Independent surface filters for the YTD and Career W/L sections.
+- Current calendar-year W/L, Win% and surface-specific titles.
+- Career W/L, Win% and surface-specific titles.
+- Independent surface filters for the YTD and Career sections.
 - A newest-first event/match breakdown with dates formatted as `DD/MM/YYYY`.
 
 Both record sections provide the same six choices:
@@ -24,7 +24,7 @@ Both record sections provide the same six choices:
 5. **Grass**.
 6. **Clay**.
 
-The YTD selector and Career selector are independent; changing one does not change the other. The surface selector filters W/L only; the title count remains the overall title total for the selected time period.
+The YTD selector and Career selector are independent; changing one does not change the other. The selected surface filters W/L, Win% and titles together. Each player column shows W/L first, Win% directly below it, and then the title count for that same period and surface.
 
 ## 2. Data integration
 
@@ -35,11 +35,10 @@ H2H uses TennisMyLife's published website API at `https://stats.tennismylife.org
 | Player search | `GET /api/h2h/search?q=` | Search by player name; returns stable ATP ID, name and country |
 | Pair meetings | `GET /api/h2h?player1={id}&player2={id}` | All recorded meetings for the selected pair |
 | Player profile | `GET /api/players?id={id}` | Name, country, date of birth and height |
-| Player match history | `GET /api/players/performance?id={id}` | Match-level final results used to count titles |
 | Current ranking | `GET /api/players/current-ranking?id={id}` | Latest ranking record and its publication date |
-| YTD/Career W/L | Existing `PlayerStatsRepository` data, including its live cache | Complete annual W/L aggregates and validated surface/environment buckets |
+| YTD/Career W/L and titles | Existing `PlayerStatsRepository` data, including its live cache | Annual W/L and ATP singles title counts in the same validated surface/environment buckets |
 
-The provider's player match-history API response includes result rows and a `team_event` flag, but the Prisma match response does not include the CSV's per-match `indoor` field. Therefore the app does **not** guess indoor/outdoor venue from a match row. Instead, YTD/Career W/L uses the existing Player Stats dataset, whose builder and live updater already parse the source indoor/outdoor field and aggregate it into `hardAll`, `hardIndoor` and `hardOutdoor` buckets. This makes the two requested hard-court sub-splits real data, not inferred labels.
+The public player-performance JSON does not expose the ATP match CSV's per-match `indoor` field, so H2H no longer uses that endpoint to calculate titles. Instead, the Player Stats builder and live updater count eligible final-round ATP title wins directly from the ATP match CSV and store the title count alongside W/L in each matching surface/environment bucket. This preserves explicit indoor/outdoor classification for both historical and live titles; unknown hard-court settings remain in `hardAll` only and are never guessed.
 
 The provider requests are read-only GET calls. Network calls run off the UI thread, use bounded timeouts, and surface errors in the H2H screen rather than fabricating values. Optional biography/ranking request failures leave those facts unavailable without suppressing match history.
 
@@ -74,7 +73,7 @@ A hard match with unknown indoor/outdoor setting remains in **Hard** but is not 
 
 ### Titles
 
-Titles are counted from the player's match-history endpoint as unique tournament wins in the final round (`F` or `Final`). A match with `team_event = true`, Davis Cup level, or a recognized team-event name is not counted as an ATP singles title. Only ATP tour-level final records (`G`, `M`, `A`, `F`, `250`, `500`) are considered. A semifinal, round-robin win, Challenger/qualifying title, team event, walkover, no-play result or final loss does not count. Titles are deduplicated by tournament and season. The title count is filtered by year (YTD or Career), but not by surface.
+Titles are counted from ATP Tour annual match CSVs when a completed match is recorded in the final round (`F` or `Final`) and the selected player is the winner. Only ATP Tour levels (`G`, `M`, `A`, `F`, `250`, `500`) are eligible. Team events and recognized team-event names are excluded; semifinal and round-robin wins, Challenger/qualifying events, walkovers, no-play results and final losses do not count. The builder records each title in the same `all`, `hardAll`, `hardIndoor`, `hardOutdoor`, `grass` or `clay` bucket used for that match's W/L result. Therefore the YTD or Career title total changes with the selected surface, and Indoor Hard/Outdoor Hard rely on the source's explicit venue setting.
 
 ### Current rank, age and height
 
@@ -102,7 +101,7 @@ The module does not modify `PaceData`, `AppViewModel`, CPI/CALC calculations, Li
 - YTD and Career surface selectors retain independent state.
 - Hard combines indoor, outdoor and unknown-environment hard; Indoor Hard and Outdoor Hard require an explicit source classification.
 - Grass and Clay splits use the existing source aggregates.
-- Titles count deduplicated final-round wins and exclude team events; title totals do not change when the W/L surface selector changes.
+- W/L, Win% and titles all come from the selected period and surface bucket; Indoor Hard and Outdoor Hard use explicit source classification.
 - Age, rank and height remain unavailable when source facts are absent; no estimates or zero filling.
 - Meeting dates use `DD/MM/YYYY`, newest first.
 - Search, loading, network-error, no-meetings and empty-selection states are handled.

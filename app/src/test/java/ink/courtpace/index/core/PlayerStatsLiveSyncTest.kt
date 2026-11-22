@@ -11,7 +11,7 @@ class PlayerStatsLiveSyncTest {
     private val header = listOf(
         "tourney_id", "tourney_name", "surface", "indoor", "tourney_date",
         "tourney_level", "match_num", "winner_id", "winner_name", "winner_ht", "winner_ioc",
-        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score", "best_of",
+        "loser_id", "loser_name", "loser_ht", "loser_ioc", "score", "best_of", "round",
         "w_SvGms", "w_bpSaved", "w_bpFaced", "l_SvGms", "l_bpSaved", "l_bpFaced",
     ).joinToString(",")
 
@@ -36,11 +36,12 @@ class PlayerStatsLiveSyncTest {
         loserBpFaced: String,
         bestOf: String = "3",
         level: String = "250",
+        round: String = "R16",
     ): String = listOf(
         tournament, "\"" + tournamentName.replace("\"", "\"\"") + "\"",
         surface, indoor, "20261109", level, matchNumber,
         winnerId, winnerName, winnerHeight, "USA",
-        loserId, loserName, loserHeight, "ESP", score, bestOf,
+        loserId, loserName, loserHeight, "ESP", score, bestOf, round,
         winnerServeGames, winnerBpSaved, winnerBpFaced,
         loserServeGames, loserBpSaved, loserBpFaced,
     ).joinToString(",")
@@ -314,6 +315,54 @@ class PlayerStatsLiveSyncTest {
             .heightGroupSeasons.single { it.y == 2026 }.b.getValue("hardIndoor").mp)
         assertEquals(0, result.data.meta.liveMatchCount)
         assertEquals(1, result.data.meta.heightGroupLiveMatchCount)
+    }
+
+    @Test
+    fun final_titles_follow_surface_buckets_and_do_not_double_count_on_replay() {
+        val csv = listOf(
+            header,
+            row(
+                "2026-601", "Indoor Hard Final", "Hard", "I", "1",
+                "P001", "Player One", "190", "P002", "Player Two", "185",
+                "6-4 6-3", "9", "1", "2", "8", "2", "3", round = "F",
+            ),
+            row(
+                "2026-602", "Outdoor Hard Final", "Hard", "O", "2",
+                "P001", "Player One", "190", "P003", "Player Three", "185",
+                "6-4 6-3", "9", "1", "2", "8", "2", "3", round = "Final",
+            ),
+            row(
+                "2026-603", "Clay Final", "Clay", "O", "3",
+                "P001", "Player One", "190", "P004", "Player Four", "185",
+                "6-4 6-3", "9", "1", "2", "8", "2", "3", round = "F",
+            ),
+            row(
+                "2026-604", "Not a Final", "Hard", "I", "4",
+                "P001", "Player One", "190", "P005", "Player Five", "185",
+                "6-4 6-3", "9", "1", "2", "8", "2", "3", round = "SF",
+            ),
+            row(
+                "2026-605", "Laver Cup", "Hard", "I", "5",
+                "P001", "Player One", "190", "P006", "Player Six", "185",
+                "6-4 6-3", "9", "1", "2", "8", "2", "3", round = "F", level = "A",
+            ),
+        ).joinToString("\n") + "\n"
+        val first = PlayerStatsLiveAggregator.apply(
+            baseline(), PlayerStatsLiveCsvParser.parse(csv), 2026, "2026-11-22T00:00:00Z",
+        )
+        val winner = first.data.players.single { it.id == "P001" }
+        val buckets = winner.seasons.single { it.y == 2026 }.b
+        assertEquals(3, buckets.getValue("all").titles)
+        assertEquals(2, buckets.getValue("hardAll").titles)
+        assertEquals(1, buckets.getValue("hardIndoor").titles)
+        assertEquals(1, buckets.getValue("hardOutdoor").titles)
+        assertEquals(1, buckets.getValue("clay").titles)
+        val runnerUp = first.data.players.single { it.id == "P002" }
+        assertEquals(0, runnerUp.seasons.single { it.y == 2026 }.b.getValue("all").titles)
+        val replay = PlayerStatsLiveAggregator.apply(
+            first.data, PlayerStatsLiveCsvParser.parse(csv), 2026, "2026-11-22T00:01:00Z",
+        )
+        assertEquals(first.data, replay.data)
     }
 
     @Test

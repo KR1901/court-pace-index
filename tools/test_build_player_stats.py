@@ -6,6 +6,7 @@ from build_player_stats import (
     add_player_match,
     height_band_id,
     match_buckets,
+    is_atp_title_final,
     match_has_result,
     match_is_retirement,
     match_identity_key,
@@ -131,6 +132,33 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         self.assertEqual(stats["rw"], 1)
         self.assertEqual(stats["sm"], 1)
         self.assertNotIn(2025, aggregate["P1"])
+
+    def test_title_counts_are_added_only_to_the_winners_surface_buckets(self):
+        aggregate = {}
+        add_player_match(
+            aggregate, "P1", 2026, ("all", "hardAll", "hardIndoor"),
+            True, 10, 9, 9, 1, True, title=True,
+        )
+        add_player_match(
+            aggregate, "P2", 2026, ("all", "hardAll", "hardIndoor"),
+            False, 9, 8, 10, 1, True, title=True,
+        )
+        self.assertEqual(aggregate["P1"][2026]["all"]["titles"], 1)
+        self.assertEqual(aggregate["P1"][2026]["hardAll"]["titles"], 1)
+        self.assertEqual(aggregate["P1"][2026]["hardIndoor"]["titles"], 1)
+        self.assertNotIn("titles", aggregate["P2"][2026]["all"])
+
+    def test_title_final_requires_a_tour_level_singles_final(self):
+        eligible = {
+            "round": "F", "tourney_level": "G",
+            "tourney_name": "Australian Open", "team_event": "false",
+        }
+        self.assertTrue(is_atp_title_final(eligible))
+        self.assertTrue(is_atp_title_final({**eligible, "round": "Final"}))
+        self.assertFalse(is_atp_title_final({**eligible, "round": "SF"}))
+        self.assertFalse(is_atp_title_final({**eligible, "tourney_level": "D"}))
+        self.assertFalse(is_atp_title_final({**eligible, "team_event": "true"}))
+        self.assertFalse(is_atp_title_final({**eligible, "tourney_name": "Laver Cup"}))
 
     def test_match_identity_is_stable_across_winner_loser_order(self):
         first = match_identity_key("2026-429", "38", "M0QI", "C0C8")

@@ -144,6 +144,8 @@ data class PlayerStatsBucket(
     val rp: Int = 0,
     val rw: Int = 0,
     val sm: Int = 0,
+    /** ATP singles titles won in this season and surface/environment bucket. */
+    val titles: Int = 0,
 )
 
 object PlayerStatsRepository {

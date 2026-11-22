@@ -88,6 +88,11 @@ data class PlayerStatsLiveApplyResult(
  */
 object PlayerStatsLiveAggregator {
     private val eligibleLevels = setOf("G", "M", "A", "F", "250", "500")
+    private val nonTitleEvents = listOf(
+        "davis cup", "united cup", "laver cup", "atp cup", "olympic",
+        "hopman cup", "world team cup", "fed cup", "federation cup",
+        "billie jean king cup", "wightman cup",
+    )
     private val noPlay = Regex(
         """(?i)(?:\bW/O\b|\bW\.O\.|\bWO\b|\bWALKOVER\b|\bDEF\b|\bABD\b|\bABN\b|\bABANDONED\b)""",
     )
@@ -179,6 +184,7 @@ object PlayerStatsLiveAggregator {
             if (!updateTour && !updateHeight) continue
 
             val buckets = matchBuckets(row["surface"], row["indoor"])
+            val titleFinal = sourceKind == "tour" && isAtpTitleFinal(row)
             var winner = players[winnerId] ?: PlayerStatsPlayer(
                 id = winnerId, name = winnerName, country = winnerCountry,
                 heightCm = winnerHeight,
@@ -213,6 +219,7 @@ object PlayerStatsLiveAggregator {
                 includeHeightGroupStats = updateHeight,
                 countTourResult = updateTour && !tourResultAlreadyCounted,
                 countHeightGroupResult = updateHeight && !heightResultAlreadyCounted,
+                isTitle = titleFinal,
             )
             loser = addPlayerMatch(
                 loser, season, buckets, won = false,
@@ -376,6 +383,15 @@ object PlayerStatsLiveAggregator {
     private fun validHeight(value: String?): Int? =
         nonNegativeInt(value)?.takeIf { it in 140..220 }
 
+    private fun isAtpTitleFinal(row: Map<String, String>): Boolean {
+        if (row["round"].orEmpty().trim().uppercase() !in setOf("F", "FINAL")) return false
+        if (row["tourney_level"].orEmpty().trim().uppercase() !in eligibleLevels) return false
+        val teamEvent = row["team_event"].orEmpty().trim().lowercase() in setOf("1", "true", "yes", "y")
+        if (teamEvent) return false
+        val eventName = row["tourney_name"].orEmpty().lowercase()
+        return nonTitleEvents.none(eventName::contains)
+    }
+
     private fun matchBuckets(surfaceValue: String?, indoorValue: String?): List<String> {
         val surface = surfaceValue.orEmpty().trim().lowercase()
         return when (surface) {
@@ -408,8 +424,13 @@ object PlayerStatsLiveAggregator {
         includeHeightGroupStats: Boolean,
         countTourResult: Boolean,
         countHeightGroupResult: Boolean,
+        isTitle: Boolean = false,
     ): PlayerStatsPlayer {
-        fun update(source: List<PlayerSeasonStats>, countResult: Boolean): List<PlayerSeasonStats> {
+        fun update(
+            source: List<PlayerSeasonStats>,
+            countResult: Boolean,
+            countTitle: Boolean = false,
+        ): List<PlayerSeasonStats> {
             val seasons = source.associateBy { it.y }.toMutableMap()
             val current = seasons[season] ?: PlayerSeasonStats(y = season)
             val updatedBuckets = current.b.toMutableMap()
@@ -424,6 +445,7 @@ object PlayerStatsLiveAggregator {
                     rp = counter.rp + if (hasStats) returnPlayed else 0,
                     rw = counter.rw + if (hasStats) returnWon else 0,
                     sm = counter.sm + if (hasStats) 1 else 0,
+                    titles = counter.titles + if (countResult && countTitle) 1 else 0,
                 )
             }
             seasons[season] = current.copy(b = updatedBuckets.toSortedMap())
@@ -431,7 +453,7 @@ object PlayerStatsLiveAggregator {
         }
 
         return player.copy(
-            seasons = if (includeTourStats) update(player.seasons, countTourResult) else player.seasons,
+            seasons = if (includeTourStats) update(player.seasons, countTourResult, isTitle) else player.seasons,
             heightGroupSeasons = if (includeHeightGroupStats) {
                 update(player.heightGroupSeasons, countHeightGroupResult)
             } else {
