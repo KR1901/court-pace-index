@@ -28,6 +28,7 @@ import ink.courtpace.index.ui.glass.MeshBackground
 import ink.courtpace.index.ui.screens.BoardScreen
 import ink.courtpace.index.ui.screens.CompareScreen
 import ink.courtpace.index.ui.screens.MethodScreen
+import ink.courtpace.index.ui.screens.H2HScreen
 import ink.courtpace.index.ui.screens.PlayerStatsScreen
 import ink.courtpace.index.ui.screens.SurfacesScreen
 import ink.courtpace.index.ui.screens.TournamentScreen
@@ -141,6 +142,11 @@ class ScreenshotTest {
     @Test
     fun playerStatsScreen() = shoot("player_stats__rankings") {
         Frame { PlayerStatsScreen(asset = playerStatsAsset()) }
+    }
+
+    @Test
+    fun h2hScreen() = shoot("h2h__empty") {
+        Frame { H2HScreen() }
     }
 
     @Test
