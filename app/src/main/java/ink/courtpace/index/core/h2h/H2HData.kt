@@ -52,6 +52,7 @@ data class H2HPlayerProfile(
     val currentRank: Int?,
     val rankingDate: LocalDate?,
     val bestRank: Int?,
+    val rankingAvailable: Boolean = true,
     val matches: List<H2HMatch>,
 )
 
@@ -159,6 +160,7 @@ object H2HRepository {
             currentRank = ranking?.int("rank"),
             rankingDate = parseDate(ranking?.string("date")),
             bestRank = ranking?.int("bestRank"),
+            rankingAvailable = rankingRoot != null,
             matches = matchesRequest.await(),
         )
     }
