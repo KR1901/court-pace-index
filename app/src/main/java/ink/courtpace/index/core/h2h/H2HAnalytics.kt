@@ -1,24 +1,26 @@
 package ink.courtpace.index.core.h2h
 
+import ink.courtpace.index.core.playerstats.PlayerStatsBucket
+import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-enum class H2HSurfaceFilter(val label: String) {
-    ALL("All"),
-    HARD("Hard"),
-    OUTDOOR_HARD("Outdoor Hard"),
-    INDOOR_HARD("Indoor Hard"),
-    GRASS("Grass"),
-    CLAY("Clay"),
+enum class H2HSurfaceFilter(val label: String, val bucketKey: String) {
+    ALL("All", "all"),
+    HARD("Hard", "hardAll"),
+    OUTDOOR_HARD("Outdoor Hard", "hardOutdoor"),
+    INDOOR_HARD("Indoor Hard", "hardIndoor"),
+    GRASS("Grass", "grass"),
+    CLAY("Clay", "clay"),
 }
 
 data class H2HRecord(
-    val wins: Int,
-    val losses: Int,
+    val wins: Int?,
+    val losses: Int?,
     val titles: Int,
-    val matches: Int,
+    val matches: Int?,
 )
 
 object H2HAnalytics {
@@ -31,47 +33,54 @@ object H2HAnalytics {
         "olympic",
         "hopman cup",
         "world team cup",
+        "fed cup",
+        "federation cup",
+        "billie jean king cup",
+        "wightman cup",
     )
 
+    /**
+     * Win/loss totals come from the existing, full-history Player Stats buckets. Those buckets
+     * are built from the source match CSV including the indoor/outdoor flag, unlike the public
+     * player-performance API's Match JSON response. Titles are counted independently from
+     * match-level final records and intentionally do not change with the W/L surface selector.
+     */
     fun record(
         playerId: String,
+        playerStats: PlayerStatsPlayer?,
         matches: List<H2HMatch>,
         year: Int?,
         surface: H2HSurfaceFilter,
     ): H2HRecord {
-        val filtered = matches.filter { match ->
-            (year == null || match.year == year) && matchesSurface(match, surface)
-        }
-        val wins = filtered.count { it.winnerId == playerId }
-        val losses = filtered.count { it.loserId == playerId }
-        val titles = filtered.asSequence()
-            .filter { it.winnerId == playerId && isTitleFinal(it) }
+        val buckets = playerStats?.seasons.orEmpty().asSequence()
+            .filter { year == null || it.y == year }
+            .mapNotNull { it.b[surface.bucketKey] }
+            .toList()
+
+        val wins = if (playerStats == null) null else buckets.sumOf(PlayerStatsBucket::w)
+        val losses = if (playerStats == null) null else buckets.sumOf(PlayerStatsBucket::l)
+        val matchCount = if (playerStats == null) null else buckets.sumOf(PlayerStatsBucket::mp)
+
+        val titles = matches.asSequence()
+            .filter { (year == null || it.year == year) && it.winnerId == playerId && isTitleFinal(it) }
             .map { it.eventId.ifBlank { it.eventName + "|" + (it.year ?: 0) } }
             .distinct()
             .count()
+
         return H2HRecord(
             wins = wins,
             losses = losses,
             titles = titles,
-            matches = wins + losses,
+            matches = matchCount,
         )
     }
 
     fun winsAgainst(playerId: String, meetings: List<H2HMatch>): Int =
         meetings.count { it.winnerId == playerId }
 
-    fun matchesSurface(match: H2HMatch, filter: H2HSurfaceFilter): Boolean = when (filter) {
-        H2HSurfaceFilter.ALL -> true
-        H2HSurfaceFilter.HARD -> match.surface == "hard"
-        H2HSurfaceFilter.OUTDOOR_HARD -> match.surface == "hard" && match.indoor == false
-        H2HSurfaceFilter.INDOOR_HARD -> match.surface == "hard" && match.indoor == true
-        H2HSurfaceFilter.GRASS -> match.surface == "grass"
-        H2HSurfaceFilter.CLAY -> match.surface == "clay"
-    }
-
     fun isTitleFinal(match: H2HMatch): Boolean {
         if (match.round?.uppercase(Locale.ROOT) !in setOf("F", "FINAL")) return false
-        if (match.level?.uppercase(Locale.ROOT) == "D") return false
+        if (match.teamEvent == true || match.level?.uppercase(Locale.ROOT) == "D") return false
         val name = match.eventName.lowercase(Locale.ROOT)
         return nonTitleEvents.none(name::contains)
     }
