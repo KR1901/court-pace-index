@@ -74,7 +74,7 @@ A hard match with unknown indoor/outdoor setting remains in **Hard** but is not 
 
 ### Titles
 
-Titles are counted from the player's match-history endpoint as unique tournament wins in the final round (`F` or `Final`). A match with `team_event = true`, Davis Cup level, or a recognized team-event name is not counted as an ATP singles title. A semifinal, round-robin win, walkover, no-play result or final loss does not count. The title count is filtered by year (YTD or Career), but not by surface.
+Titles are counted from the player's match-history endpoint as unique tournament wins in the final round (`F` or `Final`). A match with `team_event = true`, Davis Cup level, or a recognized team-event name is not counted as an ATP singles title. Only ATP tour-level final records (`G`, `M`, `A`, `F`, `250`, `500`) are considered. A semifinal, round-robin win, Challenger/qualifying title, team event, walkover, no-play result or final loss does not count. Titles are deduplicated by tournament and season. The title count is filtered by year (YTD or Career), but not by surface.
 
 ### Current rank, age and height
 
