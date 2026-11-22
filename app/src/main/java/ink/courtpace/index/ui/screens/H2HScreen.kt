@@ -17,9 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.h2h.H2HAnalytics
@@ -40,6 +41,10 @@ import ink.courtpace.index.core.h2h.H2HPlayerProfile
 import ink.courtpace.index.core.h2h.H2HRecord
 import ink.courtpace.index.core.h2h.H2HRepository
 import ink.courtpace.index.core.h2h.H2HSurfaceFilter
+import ink.courtpace.index.core.playerstats.PlayerStatsData
+import ink.courtpace.index.core.playerstats.PlayerStatsLiveUpdater
+import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
+import ink.courtpace.index.core.playerstats.PlayerStatsRepository
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.glass.GlassNote
 import ink.courtpace.index.ui.glass.GlassSurface
@@ -49,17 +54,67 @@ import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
 import java.time.LocalDate
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @Composable
 fun H2HHost() {
-    H2HScreen()
+    val context = LocalContext.current
+    var asset by remember { mutableStateOf<PlayerStatsData?>(null) }
+    var statsError by remember { mutableStateOf<String?>(null) }
+    var loadingStats by remember { mutableStateOf(true) }
+    val liveState by PlayerStatsLiveUpdater.state.collectAsState()
+
+    LaunchedEffect(context) {
+        val alreadyLoaded = PlayerStatsLiveUpdater.state.value?.data
+        if (alreadyLoaded != null) {
+            asset = alreadyLoaded
+            loadingStats = false
+        } else {
+            val initial = withContext(Dispatchers.IO) {
+                runCatching { PlayerStatsRepository.load(context) }
+            }
+            initial.onSuccess {
+                asset = it
+                PlayerStatsLiveUpdater.publishInitial(it)
+            }.onFailure {
+                statsError = it.message ?: "The Player Stats archive could not be read."
+            }
+            loadingStats = false
+        }
+    }
+
+    LaunchedEffect(liveState) {
+        liveState?.let { state ->
+            asset = state.data
+            statsError = state.error
+        }
+    }
+
+    if (loadingStats && asset == null) {
+        val colors = PaceTheme.colors
+        Column(
+            modifier = Modifier.fillMaxSize().statusBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            CircularProgressIndicator(color = colors.accent)
+            Spacer(Modifier.height(12.dp))
+            Text("Preparing player records…", color = colors.textDim)
+        }
+    } else {
+        H2HScreen(asset = asset, playerStatsError = statsError)
+    }
 }
 
 @Composable
-fun H2HScreen() {
+fun H2HScreen(
+    asset: PlayerStatsData? = null,
+    playerStatsError: String? = null,
+) {
     val colors = PaceTheme.colors
-    val currentYear = remember { LocalDate.now().year }
+    val currentYear = asset?.meta?.lastSeason?.takeIf { it > 0 } ?: LocalDate.now().year
     var first by remember { mutableStateOf<H2HPlayer?>(null) }
     var second by remember { mutableStateOf<H2HPlayer?>(null) }
     var comparison by remember { mutableStateOf<H2HComparison?>(null) }
@@ -170,6 +225,12 @@ fun H2HScreen() {
             }
         }
 
+        playerStatsError?.let { message ->
+            item { GlassNote("Player W/L archive unavailable: $message. H2H meetings and player facts can still be shown.") }
+        }
+        if (asset == null && playerStatsError == null && comparison != null) {
+            item { GlassNote("Player W/L archive is unavailable for these selections; match-level H2H data remains available.") }
+        }
         error?.let { message ->
             item { GlassNote("H2H data could not be loaded: $message") }
         }
@@ -200,12 +261,14 @@ fun H2HScreen() {
             item {
                 val firstRecord = H2HAnalytics.record(
                     playerId = loaded.player1.player.id,
+                    playerStats = asset?.players?.firstOrNull { it.id == loaded.player1.player.id },
                     matches = loaded.player1.matches,
                     year = currentYear,
                     surface = ytdSurface,
                 )
                 val secondRecord = H2HAnalytics.record(
                     playerId = loaded.player2.player.id,
+                    playerStats = asset?.players?.firstOrNull { it.id == loaded.player2.player.id },
                     matches = loaded.player2.matches,
                     year = currentYear,
                     surface = ytdSurface,
@@ -224,12 +287,14 @@ fun H2HScreen() {
             item {
                 val firstRecord = H2HAnalytics.record(
                     playerId = loaded.player1.player.id,
+                    playerStats = asset?.players?.firstOrNull { it.id == loaded.player1.player.id },
                     matches = loaded.player1.matches,
                     year = null,
                     surface = careerSurface,
                 )
                 val secondRecord = H2HAnalytics.record(
                     playerId = loaded.player2.player.id,
+                    playerStats = asset?.players?.firstOrNull { it.id == loaded.player2.player.id },
                     matches = loaded.player2.matches,
                     year = null,
                     surface = careerSurface,
@@ -524,6 +589,9 @@ private fun RecordSection(
                 )
             }
         }
+        GlassNote(
+            "Hard combines all hard-court results. Indoor Hard and Outdoor Hard use the source's explicit venue classification. The surface filter applies to W/L; titles remain overall for the selected period."
+        )
         GlassSurface(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(14.dp),
@@ -546,7 +614,11 @@ private fun RecordSection(
             }
             HairLine(Modifier.padding(vertical = 9.dp))
             Text(
-                text = "${firstRecord.matches} and ${secondRecord.matches} matches in this view",
+                text = if (firstRecord.matches == null || secondRecord.matches == null) {
+                    "W/L archive coverage unavailable for one or both players"
+                } else {
+                    "${firstRecord.matches} and ${secondRecord.matches} matches in this view"
+                },
                 style = TextStyle(fontSize = 10.5.sp),
                 color = colors.textFaint,
             )
@@ -571,7 +643,7 @@ private fun RecordPlayerColumn(
             overflow = TextOverflow.Ellipsis,
         )
         Text(
-            text = "${record.wins}–${record.losses}",
+            text = if (record.wins == null || record.losses == null) "—" else "${record.wins}–${record.losses}",
             style = TextStyle(fontSize = 23.sp, fontWeight = FontWeight.Bold),
             color = colors.accent,
         )
@@ -628,13 +700,6 @@ private fun H2HMeetingRow(
         val details = listOfNotNull(
             match.round?.takeIf { it.isNotBlank() },
             match.surface?.replaceFirstChar { it.uppercase() },
-            if (match.surface == "hard") {
-                when (match.indoor) {
-                    true -> "Indoor"
-                    false -> "Outdoor"
-                    null -> null
-                }
-            } else null,
         ).joinToString(" · ")
         if (details.isNotBlank()) {
             Text(
