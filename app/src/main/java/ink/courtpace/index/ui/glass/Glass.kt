@@ -444,7 +444,7 @@ fun HairLine(modifier: Modifier = Modifier) {
     )
 }
 
-enum class Glyph { HOME, GAUGE, LIBRARY, METHOD, PLAYERS, SETTINGS }
+enum class Glyph { HOME, GAUGE, LIBRARY, METHOD, PLAYERS, H2H, SETTINGS }
 
 /** Bespoke stroke glyphs, drawn rather than pulled from an icon font. */
 @Composable
@@ -557,6 +557,36 @@ fun NavGlyph(glyph: Glyph, color: Color, modifier: Modifier = Modifier) {
                     topLeft = Offset(w * 0.57f, h * 0.53f),
                     size = Size(w * 0.42f, h * 0.42f),
                     style = stroke,
+                )
+            }
+
+            Glyph.H2H -> {
+                drawCircle(color = color, radius = w * 0.13f, center = Offset(w * 0.25f, h * 0.31f), style = stroke)
+                drawCircle(color = color, radius = w * 0.13f, center = Offset(w * 0.75f, h * 0.31f), style = stroke)
+                drawArc(
+                    color = color,
+                    startAngle = 195f,
+                    sweepAngle = 150f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.02f, h * 0.48f),
+                    size = Size(w * 0.46f, h * 0.46f),
+                    style = stroke,
+                )
+                drawArc(
+                    color = color,
+                    startAngle = 195f,
+                    sweepAngle = 150f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.52f, h * 0.48f),
+                    size = Size(w * 0.46f, h * 0.46f),
+                    style = stroke,
+                )
+                drawLine(
+                    color = color,
+                    start = Offset(w * 0.37f, h * 0.48f),
+                    end = Offset(w * 0.63f, h * 0.48f),
+                    strokeWidth = w * 0.075f,
+                    cap = StrokeCap.Round,
                 )
             }
 
