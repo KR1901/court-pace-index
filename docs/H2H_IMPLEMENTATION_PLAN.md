@@ -10,9 +10,9 @@ The H2H tab lets a user search for and select two ATP players. It displays:
 
 - Head-to-head match wins for both players.
 - Current ATP rank, age and height.
-- Current calendar-year W/L and titles.
-- Career W/L and titles.
-- Independent surface filters for the YTD and Career W/L sections.
+- Current calendar-year W/L, win percentage and titles.
+- Career W/L, win percentage and titles.
+- Independent surface filters for W/L, win percentage and title counts in both YTD and Career sections.
 - A newest-first event/match breakdown with dates formatted as `DD/MM/YYYY`.
 
 Both record sections provide the same six choices:
@@ -24,7 +24,7 @@ Both record sections provide the same six choices:
 5. **Grass**.
 6. **Clay**.
 
-The YTD selector and Career selector are independent; changing one does not change the other. The surface selector filters W/L only; the title count remains the overall title total for the selected time period.
+The YTD selector and Career selector are independent; changing one does not change the other. Each selector filters W/L, win percentage and title counts together. Win percentage is wins ÷ (wins + losses) × 100, shown to one decimal place; it is unavailable when the selected player has no eligible W/L denominator. Titles are counted from unique ATP tour-level final wins in the selected period and selected surface.
 
 ## 2. Data integration
 
@@ -39,7 +39,7 @@ H2H uses TennisMyLife's published website API at `https://stats.tennismylife.org
 | Current ranking | `GET /api/players/current-ranking?id={id}` | Latest ranking record and its publication date |
 | YTD/Career W/L | Existing `PlayerStatsRepository` data, including its live cache | Complete annual W/L aggregates and validated surface/environment buckets |
 
-The provider's player match-history API response includes result rows and a `team_event` flag, but the Prisma match response does not include the CSV's per-match `indoor` field. Therefore the app does **not** guess indoor/outdoor venue from a match row. Instead, YTD/Career W/L uses the existing Player Stats dataset, whose builder and live updater already parse the source indoor/outdoor field and aggregate it into `hardAll`, `hardIndoor` and `hardOutdoor` buckets. This makes the two requested hard-court sub-splits real data, not inferred labels.
+The provider's player match-history API response includes result rows and a `team_event` flag, but the Prisma match response does not include the CSV's per-match `indoor` field. Therefore the app does **not** guess indoor/outdoor venue from a match row. YTD/Career W/L uses the existing Player Stats dataset, whose builder and live updater parse the source indoor/outdoor field and aggregate it into `hardAll`, `hardIndoor` and `hardOutdoor` buckets. The builder also records a compact `meta.tournamentIndoorById` map for hard-court tournament IDs, using only consistent explicit source flags; conflicting flags are stored as unknown. The live updater extends this map as current-season ATP rows are published. H2H uses that map to classify title finals for Indoor Hard and Outdoor Hard; hard finals with unknown venue remain in Hard and All but are excluded from the two narrower venue splits. No match-level venue is inferred.
 
 The provider requests are read-only GET calls. Network calls run off the UI thread, use bounded timeouts, and surface errors in the H2H screen rather than fabricating values. Optional biography/ranking request failures leave those facts unavailable without suppressing match history.
 
@@ -74,7 +74,7 @@ A hard match with unknown indoor/outdoor setting remains in **Hard** but is not 
 
 ### Titles
 
-Titles are counted from the player's match-history endpoint as unique tournament wins in the final round (`F` or `Final`). A match with `team_event = true`, Davis Cup level, or a recognized team-event name is not counted as an ATP singles title. Only ATP tour-level final records (`G`, `M`, `A`, `F`, `250`, `500`) are considered. A semifinal, round-robin win, Challenger/qualifying title, team event, walkover, no-play result or final loss does not count. Titles are deduplicated by tournament and season. The title count is filtered by year (YTD or Career), but not by surface.
+Titles are counted from the player's match-history endpoint as unique tournament wins in the final round (`F` or `Final`). A match with `team_event = true`, Davis Cup level, or a recognized team-event name is not counted as an ATP singles title. Only ATP tour-level final records (`G`, `M`, `A`, `F`, `250`, `500`) are considered. A semifinal, round-robin win, Challenger/qualifying title, team event, walkover, no-play result or final loss does not count. Titles are deduplicated by tournament and season. The title count is filtered by year (YTD or Career) and by the selected surface. Hard includes all hard-court finals, including unknown venue classifications; Indoor Hard and Outdoor Hard require a consistent explicit venue classification from the tournament's source CSV rows. For a tournament with conflicting or unavailable venue flags, its hard title is not assigned to either narrower split. The title counts are independently deduplicated by tournament and season.
 
 ### Current rank, age and height
 
@@ -102,7 +102,9 @@ The module does not modify `PaceData`, `AppViewModel`, CPI/CALC calculations, Li
 - YTD and Career surface selectors retain independent state.
 - Hard combines indoor, outdoor and unknown-environment hard; Indoor Hard and Outdoor Hard require an explicit source classification.
 - Grass and Clay splits use the existing source aggregates.
-- Titles count deduplicated final-round wins and exclude team events; title totals do not change when the W/L surface selector changes.
+- Titles count deduplicated final-round wins, exclude team events, and follow the selected YTD/Career surface.
+- Win percentage is wins divided by wins plus losses, with no fabricated value when the denominator is zero or unavailable.
+- Indoor/Outdoor Hard titles use a source-derived tournament venue lookup; unknown or conflicting venue flags are excluded from the narrower venue-specific title splits.
 - Age, rank and height remain unavailable when source facts are absent; no estimates or zero filling.
 - Meeting dates use `DD/MM/YYYY`, newest first.
 - Search, loading, network-error, no-meetings and empty-selection states are handled.
