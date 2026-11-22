@@ -48,6 +48,7 @@ import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
 import java.time.LocalDate
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 
 @Composable
@@ -79,6 +80,8 @@ fun H2HScreen() {
         loading = true
         try {
             comparison = H2HRepository.loadComparison(playerA, playerB)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (failure: Exception) {
             error = failure.message ?: "Could not load the head-to-head data."
         } finally {
@@ -304,6 +307,8 @@ private fun H2HPlayerPicker(
             suggestions = H2HRepository.searchPlayers(cleaned)
                 .filter { it.id != otherPlayerId }
             searchError = false
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (_: Exception) {
             suggestions = emptyList()
             searchError = true
