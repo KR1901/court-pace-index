@@ -112,6 +112,7 @@ class PlayerStatsLiveSyncTest {
         assertEquals(3, result.data.meta.playersWithHeight)
         assertEquals(2, result.data.meta.liveMatchCount)
         assertEquals(2, result.data.meta.currentSeasonMatchKeys.size)
+        assertEquals("indoor", result.data.meta.tournamentIndoorById["2026-429"])
 
         val alex = result.data.players.single { it.id == "M0QI" }
         val hard = alex.seasons.single { it.y == 2026 }.b.getValue("hardIndoor")
@@ -138,6 +139,26 @@ class PlayerStatsLiveSyncTest {
         assertEquals(1, opponentHard.rw)
 
         assertFalse(result.data.players.any { it.id == "P004" }) // walkovers are excluded
+    }
+
+    @Test
+    fun conflictingLiveVenueFlagsLeaveTournamentEnvironmentUnknown() {
+        val csv = listOf(
+            header,
+            row(
+                "2026-429", "Stockholm", "Hard", "I", "30",
+                "M0QI", "Alex Michelsen", "193", "C0C8", "Juan Manuel Cerundolo", "183",
+                "6-4 7-6", "9", "1", "2", "8", "3", "4",
+            ),
+            row(
+                "2026-429", "Stockholm", "Hard", "O", "31",
+                "M0QI", "Alex Michelsen", "193", "P004", "Other Opponent", "185",
+                "6-4 6-3", "9", "1", "2", "8", "3", "4",
+            ),
+        ).joinToString("\\n")
+
+        val result = PlayerStatsLiveAggregator.apply(baseline(), PlayerStatsLiveCsvParser.parse(csv), 2026, "2026-11-22")
+        assertEquals("unknown", result.data.meta.tournamentIndoorById["2026-429"])
     }
 
     @Test
