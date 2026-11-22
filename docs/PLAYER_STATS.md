@@ -47,6 +47,8 @@ The screen provides All surfaces, Clay, Grass, Outdoor hard, Indoor hard and All
 
 TennisMyLife's ATP match schema includes a surface field and a separate indoor/outdoor field. The builder recognizes its documented Yes/No values as well as equivalent I/O, Indoor/Outdoor, Boolean and 1/0 encodings. A missing or unrecognized setting remains unknown: it is not guessed as indoor or outdoor. Unknown-setting hard matches remain in the combined All hard aggregate and are counted separately in coverage metadata.
 
+The archive builder also writes `meta.tournamentIndoorById`, a compact tournament-ID-to-venue map for hard-court ATP Tour events. It stores `indoor` or `outdoor` only when all observed explicit flags for that tournament agree; conflicting flags become `unknown`, and missing flags are omitted. The on-device ATP live updater maintains the same map for newly published current-season rows. H2H uses this tournament lookup only for surface-specific title counts because the player-performance JSON endpoint does not expose the CSV's `indoor` field. The lookup does not replace or modify the existing W/L buckets.
+
 ## Year-specific Top 100, Top 500 and Top 1000 height cohorts
 
 The height-group analysis offers **Top 100, Top 500 and Top 1000 cohorts for each selected calendar year**. The default remains Top 100. For a completed season, each option uses that year's final available ATP ranking snapshot published within that calendar year. The live season uses the latest available ranking list for the current season. A current Top 100 is never projected backward, and the cohorts are not rolling 52-week rankings. Group performance always uses match results and valid game statistics belonging to that same calendar year.
