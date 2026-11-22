@@ -28,6 +28,7 @@ import ink.courtpace.index.ui.glass.MeshBackground
 import ink.courtpace.index.ui.screens.BoardScreen
 import ink.courtpace.index.ui.screens.CompareScreen
 import ink.courtpace.index.ui.screens.MethodScreen
+import ink.courtpace.index.ui.screens.H2HScreen
 import ink.courtpace.index.ui.screens.PlayerStatsScreen
 import ink.courtpace.index.ui.screens.SurfacesScreen
 import ink.courtpace.index.ui.screens.TournamentScreen
@@ -141,6 +142,11 @@ class ScreenshotTest {
     @Test
     fun playerStatsScreen() = shoot("player_stats__rankings") {
         Frame { PlayerStatsScreen(asset = playerStatsAsset()) }
+    }
+
+    @Test
+    fun h2hScreen() = shoot("h2h__empty") {
+        Frame { H2HScreen() }
     }
 
     @Test
@@ -258,6 +264,7 @@ class ScreenshotTest {
                         ink.courtpace.index.ui.glass.Glyph.HOME to "Surfaces",
                         ink.courtpace.index.ui.glass.Glyph.METHOD to "Method",
                         ink.courtpace.index.ui.glass.Glyph.PLAYERS to "Players",
+                        ink.courtpace.index.ui.glass.Glyph.H2H to "H2H",
                     ),
                     selected = 0,
                     onSelect = {},

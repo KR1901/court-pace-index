@@ -329,6 +329,7 @@ fun GlassChip(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
+    labelFontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
     modifier: Modifier = Modifier,
 ) {
     val colors = PaceTheme.colors
@@ -444,7 +445,7 @@ fun HairLine(modifier: Modifier = Modifier) {
     )
 }
 
-enum class Glyph { HOME, GAUGE, LIBRARY, METHOD, PLAYERS, SETTINGS }
+enum class Glyph { HOME, GAUGE, LIBRARY, METHOD, PLAYERS, H2H, SETTINGS }
 
 /** Bespoke stroke glyphs, drawn rather than pulled from an icon font. */
 @Composable
@@ -560,6 +561,36 @@ fun NavGlyph(glyph: Glyph, color: Color, modifier: Modifier = Modifier) {
                 )
             }
 
+            Glyph.H2H -> {
+                drawCircle(color = color, radius = w * 0.13f, center = Offset(w * 0.25f, h * 0.31f), style = stroke)
+                drawCircle(color = color, radius = w * 0.13f, center = Offset(w * 0.75f, h * 0.31f), style = stroke)
+                drawArc(
+                    color = color,
+                    startAngle = 195f,
+                    sweepAngle = 150f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.02f, h * 0.48f),
+                    size = Size(w * 0.46f, h * 0.46f),
+                    style = stroke,
+                )
+                drawArc(
+                    color = color,
+                    startAngle = 195f,
+                    sweepAngle = 150f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.52f, h * 0.48f),
+                    size = Size(w * 0.46f, h * 0.46f),
+                    style = stroke,
+                )
+                drawLine(
+                    color = color,
+                    start = Offset(w * 0.37f, h * 0.48f),
+                    end = Offset(w * 0.63f, h * 0.48f),
+                    strokeWidth = w * 0.075f,
+                    cap = StrokeCap.Round,
+                )
+            }
+
             Glyph.SETTINGS -> {
                 drawCircle(
                     color = color,
@@ -608,7 +639,7 @@ fun GlassTabBar(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (items.size >= 6) 2.dp else 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEachIndexed { index, (glyph, label) ->
@@ -617,6 +648,7 @@ fun GlassTabBar(
                     label = label,
                     selected = index == selected,
                     onClick = { onSelect(index) },
+                    labelFontSize = if (items.size >= 6) 9.sp else 10.sp,
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                 )
             }
@@ -630,6 +662,7 @@ private fun TabItem(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
+    labelFontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
     modifier: Modifier = Modifier,
 ) {
     val colors = PaceTheme.colors
@@ -665,7 +698,7 @@ private fun TabItem(
         Text(
             text = label,
             style = TextStyle(
-                fontSize = 10.sp,
+                fontSize = labelFontSize,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 letterSpacing = 0.2.sp,
             ),
