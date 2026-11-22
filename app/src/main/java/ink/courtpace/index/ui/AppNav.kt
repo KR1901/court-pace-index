@@ -279,7 +279,7 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                         WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal,
                                     ),
                                 )
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .padding(horizontal = if (tabs.size >= 6) 8.dp else 16.dp, vertical = 10.dp)
                                 .onGloballyPositioned { coordinates ->
                                     barHeight = with(density) { coordinates.size.height.toDp() }
                                 }
