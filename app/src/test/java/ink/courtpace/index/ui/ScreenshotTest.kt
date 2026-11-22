@@ -258,6 +258,7 @@ class ScreenshotTest {
                         ink.courtpace.index.ui.glass.Glyph.HOME to "Surfaces",
                         ink.courtpace.index.ui.glass.Glyph.METHOD to "Method",
                         ink.courtpace.index.ui.glass.Glyph.PLAYERS to "Players",
+                        ink.courtpace.index.ui.glass.Glyph.H2H to "H2H",
                     ),
                     selected = 0,
                     onSelect = {},
