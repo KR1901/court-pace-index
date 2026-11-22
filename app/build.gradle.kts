@@ -21,14 +21,14 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Public app identity remains unchanged; 4.1.0 adds the H2H player-comparison screen.
+// Public app identity remains unchanged; 4.1.1 improves H2H surface records and title counts.
 // Keep the existing public-release signing certificate for in-place updates.
     defaultConfig {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
         targetSdk = 37
-        versionCode = 52
-        versionName = "4.1.0"
+        versionCode = 53
+        versionName = "4.1.1"
     }
 
     signingConfigs {
