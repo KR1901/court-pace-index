@@ -84,7 +84,7 @@ Titles are counted from the player's match-history endpoint as unique tournament
 
 ### Meeting date and event breakdown
 
-Dates are parsed from the source's calendar date and rendered as `DD/MM/YYYY` without timezone conversion. Each meeting displays event, date, round, surface, winner, loser and score (when supplied).
+The source's `tourney_date` is the tournament-week/event date, not a verified individual match-day timestamp. It is rendered as `DD/MM/YYYY` without timezone conversion and explicitly labelled **Tournament date** in the UI. Each meeting displays event, tournament date, round, surface, winner, loser and score (when supplied).
 
 ## 4. Architecture
 
