@@ -681,11 +681,18 @@ private fun H2HMeetingRow(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = H2HAnalytics.formatDate(match.date),
-                style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.Medium),
-                color = colors.textDim,
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "TOURNAMENT DATE",
+                    style = TextStyle(fontSize = 8.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp),
+                    color = colors.textFaint,
+                )
+                Text(
+                    text = H2HAnalytics.formatDate(match.date),
+                    style = TextStyle(fontSize = 10.5.sp, fontWeight = FontWeight.Medium),
+                    color = colors.textDim,
+                )
+            }
         }
         Spacer(Modifier.height(7.dp))
         Text(
