@@ -189,6 +189,7 @@ object H2HRepository {
         val matchNumber = row.string("match_num").orEmpty()
         val eventName = row.string("tourney_name") ?: "Tournament"
         val identity = listOf(
+            year?.toString().orEmpty(),
             tournamentId,
             matchNumber,
             minOf(winnerId, loserId),
