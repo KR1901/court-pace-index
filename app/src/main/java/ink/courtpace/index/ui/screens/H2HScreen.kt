@@ -43,7 +43,6 @@ import ink.courtpace.index.core.h2h.H2HRepository
 import ink.courtpace.index.core.h2h.H2HSurfaceFilter
 import ink.courtpace.index.core.playerstats.PlayerStatsData
 import ink.courtpace.index.core.playerstats.PlayerStatsLiveUpdater
-import ink.courtpace.index.core.playerstats.PlayerStatsPlayer
 import ink.courtpace.index.core.playerstats.PlayerStatsRepository
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.glass.GlassNote
@@ -67,20 +66,19 @@ fun H2HHost() {
     val liveState by PlayerStatsLiveUpdater.state.collectAsState()
 
     LaunchedEffect(context) {
-        val alreadyLoaded = PlayerStatsLiveUpdater.state.value?.data
-        if (alreadyLoaded != null) {
-            asset = alreadyLoaded
-            loadingStats = false
-        } else {
-            val initial = withContext(Dispatchers.IO) {
-                runCatching { PlayerStatsRepository.load(context) }
+        try {
+            val alreadyLoaded = PlayerStatsLiveUpdater.state.value?.data
+            val initial = alreadyLoaded ?: withContext(Dispatchers.IO) {
+                PlayerStatsRepository.load(context)
             }
-            initial.onSuccess {
-                asset = it
-                PlayerStatsLiveUpdater.publishInitial(it)
-            }.onFailure {
-                statsError = it.message ?: "The Player Stats archive could not be read."
-            }
+            asset = initial
+            statsError = null
+            PlayerStatsLiveUpdater.publishInitial(initial)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            statsError = failure.message ?: "The Player Stats archive could not be read."
+        } finally {
             loadingStats = false
         }
     }
@@ -88,7 +86,7 @@ fun H2HHost() {
     LaunchedEffect(liveState) {
         liveState?.let { state ->
             asset = state.data
-            statsError = state.error
+            statsError = null
         }
     }
 
@@ -533,7 +531,10 @@ private fun PlayerFactsCard(
             overflow = TextOverflow.Ellipsis,
         )
         Spacer(Modifier.height(8.dp))
-        FactLine("Current rank", profile.currentRank?.let { "#$it" } ?: "Unranked")
+        FactLine(
+            "Current rank",
+            profile.currentRank?.let { "#$it" } ?: if (profile.rankingAvailable) "Unranked" else "Unavailable",
+        )
         FactLine("Age", age?.let { "$it years" } ?: "Unavailable")
         FactLine("Height", H2HAnalytics.formatHeight(profile.heightCm))
         profile.rankingDate?.let {
