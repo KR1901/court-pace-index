@@ -160,7 +160,7 @@ object H2HRepository {
             currentRank = ranking?.int("rank"),
             rankingDate = parseDate(ranking?.string("date")),
             bestRank = ranking?.int("bestRank"),
-            rankingAvailable = rankingRoot != null,
+            rankingAvailable = ranking != null,
             matches = matchesRequest.await(),
         )
     }
