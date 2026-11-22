@@ -101,7 +101,7 @@ class H2HAnalyticsTest {
         val player = statsPlayer()
         val matches = listOf(
             match("current-final", 2026, "hard", round = "F"),
-            match("past-final", 2025, "clay", round = "F"),
+            match("past-final", 2025, "clay", round = "F", winner = "p2"),
         )
 
         val ytd = H2HAnalytics.record("p1", player, matches, 2026, H2HSurfaceFilter.ALL)
@@ -114,8 +114,8 @@ class H2HAnalyticsTest {
         assertEquals(5, career.wins)
         assertEquals(4, career.losses)
         assertEquals(9, career.matches)
-        assertEquals(1, careerClay.wins)
-        assertEquals(1, careerClay.losses)
+        assertEquals(0, careerClay.wins)
+        assertEquals(2, careerClay.losses)
     }
 
     @Test
