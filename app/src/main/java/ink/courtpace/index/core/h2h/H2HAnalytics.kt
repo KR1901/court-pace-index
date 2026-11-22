@@ -63,7 +63,7 @@ object H2HAnalytics {
 
         val titles = matches.asSequence()
             .filter { (year == null || it.year == year) && it.winnerId == playerId && isTitleFinal(it) }
-            .map { it.eventId.ifBlank { it.eventName + "|" + (it.year ?: 0) } }
+            .map { "${it.year ?: 0}|" + it.eventId.ifBlank { it.eventName } }
             .distinct()
             .count()
 
