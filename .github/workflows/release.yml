@@ -183,6 +183,17 @@ jobs:
                   "- Future releases under `ink.courtpace.index.public` use the same new certificate for normal in-place updates.",
                   "",
               ]
+          elif version == "4.1.0":
+              lines += [
+                  "### H2H player comparison",
+                  "- Adds a dedicated H2H screen with searchable ATP player selection and career meeting history.",
+                  "- Shows head-to-head wins, current ATP rank, age and height.",
+                  "- Adds independent Year-to-date and Career records with All, Hard, Outdoor Hard, Indoor Hard, Grass and Clay filters.",
+                  "- Hard combines indoor and outdoor hard results, including hard matches whose venue setting is unknown; venue-specific filters use only explicitly classified data.",
+                  "- Adds ATP tour-level title counts and a newest-first meeting list with event, round, score, surface and tournament date.",
+                  "- Preserves the existing CPI/CALC formulas, Surface Speed calculations, Live Now pipeline and Player Stats refresh logic.",
+                  "",
+              ]
           elif version == "3.2.1":
               lines += [
                   "### Included in 3.2.1",
