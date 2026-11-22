@@ -52,6 +52,7 @@ import ink.courtpace.index.ui.glass.LocalTabBarInset
 import ink.courtpace.index.ui.glass.SectionLabel
 import ink.courtpace.index.ui.theme.PaceTheme
 import java.time.LocalDate
+import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -263,6 +264,7 @@ fun H2HScreen(
                     matches = loaded.player1.matches,
                     year = currentYear,
                     surface = ytdSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
                 )
                 val secondRecord = H2HAnalytics.record(
                     playerId = loaded.player2.player.id,
@@ -270,6 +272,7 @@ fun H2HScreen(
                     matches = loaded.player2.matches,
                     year = currentYear,
                     surface = ytdSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
                 )
                 RecordSection(
                     title = "YEAR-TO-DATE · $currentYear",
@@ -289,6 +292,7 @@ fun H2HScreen(
                     matches = loaded.player1.matches,
                     year = null,
                     surface = careerSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
                 )
                 val secondRecord = H2HAnalytics.record(
                     playerId = loaded.player2.player.id,
@@ -296,6 +300,7 @@ fun H2HScreen(
                     matches = loaded.player2.matches,
                     year = null,
                     surface = careerSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
                 )
                 RecordSection(
                     title = "CAREER",
@@ -591,7 +596,7 @@ private fun RecordSection(
             }
         }
         GlassNote(
-            "Hard combines all hard-court results. Indoor Hard and Outdoor Hard use the source's explicit venue classification. The surface filter applies to W/L; titles remain overall for the selected period."
+            "The selected surface filters W/L, Win% and titles. Hard combines all hard-court results, including unknown venue settings. Indoor Hard and Outdoor Hard use only the source's explicit venue classification."
         )
         GlassSurface(
             modifier = Modifier.fillMaxWidth(),
@@ -634,6 +639,9 @@ private fun RecordPlayerColumn(
     record: H2HRecord,
 ) {
     val colors = PaceTheme.colors
+    val winPercentage = record.winPercentage?.let {
+        String.format(Locale.ROOT, "%.1f%%", it)
+    } ?: "—"
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = name,
@@ -647,6 +655,11 @@ private fun RecordPlayerColumn(
             text = if (record.wins == null || record.losses == null) "—" else "${record.wins}–${record.losses}",
             style = TextStyle(fontSize = 23.sp, fontWeight = FontWeight.Bold),
             color = colors.accent,
+        )
+        Text(
+            text = "Win% $winPercentage",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
         )
         Text(
             text = "${record.titles} titles",

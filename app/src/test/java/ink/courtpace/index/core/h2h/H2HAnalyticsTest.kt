@@ -119,16 +119,28 @@ class H2HAnalyticsTest {
     }
 
     @Test
-    fun titles_count_unique_non_team_final_wins_and_do_not_follow_surface_filter() {
-        val final = match("final-a", 2026, "hard", round = "F", eventName = "Sydney Open")
-        val sameEvent = match("same-event-final", 2026, "hard", round = "F", eventName = "Sydney Open")
-            .copy(eventId = final.eventId)
+    fun titles_follow_each_surface_filter_and_unique_final_wins() {
+        val indoorFinal = match("indoor-final", 2026, "hard", round = "F", eventName = "Indoor Open")
+            .copy(eventId = "2026-001")
+        val sameIndoorEvent = match(
+            "same-indoor-event-final", 2026, "hard", round = "F", eventName = "Indoor Open",
+        ).copy(eventId = indoorFinal.eventId)
+        val outdoorFinal = match("outdoor-final", 2026, "hard", round = "F", eventName = "Outdoor Open")
+            .copy(eventId = "2026-002")
+        val unknownHardFinal = match("unknown-hard-final", 2026, "hard", round = "F", eventName = "Unknown Venue Open")
+            .copy(eventId = "2026-003")
+        val grassFinal = match("grass-final", 2026, "grass", round = "F", eventName = "Queens Club")
+        val clayFinal = match("clay-final", 2026, "clay", round = "F", eventName = "Rome Open")
         val nextSeasonSameEvent = match(
-            "next-season-final", 2025, "hard", round = "F", eventName = "Sydney Open",
-        ).copy(eventId = final.eventId)
+            "next-season-final", 2025, "hard", round = "F", eventName = "Indoor Open",
+        ).copy(eventId = indoorFinal.eventId)
         val matches = listOf(
-            final,
-            sameEvent,
+            indoorFinal,
+            sameIndoorEvent,
+            outdoorFinal,
+            unknownHardFinal,
+            grassFinal,
+            clayFinal,
             nextSeasonSameEvent,
             match("davis-final", 2026, "hard", round = "F", eventName = "Davis Cup", level = "D"),
             match("challenger-final", 2026, "clay", round = "F", eventName = "Challenger Open", level = "C"),
@@ -136,13 +148,39 @@ class H2HAnalyticsTest {
             match("semifinal", 2026, "clay", round = "SF", eventName = "Rome Open"),
             match("loss-final", 2026, "grass", round = "F", winner = "p2", eventName = "Queens Club"),
         )
+        val venues = mapOf(
+            "2026-001" to "indoor",
+            "2026-002" to "outdoor",
+            "2025-001" to "outdoor",
+        )
 
-        val all = H2HAnalytics.record("p1", statsPlayer(), matches, 2026, H2HSurfaceFilter.ALL)
-        val clay = H2HAnalytics.record("p1", statsPlayer(), matches, 2026, H2HSurfaceFilter.CLAY)
-        val career = H2HAnalytics.record("p1", statsPlayer(), matches, null, H2HSurfaceFilter.ALL)
-        assertEquals(1, all.titles)
-        assertEquals(1, clay.titles)
-        assertEquals(2, career.titles)
+        fun record(surface: H2HSurfaceFilter, year: Int? = 2026) =
+            H2HAnalytics.record("p1", statsPlayer(), matches, year, surface, venues)
+
+        assertEquals(5, record(H2HSurfaceFilter.ALL).titles)
+        assertEquals(3, record(H2HSurfaceFilter.HARD).titles)
+        assertEquals(1, record(H2HSurfaceFilter.INDOOR_HARD).titles)
+        assertEquals(1, record(H2HSurfaceFilter.OUTDOOR_HARD).titles)
+        assertEquals(1, record(H2HSurfaceFilter.GRASS).titles)
+        assertEquals(1, record(H2HSurfaceFilter.CLAY).titles)
+        assertEquals(6, record(H2HSurfaceFilter.ALL, year = null).titles)
+        assertEquals(2, H2HAnalytics.record(
+            "p1", statsPlayer(), matches, null, H2HSurfaceFilter.INDOOR_HARD, venues,
+        ).titles)
+    }
+
+    @Test
+    fun win_percentage_uses_wins_over_wins_plus_losses() {
+        val ytd = H2HAnalytics.record("p1", statsPlayer(), emptyList(), 2026, H2HSurfaceFilter.ALL)
+        assertEquals(60.0, ytd.winPercentage!!, 0.0001)
+
+        val zeroRecord = PlayerStatsPlayer(
+            id = "p1",
+            name = "Player One",
+            seasons = listOf(PlayerSeasonStats(2026, mapOf("all" to PlayerStatsBucket()))),
+        )
+        val noMatches = H2HAnalytics.record("p1", zeroRecord, emptyList(), 2026, H2HSurfaceFilter.ALL)
+        assertNull(noMatches.winPercentage)
     }
 
     @Test

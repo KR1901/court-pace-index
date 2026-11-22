@@ -311,6 +311,32 @@ def indoor_setting(value: str | None) -> str | None:
     return None
 
 
+def add_tournament_indoor_setting(
+    settings_by_tournament: dict[str, set[str]],
+    tournament_id: str | None,
+    surface: str | None,
+    indoor: str | None,
+) -> None:
+    """Collect explicit venue flags per hard-court tournament; never infer missing values."""
+    tournament_id = (tournament_id or "").strip()
+    if not tournament_id or (surface or "").strip().casefold() != "hard":
+        return
+    setting = indoor_setting(indoor)
+    if setting is not None:
+        settings_by_tournament.setdefault(tournament_id, set()).add(setting)
+
+
+def compact_tournament_indoor_settings(
+    settings_by_tournament: dict[str, set[str]],
+) -> dict[str, str]:
+    """Keep a venue only when every observed explicit flag agrees for that tournament."""
+    return {
+        tournament_id: next(iter(settings)) if len(settings) == 1 else "unknown"
+        for tournament_id, settings in sorted(settings_by_tournament.items())
+        if settings
+    }
+
+
 def match_buckets(surface: str | None, indoor: str | None) -> tuple[str, ...]:
     surface = (surface or "").strip().casefold()
     if surface == "hard":
@@ -1268,6 +1294,7 @@ def aggregate_match_rows(
     current_year: int | None = None,
     current_match_keys: set[str] | None = None,
     current_stat_match_keys: set[str] | None = None,
+    tournament_indoor_by_id: dict[str, set[str]] | None = None,
 ) -> None:
     """Aggregate a source file whose provenance determines its competition scope.
 
@@ -1299,6 +1326,14 @@ def aggregate_match_rows(
         if not season_text.isdigit():
             continue
         season = int(season_text)
+
+        if source_kind == "tour" and tournament_indoor_by_id is not None:
+            add_tournament_indoor_setting(
+                tournament_indoor_by_id,
+                tournament_id,
+                row.get("surface"),
+                row.get("indoor"),
+            )
 
         winner_id = (row.get("winner_id") or "").strip()
         loser_id = (row.get("loser_id") or "").strip()
@@ -1391,11 +1426,13 @@ def aggregate_files(
     dict[str, set[str]],
     dict,
     set[tuple[str, str, str, str, str]],
+    dict[str, set[str]],
 ]:
     aggregate: dict[str, dict[int, dict[str, dict[str, int]]]] = defaultdict(dict)
     match_aliases: dict[str, set[str]] = defaultdict(set)
     totals = _coverage_totals()
     seen_matches: set[tuple[str, str, str, str, str]] = set()
+    tournament_indoor_by_id: dict[str, set[str]] = defaultdict(set)
 
     for year in years:
         filename = f"{year}.csv"
@@ -1416,12 +1453,13 @@ def aggregate_files(
             current_year=current_year,
             current_match_keys=current_season_match_keys,
             current_stat_match_keys=current_season_stat_match_keys,
+            tournament_indoor_by_id=tournament_indoor_by_id,
         )
         print(
             f"{filename}: {len(rows)} source rows processed; "
             f"{totals['matchResults']} ATP Tour match results so far"
         )
-    return aggregate, match_aliases, totals, seen_matches
+    return aggregate, match_aliases, totals, seen_matches, tournament_indoor_by_id
 
 
 def aggregate_height_group_extra_files(
@@ -1501,7 +1539,7 @@ def build() -> dict:
     top100_snapshots = load_top100_season_snapshots(1973, current_year)
     current_season_match_keys: set[str] = set()
     current_season_stat_match_keys: set[str] = set()
-    aggregate, match_aliases, totals, seen_matches = aggregate_files(
+    aggregate, match_aliases, totals, seen_matches, tournament_indoor_by_id = aggregate_files(
         files, years, players, current_year,
         current_season_match_keys, current_season_stat_match_keys,
     )
@@ -1670,6 +1708,7 @@ def build() -> dict:
             "firstSeason": 1968,
             "lastSeason": current_year,
             "currentSeasonSourceMtime": str(files.get(f"{current_year}.csv", {}).get("mtime") or ""),
+            "tournamentIndoorById": compact_tournament_indoor_settings(tournament_indoor_by_id),
             "currentSeasonMatchKeys": sorted(current_season_match_keys),
             "currentSeasonStatMatchKeys": sorted(current_season_stat_match_keys),
             "heightGroupCurrentSeasonMatchKeys": sorted(height_group_current_match_keys),

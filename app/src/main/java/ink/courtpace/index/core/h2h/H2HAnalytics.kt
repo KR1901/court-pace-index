@@ -19,6 +19,7 @@ enum class H2HSurfaceFilter(val label: String, val bucketKey: String) {
 data class H2HRecord(
     val wins: Int?,
     val losses: Int?,
+    val winPercentage: Double?,
     val titles: Int,
     val matches: Int?,
 )
@@ -43,8 +44,9 @@ object H2HAnalytics {
     /**
      * Win/loss totals come from the existing, full-history Player Stats buckets. Those buckets
      * are built from the source match CSV including the indoor/outdoor flag, unlike the public
-     * player-performance API's Match JSON response. Titles are counted independently from
-     * match-level final records and intentionally do not change with the W/L surface selector.
+     * player-performance API's Match JSON response. Titles are counted from match-level final
+     * records and follow the selected surface; indoor/outdoor hard titles use the same
+     * tournament-level source venue flags stored in Player Stats metadata.
      */
     fun record(
         playerId: String,
@@ -52,6 +54,7 @@ object H2HAnalytics {
         matches: List<H2HMatch>,
         year: Int?,
         surface: H2HSurfaceFilter,
+        tournamentIndoorById: Map<String, String> = emptyMap(),
     ): H2HRecord {
         val buckets = playerStats?.seasons.orEmpty().asSequence()
             .filter { year == null || it.y == year }
@@ -64,16 +67,42 @@ object H2HAnalytics {
 
         val titles = matches.asSequence()
             .filter { (year == null || it.year == year) && it.winnerId == playerId && isTitleFinal(it) }
+            .filter { matchesSelectedSurface(it, surface, tournamentIndoorById) }
             .map { "${it.year ?: 0}|" + it.eventId.ifBlank { it.eventName } }
             .distinct()
             .count()
 
+        val winPercentage = if (wins != null && losses != null && wins + losses > 0) {
+            wins.toDouble() * 100.0 / (wins + losses)
+        } else {
+            null
+        }
+
         return H2HRecord(
             wins = wins,
             losses = losses,
+            winPercentage = winPercentage,
             titles = titles,
             matches = matchCount,
         )
+    }
+
+    private fun matchesSelectedSurface(
+        match: H2HMatch,
+        surface: H2HSurfaceFilter,
+        tournamentIndoorById: Map<String, String>,
+    ): Boolean {
+        val matchSurface = match.surface?.lowercase(Locale.ROOT)
+        return when (surface) {
+            H2HSurfaceFilter.ALL -> true
+            H2HSurfaceFilter.HARD -> matchSurface == "hard"
+            H2HSurfaceFilter.OUTDOOR_HARD ->
+                matchSurface == "hard" && tournamentIndoorById[match.eventId] == "outdoor"
+            H2HSurfaceFilter.INDOOR_HARD ->
+                matchSurface == "hard" && tournamentIndoorById[match.eventId] == "indoor"
+            H2HSurfaceFilter.GRASS -> matchSurface == "grass"
+            H2HSurfaceFilter.CLAY -> matchSurface == "clay"
+        }
     }
 
     fun winsAgainst(playerId: String, meetings: List<H2HMatch>): Int =

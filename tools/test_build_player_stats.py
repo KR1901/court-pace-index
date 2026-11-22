@@ -4,6 +4,8 @@ from datetime import date
 
 from build_player_stats import (
     add_player_match,
+    add_tournament_indoor_setting,
+    compact_tournament_indoor_settings,
     height_band_id,
     match_buckets,
     match_has_result,
@@ -154,6 +156,21 @@ class PlayerStatsFormulaTest(unittest.TestCase):
         for value in ("", None, "unknown", "n/a"):
             with self.subTest(value=value):
                 self.assertEqual(match_buckets("Hard", value), ("all", "hardAll", "hardUnknown"))
+
+    def test_tournament_indoor_lookup_requires_consistent_explicit_hard_flags(self):
+        settings = defaultdict(set)
+        add_tournament_indoor_setting(settings, "2026-001", "Hard", "I")
+        add_tournament_indoor_setting(settings, "2026-001", "Hard", "Indoor")
+        add_tournament_indoor_setting(settings, "2026-002", "Hard", "No")
+        add_tournament_indoor_setting(settings, "2026-003", "Hard", "I")
+        add_tournament_indoor_setting(settings, "2026-003", "Hard", "O")
+        add_tournament_indoor_setting(settings, "2026-004", "Hard", "")
+        add_tournament_indoor_setting(settings, "2026-005", "Clay", "I")
+
+        self.assertEqual(
+            compact_tournament_indoor_settings(settings),
+            {"2026-001": "indoor", "2026-002": "outdoor", "2026-003": "unknown"},
+        )
 
     def test_verified_player_height_overrides_fill_only_blank_exact_atp_ids(self):
         payload = {

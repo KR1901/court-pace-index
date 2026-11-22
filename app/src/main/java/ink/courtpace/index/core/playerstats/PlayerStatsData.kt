@@ -94,6 +94,8 @@ data class PlayerStatsMeta(
     val usage: String = "",
     val playersWithEligibleArchiveResults: Int = 0,
     val currentSeasonSourceMtime: String = "",
+    /** Tournament-level hard-court venue flags from the same ATP CSV used by Player Stats. */
+    val tournamentIndoorById: Map<String, String> = emptyMap(),
     val currentSeasonMatchKeys: List<String> = emptyList(),
     val currentSeasonStatMatchKeys: List<String> = emptyList(),
     /** Dedupe keys for ATP Tour + Challenger + qualifying matches used only by Height Groups. */

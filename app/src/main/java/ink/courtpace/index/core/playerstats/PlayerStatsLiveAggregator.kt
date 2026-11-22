@@ -125,6 +125,7 @@ object PlayerStatsLiveAggregator {
         val seenTourStatKeys = baseline.meta.currentSeasonStatMatchKeys.toMutableSet()
         val seenHeightKeys = baseline.meta.heightGroupCurrentSeasonMatchKeys.toMutableSet()
         val seenHeightStatKeys = baseline.meta.heightGroupCurrentSeasonStatMatchKeys.toMutableSet()
+        val tournamentIndoorById = baseline.meta.tournamentIndoorById.toMutableMap()
 
         var addedTourMatches = 0
         var enrichedTourMatches = 0
@@ -144,6 +145,20 @@ object PlayerStatsLiveAggregator {
             if (sourceKind == "tour" &&
                 row["tourney_level"].orEmpty().trim().uppercase() !in eligibleLevels
             ) continue
+
+            // The player-performance API omits the CSV's indoor flag. Keep the source's
+            // tournament-level value alongside the W/L archive for H2H title filtering.
+            if (sourceKind == "tour" && row["surface"].orEmpty().trim().equals("hard", ignoreCase = true)) {
+                val incoming = indoorSetting(row["indoor"])
+                if (incoming != null) {
+                    val existing = tournamentIndoorById[tournamentId]
+                    tournamentIndoorById[tournamentId] = when {
+                        existing == null -> incoming
+                        existing == "unknown" || existing == incoming -> existing
+                        else -> "unknown"
+                    }
+                }
+            }
 
             val winnerId = row["winner_id"].orEmpty().trim()
             val loserId = row["loser_id"].orEmpty().trim()
@@ -253,8 +268,9 @@ object PlayerStatsLiveAggregator {
             }
         }
 
+        val venueMetadataChanged = tournamentIndoorById != baseline.meta.tournamentIndoorById
         if (addedTourMatches == 0 && enrichedTourMatches == 0 &&
-            addedHeightMatches == 0 && enrichedHeightMatches == 0
+            addedHeightMatches == 0 && enrichedHeightMatches == 0 && !venueMetadataChanged
         ) return PlayerStatsLiveApplyResult(baseline, 0, 0, 0)
 
         val playerRows = players.values.sortedWith(
@@ -275,6 +291,7 @@ object PlayerStatsLiveAggregator {
                 playersWithEligibleArchiveResults = eligibleArchivePlayerCount,
                 statsAvailableSeasons = availableSeasons,
                 heightGroupStatsAvailableSeasons = heightAvailableSeasons,
+                tournamentIndoorById = tournamentIndoorById.toSortedMap(),
                 currentSeasonMatchKeys = seenTourKeys.sorted(),
                 currentSeasonStatMatchKeys = seenTourStatKeys.sorted(),
                 heightGroupCurrentSeasonMatchKeys = seenHeightKeys.sorted(),
@@ -393,6 +410,13 @@ object PlayerStatsLiveAggregator {
             else -> listOf("all")
         }
     }
+
+    private fun indoorSetting(value: String?): String? =
+        when (value.orEmpty().trim().lowercase()) {
+            "i", "indoor", "yes", "y", "true", "1" -> "indoor"
+            "o", "outdoor", "no", "n", "false", "0" -> "outdoor"
+            else -> null
+        }
 
     private fun addPlayerMatch(
         player: PlayerStatsPlayer,
