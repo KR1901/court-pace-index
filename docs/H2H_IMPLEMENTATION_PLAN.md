@@ -64,12 +64,15 @@ The H2H match-history rows include a set-by-set `score`, with the winner's score
 - **Set W/L** is the player's total completed sets won–lost.
 - **Set Win%** is completed sets won divided by all completed sets played, multiplied by 100; the UI displays one decimal place.
 - **Tiebreak W/L** counts completed tiebreaks won–lost (a 7–6 set tiebreak or a deciding match tiebreak such as `[10-8]`). It counts tiebreaks, not tiebreak points.
+- **Tiebreak Win%** is tiebreaks won ÷ (tiebreaks won + tiebreaks lost) × 100, displayed to one decimal place. It is unavailable when the selected view contains no completed tiebreaks.
 - Standard sets count when a player reaches at least six games and wins by two, including advantage sets, or when the set ends 7–6.
 - A deciding match tiebreak such as `[10-8]` counts as one completed set and one tiebreak.
-- In retirements, completed sets before the retirement count, but an unfinished final set (for example `3-2 RET.`) does not.
-- Missing or unparseable scores contribute no sets or tiebreaks. If no completed set scores are available, Set W/L, Set Win% and Tiebreak W/L display as unavailable rather than a fabricated zero record.
+- In retirements, completed sets before the retirement count, but an unfinished final set (for example `5-0 RET.`) does not count as a completed set. The source's partial score remains visible in the event breakdown.
+- Score coverage is distinct from completed-set coverage. A non-empty score string counts as a recorded score even when it contains only an unfinished retirement set; completed-set coverage counts only matches with at least one complete set.
+- If the pair-specific H2H endpoint omits a score, the repository checks the two selected players' already-fetched match histories for the same stable match identity and uses a non-empty score from there. Existing source scores are never overwritten. If the two fallback records disagree, or neither contains a score, the UI marks the score unavailable rather than guessing.
+- Missing or unparseable scores contribute no sets or tiebreaks. If no completed set scores are available, Set W/L, Set Win%, Tiebreak W/L and Tiebreak Win% are unavailable rather than fabricated.
 
-The same score-derived statistics are displayed in the H2H Match Wins card and in both **Year-to-date** and **Career** sections. Each of those sections independently recalculates Set W/L, Set Win% and Tiebreak W/L for every surface option: **All, Hard, Outdoor Hard, Indoor Hard, Grass and Clay**. The calculations use the selected player's match-history response, filter by match calendar year and surface, and use the Player Stats tournament venue lookup for indoor/outdoor hard splits. To stay consistent with the Player Stats W/L archive, YTD/Career score-derived records include the same ATP Tour levels (`G`, `M`, `A`, `F`, `250`, `500`) and exclude qualifying rounds (`Q1`–`Q4`) and Challenger/other levels. The H2H rivalry card continues to use the exact recorded pair-meeting list. YTD and Career surface selectors remain independent.
+The same score-derived statistics are displayed in the H2H Match Wins card and in both **Year-to-date** and **Career** sections. Each of those sections independently recalculates Set W/L, Set Win%, Tiebreak W/L and Tiebreak Win% for every surface option: **All, Hard, Outdoor Hard, Indoor Hard, Grass and Clay**. The calculations use the selected player's match-history response, filter by match calendar year and surface, and use the Player Stats tournament venue lookup for indoor/outdoor hard splits. To stay consistent with the Player Stats W/L archive, YTD/Career score-derived records include the same ATP Tour levels (`G`, `M`, `A`, `F`, `250`, `500`) and exclude qualifying rounds (`Q1`–`Q4`) and Challenger/other levels. The H2H rivalry card continues to use the exact recorded pair-meeting list. YTD and Career surface selectors remain independent.
 
 These score-derived stats are separate from match W/L, title calculations and the existing Player Stats W/L aggregates. They do not change any existing CPI/CALC or live-rating calculations.
 
@@ -100,7 +103,7 @@ Titles are counted from the player's match-history endpoint as unique tournament
 
 ### Meeting date and event breakdown
 
-The source's `tourney_date` is the tournament-week/event date, not a verified individual match-day timestamp. It is rendered as `DD/MM/YYYY` without timezone conversion and explicitly labelled **Tournament date** in the UI. Each meeting displays event, tournament date, round, surface, winner, loser and score (when supplied).
+The source's `tourney_date` is the tournament-week/event date, not a verified individual match-day timestamp. It is rendered as `DD/MM/YYYY` without timezone conversion and explicitly labelled **Tournament date** in the UI. Each meeting displays event, tournament date, round, surface, winner, loser and the source set-score string (including tiebreak point details when present). The pair endpoint's missing score fields are backfilled only from an exact-identity record in either selected player's already-fetched performance history; conflicting fallback records are not resolved by guessing.
 
 ## 4. Architecture
 

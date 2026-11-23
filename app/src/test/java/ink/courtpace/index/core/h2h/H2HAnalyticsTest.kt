@@ -201,6 +201,7 @@ class H2HAnalyticsTest {
         assertEquals(57.142857, first.winPercentage!!, 0.0001)
         assertEquals(2, first.tiebreaksWon)
         assertEquals(0, first.tiebreaksLost)
+        assertEquals(100.0, first.tiebreakWinPercentage!!, 0.0001)
         assertEquals(7, first.setsPlayed)
         assertEquals(2, first.matchesWithScores)
 
@@ -209,6 +210,7 @@ class H2HAnalyticsTest {
         assertEquals(42.857142, second.winPercentage!!, 0.0001)
         assertEquals(0, second.tiebreaksWon)
         assertEquals(2, second.tiebreaksLost)
+        assertEquals(0.0, second.tiebreakWinPercentage!!, 0.0001)
         assertEquals(first.setsPlayed, second.setsPlayed)
     }
 
@@ -226,6 +228,9 @@ class H2HAnalyticsTest {
         assertEquals(1, record.setsPlayed)
         assertEquals(0, record.tiebreaksWon)
         assertEquals(0, record.tiebreaksLost)
+        assertNull(record.tiebreakWinPercentage)
+        assertEquals(1, record.matchesWithScores)
+        assertEquals(1, record.matchesWithCompletedSets)
         assertEquals(0, opponent.setsWon)
         assertEquals(1, opponent.setsLost)
         assertEquals(0.0, opponent.winPercentage!!, 0.0001)
@@ -247,6 +252,7 @@ class H2HAnalyticsTest {
         assertEquals(2, loser.setsLost)
         assertEquals(0, loser.tiebreaksWon)
         assertEquals(1, loser.tiebreaksLost)
+        assertEquals(0.0, loser.tiebreakWinPercentage!!, 0.0001)
     }
 
     @Test
@@ -259,6 +265,7 @@ class H2HAnalyticsTest {
         assertEquals(0, record.setsLost)
         assertEquals(1, record.setsPlayed)
         assertEquals(1, record.matchesWithScores)
+        assertEquals(1, record.matchesWithCompletedSets)
         assertEquals(100.0, record.winPercentage!!, 0.0001)
     }
 
@@ -275,7 +282,8 @@ class H2HAnalyticsTest {
         assertNull(record.tiebreaksWon)
         assertNull(record.tiebreaksLost)
         assertEquals(0, record.setsPlayed)
-        assertEquals(0, record.matchesWithScores)
+        assertEquals(1, record.matchesWithScores)
+        assertEquals(0, record.matchesWithCompletedSets)
     }
 
     @Test
@@ -322,6 +330,7 @@ class H2HAnalyticsTest {
         assertEquals(5, all.setsLost)
         assertEquals(3, all.tiebreaksWon)
         assertEquals(2, all.tiebreaksLost)
+        assertEquals(60.0, all.tiebreakWinPercentage!!, 0.001)
         assertEquals(58.3333, all.winPercentage!!, 0.001)
 
         val hard = record(H2HSurfaceFilter.HARD)
@@ -329,66 +338,117 @@ class H2HAnalyticsTest {
         assertEquals(3, hard.setsLost)
         assertEquals(3, hard.tiebreaksWon)
         assertEquals(1, hard.tiebreaksLost)
+        assertEquals(75.0, hard.tiebreakWinPercentage!!, 0.001)
 
         val indoor = record(H2HSurfaceFilter.INDOOR_HARD)
         assertEquals(2, indoor.setsWon)
         assertEquals(0, indoor.setsLost)
         assertEquals(1, indoor.tiebreaksWon)
         assertEquals(0, indoor.tiebreaksLost)
+        assertEquals(100.0, indoor.tiebreakWinPercentage!!, 0.001)
 
         val outdoor = record(H2HSurfaceFilter.OUTDOOR_HARD)
         assertEquals(2, outdoor.setsWon)
         assertEquals(1, outdoor.setsLost)
         assertEquals(1, outdoor.tiebreaksWon)
         assertEquals(1, outdoor.tiebreaksLost)
+        assertEquals(50.0, outdoor.tiebreakWinPercentage!!, 0.001)
 
         val grass = record(H2HSurfaceFilter.GRASS)
         assertEquals(2, grass.setsWon)
         assertEquals(0, grass.setsLost)
         assertEquals(0, grass.tiebreaksWon)
         assertEquals(0, grass.tiebreaksLost)
+        assertNull(grass.tiebreakWinPercentage)
 
         val clay = record(H2HSurfaceFilter.CLAY)
         assertEquals(0, clay.setsWon)
         assertEquals(2, clay.setsLost)
         assertEquals(0, clay.tiebreaksWon)
         assertEquals(1, clay.tiebreaksLost)
+        assertEquals(0.0, clay.tiebreakWinPercentage!!, 0.001)
 
         val careerAll = record(H2HSurfaceFilter.ALL, year = null)
         assertEquals(9, careerAll.setsWon)
         assertEquals(5, careerAll.setsLost)
         assertEquals(5, careerAll.tiebreaksWon)
         assertEquals(2, careerAll.tiebreaksLost)
+        assertEquals(71.428571, careerAll.tiebreakWinPercentage!!, 0.001)
 
         val careerHard = record(H2HSurfaceFilter.HARD, year = null)
         assertEquals(7, careerHard.setsWon)
         assertEquals(3, careerHard.setsLost)
         assertEquals(5, careerHard.tiebreaksWon)
         assertEquals(1, careerHard.tiebreaksLost)
+        assertEquals(83.333333, careerHard.tiebreakWinPercentage!!, 0.001)
 
         val careerIndoor = record(H2HSurfaceFilter.INDOOR_HARD, year = null)
         assertEquals(2, careerIndoor.setsWon)
         assertEquals(0, careerIndoor.setsLost)
         assertEquals(1, careerIndoor.tiebreaksWon)
         assertEquals(0, careerIndoor.tiebreaksLost)
+        assertEquals(100.0, careerIndoor.tiebreakWinPercentage!!, 0.001)
 
         val careerOutdoor = record(H2HSurfaceFilter.OUTDOOR_HARD, year = null)
         assertEquals(4, careerOutdoor.setsWon)
         assertEquals(1, careerOutdoor.setsLost)
         assertEquals(3, careerOutdoor.tiebreaksWon)
         assertEquals(1, careerOutdoor.tiebreaksLost)
+        assertEquals(75.0, careerOutdoor.tiebreakWinPercentage!!, 0.001)
 
         val careerGrass = record(H2HSurfaceFilter.GRASS, year = null)
         assertEquals(2, careerGrass.setsWon)
         assertEquals(0, careerGrass.setsLost)
         assertEquals(0, careerGrass.tiebreaksWon)
         assertEquals(0, careerGrass.tiebreaksLost)
+        assertNull(careerGrass.tiebreakWinPercentage)
 
         val careerClay = record(H2HSurfaceFilter.CLAY, year = null)
         assertEquals(0, careerClay.setsWon)
         assertEquals(2, careerClay.setsLost)
         assertEquals(0, careerClay.tiebreaksWon)
         assertEquals(1, careerClay.tiebreaksLost)
+        assertEquals(0.0, careerClay.tiebreakWinPercentage!!, 0.001)
+    }
+
+    @Test
+    fun missing_pair_score_is_backfilled_from_exact_player_history_match() {
+        val pairMatch = match("same-match", 2026, "hard").copy(score = null)
+        val playerHistoryMatch = match("same-match", 2026, "hard").copy(score = "7-6(5) 6-4")
+
+        val merged = H2HRepository.mergeMissingScores(
+            meetings = listOf(pairMatch),
+            playerHistory = listOf(playerHistoryMatch),
+        )
+
+        assertEquals("7-6(5) 6-4", merged.single().score)
+    }
+
+    @Test
+    fun score_fallback_does_not_overwrite_existing_partial_retirement_score() {
+        val pairMatch = match("retired-match", 2025, "hard").copy(score = "5-0 RET.")
+        val playerHistoryMatch = match("retired-match", 2025, "hard").copy(score = "6-4 6-4")
+
+        val merged = H2HRepository.mergeMissingScores(
+            meetings = listOf(pairMatch),
+            playerHistory = listOf(playerHistoryMatch),
+        )
+
+        assertEquals("5-0 RET.", merged.single().score)
+    }
+
+    @Test
+    fun conflicting_player_history_scores_are_not_guessed() {
+        val pairMatch = match("conflicting-match", 2026, "hard").copy(score = null)
+        val firstHistory = match("conflicting-match", 2026, "hard").copy(score = "6-4 6-4")
+        val secondHistory = match("conflicting-match", 2026, "hard").copy(score = "7-6(5) 6-4")
+
+        val merged = H2HRepository.mergeMissingScores(
+            meetings = listOf(pairMatch),
+            playerHistory = listOf(firstHistory, secondHistory),
+        )
+
+        assertNull(merged.single().score)
     }
 
     @Test
