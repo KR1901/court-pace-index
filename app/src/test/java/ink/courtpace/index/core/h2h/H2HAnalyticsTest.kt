@@ -184,6 +184,214 @@ class H2HAnalyticsTest {
     }
 
     @Test
+    fun set_scores_count_tiebreak_sets_and_map_winner_first_scores_to_each_player() {
+        val firstMatch = match("set-a", 2026, "hard").copy(
+            score = "6-4 7-6(5) 4-6 7-6(2)",
+        )
+        val secondMatch = match("set-b", 2025, "clay", winner = "p2").copy(
+            score = "6-3 3-6 6-4",
+        )
+        val meetings = listOf(firstMatch, secondMatch)
+
+        val first = H2HAnalytics.setRecord("p1", meetings)
+        val second = H2HAnalytics.setRecord("p2", meetings)
+
+        assertEquals(4, first.setsWon)
+        assertEquals(3, first.setsLost)
+        assertEquals(57.142857, first.winPercentage!!, 0.0001)
+        assertEquals(2, first.tiebreaksWon)
+        assertEquals(0, first.tiebreaksLost)
+        assertEquals(7, first.setsPlayed)
+        assertEquals(2, first.matchesWithScores)
+
+        assertEquals(3, second.setsWon)
+        assertEquals(4, second.setsLost)
+        assertEquals(42.857142, second.winPercentage!!, 0.0001)
+        assertEquals(0, second.tiebreaksWon)
+        assertEquals(2, second.tiebreaksLost)
+        assertEquals(first.setsPlayed, second.setsPlayed)
+    }
+
+    @Test
+    fun retirement_counts_completed_sets_but_ignores_the_unfinished_set() {
+        val retired = match("retired", 2026, "hard").copy(
+            score = "6-4 3-2 RET.",
+        )
+        val record = H2HAnalytics.setRecord("p1", listOf(retired))
+        val opponent = H2HAnalytics.setRecord("p2", listOf(retired))
+
+        assertEquals(1, record.setsWon)
+        assertEquals(0, record.setsLost)
+        assertEquals(100.0, record.winPercentage!!, 0.0001)
+        assertEquals(1, record.setsPlayed)
+        assertEquals(0, record.tiebreaksWon)
+        assertEquals(0, record.tiebreaksLost)
+        assertEquals(0, opponent.setsWon)
+        assertEquals(1, opponent.setsLost)
+        assertEquals(0.0, opponent.winPercentage!!, 0.0001)
+    }
+
+    @Test
+    fun deciding_match_tiebreak_counts_as_a_completed_set() {
+        val match = match("match-tiebreak", 2026, "hard").copy(
+            score = "6-4 4-6 [10-8]",
+        )
+        val winner = H2HAnalytics.setRecord("p1", listOf(match))
+        val loser = H2HAnalytics.setRecord("p2", listOf(match))
+
+        assertEquals(2, winner.setsWon)
+        assertEquals(1, winner.setsLost)
+        assertEquals(1, winner.tiebreaksWon)
+        assertEquals(0, winner.tiebreaksLost)
+        assertEquals(1, loser.setsWon)
+        assertEquals(2, loser.setsLost)
+        assertEquals(0, loser.tiebreaksWon)
+        assertEquals(1, loser.tiebreaksLost)
+    }
+
+    @Test
+    fun incomplete_sets_and_missing_scores_do_not_inflate_set_totals() {
+        val partial = match("partial", 2026, "hard").copy(score = "6-4 5-5")
+        val missing = match("missing", 2026, "clay").copy(score = null)
+        val record = H2HAnalytics.setRecord("p1", listOf(partial, missing))
+
+        assertEquals(1, record.setsWon)
+        assertEquals(0, record.setsLost)
+        assertEquals(1, record.setsPlayed)
+        assertEquals(1, record.matchesWithScores)
+        assertEquals(100.0, record.winPercentage!!, 0.0001)
+    }
+
+    @Test
+    fun no_completed_set_scores_render_as_unavailable_instead_of_zero_record() {
+        val record = H2HAnalytics.setRecord(
+            "p1",
+            listOf(match("unfinished", 2026, "hard").copy(score = "2-1 RET.")),
+        )
+
+        assertNull(record.setsWon)
+        assertNull(record.setsLost)
+        assertNull(record.winPercentage)
+        assertNull(record.tiebreaksWon)
+        assertNull(record.tiebreaksLost)
+        assertEquals(0, record.setsPlayed)
+        assertEquals(0, record.matchesWithScores)
+    }
+
+    @Test
+    fun player_set_and_tiebreak_records_follow_ytd_career_and_all_surface_filters() {
+        val matches = listOf(
+            match("ih", 2026, "hard").copy(
+                eventId = "2026-001",
+                score = "7-6(4) 6-4",
+            ),
+            match("oh", 2026, "hard").copy(
+                eventId = "2026-002",
+                score = "6-7(5) 7-6(3) 6-4",
+            ),
+            match("unknown-hard", 2026, "hard", winner = "p2").copy(
+                eventId = "2026-003",
+                score = "6-4 6-7(4) 6-4",
+            ),
+            match("grass", 2026, "grass").copy(score = "6-4 6-4"),
+            match("clay", 2026, "clay", winner = "p2").copy(score = "7-6(2) 6-4"),
+            match("challenger", 2026, "hard", level = "C").copy(
+                score = "6-0 6-0",
+            ),
+            match("qualifying", 2026, "hard", round = "Q1", level = "A").copy(
+                score = "7-6(4) 6-4",
+            ),
+            match("prior-hard", 2025, "hard").copy(
+                eventId = "2025-001",
+                score = "7-6(6) 7-6(3)",
+            ),
+        )
+        val venues = mapOf(
+            "2026-001" to "indoor",
+            "2026-002" to "outdoor",
+            "2025-001" to "outdoor",
+        )
+
+        fun record(surface: H2HSurfaceFilter, year: Int? = 2026) =
+            H2HAnalytics.setRecord(
+                "p1", matches, year, surface, venues, eligibleTourMatchesOnly = true,
+            )
+
+        val all = record(H2HSurfaceFilter.ALL)
+        assertEquals(7, all.setsWon)
+        assertEquals(5, all.setsLost)
+        assertEquals(3, all.tiebreaksWon)
+        assertEquals(2, all.tiebreaksLost)
+        assertEquals(58.3333, all.winPercentage!!, 0.001)
+
+        val hard = record(H2HSurfaceFilter.HARD)
+        assertEquals(5, hard.setsWon)
+        assertEquals(3, hard.setsLost)
+        assertEquals(3, hard.tiebreaksWon)
+        assertEquals(1, hard.tiebreaksLost)
+
+        val indoor = record(H2HSurfaceFilter.INDOOR_HARD)
+        assertEquals(2, indoor.setsWon)
+        assertEquals(0, indoor.setsLost)
+        assertEquals(1, indoor.tiebreaksWon)
+        assertEquals(0, indoor.tiebreaksLost)
+
+        val outdoor = record(H2HSurfaceFilter.OUTDOOR_HARD)
+        assertEquals(2, outdoor.setsWon)
+        assertEquals(1, outdoor.setsLost)
+        assertEquals(1, outdoor.tiebreaksWon)
+        assertEquals(1, outdoor.tiebreaksLost)
+
+        val grass = record(H2HSurfaceFilter.GRASS)
+        assertEquals(2, grass.setsWon)
+        assertEquals(0, grass.setsLost)
+        assertEquals(0, grass.tiebreaksWon)
+        assertEquals(0, grass.tiebreaksLost)
+
+        val clay = record(H2HSurfaceFilter.CLAY)
+        assertEquals(0, clay.setsWon)
+        assertEquals(2, clay.setsLost)
+        assertEquals(0, clay.tiebreaksWon)
+        assertEquals(1, clay.tiebreaksLost)
+
+        val careerAll = record(H2HSurfaceFilter.ALL, year = null)
+        assertEquals(9, careerAll.setsWon)
+        assertEquals(5, careerAll.setsLost)
+        assertEquals(5, careerAll.tiebreaksWon)
+        assertEquals(2, careerAll.tiebreaksLost)
+
+        val careerHard = record(H2HSurfaceFilter.HARD, year = null)
+        assertEquals(7, careerHard.setsWon)
+        assertEquals(3, careerHard.setsLost)
+        assertEquals(5, careerHard.tiebreaksWon)
+        assertEquals(1, careerHard.tiebreaksLost)
+
+        val careerIndoor = record(H2HSurfaceFilter.INDOOR_HARD, year = null)
+        assertEquals(2, careerIndoor.setsWon)
+        assertEquals(0, careerIndoor.setsLost)
+        assertEquals(1, careerIndoor.tiebreaksWon)
+        assertEquals(0, careerIndoor.tiebreaksLost)
+
+        val careerOutdoor = record(H2HSurfaceFilter.OUTDOOR_HARD, year = null)
+        assertEquals(4, careerOutdoor.setsWon)
+        assertEquals(1, careerOutdoor.setsLost)
+        assertEquals(3, careerOutdoor.tiebreaksWon)
+        assertEquals(1, careerOutdoor.tiebreaksLost)
+
+        val careerGrass = record(H2HSurfaceFilter.GRASS, year = null)
+        assertEquals(2, careerGrass.setsWon)
+        assertEquals(0, careerGrass.setsLost)
+        assertEquals(0, careerGrass.tiebreaksWon)
+        assertEquals(0, careerGrass.tiebreaksLost)
+
+        val careerClay = record(H2HSurfaceFilter.CLAY, year = null)
+        assertEquals(0, careerClay.setsWon)
+        assertEquals(2, careerClay.setsLost)
+        assertEquals(0, careerClay.tiebreaksWon)
+        assertEquals(1, careerClay.tiebreaksLost)
+    }
+
+    @Test
     fun head_to_head_win_count_follows_winner_id() {
         val meetings = listOf(
             match("a", 2026, "hard", winner = "p1"),

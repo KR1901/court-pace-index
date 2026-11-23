@@ -57,6 +57,22 @@ YTD means the current calendar year from the latest Player Stats archive/cache. 
 
 Career is the sum of the player's annual ATP tour-level buckets across all seasons in the Player Stats archive. The W/L formula and match population stay identical to the existing Player Stats feature.
 
+### H2H set record and Set Win%
+
+The H2H match-history rows include a set-by-set `score`, with the winner's score listed first and the loser's second. The H2H score card derives each player's set record across the pair's recorded meetings:
+
+- **Set W/L** is the player's total completed sets won–lost.
+- **Set Win%** is completed sets won divided by all completed sets played, multiplied by 100; the UI displays one decimal place.
+- **Tiebreak W/L** counts completed tiebreaks won–lost (a 7–6 set tiebreak or a deciding match tiebreak such as `[10-8]`). It counts tiebreaks, not tiebreak points.
+- Standard sets count when a player reaches at least six games and wins by two, including advantage sets, or when the set ends 7–6.
+- A deciding match tiebreak such as `[10-8]` counts as one completed set and one tiebreak.
+- In retirements, completed sets before the retirement count, but an unfinished final set (for example `3-2 RET.`) does not.
+- Missing or unparseable scores contribute no sets or tiebreaks. If no completed set scores are available, Set W/L, Set Win% and Tiebreak W/L display as unavailable rather than a fabricated zero record.
+
+The same score-derived statistics are displayed in the H2H Match Wins card and in both **Year-to-date** and **Career** sections. Each of those sections independently recalculates Set W/L, Set Win% and Tiebreak W/L for every surface option: **All, Hard, Outdoor Hard, Indoor Hard, Grass and Clay**. The calculations use the selected player's match-history response, filter by match calendar year and surface, and use the Player Stats tournament venue lookup for indoor/outdoor hard splits. To stay consistent with the Player Stats W/L archive, YTD/Career score-derived records include the same ATP Tour levels (`G`, `M`, `A`, `F`, `250`, `500`) and exclude qualifying rounds (`Q1`–`Q4`) and Challenger/other levels. The H2H rivalry card continues to use the exact recorded pair-meeting list. YTD and Career surface selectors remain independent.
+
+These score-derived stats are separate from match W/L, title calculations and the existing Player Stats W/L aggregates. They do not change any existing CPI/CALC or live-rating calculations.
+
 ### Surface filters
 
 The H2H W/L surface selectors reuse the existing, validated Player Stats bucket keys:

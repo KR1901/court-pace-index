@@ -274,14 +274,32 @@ fun H2HScreen(
                     surface = ytdSurface,
                     tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
                 )
+                val firstSetRecord = H2HAnalytics.setRecord(
+                    playerId = loaded.player1.player.id,
+                    meetings = loaded.player1.matches,
+                    year = currentYear,
+                    surface = ytdSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
+                )
+                val secondSetRecord = H2HAnalytics.setRecord(
+                    playerId = loaded.player2.player.id,
+                    meetings = loaded.player2.matches,
+                    year = currentYear,
+                    surface = ytdSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
+                )
                 RecordSection(
                     title = "YEAR-TO-DATE · $currentYear",
                     surface = ytdSurface,
                     onSurface = { ytdSurface = it },
                     firstName = loaded.player1.player.name,
                     firstRecord = firstRecord,
+                    firstSetRecord = firstSetRecord,
                     secondName = loaded.player2.player.name,
                     secondRecord = secondRecord,
+                    secondSetRecord = secondSetRecord,
                 )
             }
 
@@ -302,14 +320,32 @@ fun H2HScreen(
                     surface = careerSurface,
                     tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
                 )
+                val firstSetRecord = H2HAnalytics.setRecord(
+                    playerId = loaded.player1.player.id,
+                    meetings = loaded.player1.matches,
+                    year = null,
+                    surface = careerSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
+                )
+                val secondSetRecord = H2HAnalytics.setRecord(
+                    playerId = loaded.player2.player.id,
+                    meetings = loaded.player2.matches,
+                    year = null,
+                    surface = careerSurface,
+                    tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
+                )
                 RecordSection(
                     title = "CAREER",
                     surface = careerSurface,
                     onSurface = { careerSurface = it },
                     firstName = loaded.player1.player.name,
                     firstRecord = firstRecord,
+                    firstSetRecord = firstSetRecord,
                     secondName = loaded.player2.player.name,
                     secondRecord = secondRecord,
+                    secondSetRecord = secondSetRecord,
                 )
             }
 
@@ -456,6 +492,8 @@ private fun H2HScoreCard(
     val colors = PaceTheme.colors
     val firstWins = H2HAnalytics.winsAgainst(first.player.id, meetings)
     val secondWins = H2HAnalytics.winsAgainst(second.player.id, meetings)
+    val firstSets = H2HAnalytics.setRecord(first.player.id, meetings)
+    val secondSets = H2HAnalytics.setRecord(second.player.id, meetings)
     GlassSurface(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(18.dp),
@@ -507,9 +545,73 @@ private fun H2HScoreCard(
             }
         }
         HairLine(Modifier.padding(vertical = 10.dp))
+        SectionLabel("SET & TIEBREAK RECORD")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            H2HSetSummary(
+                modifier = Modifier.weight(1f),
+                record = firstSets,
+                alignEnd = false,
+            )
+            H2HSetSummary(
+                modifier = Modifier.weight(1f),
+                record = secondSets,
+                alignEnd = true,
+            )
+        }
         Text(
-            text = "${meetings.size} recorded meetings",
+            text = "${meetings.size} recorded meetings · set scores available in ${firstSets.matchesWithScores}",
             style = TextStyle(fontSize = 11.sp),
+            color = colors.textDim,
+        )
+    }
+}
+
+@Composable
+private fun H2HSetSummary(
+    modifier: Modifier,
+    record: ink.courtpace.index.core.h2h.H2HSetRecord,
+    alignEnd: Boolean,
+) {
+    val colors = PaceTheme.colors
+    val setRecord = if (record.setsWon == null || record.setsLost == null) {
+        "—"
+    } else {
+        "${record.setsWon}–${record.setsLost}"
+    }
+    val winPercentage = record.winPercentage?.let {
+        String.format(Locale.ROOT, "%.1f%%", it)
+    } ?: "—"
+    Column(
+        modifier = modifier,
+        horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Text(
+            text = "SET W/L",
+            style = TextStyle(fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.7.sp),
+            color = colors.textFaint,
+        )
+        Text(
+            text = setRecord,
+            style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
+            color = colors.accent,
+        )
+        Text(
+            text = "Set Win% $winPercentage",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
+        val tiebreakRecord = if (record.tiebreaksWon == null || record.tiebreaksLost == null) {
+            "—"
+        } else {
+            "${record.tiebreaksWon}–${record.tiebreaksLost}"
+        }
+        Text(
+            text = "Tiebreak W/L $tiebreakRecord",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
             color = colors.textDim,
         )
     }
@@ -577,8 +679,10 @@ private fun RecordSection(
     onSurface: (H2HSurfaceFilter) -> Unit,
     firstName: String,
     firstRecord: H2HRecord,
+    firstSetRecord: ink.courtpace.index.core.h2h.H2HSetRecord,
     secondName: String,
     secondRecord: H2HRecord,
+    secondSetRecord: ink.courtpace.index.core.h2h.H2HSetRecord,
 ) {
     val colors = PaceTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
@@ -596,7 +700,7 @@ private fun RecordSection(
             }
         }
         GlassNote(
-            "The selected surface filters W/L, Win% and titles. Hard combines all hard-court results, including unknown venue settings. Indoor Hard and Outdoor Hard use only the source's explicit venue classification."
+            "Set W/L counts completed sets; Set Win% is sets won ÷ sets played. Tiebreak W/L counts completed 7–6 and match tiebreaks won–lost. These score-based stats follow the selected year and surface. Hard includes unknown venue settings; Indoor/Outdoor Hard require explicit venue classification."
         )
         GlassSurface(
             modifier = Modifier.fillMaxWidth(),
@@ -611,11 +715,13 @@ private fun RecordSection(
                     modifier = Modifier.weight(1f),
                     name = firstName,
                     record = firstRecord,
+                    setRecord = firstSetRecord,
                 )
                 RecordPlayerColumn(
                     modifier = Modifier.weight(1f),
                     name = secondName,
                     record = secondRecord,
+                    setRecord = secondSetRecord,
                 )
             }
             HairLine(Modifier.padding(vertical = 9.dp))
@@ -637,6 +743,7 @@ private fun RecordPlayerColumn(
     modifier: Modifier,
     name: String,
     record: H2HRecord,
+    setRecord: ink.courtpace.index.core.h2h.H2HSetRecord,
 ) {
     val colors = PaceTheme.colors
     val winPercentage = record.winPercentage?.let {
@@ -663,6 +770,34 @@ private fun RecordPlayerColumn(
         )
         Text(
             text = "${record.titles} titles",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
+        val setWl = if (setRecord.setsWon == null || setRecord.setsLost == null) {
+            "—"
+        } else {
+            "${setRecord.setsWon}–${setRecord.setsLost}"
+        }
+        val setWinPct = setRecord.winPercentage?.let {
+            String.format(Locale.ROOT, "%.1f%%", it)
+        } ?: "—"
+        val tbWl = if (setRecord.tiebreaksWon == null || setRecord.tiebreaksLost == null) {
+            "—"
+        } else {
+            "${setRecord.tiebreaksWon}–${setRecord.tiebreaksLost}"
+        }
+        Text(
+            text = "Set W/L $setWl",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
+        Text(
+            text = "Set Win% $setWinPct",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
+        Text(
+            text = "Tiebreak W/L $tbWl",
             style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
             color = colors.textDim,
         )

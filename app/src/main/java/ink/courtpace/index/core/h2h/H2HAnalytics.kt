@@ -24,9 +24,21 @@ data class H2HRecord(
     val matches: Int?,
 )
 
+data class H2HSetRecord(
+    val setsWon: Int?,
+    val setsLost: Int?,
+    val winPercentage: Double?,
+    val tiebreaksWon: Int?,
+    val tiebreaksLost: Int?,
+    val setsPlayed: Int,
+    val tiebreaksPlayed: Int,
+    val matchesWithScores: Int,
+)
+
 object H2HAnalytics {
     private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ROOT)
     private val titleLevels = setOf("G", "M", "A", "F", "250", "500")
+    private val qualifyingRounds = setOf("Q1", "Q2", "Q3", "Q4")
     private val nonTitleEvents = listOf(
         "davis cup",
         "united cup",
@@ -87,6 +99,18 @@ object H2HAnalytics {
         )
     }
 
+    /**
+     * YTD/Career set statistics must match the Player Stats ATP Tour archive population.
+     * That archive includes main-draw tour-level results only; qualifying rounds and
+     * Challenger/other levels must not silently inflate these score-derived totals.
+     * The H2H rivalry card keeps its default false and follows the exact meeting list.
+     */
+    private fun isEligibleTourMatch(match: H2HMatch): Boolean {
+        val level = match.level?.uppercase(Locale.ROOT) ?: return false
+        val round = match.round?.uppercase(Locale.ROOT).orEmpty()
+        return level in titleLevels && round !in qualifyingRounds
+    }
+
     private fun matchesSelectedSurface(
         match: H2HMatch,
         surface: H2HSurfaceFilter,
@@ -103,6 +127,112 @@ object H2HAnalytics {
             H2HSurfaceFilter.GRASS -> matchSurface == "grass"
             H2HSurfaceFilter.CLAY -> matchSurface == "clay"
         }
+    }
+
+    /**
+     * TML score strings list the match winner's set score first and the loser's second.
+     * Normal sets are counted only when complete. Square-bracketed match tiebreaks (for
+     * example [10-8]) count as one set and one tiebreak. A retirement's unfinished set is
+     * ignored while completed sets before it remain eligible.
+     */
+    private data class ParsedSetScore(
+        val firstGames: Int,
+        val secondGames: Int,
+        val isTiebreak: Boolean,
+    )
+
+    private val setScorePattern = Regex(
+        """(?:\[(\d{1,2})-(\d{1,2})\]|(?<!\d)(\d{1,2})-(\d{1,2})(?:\((\d{1,2})(?:-\d{1,2})?\))?)"""
+    )
+
+    private fun parseSetScores(score: String?): List<ParsedSetScore> {
+        if (score.isNullOrBlank()) return emptyList()
+        return setScorePattern.findAll(score).mapNotNull { match ->
+            val isMatchTiebreak = match.groupValues[1].isNotEmpty()
+            val first = (if (isMatchTiebreak) match.groupValues[1] else match.groupValues[3]).toIntOrNull()
+                ?: return@mapNotNull null
+            val second = (if (isMatchTiebreak) match.groupValues[2] else match.groupValues[4]).toIntOrNull()
+                ?: return@mapNotNull null
+            val high = maxOf(first, second)
+            val low = minOf(first, second)
+            val completed = if (isMatchTiebreak) {
+                high >= 10 && high - low >= 2
+            } else {
+                (high >= 6 && high - low >= 2) || (high == 7 && low == 6)
+            }
+            if (!completed) return@mapNotNull null
+            ParsedSetScore(
+                firstGames = first,
+                secondGames = second,
+                isTiebreak = isMatchTiebreak || (high == 7 && low == 6),
+            )
+        }.toList()
+    }
+
+    fun completedSetScores(score: String?): List<Pair<Int, Int>> =
+        parseSetScores(score).map { it.firstGames to it.secondGames }
+
+    /**
+     * Aggregates completed sets and tiebreaks for a player's selected match history.
+     * The score is mapped from the recorded match winner's perspective to the requested player.
+     *
+     * year=null means Career; otherwise only that calendar year is included. Surface and venue
+     * filtering is identical to the YTD/Career win-loss and title sections.
+     */
+    fun setRecord(
+        playerId: String,
+        meetings: List<H2HMatch>,
+        year: Int? = null,
+        surface: H2HSurfaceFilter = H2HSurfaceFilter.ALL,
+        tournamentIndoorById: Map<String, String> = emptyMap(),
+        eligibleTourMatchesOnly: Boolean = false,
+    ): H2HSetRecord {
+        var setsWon = 0
+        var setsLost = 0
+        var tiebreaksWon = 0
+        var tiebreaksLost = 0
+        var setsPlayed = 0
+        var tiebreaksPlayed = 0
+        var matchesWithScores = 0
+
+        meetings.asSequence()
+            .filter { year == null || it.year == year }
+            .filter { matchesSelectedSurface(it, surface, tournamentIndoorById) }
+            .filter { !eligibleTourMatchesOnly || isEligibleTourMatch(it) }
+            .filter { it.winnerId == playerId || it.loserId == playerId }
+            .forEach { match ->
+                val completedSets = parseSetScores(match.score)
+                if (completedSets.isEmpty()) return@forEach
+
+                matchesWithScores++
+                val playerIsWinner = playerId == match.winnerId
+                completedSets.forEach { set ->
+                    setsPlayed++
+                    val playerWonSet = if (playerIsWinner) {
+                        set.firstGames > set.secondGames
+                    } else {
+                        set.secondGames > set.firstGames
+                    }
+                    if (playerWonSet) setsWon++ else setsLost++
+
+                    if (set.isTiebreak) {
+                        tiebreaksPlayed++
+                        if (playerWonSet) tiebreaksWon++ else tiebreaksLost++
+                    }
+                }
+            }
+
+        val hasScoreData = setsPlayed > 0
+        return H2HSetRecord(
+            setsWon = if (hasScoreData) setsWon else null,
+            setsLost = if (hasScoreData) setsLost else null,
+            winPercentage = if (hasScoreData) setsWon.toDouble() * 100.0 / setsPlayed else null,
+            tiebreaksWon = if (hasScoreData) tiebreaksWon else null,
+            tiebreaksLost = if (hasScoreData) tiebreaksLost else null,
+            setsPlayed = setsPlayed,
+            tiebreaksPlayed = tiebreaksPlayed,
+            matchesWithScores = matchesWithScores,
+        )
     }
 
     fun winsAgainst(playerId: String, meetings: List<H2HMatch>): Int =
