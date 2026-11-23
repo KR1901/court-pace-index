@@ -30,9 +30,11 @@ data class H2HSetRecord(
     val winPercentage: Double?,
     val tiebreaksWon: Int?,
     val tiebreaksLost: Int?,
+    val tiebreakWinPercentage: Double?,
     val setsPlayed: Int,
     val tiebreaksPlayed: Int,
     val matchesWithScores: Int,
+    val matchesWithCompletedSets: Int,
 )
 
 object H2HAnalytics {
@@ -194,6 +196,7 @@ object H2HAnalytics {
         var setsPlayed = 0
         var tiebreaksPlayed = 0
         var matchesWithScores = 0
+        var matchesWithCompletedSets = 0
 
         meetings.asSequence()
             .filter { year == null || it.year == year }
@@ -201,10 +204,15 @@ object H2HAnalytics {
             .filter { !eligibleTourMatchesOnly || isEligibleTourMatch(it) }
             .filter { it.winnerId == playerId || it.loserId == playerId }
             .forEach { match ->
+                // Score coverage is different from completed-set coverage. A retirement such
+                // as "5-0 RET" has a recorded partial score but no completed set to count.
+                if (match.score.isNullOrBlank()) return@forEach
+                matchesWithScores++
+
                 val completedSets = parseSetScores(match.score)
                 if (completedSets.isEmpty()) return@forEach
+                matchesWithCompletedSets++
 
-                matchesWithScores++
                 val playerIsWinner = playerId == match.winnerId
                 completedSets.forEach { set ->
                     setsPlayed++
@@ -229,9 +237,15 @@ object H2HAnalytics {
             winPercentage = if (hasScoreData) setsWon.toDouble() * 100.0 / setsPlayed else null,
             tiebreaksWon = if (hasScoreData) tiebreaksWon else null,
             tiebreaksLost = if (hasScoreData) tiebreaksLost else null,
+            tiebreakWinPercentage = if (tiebreaksWon + tiebreaksLost > 0) {
+                tiebreaksWon.toDouble() * 100.0 / (tiebreaksWon + tiebreaksLost)
+            } else {
+                null
+            },
             setsPlayed = setsPlayed,
             tiebreaksPlayed = tiebreaksPlayed,
             matchesWithScores = matchesWithScores,
+            matchesWithCompletedSets = matchesWithCompletedSets,
         )
     }
 
