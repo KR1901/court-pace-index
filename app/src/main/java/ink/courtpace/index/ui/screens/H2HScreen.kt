@@ -562,7 +562,7 @@ private fun H2HScoreCard(
             )
         }
         Text(
-            text = "${meetings.size} recorded meetings · set scores available in ${firstSets.matchesWithScores}",
+            text = "Score recorded for ${firstSets.matchesWithScores}/${meetings.size} meetings · completed sets in ${firstSets.matchesWithCompletedSets}",
             style = TextStyle(fontSize = 11.sp),
             color = colors.textDim,
         )
@@ -611,6 +611,14 @@ private fun H2HSetSummary(
         }
         Text(
             text = "Tiebreak W/L $tiebreakRecord",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
+        val tiebreakWinPercentage = record.tiebreakWinPercentage?.let {
+            String.format(Locale.ROOT, "%.1f%%", it)
+        } ?: "—"
+        Text(
+            text = "Tiebreak Win% $tiebreakWinPercentage",
             style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
             color = colors.textDim,
         )
@@ -700,7 +708,7 @@ private fun RecordSection(
             }
         }
         GlassNote(
-            "Set W/L counts completed sets; Set Win% is sets won ÷ sets played. Tiebreak W/L counts completed 7–6 and match tiebreaks won–lost. These score-based stats follow the selected year and surface. Hard includes unknown venue settings; Indoor/Outdoor Hard require explicit venue classification."
+            "Set W/L counts completed sets; Set Win% is sets won ÷ sets played. Tiebreak W/L and Win% count completed 7–6 and match tiebreaks won–lost. Tiebreak Win% is tiebreaks won ÷ tiebreaks played. These score-based stats follow the selected year and surface. Hard includes unknown venue settings; Indoor/Outdoor Hard require explicit venue classification."
         )
         GlassSurface(
             modifier = Modifier.fillMaxWidth(),
@@ -801,6 +809,14 @@ private fun RecordPlayerColumn(
             style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
             color = colors.textDim,
         )
+        val tiebreakWinPct = setRecord.tiebreakWinPercentage?.let {
+            String.format(Locale.ROOT, "%.1f%%", it)
+        } ?: "—"
+        Text(
+            text = "Tiebreak Win% $tiebreakWinPct",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+            color = colors.textDim,
+        )
     }
 }
 
@@ -849,7 +865,7 @@ private fun H2HMeetingRow(
             color = if (firstWon) colors.accent else colors.text,
         )
         Text(
-            text = match.score?.ifBlank { null } ?: "Score unavailable",
+            text = match.score?.trim()?.takeIf { it.isNotEmpty() } ?: "Score not supplied by source",
             style = TextStyle(fontSize = 11.sp),
             color = colors.textDim,
         )
