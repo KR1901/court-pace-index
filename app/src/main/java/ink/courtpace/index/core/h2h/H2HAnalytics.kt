@@ -24,6 +24,14 @@ data class H2HRecord(
     val matches: Int?,
 )
 
+data class H2HSetRecord(
+    val setsWon: Int?,
+    val setsLost: Int?,
+    val winPercentage: Double?,
+    val setsPlayed: Int,
+    val matchesWithScores: Int,
+)
+
 object H2HAnalytics {
     private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ROOT)
     private val titleLevels = setOf("G", "M", "A", "F", "250", "500")
@@ -103,6 +111,65 @@ object H2HAnalytics {
             H2HSurfaceFilter.GRASS -> matchSurface == "grass"
             H2HSurfaceFilter.CLAY -> matchSurface == "clay"
         }
+    }
+
+    /**
+     * The TML match score is recorded from the winner's perspective (winner first, loser second).
+     * Only completed sets are counted: a normal set must be won by two with at least six games,
+     * or be 7-6. This also accepts a deciding match tiebreak such as [10-8] as one completed set.
+     * A retirement's unfinished final set (for example 3-2 RET) is ignored.
+     */
+    private val setScorePattern = Regex(
+        """(?<!\\d)(\\d{1,2})\\s*-\\s*(\\d{1,2})(?:\\s*\\(\\s*\\d{1,2}(?:\\s*-\\s*\\d{1,2})?\\s*\\))?"""
+    )
+
+    fun completedSetScores(score: String?): List<Pair<Int, Int>> {
+        if (score.isNullOrBlank()) return emptyList()
+        return setScorePattern.findAll(score).mapNotNull { match ->
+            val first = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null
+            val second = match.groupValues[2].toIntOrNull() ?: return@mapNotNull null
+            val high = maxOf(first, second)
+            val low = minOf(first, second)
+            val completed = (high >= 6 && high - low >= 2) || (high == 7 && low == 6)
+            if (completed) first to second else null
+        }.toList()
+    }
+
+    /**
+     * Aggregates sets across the complete recorded H2H meeting list. The winner-side set score
+     * order is mapped back to the selected player by the match winner/loser IDs.
+     */
+    fun setRecord(playerId: String, meetings: List<H2HMatch>): H2HSetRecord {
+        var setsWon = 0
+        var setsLost = 0
+        var matchesWithScores = 0
+
+        meetings.forEach { match ->
+            val completedSets = completedSetScores(match.score)
+            if (completedSets.isEmpty()) return@forEach
+            val playerIsWinner = playerId == match.winnerId
+            val playerIsLoser = playerId == match.loserId
+            if (!playerIsWinner && !playerIsLoser) return@forEach
+
+            matchesWithScores += 1
+            completedSets.forEach { (winnerGames, loserGames) ->
+                if (playerIsWinner) {
+                    if (winnerGames > loserGames) setsWon++ else setsLost++
+                } else {
+                    if (loserGames > winnerGames) setsWon++ else setsLost++
+                }
+            }
+        }
+
+        val played = setsWon + setsLost
+        val hasScoreData = played > 0
+        return H2HSetRecord(
+            setsWon = if (hasScoreData) setsWon else null,
+            setsLost = if (hasScoreData) setsLost else null,
+            winPercentage = if (hasScoreData) setsWon.toDouble() * 100.0 / played else null,
+            setsPlayed = played,
+            matchesWithScores = matchesWithScores,
+        )
     }
 
     fun winsAgainst(playerId: String, meetings: List<H2HMatch>): Int =
