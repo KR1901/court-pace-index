@@ -107,15 +107,55 @@ object H2HRepository {
                 val firstRequest = async { loadPlayer(first) }
                 val secondRequest = async { loadPlayer(second) }
 
+                val firstProfile = firstRequest.await()
+                val secondProfile = secondRequest.await()
+                val pairMeetings = meetingsRequest.await()
+                val meetingsWithScoreFallback = mergeMissingScores(
+                    meetings = pairMeetings,
+                    playerHistory = firstProfile.matches + secondProfile.matches,
+                )
+
                 H2HComparison(
-                    player1 = firstRequest.await(),
-                    player2 = secondRequest.await(),
-                    meetings = meetingsRequest.await().sortedWith(
+                    player1 = firstProfile,
+                    player2 = secondProfile,
+                    meetings = meetingsWithScoreFallback.sortedWith(
                         compareByDescending<H2HMatch> { it.date }
                             .thenByDescending { it.id },
                     ),
                     fetchedAt = LocalDate.now(),
                 )
+            }
+        }
+    }
+
+    /**
+     * The pair endpoint and per-player performance endpoints normally expose the same match
+     * score. If the pair-specific row omits it, reuse a non-blank score from either player's
+     * already-fetched history, matched by the stable match identity. Existing partial scores
+     * such as "5-0 RET" are intentionally preserved: they are source data, not missing scores.
+     *
+     * Conflicting fallback values are left unavailable rather than choosing one arbitrarily.
+     */
+    internal fun mergeMissingScores(
+        meetings: List<H2HMatch>,
+        playerHistory: List<H2HMatch>,
+    ): List<H2HMatch> {
+        val fallbackScores = playerHistory
+            .asSequence()
+            .filter { !it.score.isNullOrBlank() }
+            .groupBy(H2HMatch::id)
+            .mapNotNull { (matchId, candidates) ->
+                val scores = candidates.map { it.score!!.trim() }.distinct()
+                if (scores.size == 1) matchId to scores.single() else null
+            }
+            .toMap()
+
+        return meetings.map { meeting ->
+            if (!meeting.score.isNullOrBlank()) {
+                meeting
+            } else {
+                val fallback = fallbackScores[meeting.id]
+                if (fallback == null) meeting else meeting.copy(score = fallback)
             }
         }
     }
