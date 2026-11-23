@@ -541,7 +541,7 @@ private fun H2HScoreCard(
             }
         }
         HairLine(Modifier.padding(vertical = 10.dp))
-        SectionLabel("SET RECORD")
+        SectionLabel("SET & TIEBREAK RECORD")
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -696,7 +696,7 @@ private fun RecordSection(
             }
         }
         GlassNote(
-            "The selected surface filters match W/L, Win%, titles and set stats. Set W/L and Tiebreak W/L use completed scores only; Hard includes unknown venue settings, while Indoor/Outdoor Hard require explicit venue classification."
+            "Set W/L counts completed sets; Set Win% is sets won ÷ sets played. Tiebreak W/L counts completed 7–6 and match tiebreaks won–lost. These score-based stats follow the selected year and surface. Hard includes unknown venue settings; Indoor/Outdoor Hard require explicit venue classification."
         )
         GlassSurface(
             modifier = Modifier.fillMaxWidth(),
