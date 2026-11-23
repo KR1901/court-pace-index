@@ -63,12 +63,15 @@ The H2H match-history rows include a set-by-set `score`, with the winner's score
 
 - **Set W/L** is the player's total completed sets won–lost.
 - **Set Win%** is completed sets won divided by all completed sets played, multiplied by 100; the UI displays one decimal place.
+- **Tiebreak W/L** counts completed tiebreaks won–lost (a 7–6 set tiebreak or a deciding match tiebreak such as `[10-8]`). It counts tiebreaks, not tiebreak points.
 - Standard sets count when a player reaches at least six games and wins by two, including advantage sets, or when the set ends 7–6.
-- A deciding match tiebreak such as `[10-8]` counts as one completed set.
+- A deciding match tiebreak such as `[10-8]` counts as one completed set and one tiebreak.
 - In retirements, completed sets before the retirement count, but an unfinished final set (for example `3-2 RET.`) does not.
-- Missing or unparseable scores contribute no sets. If no completed set scores are available for the selected rivalry, Set W/L and Set Win% display as unavailable rather than a fabricated zero record.
+- Missing or unparseable scores contribute no sets or tiebreaks. If no completed set scores are available, Set W/L, Set Win% and Tiebreak W/L display as unavailable rather than a fabricated zero record.
 
-The set calculation is separate from match W/L, YTD/Career records, surface filters and title calculations. It does not alter any existing player-statistics aggregate.
+The same score-derived statistics are displayed in the H2H Match Wins card and in both **Year-to-date** and **Career** sections. Each of those sections independently recalculates Set W/L, Set Win% and Tiebreak W/L for every surface option: **All, Hard, Outdoor Hard, Indoor Hard, Grass and Clay**. The calculations use the selected player's full ATP match-history response, filter by match calendar year and surface, and use the Player Stats tournament venue lookup for indoor/outdoor hard splits. YTD and Career surface selectors remain independent.
+
+These score-derived stats are separate from match W/L, title calculations and the existing Player Stats W/L aggregates. They do not change any existing CPI/CALC or live-rating calculations.
 
 ### Surface filters
 
