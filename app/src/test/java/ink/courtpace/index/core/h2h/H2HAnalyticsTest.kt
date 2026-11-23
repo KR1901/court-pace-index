@@ -272,6 +272,8 @@ class H2HAnalyticsTest {
         assertNull(record.setsWon)
         assertNull(record.setsLost)
         assertNull(record.winPercentage)
+        assertNull(record.tiebreaksWon)
+        assertNull(record.tiebreaksLost)
         assertEquals(0, record.setsPlayed)
         assertEquals(0, record.matchesWithScores)
     }
