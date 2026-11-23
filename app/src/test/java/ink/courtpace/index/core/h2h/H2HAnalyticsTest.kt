@@ -235,8 +235,8 @@ class H2HAnalyticsTest {
 
         assertEquals(2, winner.setsWon)
         assertEquals(1, winner.setsLost)
-        assertEquals(2, loser.setsWon)
-        assertEquals(1, loser.setsLost)
+        assertEquals(1, loser.setsWon)
+        assertEquals(2, loser.setsLost)
     }
 
     @Test
