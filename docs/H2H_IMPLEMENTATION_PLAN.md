@@ -57,6 +57,19 @@ YTD means the current calendar year from the latest Player Stats archive/cache. 
 
 Career is the sum of the player's annual ATP tour-level buckets across all seasons in the Player Stats archive. The W/L formula and match population stay identical to the existing Player Stats feature.
 
+### H2H set record and Set Win%
+
+The H2H match-history rows include a set-by-set `score`, with the winner's score listed first and the loser's second. The H2H score card derives each player's set record across the pair's recorded meetings:
+
+- **Set W/L** is the player's total completed sets won–lost.
+- **Set Win%** is completed sets won divided by all completed sets played, multiplied by 100; the UI displays one decimal place.
+- Standard sets count when a player reaches at least six games and wins by two, including advantage sets, or when the set ends 7–6.
+- A deciding match tiebreak such as `[10-8]` counts as one completed set.
+- In retirements, completed sets before the retirement count, but an unfinished final set (for example `3-2 RET.`) does not.
+- Missing or unparseable scores contribute no sets. If no completed set scores are available for the selected rivalry, Set W/L and Set Win% display as unavailable rather than a fabricated zero record.
+
+The set calculation is separate from match W/L, YTD/Career records, surface filters and title calculations. It does not alter any existing player-statistics aggregate.
+
 ### Surface filters
 
 The H2H W/L surface selectors reuse the existing, validated Player Stats bucket keys:
