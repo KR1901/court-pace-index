@@ -184,6 +184,89 @@ class H2HAnalyticsTest {
     }
 
     @Test
+    fun set_scores_count_tiebreak_sets_and_map_winner_first_scores_to_each_player() {
+        val firstMatch = match("set-a", 2026, "hard").copy(
+            score = "6-4 7-6(5) 4-6 7-6(2)",
+        )
+        val secondMatch = match("set-b", 2025, "clay", winner = "p2").copy(
+            score = "6-3 3-6 6-4",
+        )
+        val meetings = listOf(firstMatch, secondMatch)
+
+        val first = H2HAnalytics.setRecord("p1", meetings)
+        val second = H2HAnalytics.setRecord("p2", meetings)
+
+        assertEquals(4, first.setsWon)
+        assertEquals(3, first.setsLost)
+        assertEquals(57.142857, first.winPercentage!!, 0.0001)
+        assertEquals(7, first.setsPlayed)
+        assertEquals(2, first.matchesWithScores)
+
+        assertEquals(3, second.setsWon)
+        assertEquals(4, second.setsLost)
+        assertEquals(42.857142, second.winPercentage!!, 0.0001)
+        assertEquals(first.setsPlayed, second.setsPlayed)
+    }
+
+    @Test
+    fun retirement_counts_completed_sets_but_ignores_the_unfinished_set() {
+        val retired = match("retired", 2026, "hard").copy(
+            score = "6-4 3-2 RET.",
+        )
+        val record = H2HAnalytics.setRecord("p1", listOf(retired))
+        val opponent = H2HAnalytics.setRecord("p2", listOf(retired))
+
+        assertEquals(1, record.setsWon)
+        assertEquals(0, record.setsLost)
+        assertEquals(100.0, record.winPercentage!!, 0.0001)
+        assertEquals(1, record.setsPlayed)
+        assertEquals(0, opponent.setsWon)
+        assertEquals(1, opponent.setsLost)
+        assertEquals(0.0, opponent.winPercentage!!, 0.0001)
+    }
+
+    @Test
+    fun deciding_match_tiebreak_counts_as_a_completed_set() {
+        val match = match("match-tiebreak", 2026, "hard").copy(
+            score = "6-4 4-6 [10-8]",
+        )
+        val winner = H2HAnalytics.setRecord("p1", listOf(match))
+        val loser = H2HAnalytics.setRecord("p2", listOf(match))
+
+        assertEquals(2, winner.setsWon)
+        assertEquals(1, winner.setsLost)
+        assertEquals(2, loser.setsWon)
+        assertEquals(1, loser.setsLost)
+    }
+
+    @Test
+    fun incomplete_sets_and_missing_scores_do_not_inflate_set_totals() {
+        val partial = match("partial", 2026, "hard").copy(score = "6-4 5-5")
+        val missing = match("missing", 2026, "clay").copy(score = null)
+        val record = H2HAnalytics.setRecord("p1", listOf(partial, missing))
+
+        assertEquals(1, record.setsWon)
+        assertEquals(0, record.setsLost)
+        assertEquals(1, record.setsPlayed)
+        assertEquals(1, record.matchesWithScores)
+        assertEquals(100.0, record.winPercentage!!, 0.0001)
+    }
+
+    @Test
+    fun no_completed_set_scores_render_as_unavailable_instead_of_zero_record() {
+        val record = H2HAnalytics.setRecord(
+            "p1",
+            listOf(match("unfinished", 2026, "hard").copy(score = "2-1 RET.")),
+        )
+
+        assertNull(record.setsWon)
+        assertNull(record.setsLost)
+        assertNull(record.winPercentage)
+        assertEquals(0, record.setsPlayed)
+        assertEquals(0, record.matchesWithScores)
+    }
+
+    @Test
     fun head_to_head_win_count_follows_winner_id() {
         val meetings = listOf(
             match("a", 2026, "hard", winner = "p1"),
