@@ -204,6 +204,17 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.1.2":
+              lines += [
+                  "### H2H set and tiebreak statistics",
+                  "- Adds Set W/L, Set Win% and Tiebreak W/L for both players in the head-to-head comparison card.",
+                  "- Extends Set W/L, Set Win% and Tiebreak W/L to Year-to-date and Career records for All, Hard, Outdoor Hard, Indoor Hard, Grass and Clay.",
+                  "- Derives set results from completed score lines and maps winner-first score fields to each player's stable ID.",
+                  "- Counts 7–6 set tiebreaks and deciding match tiebreaks in Tiebreak W/L; ignores unfinished retirement sets and reports missing score data as unavailable.",
+                  "- Uses the same ATP Tour main-draw match population as the Player Stats W/L archive for YTD/Career set metrics; qualifying and Challenger scores are not added to those totals.",
+                  "- Preserves existing match W/L, H2H title counts, CPI/CALC, Player Stats refresh and Live Now calculations.",
+                  "",
+              ]
           elif version == "3.2.1":
               lines += [
                   "### Included in 3.2.1",
