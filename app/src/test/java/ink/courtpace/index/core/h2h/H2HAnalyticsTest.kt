@@ -412,6 +412,46 @@ class H2HAnalyticsTest {
     }
 
     @Test
+    fun missing_pair_score_is_backfilled_from_exact_player_history_match() {
+        val pairMatch = match("same-match", 2026, "hard").copy(score = null)
+        val playerHistoryMatch = match("same-match", 2026, "hard").copy(score = "7-6(5) 6-4")
+
+        val merged = H2HRepository.mergeMissingScores(
+            meetings = listOf(pairMatch),
+            playerHistory = listOf(playerHistoryMatch),
+        )
+
+        assertEquals("7-6(5) 6-4", merged.single().score)
+    }
+
+    @Test
+    fun score_fallback_does_not_overwrite_existing_partial_retirement_score() {
+        val pairMatch = match("retired-match", 2025, "hard").copy(score = "5-0 RET.")
+        val playerHistoryMatch = match("retired-match", 2025, "hard").copy(score = "6-4 6-4")
+
+        val merged = H2HRepository.mergeMissingScores(
+            meetings = listOf(pairMatch),
+            playerHistory = listOf(playerHistoryMatch),
+        )
+
+        assertEquals("5-0 RET.", merged.single().score)
+    }
+
+    @Test
+    fun conflicting_player_history_scores_are_not_guessed() {
+        val pairMatch = match("conflicting-match", 2026, "hard").copy(score = null)
+        val firstHistory = match("conflicting-match", 2026, "hard").copy(score = "6-4 6-4")
+        val secondHistory = match("conflicting-match", 2026, "hard").copy(score = "7-6(5) 6-4")
+
+        val merged = H2HRepository.mergeMissingScores(
+            meetings = listOf(pairMatch),
+            playerHistory = listOf(firstHistory, secondHistory),
+        )
+
+        assertNull(merged.single().score)
+    }
+
+    @Test
     fun head_to_head_win_count_follows_winner_id() {
         val meetings = listOf(
             match("a", 2026, "hard", winner = "p1"),
