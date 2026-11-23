@@ -280,6 +280,7 @@ fun H2HScreen(
                     year = currentYear,
                     surface = ytdSurface,
                     tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
                 )
                 val secondSetRecord = H2HAnalytics.setRecord(
                     playerId = loaded.player2.player.id,
@@ -287,6 +288,7 @@ fun H2HScreen(
                     year = currentYear,
                     surface = ytdSurface,
                     tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
                 )
                 RecordSection(
                     title = "YEAR-TO-DATE · $currentYear",
@@ -324,6 +326,7 @@ fun H2HScreen(
                     year = null,
                     surface = careerSurface,
                     tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
                 )
                 val secondSetRecord = H2HAnalytics.setRecord(
                     playerId = loaded.player2.player.id,
@@ -331,6 +334,7 @@ fun H2HScreen(
                     year = null,
                     surface = careerSurface,
                     tournamentIndoorById = asset?.meta?.tournamentIndoorById.orEmpty(),
+                    eligibleTourMatchesOnly = true,
                 )
                 RecordSection(
                     title = "CAREER",
