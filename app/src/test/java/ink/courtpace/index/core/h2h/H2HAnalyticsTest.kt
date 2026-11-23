@@ -350,11 +350,35 @@ class H2HAnalyticsTest {
         assertEquals(5, careerAll.tiebreaksWon)
         assertEquals(2, careerAll.tiebreaksLost)
 
+        val careerHard = record(H2HSurfaceFilter.HARD, year = null)
+        assertEquals(7, careerHard.setsWon)
+        assertEquals(3, careerHard.setsLost)
+        assertEquals(5, careerHard.tiebreaksWon)
+        assertEquals(1, careerHard.tiebreaksLost)
+
+        val careerIndoor = record(H2HSurfaceFilter.INDOOR_HARD, year = null)
+        assertEquals(2, careerIndoor.setsWon)
+        assertEquals(0, careerIndoor.setsLost)
+        assertEquals(1, careerIndoor.tiebreaksWon)
+        assertEquals(0, careerIndoor.tiebreaksLost)
+
         val careerOutdoor = record(H2HSurfaceFilter.OUTDOOR_HARD, year = null)
         assertEquals(4, careerOutdoor.setsWon)
         assertEquals(1, careerOutdoor.setsLost)
         assertEquals(3, careerOutdoor.tiebreaksWon)
         assertEquals(1, careerOutdoor.tiebreaksLost)
+
+        val careerGrass = record(H2HSurfaceFilter.GRASS, year = null)
+        assertEquals(2, careerGrass.setsWon)
+        assertEquals(0, careerGrass.setsLost)
+        assertEquals(0, careerGrass.tiebreaksWon)
+        assertEquals(0, careerGrass.tiebreaksLost)
+
+        val careerClay = record(H2HSurfaceFilter.CLAY, year = null)
+        assertEquals(0, careerClay.setsWon)
+        assertEquals(2, careerClay.setsLost)
+        assertEquals(0, careerClay.tiebreaksWon)
+        assertEquals(1, careerClay.tiebreaksLost)
     }
 
     @Test
