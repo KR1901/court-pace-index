@@ -125,12 +125,11 @@ object H2HAnalytics {
     private data class ParsedSetScore(
         val firstGames: Int,
         val secondGames: Int,
-        val isCompleted: Boolean,
         val isTiebreak: Boolean,
     )
 
     private val setScorePattern = Regex(
-        """(?:\\[(\\d{1,2})-(\\d{1,2})\\]|(?<!\\d)(\\d{1,2})-(\\d{1,2})(?:\\((\\d{1,2})(?:-\\d{1,2})?\\))?)"""
+        """(?:\[(\d{1,2})-(\d{1,2})\]|(?<!\d)(\d{1,2})-(\d{1,2})(?:\((\d{1,2})(?:-\d{1,2})?\))?)"""
     )
 
     private fun parseSetScores(score: String?): List<ParsedSetScore> {
@@ -152,7 +151,6 @@ object H2HAnalytics {
             ParsedSetScore(
                 firstGames = first,
                 secondGames = second,
-                isCompleted = true,
                 isTiebreak = isMatchTiebreak || (high == 7 && low == 6),
             )
         }.toList()
