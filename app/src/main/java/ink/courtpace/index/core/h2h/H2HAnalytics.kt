@@ -120,7 +120,7 @@ object H2HAnalytics {
      * A retirement's unfinished final set (for example 3-2 RET) is ignored.
      */
     private val setScorePattern = Regex(
-        """(?<!\\d)(\\d{1,2})\\s*-\\s*(\\d{1,2})(?:\\s*\\(\\s*\\d{1,2}(?:\\s*-\\s*\\d{1,2})?\\s*\\))?"""
+        """(?<!\d)(\d{1,2})\s*-\s*(\d{1,2})(?:\s*\(\s*\d{1,2}(?:\s*-\s*\d{1,2})?\s*\))?"""
     )
 
     fun completedSetScores(score: String?): List<Pair<Int, Int>> {
