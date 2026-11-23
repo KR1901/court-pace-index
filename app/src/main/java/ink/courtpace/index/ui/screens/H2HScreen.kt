@@ -456,6 +456,8 @@ private fun H2HScoreCard(
     val colors = PaceTheme.colors
     val firstWins = H2HAnalytics.winsAgainst(first.player.id, meetings)
     val secondWins = H2HAnalytics.winsAgainst(second.player.id, meetings)
+    val firstSets = H2HAnalytics.setRecord(first.player.id, meetings)
+    val secondSets = H2HAnalytics.setRecord(second.player.id, meetings)
     GlassSurface(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(18.dp),
@@ -507,9 +509,63 @@ private fun H2HScoreCard(
             }
         }
         HairLine(Modifier.padding(vertical = 10.dp))
+        SectionLabel("SET RECORD")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            H2HSetSummary(
+                modifier = Modifier.weight(1f),
+                record = firstSets,
+                alignEnd = false,
+            )
+            H2HSetSummary(
+                modifier = Modifier.weight(1f),
+                record = secondSets,
+                alignEnd = true,
+            )
+        }
         Text(
-            text = "${meetings.size} recorded meetings",
+            text = "${meetings.size} recorded meetings · set scores available in ${firstSets.matchesWithScores}",
             style = TextStyle(fontSize = 11.sp),
+            color = colors.textDim,
+        )
+    }
+}
+
+@Composable
+private fun H2HSetSummary(
+    modifier: Modifier,
+    record: ink.courtpace.index.core.h2h.H2HSetRecord,
+    alignEnd: Boolean,
+) {
+    val colors = PaceTheme.colors
+    val setRecord = if (record.setsWon == null || record.setsLost == null) {
+        "—"
+    } else {
+        "${record.setsWon}–${record.setsLost}"
+    }
+    val winPercentage = record.winPercentage?.let {
+        String.format(Locale.ROOT, "%.1f%%", it)
+    } ?: "—"
+    Column(
+        modifier = modifier,
+        horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Text(
+            text = "SET W/L",
+            style = TextStyle(fontSize = 9.5.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.7.sp),
+            color = colors.textFaint,
+        )
+        Text(
+            text = setRecord,
+            style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
+            color = colors.accent,
+        )
+        Text(
+            text = "Set Win% $winPercentage",
+            style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium),
             color = colors.textDim,
         )
     }
