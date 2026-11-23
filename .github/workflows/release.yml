@@ -204,6 +204,15 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.1.3":
+              lines += [
+                  "### H2H score coverage and Tiebreak Win%",
+                  "- Backfills a blank pair-meeting score from either selected player's already-fetched match history, matched by exact stable match identity; existing partial scores and conflicting data are never overwritten or guessed.",
+                  "- Separates raw score availability from completed-set coverage, so a recorded retirement score such as 5-0 RET is shown as available even though it contributes no completed set.",
+                  "- Adds Tiebreak Win% alongside Tiebreak W/L in the H2H card and all YTD/Career surface sections; it is tiebreaks won divided by tiebreaks played and remains unavailable when no tiebreak was played.",
+                  "- Preserves set/tiebreak parsing, score strings including parenthesized tiebreak points, and all existing match/title/CPI/CALC/Player Stats/Live Now calculations.",
+                  "",
+              ]
           elif version == "4.1.2":
               lines += [
                   "### H2H set and tiebreak statistics",
