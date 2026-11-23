@@ -295,6 +295,12 @@ class H2HAnalyticsTest {
             ),
             match("grass", 2026, "grass").copy(score = "6-4 6-4"),
             match("clay", 2026, "clay", winner = "p2").copy(score = "7-6(2) 6-4"),
+            match("challenger", 2026, "hard", level = "C").copy(
+                score = "6-0 6-0",
+            ),
+            match("qualifying", 2026, "hard", round = "Q1", level = "A").copy(
+                score = "7-6(4) 6-4",
+            ),
             match("prior-hard", 2025, "hard").copy(
                 eventId = "2025-001",
                 score = "7-6(6) 7-6(3)",
@@ -307,7 +313,9 @@ class H2HAnalyticsTest {
         )
 
         fun record(surface: H2HSurfaceFilter, year: Int? = 2026) =
-            H2HAnalytics.setRecord("p1", matches, year, surface, venues)
+            H2HAnalytics.setRecord(
+                "p1", matches, year, surface, venues, eligibleTourMatchesOnly = true,
+            )
 
         val all = record(H2HSurfaceFilter.ALL)
         assertEquals(7, all.setsWon)
