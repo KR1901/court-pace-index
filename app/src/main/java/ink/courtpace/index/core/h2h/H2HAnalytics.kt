@@ -38,6 +38,7 @@ data class H2HSetRecord(
 object H2HAnalytics {
     private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ROOT)
     private val titleLevels = setOf("G", "M", "A", "F", "250", "500")
+    private val qualifyingRounds = setOf("Q1", "Q2", "Q3", "Q4")
     private val nonTitleEvents = listOf(
         "davis cup",
         "united cup",
@@ -96,6 +97,18 @@ object H2HAnalytics {
             titles = titles,
             matches = matchCount,
         )
+    }
+
+    /**
+     * YTD/Career set statistics must match the Player Stats ATP Tour archive population.
+     * That archive includes main-draw tour-level results only; qualifying rounds and
+     * Challenger/other levels must not silently inflate these score-derived totals.
+     * The H2H rivalry card keeps its default false and follows the exact meeting list.
+     */
+    private fun isEligibleTourMatch(match: H2HMatch): Boolean {
+        val level = match.level?.uppercase(Locale.ROOT) ?: return false
+        val round = match.round?.uppercase(Locale.ROOT).orEmpty()
+        return level in titleLevels && round !in qualifyingRounds
     }
 
     private fun matchesSelectedSurface(
@@ -172,6 +185,7 @@ object H2HAnalytics {
         year: Int? = null,
         surface: H2HSurfaceFilter = H2HSurfaceFilter.ALL,
         tournamentIndoorById: Map<String, String> = emptyMap(),
+        eligibleTourMatchesOnly: Boolean = false,
     ): H2HSetRecord {
         var setsWon = 0
         var setsLost = 0
@@ -184,6 +198,7 @@ object H2HAnalytics {
         meetings.asSequence()
             .filter { year == null || it.year == year }
             .filter { matchesSelectedSurface(it, surface, tournamentIndoorById) }
+            .filter { !eligibleTourMatchesOnly || isEligibleTourMatch(it) }
             .filter { it.winnerId == playerId || it.loserId == playerId }
             .forEach { match ->
                 val completedSets = parseSetScores(match.score)
