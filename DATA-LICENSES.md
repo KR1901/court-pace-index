@@ -1,6 +1,6 @@
 # Data licences, terms and attribution
 
-**Last checked: 11 November 2026.** This document distinguishes the MIT licence for project software from the separate rights that may apply to source data, published ratings and generated datasets. It is a provenance and risk guide, not legal advice.
+**Last checked: 17 November 2026.** This document distinguishes the MIT licence for project software from the separate rights that may apply to source data, published ratings and generated datasets. It is a provenance and risk guide, not legal advice.
 
 There is no single licence that covers every data point in this repository. Do not infer that the MIT licence, or one third-party data licence, applies to the entire bundled dataset.
 
@@ -10,7 +10,7 @@ Original project code is licensed under the MIT License in [LICENSE](LICENSE), s
 
 ## 2. Historical ATP match archive
 
-The historical match-statistics source is the [Jeff Sackmann ATP repository](https://github.com/JeffSackmann/tennis_atp), obtained through the [tennis-sackmann-archive mirror](https://github.com/Aneeshers/tennis-sackmann-archive).
+The historical match-statistics source is obtained through the [tennis-sackmann-archive mirror](https://github.com/Aneeshers/tennis-sackmann-archive), which identifies [Jeff Sackmann's tennis data](https://github.com/JeffSackmann) as the original compilation. This mirror is a distribution channel; it does not create additional rights.
 
 The mirror states that the datasets were compiled by Jeff Sackmann and are redistributed under **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**. Its stated conditions require attribution, prohibit commercial use and require share-alike licensing for adaptations. See the [mirror's licence](https://github.com/Aneeshers/tennis-sackmann-archive/blob/main/LICENSE) and the [CC BY-NC-SA 4.0 legal code](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 
@@ -56,9 +56,11 @@ Because sources have different terms, **do not apply one blanket licence to the 
 
 Android/Gradle dependencies, fonts, icons, graphics and any separately sourced assets remain under their own licences. Review dependency metadata and asset notices before redistributing a build.
 
-## 9. Private repository status does not change source rights
+## 9. Public repository and app distribution
 
-This repository is currently private for personal development and research. Repository privacy is an access-control measure, not a licence or permission from any data provider. It does not change the non-commercial, attribution, share-alike, redistribution or systematic-retrieval restrictions described above. Do not publish the generated dataset or distribute data-derived functionality beyond the rights available for each source. Obtain source permission where the terms require it.
+This repository is public and the project publishes Android builds. Public GitHub visibility, a free APK, or the MIT software licence does not grant rights to third-party match data, rankings, ratings, player biographies or published court measurements. Each source must independently permit the relevant collection, transformation, persistence, display and distribution. A source that permits personal research or in-app display does not automatically permit bundling its raw or derived dataset in an APK or downloadable JSON file.
+
+Until a source-specific permission or licence has been confirmed, treat its content as **not cleared for redistribution**. This is a conservative project release gate, not a legal conclusion that every individual fact is copyrightable or that every use is necessarily prohibited.
 
 ## 10. Player Stats dataset
 
@@ -78,3 +80,59 @@ The annual source files, player roster and current ranking snapshot are fetched 
 - [Tennis Abstract ATP Surface Speed](https://tennisabstract.com/reports/atp_surface_speed.html)
 - [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions-app)
 - [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
+ 
+## 11. Candidate replacement providers — not yet production-authorised
+
+The following candidates are being evaluated for a provider migration. Inclusion here is not an assertion that the provider is an open-data source, that all upstream rights are cleared, or that production use has been approved.
+
+### Live Tennis API — licensed service candidate
+
+[Terms of Use](https://livetennisapi.com/terms) grant a limited, non-exclusive, non-transferable and revocable licence to access API responses and use them within the subscriber's own application/service, subject to the active subscription tier. The terms prohibit redistributing raw responses as a feed, bulk dataset or competing API and prohibit storing data beyond what is reasonably necessary to operate the application. Paid credentials are to be kept server-side.
+
+This is a service licence, **not an open-source or open-data licence**. The provider's [data rights notes](https://docs.livetennisapi.com/reference.html) indicate that the provider is not an official ATP partner and does not grant ATP league rights. Before using it as the production source, obtain written confirmation covering this project's intended derivation and persistence of Surface Speed, Player Stats aggregates, offline assets, public APK distribution and any upstream ATP/statistical rights. Do not bundle its raw API responses or expose a paid key in the Android application.
+
+The documentation describes historical ATP/WTA results from 1968–2022, match statistics where recorded, and current/historical match endpoints for 2023 onward. Match-level coverage is field- and tour-dependent. Verify `/history/coverage` and actual per-field availability before relying on any value.
+
+### KickServe — ranking-source candidate
+
+[KickServe's data page](https://kick-serve.com/data/) says its CSV ratings are free to use with a dated citation and asks users to contact the publisher for commercial redistribution. It publishes an `official_rank` field but its player IDs are KickServe-specific and must not be treated as ATP, TML or Sackmann IDs. It is a candidate for the live ranking snapshot only; it does not replace match statistics or historical match files. Its permission terms are not a blanket open-data licence.
+
+### Wikidata — supplementary player metadata
+
+[Wikidata structured data](https://www.wikidata.org/wiki/Wikidata:Licensing) is released under CC0. It can supplement player heights or other basic facts, with provenance recorded per field. It is not a complete or authoritative tennis roster and must not be used to silently impute missing values. Retain the distinction between source-reported, manually verified and unknown heights.
+
+### AcesAPI — not suitable for the required match-stat feed
+
+[AcesAPI's published match example](https://acesapi.com/docs/get-match) currently returns `serve_stats: null` for tennis and explicitly notes that aces, double faults and break-point match statistics are unavailable in that response. Its general service terms allow some derived in-app uses but do not grant league rights. On the evidence reviewed, it cannot replace the match-stat inputs required by Court Pace's ace-based calculation or Player Stats.
+
+### Tennis Abstract, Court Speed and ATP/Infosys
+
+No open redistribution licence has been identified for the Tennis Abstract surface-speed tables or the Court Speed CPI readings. ATP's [Terms and Conditions](https://www.atptour.com/en/terms-and-conditions-app) reserve rights over its scores, rankings and statistics and prohibit systematic retrieval/compilation without prior express written permission. Do not treat an unofficial endpoint, a public HTML page, a scraper, or a third-party API's in-app display permission as a substitute for the underlying data rights.
+
+## 12. Migration release gate
+
+A provider migration must not alter the app's calculation definitions merely to fit a new feed. Before any new source becomes the production default:
+
+1. Record the provider, source URL, retrieved-at timestamp, stable source record ID, licence/terms version and permitted uses for every source family.
+2. Confirm in writing that the provider's rights cover both the source fields and the project's intended derived values, caching/persistence, public display and distribution.
+3. Map provider-specific IDs through explicit, ambiguity-safe crosswalks. Never join people by an unqualified fuzzy name.
+4. Preserve unknown or absent values as unknown. Do not zero-fill aces, service points, games, heights, indoor/outdoor status or rankings.
+5. Run shadow builds and compare event/match populations, server-side counts, CALC ratings, seasonal normalisers, Player Stats denominators, height cohorts and Live now behaviour against the current pipeline.
+6. Keep the previous production snapshot and adapter available for rollback until the new provider has passed the complete regression suite and a real-device live acceptance test.
+
+The detailed adapter and cutover plan is maintained in [DATA_PROVIDER_MIGRATION.md](docs/DATA_PROVIDER_MIGRATION.md).
+
+
+## 13. Strict open-data eligibility audit
+
+This project now uses a strict open-data test for provider replacement: a data licence must allow use, modification and redistribution for **any purpose**, including commercial use. A free endpoint, public repository or research-only permission is not sufficient.
+
+The audit found the following:
+
+- **Not eligible:** the Jeff Sackmann archive is CC BY-NC-SA 4.0. Its non-commercial condition excludes unrestricted use.
+- **Historical candidate, not approved:** [serve-and-volley/atp-world-tour-tennis-data](https://github.com/serve-and-volley/atp-world-tour-tennis-data) declares CC BY 4.0 and publishes detailed ATP match statistics for 1991–2022. Its README states that the records were collected by scraping ATP pages. The upstream provenance/terms issue has not been resolved, and no 2023–2026 stats files were found. Do not treat this as a fully verified production source yet.
+- **Results-only candidate:** [ValueBet Tennis](https://www.valuebetennis.com/en/donnees.htm) declares CC BY 4.0 for match results from 2021–2026. The documented fields include dates, event/surface, players, scores, winner and duration, but not the aces, service points, service games and break-point fields needed by Court Pace's rating and Player Stats calculations.
+- **Supplementary metadata only:** [Wikidata structured data](https://www.wikidata.org/wiki/Wikidata:Licensing) is CC0; it can supplement some player facts such as heights but is not a complete player roster or match-stat/ranking source.
+- **Not eligible:** TML, Live Tennis API, KickServe, ATP/Infosys, Tennis Abstract, Court Speed, Tennis-Data.co.uk and the reviewed research-only tennis collections do not provide the unrestricted licence and/or fields required for this product.
+
+The complete field-by-field analysis and feature impact are in [OPEN_DATA_SOURCE_AUDIT.md](docs/OPEN_DATA_SOURCE_AUDIT.md). The result is that **no complete, feature-preserving, strictly open data replacement has been verified**. A fully open-data release requires first-party/contributor data under CC0 or CC BY 4.0, or a reduced feature set. Do not relabel NC, research-only, service-licensed or unlicensed content as open data.
