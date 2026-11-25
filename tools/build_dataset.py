@@ -12,7 +12,7 @@ The refresh workflow verifies every generated CALC reading against speed_history
 before publishing both the bundled asset and data/latest.json.
 """
 import json, os
-from datetime import date as datetime_date
+from datetime import date as datetime_date, datetime, timedelta, timezone
 from cpi_snapshot import select_cpi_readings
 from davis_cup_policy import is_supported_davis_cup_calculation_year
 
@@ -288,6 +288,21 @@ LIVE_FEED = os.path.join(os.path.dirname(__file__), "..", "data", "live.json")
 CPI_HISTORY = os.path.join(os.path.dirname(__file__), "..", "data", "courtspeed_cpi.json")
 TA_HISTORY = os.path.join(os.path.dirname(__file__), "..", "data", "tennis_abstract_history.json")
 
+
+
+def _recent_tml_snapshot(metadata, max_age_days=7):
+    """Only expose a live Davis Cup reading from a recent, hash-validated TML snapshot."""
+    if not isinstance(metadata, dict) or not metadata.get("sha256"):
+        return False
+    try:
+        fetched = datetime.fromisoformat(str(metadata["fetchedAtUtc"]).replace("Z", "+00:00"))
+        if fetched.tzinfo is None:
+            fetched = fetched.replace(tzinfo=timezone.utc)
+        age = datetime.now(timezone.utc) - fetched
+        return timedelta(seconds=-900) <= age <= timedelta(days=max_age_days)
+    except (KeyError, TypeError, ValueError):
+        return False
+
 # dedupe tournaments by id, keeping the first definition
 seen, tournaments = set(), []
 for t in TOURNAMENTS:
@@ -455,6 +470,47 @@ if os.path.exists(LIVE_FEED):
             except ValueError:
                 pass
         live_events.append(event)
+
+        # Davis Cup uses the current-year TML match population as a separate annual target.
+        # The row is exposed as LIVE only while the Final 8 window is active; once it ends,
+        # PaceData automatically selects the same archived CALC row instead.
+        if event.get("t") == "daviscup" and os.path.exists(COMPUTED):
+            season = int(event.get("s", 0))
+            season_source = hist.get("season_sources", {}).get(str(season))
+            source_metadata = hist.get("source_metadata", {}).get(str(season), {})
+            finals_matches = source_metadata.get("davisCupFinalsMatchesWithStats", 0)
+            ongoing_metadata = source_metadata.get("ongoingSourceMetadata")
+            values = hist.get("seasons", {}).get(str(season), {}).get("daviscup")
+            if (
+                is_supported_davis_cup_calculation_year(
+                    "daviscup",
+                    season,
+                    source=season_source,
+                    davis_cup_finals_matches_with_stats=finals_matches,
+                )
+                and _recent_tml_snapshot(ongoing_metadata)
+                and values
+                and values.get("speed") is not None
+            ):
+                readings.append({
+                    "t": "daviscup",
+                    "s": season,
+                    "speed": round(values["speed"], 3),
+                    "ace": round(values["ace"], 1),
+                    "matches": values.get("matches"),
+                    "adjustedServerSides": values.get("adjustedServerSides"),
+                    "speedCiLow": values.get("speedCiLow"),
+                    "speedCiHigh": values.get("speedCiHigh"),
+                    "speedCiMethod": values.get("speedCiMethod"),
+                    "calculationDiagnostics": values.get("calculationDiagnostics"),
+                    "src": "live",
+                    "live": True,
+                    "asOf": ongoing_metadata.get("fetchedAtUtc"),
+                    "venueCity": "Bologna",
+                    "venueCountry": "ITA",
+                    "source": "TennisMyLife ATP Match Database",
+                })
+
         # Never publish an unversioned/legacy pooled-rate live reading as if it used the
         # current opponent-adjusted method. Runtime live ratings are computed on-device.
         if event.get("speed") is not None and event.get("methodVersion") == 2:
