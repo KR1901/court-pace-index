@@ -412,7 +412,15 @@ if os.path.exists(COMPUTED):
         for tid, values in events.items():
             if (
                 tid not in known
-                or not is_supported_davis_cup_calculation_year(tid, year)
+                or not is_supported_davis_cup_calculation_year(
+                    tid,
+                    year,
+                    source=hist.get("season_sources", {}).get(str(year)),
+                    davis_cup_finals_matches_with_stats=(
+                        hist.get("source_metadata", {}).get(str(year), {})
+                        .get("davisCupFinalsMatchesWithStats", 0)
+                    ),
+                )
                 or (tid, year) in published_keys
             ):
                 continue
