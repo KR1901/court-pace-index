@@ -170,6 +170,11 @@ def merge_match_rows(primary_rows, supplement_rows):
 
 
 def _row_has_usable_ace_stats(row):
+    if (
+        not row.get("winner_id") or not row.get("loser_id")
+        or row.get("winner_id") == row.get("loser_id")
+    ):
+        return False
     values = [num(row.get(key)) for key in ("w_svpt", "l_svpt", "w_ace", "l_ace")]
     if any(value is None or not math.isfinite(value) for value in values):
         return False
@@ -268,9 +273,11 @@ def load(year):
             ongoing_parsed = list(csv.DictReader(ongoing_payload.decode("utf-8-sig").splitlines()))
             # An empty header-only file is a valid off-season response. It can still
             # accompany a current annual CSV that has already absorbed the recent results.
-            if not {"tourney_id", "tourney_name", "tourney_date", "match_num",
-                    "tourney_level", "winner_id", "loser_id",
-                    "w_svpt", "l_svpt", "w_ace", "l_ace"}.issubset(ongoing_parsed[0]):
+            if ongoing_parsed and not {
+                "tourney_id", "tourney_name", "tourney_date", "match_num",
+                "tourney_level", "winner_id", "loser_id",
+                "w_svpt", "l_svpt", "w_ace", "l_ace",
+            }.issubset(ongoing_parsed[0]):
                 raise ValueError("TennisMyLife ongoing feed is missing required match/stat fields")
             with open(ongoing_path, "wb") as f:
                 f.write(ongoing_payload)
