@@ -19,7 +19,7 @@ class TmlDavisCupClientTest {
     fun `annual and ongoing feeds deduplicate and ignore doubles and other seasons`() {
         val annual = listOf(
             header,
-            row("2026", "1", "P1", "Tomas Machac", "P2", "Liam Draxl", "9", "70", "6", "90"),
+            row("2026", "1", "P1", "Tomas Machac", "P2", "Liam Draxl", "4", "68", "3", "65"),
             row("2026", "2", "P3", "Jiri Lehecka", "P4", "Felix Auger-Aliassime", "", "", "", ""),
             row("2026", "3", "P5", "Player A / Player B", "P6", "Player C / Player D", "4", "40", "3", "42"),
             row("2025", "1", "P7", "Player E", "P8", "Player F", "5", "50", "4", "48"),
@@ -37,6 +37,9 @@ class TmlDavisCupClientTest {
         assertEquals(1, batch.missingStatsMatches)
         assertEquals(2, batch.matches.size)
         assertEquals(setOf("Tomas Machac", "Player G"), batch.matches.map { it.firstPlayer }.toSet())
+        val machac = batch.matches.first { it.firstPlayer == "Tomas Machac" }
+        assertEquals("Ongoing feed must replace the annual stats for the same rubber", 9, machac.firstAces)
+        assertEquals(70, machac.firstServePoints)
     }
 
     @Test
