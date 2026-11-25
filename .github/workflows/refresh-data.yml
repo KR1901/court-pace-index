@@ -11,7 +11,16 @@ on:
     paths:
       # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
+      - 'tools/davis_cup_policy.py'
+      - 'tools/test_compute_speed.py'
       - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
+      - 'app/src/main/java/ink/courtpace/index/core/live/TmlDavisCupStatsParser.kt'
+      - 'app/src/main/java/ink/courtpace/index/data/TmlDavisCupClient.kt'
+      - 'app/src/main/java/ink/courtpace/index/ui/AppViewModel.kt'
+      - 'app/src/main/java/ink/courtpace/index/core/live/LiveRatingCache.kt'
+      - 'app/src/main/java/ink/courtpace/index/ui/screens/BoardScreen.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/TmlDavisCupStatsParserTest.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/LiveRatingCacheTest.kt'
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetPolicyTest.kt'
@@ -115,6 +124,8 @@ jobs:
                     (p.get("serveRate") is not None or p.get("concedeRate") is not None)]
           assert len(usable) >= 20, "too few usable player profiles were generated"
           source_metadata = baseline.get("sourceMetadata")
+          history_source = json.loads(Path("data/speed_history.json").read_text())
+          history_source_label = history_source.get("season_sources", {}).get(str(season), "")
           if source_metadata:
               fetched = datetime.fromisoformat(source_metadata["fetchedAtUtc"].replace("Z", "+00:00"))
               age = datetime.now(timezone.utc) - fetched
@@ -132,6 +143,31 @@ jobs:
               assert len(source_bytes) == source_metadata.get("bytes"), "TML source byte count mismatch"
               assert hashlib.sha256(source_bytes).hexdigest() == source_metadata.get("sha256"), (
                   "TML source SHA-256 does not match the recorded source manifest"
+              )
+              assert "TennisMyLife ATP Match Database" in history_source_label, (
+                  "Current-year ratings must use the TML annual match source, not the ATP archive fallback"
+              )
+              ongoing_metadata = source_metadata.get("ongoingSourceMetadata")
+              assert ongoing_metadata, "TML ongoing match snapshot metadata is missing"
+              ongoing_fetched = datetime.fromisoformat(ongoing_metadata["fetchedAtUtc"].replace("Z", "+00:00"))
+              ongoing_age = datetime.now(timezone.utc) - ongoing_fetched
+              assert ongoing_age.total_seconds() >= -900 and ongoing_age.total_seconds() <= 7 * 86400, (
+                  f"TML ongoing snapshot is outside the seven-day freshness window: {ongoing_age}"
+              )
+              ongoing_path = Path(".cache/atp/tml_atp_ongoing_tourneys.csv")
+              assert ongoing_path.is_file(), "TML ongoing CSV is missing from the refresh workspace"
+              ongoing_bytes = ongoing_path.read_bytes()
+              assert len(ongoing_bytes) == ongoing_metadata.get("bytes"), "TML ongoing byte count mismatch"
+              assert hashlib.sha256(ongoing_bytes).hexdigest() == ongoing_metadata.get("sha256"), (
+                  "TML ongoing CSV SHA-256 does not match the recorded source manifest"
+              )
+              assert source_metadata.get("davisCupFinalsMatchesWithStats", 0) > 0, (
+                  "TML did not publish usable Davis Cup Finals serve statistics for the current season"
+              )
+              history = json.loads(Path("data/speed_history.json").read_text())
+              current_davis = history.get("seasons", {}).get(str(season), {}).get("daviscup")
+              assert current_davis and current_davis.get("matches", 0) > 0, (
+                  "Current-year Davis Cup CALC was not produced from the merged TML snapshots"
               )
           coverage = baseline.get("profileCoverage") or {}
           assert coverage.get("playerProfiles") == len(profiles), "profile coverage count does not match the baseline"
