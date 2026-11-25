@@ -34,17 +34,21 @@ class DavisCupLiveClient(context: Context) {
 
             val eventKey = "davis-cup-$year"
             val cached = store.readAll(eventKey)
-            val eventUrl = EVENT_URL_TEMPLATE.format(year)
-            val source = web.readPageSource(eventUrl, EVENT_PAGE_TIMEOUT_MS).orEmpty()
-            require(source.isNotBlank() && !source.contains(AtpWebReader.BLOCKED, ignoreCase = true)) {
-                "Davis Cup results page could not be read"
+            // The Davis Cup event page carries the tie schedule; the site homepage's
+            // latest-results section carries the individual match-stat links. Read both.
+            val eventPage = web.readPageSource(
+                EVENT_URL_TEMPLATE.format(year),
+                EVENT_PAGE_TIMEOUT_MS,
+            ).orEmpty()
+            val homePage = web.readPageSource("$BASE_URL/", EVENT_PAGE_TIMEOUT_MS).orEmpty()
+            val usableSources = listOf(eventPage, homePage).filter {
+                it.isNotBlank() && !it.contains(AtpWebReader.BLOCKED, ignoreCase = true)
+            }
+            require(usableSources.isNotEmpty()) {
+                "Davis Cup event and latest-results pages could not be read"
             }
 
-            val matchUrls = MATCH_URL.findAll(source)
-                .map { it.value.substringBefore("#").substringBefore("?") }
-                .map { if (it.startsWith("/")) BASE_URL + it else it }
-                .distinct()
-                .take(MAX_MATCH_PAGES)
+            val matchUrls = matchUrlsFromSource(usableSources.joinToString("\n"))
             require(matchUrls.isNotEmpty() || cached.isNotEmpty()) {
                 "No Davis Cup Final 8 singles match links were found"
             }
@@ -105,8 +109,16 @@ class DavisCupLiveClient(context: Context) {
         const val MAX_MATCH_PAGES = 32
 
         private val MATCH_URL = Regex(
-            """(?i)(?:https?://www\.tennisrace\.ai)?/match/[0-9]+-[a-z0-9-]+""",
+            """(?i)(?:https?://www\.tennisrace\.ai)?/match/[0-9]+-[a-z0-9-]*davis-cup-final-8-atp-2026[a-z0-9-]*""",
         )
         private val MATCH_ID = Regex("""/match/([0-9]+)-""")
+
+        /** Filter the latest-results page to Davis Cup Final 8 match-stat links only. */
+        internal fun matchUrlsFromSource(source: String): List<String> =
+            MATCH_URL.findAll(source)
+                .map { it.value.substringBefore("#").substringBefore("?") }
+                .map { if (it.startsWith("/")) BASE_URL + it else it }
+                .distinct()
+                .take(MAX_MATCH_PAGES)
     }
 }
