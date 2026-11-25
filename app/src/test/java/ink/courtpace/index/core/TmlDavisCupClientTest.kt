@@ -62,7 +62,8 @@ class TmlDavisCupClientTest {
         assertEquals(3, rating.discoveredMatches)
         assertEquals(6, rating.totalServerSides)
         assertEquals(4, rating.adjustedServerSides)
-        assertEquals(4, rating.serverProfilesFallback + rating.returnerProfilesFallback)
+        assertEquals(4, rating.serverProfilesFallback)
+        assertEquals(4, rating.returnerProfilesFallback)
     }
 
     private fun row(
