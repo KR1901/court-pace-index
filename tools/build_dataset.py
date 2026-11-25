@@ -352,7 +352,7 @@ if os.path.exists(COMPUTED):
         (tid, int(season)): values
         for season, events in hist["seasons"].items()
         for tid, values in events.items()
-        if tid in known
+        if tid in known and (tid != "daviscup" or 2016 <= int(season) <= 2024)
     }
 
     # Upgrade the primary value on every overlap while preserving the published figure.
@@ -386,7 +386,11 @@ if os.path.exists(COMPUTED):
     for season, events in hist["seasons"].items():
         year = int(season)
         for tid, values in events.items():
-            if tid not in known or (tid, year) in published_keys:
+            if (
+                tid not in known
+                or (tid == "daviscup" and not 2016 <= year <= 2024)
+                or (tid, year) in published_keys
+            ):
                 continue
             if values.get("speed") is not None:
                 readings.append({
