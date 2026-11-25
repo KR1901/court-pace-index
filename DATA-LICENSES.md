@@ -46,6 +46,12 @@ The Android app can retrieve live match results and statistics from ATP/Infosys 
 
 The [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions) limit general website/content use to individual non-commercial, entertainment and informational purposes. They expressly prohibit systematic retrieval of scores, statistics or rankings to create or compile a collection or database without ATP's prior express written permission. The app's on-device implementation does not itself grant permission for systematic retrieval. Users and operators must review the current ATP terms; this repository does not represent that ATP permission has been obtained.
 
+## 6A. Live Davis Cup Final 8 match statistics
+
+The 2026 Davis Cup Final 8 live adapter reads displayed completed-singles match statistics (aces and service-point totals) from the public [TennisRace.ai Davis Cup 2026 pages](https://www.tennisrace.ai/davis-cup-2026) and its latest-results feed. TennisRace.ai describes itself as an independent site and states that it is not affiliated with the ATP, WTA or ITF; see its [editorial policy](https://www.tennisrace.ai/editorial-policy). No explicit open-data licence for reuse or redistribution of these match statistics was identified in the reviewed public pages, and this project has not obtained written permission from TennisRace.ai.
+
+The adapter does not commit or bundle the provider's raw pages or match-stat responses; it uses the displayed values at runtime to calculate a separate CALC rating. This implementation choice is **not** a licence or a determination that the resulting derived rating may be redistributed. Treat the provider data and any derived series as **not cleared for public redistribution or commercial use** unless the provider confirms permission in writing. For a fully open-data public release, replace this live source with a provider offering an explicit compatible data licence or obtain the necessary permission. Physical-device access is also provider-dependent and must be validated on the target device.
+
 ## 7. Combined and generated datasets
 
 `app/src/main/assets/pace_dataset.json` and `data/latest.json` combine project metadata, CPI readings, CALC-derived ratings and Tennis Abstract reference/fallback values. Current-season CALC inputs may originate from TennisMyLife; historical inputs may originate from the Jeff Sackmann archive.
