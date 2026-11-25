@@ -936,9 +936,14 @@ class DavisCupSourceWindowTests(unittest.TestCase):
         annual = [{
             "tourney_id": "2026-M-DC-X", "tourney_date": "20261124", "match_num": "1",
             "winner_id": "P1", "loser_id": "P2", "score": "6-3 6-4",
+            "w_ace": "4", "w_svpt": "70", "l_ace": "3", "l_svpt": "65",
         }]
+        # Same rubber identity and score, but the ongoing snapshot contains corrected stats.
         ongoing = [
-            dict(annual[0]),
+            {
+                **annual[0],
+                "w_ace": "8", "w_svpt": "72", "l_ace": "5", "l_svpt": "68",
+            },
             {
                 "tourney_id": "2026-M-DC-X", "tourney_date": "20261125", "match_num": "2",
                 "winner_id": "P3", "loser_id": "P4", "score": "6-4 6-4",
@@ -948,6 +953,8 @@ class DavisCupSourceWindowTests(unittest.TestCase):
         self.assertEqual(1, added)
         self.assertEqual(2, len(merged))
         self.assertEqual("P4", merged[-1]["loser_id"])
+        self.assertEqual("8", merged[0]["w_ace"])
+        self.assertEqual("72", merged[0]["w_svpt"])
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
