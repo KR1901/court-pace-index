@@ -266,8 +266,8 @@ def load(year):
             if not ongoing_payload.startswith(b"tourney_id,") or b"w_svpt" not in ongoing_payload[:4096]:
                 raise ValueError("TennisMyLife ongoing feed returned an unexpected CSV schema")
             ongoing_parsed = list(csv.DictReader(ongoing_payload.decode("utf-8-sig").splitlines()))
-            if not ongoing_parsed:
-                raise ValueError("TennisMyLife ongoing feed is empty")
+            # An empty header-only file is a valid off-season response. It can still
+            # accompany a current annual CSV that has already absorbed the recent results.
             if not {"tourney_id", "tourney_name", "tourney_date", "match_num",
                     "tourney_level", "winner_id", "loser_id",
                     "w_svpt", "l_svpt", "w_ace", "l_ace"}.issubset(ongoing_parsed[0]):
