@@ -516,7 +516,6 @@ if os.path.exists(LIVE_FEED):
                     "asOf": ongoing_metadata.get("fetchedAtUtc"),
                     "venueCity": "Bologna",
                     "venueCountry": "ITA",
-                    "source": "TennisMyLife ATP Match Database",
                 })
 
         # Never publish an unversioned/legacy pooled-rate live reading as if it used the
