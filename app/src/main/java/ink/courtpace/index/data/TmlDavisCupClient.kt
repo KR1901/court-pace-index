@@ -44,7 +44,11 @@ internal class TmlDavisCupClient {
         val annual = annualCsv(year)
         // This feed changes during the day; unlike the annual archive it is fetched every poll.
         val ongoing = requestCsv(ONGOING_URL)
-        val allRows = parseCsv(annual) + parseCsv(ongoing)
+        parseMatchRows(annual, ongoing, year)
+    }
+
+    internal fun parseMatchRows(annualCsv: String, ongoingCsv: String, year: Int): MatchBatch {
+        val allRows = parseCsv(annualCsv) + parseCsv(ongoingCsv)
         val uniqueRows = allRows.asSequence()
             .filter { row ->
                 row["tourney_level"] == "D" &&
@@ -56,7 +60,7 @@ internal class TmlDavisCupClient {
             .toList()
 
         val matches = uniqueRows.mapNotNull(::toMatchStats)
-        MatchBatch(
+        return MatchBatch(
             matches = matches,
             discoveredMatches = uniqueRows.size,
             matchesWithServeStats = matches.size,
