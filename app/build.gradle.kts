@@ -27,8 +27,8 @@ android {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
         targetSdk = 37
-        versionCode = 56
-        versionName = "4.1.4"
+        versionCode = 57
+        versionName = "4.1.5"
     }
 
     signingConfigs {
