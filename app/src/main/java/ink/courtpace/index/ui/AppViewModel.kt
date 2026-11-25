@@ -68,7 +68,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var liveAceProgress by mutableStateOf<String?>(null)
 
     private val atpClient = ink.courtpace.index.data.AtpLiveClient(application)
-    private val davisCupClient = ink.courtpace.index.data.DavisCupLiveClient(application)
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
     private val liveRefreshMutex = Mutex()
     private val datasetRefreshMutex = Mutex()
@@ -198,6 +197,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Restore cached ratings only when their adjusted-side coverage is also available. */
     private fun restoreCachedLiveRating(cached: ink.courtpace.index.core.live.CachedLiveRating) {
+        // Discard Davis Cup values from the removed unofficial prototype; only a validated
+        // official source may populate this event's live rating in a future release.
+        if (cached.tournamentId == "daviscup") return
         val result = cached.toAceRatingResultOrNull() ?: return
         liveAceByEvent = liveAceByEvent + (cached.tournamentId to result)
         applyLiveRating(
@@ -246,11 +248,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
             val refs = discovery.events
             val existing = _data.value?.dataset?.live.orEmpty()
-            // Davis Cup is a separate team-event feed, not an ATP score-centre route.
-            // Preserve its dated schedule row while the ATP slate is refreshed independently.
+            // Keep the Davis Cup Final 8 schedule row while ATP events refresh independently.
+            // No official 2026 match-stat feed has been validated for live rating calculation.
             val davisCupEvent = existing.firstOrNull { it.t == "daviscup" && it.s == year }
             liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" } +
-                if (davisCupEvent != null) mapOf("daviscup" to "Checking Davis Cup results") else emptyMap()
+                if (davisCupEvent != null) mapOf("daviscup" to "Official match statistics unavailable") else emptyMap()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
                 previous?.copy(
@@ -274,7 +276,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
             liveAceByEvent = emptyMap()
             if (refs.isEmpty()) {
-                liveProgressByEvent = emptyMap()
+                liveProgressByEvent = if (davisCupEvent != null) {
+                    mapOf("daviscup" to "Official match statistics unavailable")
+                } else emptyMap()
                 val note = if (discovery.hubReadable) {
                     "current ATP hub has no active events"
                 } else {
@@ -370,56 +374,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     val message = error.message ?: "match stats unavailable"
                     eventStatus(message)
                     status("$name · $message")
-                }
-            }
-
-            // Rate Davis Cup independently from ATP/Infosys. Its event page supplies completed
-            // singles stats; its player profiles and season normaliser still come from the same
-            // 2026 ATP baseline. A failed Davis Cup read must not block or clear ATP ratings.
-            if (davisCupEvent != null) {
-                val baseline = _data.value?.dataset?.speedBaseline
-                    ?.takeIf { it.season == year }
-                val eventName = _data.value?.tournament("daviscup")?.name ?: "Davis Cup"
-                liveProgressByEvent = liveProgressByEvent + ("daviscup" to "Reading completed singles stats")
-                if (baseline == null) {
-                    val message = "Davis Cup · season " + year + " opponent-adjustment baseline unavailable"
-                    liveProgressByEvent = liveProgressByEvent + ("daviscup" to message)
-                    status(message)
-                } else {
-                    val result = withTimeoutOrNull(WALK_TIMEOUT_MS) {
-                        davisCupClient.fetchAceRating(year, baseline) { found, tried ->
-                            val detail = if (found > 0) found.toString() + " completed matches from " + tried + " pages" else "page " + tried
-                            liveProgressByEvent = liveProgressByEvent + ("daviscup" to detail)
-                            status(eventName + " · " + detail)
-                        }
-                    } ?: Result.failure(IllegalStateException("timed out reading Davis Cup match stats"))
-                    result.onSuccess { rating ->
-                        liveAceByEvent = liveAceByEvent + ("daviscup" to rating)
-                        applyLiveRating("daviscup", year, rating.rating, rating.matches, rating.aceRate)
-                        ratingStore.write(
-                            ink.courtpace.index.core.live.CachedLiveRating(
-                                tournamentId = "daviscup",
-                                season = year,
-                                speed = rating.rating,
-                                matches = rating.matches,
-                                aceRate = rating.aceRate,
-                                asOf = java.time.Instant.now().toString(),
-                                baselineGenerated = baseline.generated,
-                                discoveredMatches = rating.discoveredMatches,
-                                adjustedServerSides = rating.adjustedServerSides,
-                                totalServerSides = rating.totalServerSides,
-                                aces = rating.aces,
-                                adjustmentIssues = rating.adjustmentIssues,
-                            ),
-                        )
-                        liveProgressByEvent = liveProgressByEvent +
-                            ("daviscup" to ("Updated · " + rating.matches + " completed singles matches"))
-                        status("Davis Cup · live speed " + "%.2f".format(rating.rating) + " from " + rating.matches + " completed singles matches")
-                    }.onFailure { error ->
-                        val message = error.message ?: "Davis Cup match stats unavailable"
-                        liveProgressByEvent = liveProgressByEvent + ("daviscup" to message)
-                        status(eventName + " · " + message)
-                    }
                 }
             }
 
