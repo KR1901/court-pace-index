@@ -13,6 +13,8 @@ data class CachedLiveRating(
     val matches: Int,
     val aceRate: Double?,
     val asOf: String,
+    /** Provider identity prevents pre-TML prototype caches from being restored as verified data. */
+    val source: String = SOURCE_ATP_INFOSYS,
     val methodVersion: Int = CURRENT_METHOD_VERSION,
     val baselineGenerated: String = "",
     /** Parsed match count on the discovery page, including matches without usable stats. */
@@ -72,6 +74,7 @@ data class CachedLiveRating(
         append("\"matches\":").append(matches).append(',')
         append("\"ace\":").append(aceRate ?: "null").append(',')
         append("\"asOf\":\"").append(asOf.replace("\"", "")).append("\",")
+        append("\"source\":\"").append(source.replace("\"", "")).append("\",")
         append("\"methodVersion\":").append(methodVersion).append(',')
         append("\"baselineGenerated\":\"").append(baselineGenerated.replace("\"", "")).append("\",")
         append("\"discoveredMatches\":").append(discoveredMatches?.toString() ?: "null").append(',')
@@ -85,6 +88,8 @@ data class CachedLiveRating(
     companion object {
         const val CURRENT_METHOD_VERSION = 7
         const val LEGACY_METHOD_VERSION = 1
+        const val SOURCE_ATP_INFOSYS = "ATP/Infosys"
+        const val SOURCE_TML_DAVIS_CUP = "TennisMyLife"
         /** Tolerant on purpose: a corrupt or older cache must never break the app. */
         fun fromJson(raw: String?): CachedLiveRating? {
             if (raw.isNullOrBlank()) return null
@@ -95,6 +100,7 @@ data class CachedLiveRating(
                 val matches = field(raw, "matches")?.toIntOrNull() ?: 0
                 val ace = field(raw, "ace")?.toDoubleOrNull()
                 val asOf = field(raw, "asOf") ?: ""
+                val source = field(raw, "source") ?: SOURCE_ATP_INFOSYS
                 val methodVersion = field(raw, "methodVersion")?.toIntOrNull() ?: LEGACY_METHOD_VERSION
                 val baselineGenerated = field(raw, "baselineGenerated") ?: ""
                 val discoveredMatches = field(raw, "discoveredMatches")?.toIntOrNull()
@@ -109,6 +115,7 @@ data class CachedLiveRating(
                     matches = matches,
                     aceRate = ace,
                     asOf = asOf,
+                    source = source,
                     methodVersion = methodVersion,
                     baselineGenerated = baselineGenerated,
                     discoveredMatches = discoveredMatches,
