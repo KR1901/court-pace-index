@@ -349,11 +349,14 @@ if os.path.exists(COMPUTED):
     hist = json.load(open(COMPUTED))
     published_keys = {(r["t"], r["s"]) for r in readings
                       if "speed" in r and r["src"] == "tennisabstract"}
+    season_sources = hist.get("season_sources", {})
     computed_by_key = {
         (tid, int(season)): values
         for season, events in hist["seasons"].items()
         for tid, values in events.items()
-        if tid in known and is_supported_davis_cup_calculation_year(tid, season)
+        if tid in known and is_supported_davis_cup_calculation_year(
+            tid, season, source=season_sources.get(str(season))
+        )
     }
 
     # Upgrade the primary value on every overlap while preserving the published figure.
@@ -389,7 +392,9 @@ if os.path.exists(COMPUTED):
         for tid, values in events.items():
             if (
                 tid not in known
-                or not is_supported_davis_cup_calculation_year(tid, year)
+                or not is_supported_davis_cup_calculation_year(
+                    tid, year, source=season_sources.get(str(year))
+                )
                 or (tid, year) in published_keys
             ):
                 continue
