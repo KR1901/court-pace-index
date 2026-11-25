@@ -14,7 +14,7 @@ before publishing both the bundled asset and data/latest.json.
 import json, os
 from datetime import date as datetime_date
 from cpi_snapshot import select_cpi_readings
-from davis_cup_policy import is_supported_davis_cup_calculation_year
+from davis_cup_policy import TML_DAVIS_CUP_SOURCE, is_supported_davis_cup_calculation_year
 
 # id, name, city, country, surface, indoor, level, altitude
 TOURNAMENTS = [
@@ -508,7 +508,9 @@ doc = {
                 "name": "Computed history - ATP match archives",
                 "metric": "Speed",
                 "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); " +
-                          "the current season prefers the TennisMyLife ATP Match Database; the 2026 " +
+                          "the current season prefers the TennisMyLife ATP Match Database; " +
+                          ("The 2026 Davis Cup target uses the validated source " + TML_DAVIS_CUP_SOURCE + " and remains separate from ATP training/normalisation. " if season_sources.get("2026") == TML_DAVIS_CUP_SOURCE else "") +
+                          "
                           "Davis Cup target additionally requires the validated ongoing_tourneys.csv " +
                           "supplement and remains separate from ATP training/normalisation. Historical " +
                           "events are calculated leave-one-tournament-out, with qualified server and " +
