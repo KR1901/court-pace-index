@@ -1064,7 +1064,16 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
     sides = []
     for match_index, row in enumerate(event_rows, start=1):
         match_num = str(row.get("match_num") or "").strip()
-        match_id = f"m{int(match_num):03d}" if match_num.isdigit() else f"m{match_index:03d}"
+        # Davis Cup tie labels are combined into one season event, but their local
+        # match numbers can repeat. Use the event-wide row index to keep diagnostics unique.
+        is_davis_cup = (
+            row.get("tourney_level") == "D"
+            or _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
+        )
+        match_id = (
+            f"dc{match_index:03d}" if is_davis_cup
+            else (f"m{int(match_num):03d}" if match_num.isdigit() else f"m{match_index:03d}")
+        )
         total_aces += int(num(row.get("w_ace")) + num(row.get("l_ace")))
         total_points += int(num(row.get("w_svpt")) + num(row.get("l_svpt")))
         for server_id, returner_id, server_name, returner_name, aces_key, points_key in (
