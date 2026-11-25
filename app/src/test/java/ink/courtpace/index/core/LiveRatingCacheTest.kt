@@ -26,6 +26,37 @@ class LiveRatingCacheTest {
     }
 
     @Test
+    fun `TML Davis Cup cache records its source and is not confused with ATP caches`() {
+        val original = CachedLiveRating(
+            tournamentId = "daviscup",
+            season = 2026,
+            speed = 1.04,
+            matches = 150,
+            aceRate = 0.105,
+            asOf = "2026-11-25T14:00:00Z",
+            methodVersion = CachedLiveRating.CURRENT_METHOD_VERSION,
+            baselineGenerated = "2026-11-25T13:00:00Z",
+            discoveredMatches = 176,
+            adjustedServerSides = 300,
+            totalServerSides = 352,
+            source = CachedLiveRating.TML_DAVIS_CUP_SOURCE,
+        )
+
+        val restored = CachedLiveRating.fromJson(original.toJson())!!
+        assertEquals(original, restored)
+        assertEquals(CachedLiveRating.TML_DAVIS_CUP_SOURCE, restored.source)
+        assertEquals(176, restored.toAceRatingResultOrNull()!!.discoveredMatches)
+    }
+
+    @Test
+    fun `an older cache without provider identity defaults to ATP Infosys and cannot pass the Davis Cup source guard`() {
+        val legacy = """{"t":"daviscup","s":2026,"speed":1.04,"matches":150,"ace":0.105,"asOf":"2026-11-25T14:00:00Z","methodVersion":8,"baselineGenerated":"2026-11-25T13:00:00Z","discoveredMatches":176,"adjustedServerSides":300,"totalServerSides":352}"""
+        val restored = CachedLiveRating.fromJson(legacy)!!
+        assertEquals(CachedLiveRating.ATP_INFOSYS_SOURCE, restored.source)
+        assertTrue(restored.source != CachedLiveRating.TML_DAVIS_CUP_SOURCE)
+    }
+
+    @Test
     fun `a missing ace rate is tolerated`() {
         val original = CachedLiveRating("paris", 2026, 0.97, 12, null, "2026-11-05T07:00:00Z")
         assertEquals(original, CachedLiveRating.fromJson(original.toJson())!!)
@@ -213,7 +244,7 @@ class LiveRatingCacheTest {
         val restored = CachedLiveRating.fromJson(previous.toJson())!!
 
         assertEquals(6, restored.methodVersion)
-        assertEquals(7, CachedLiveRating.CURRENT_METHOD_VERSION)
+        assertEquals(8, CachedLiveRating.CURRENT_METHOD_VERSION)
         assertTrue(restored.methodVersion != CachedLiveRating.CURRENT_METHOD_VERSION)
         assertNull(restored.toAceRatingResultOrNull())
     }
