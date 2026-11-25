@@ -933,6 +933,49 @@ class DavisCupSourceWindowTests(unittest.TestCase):
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
+    def test_2026_davis_cup_is_target_only_and_requires_validated_tml_source(self):
+        rows = []
+        for event, level, aces in (
+            ("Paris Masters", "M", 8),
+            ("Rome Masters", "M", 9),
+            ("Davis Cup Finals QF: CZE vs CAN", "D", 11),
+        ):
+            for match_num in range(10):
+                rows.append({
+                    "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "winner_id": "p1", "loser_id": "p2",
+                    "winner_name": "Player One", "loser_name": "Player Two",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": 7,
+                    "match_num": str(match_num + 1),
+                })
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}):
+            without_source = compute_speed.season_ratings(2026, rows)
+        self.assertNotIn("daviscup", without_source)
+
+        real_player_rates = compute_speed.player_rates
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+             patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+            with_source = compute_speed.season_ratings(
+                2026, rows, source=compute_speed.TML_DAVIS_CUP_SOURCE,
+            )
+
+        self.assertIn("daviscup", with_source)
+        self.assertEqual({"paris", "rome", "daviscup"}, set(with_source))
+        # Every training invocation contains only the two standard ATP targets. The Davis Cup
+        # target's 10 matches are observed for its own rating but never enter profile fitting.
+        for call in profiles.call_args_list:
+            self.assertTrue(all(row["tourney_level"] != "D" for row in call.args[0]))
+        self.assertEqual(
+            without_source["paris"]["speed"], with_source["paris"]["speed"],
+        )
+        self.assertEqual(
+            without_source["rome"]["speed"], with_source["rome"]["speed"],
+        )
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
     def test_event_is_excluded_from_its_own_profiles_and_tour_anchor(self):
         rows = []
         for event in ("Paris Masters", "Rome Masters"):
