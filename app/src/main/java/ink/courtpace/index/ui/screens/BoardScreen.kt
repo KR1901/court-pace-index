@@ -445,7 +445,7 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.discoveredMatches)
                                 append(" completed")
-                                if (tournament.id == "daviscup") append(" · TML data")
+                                if (tournament.id == "daviscup") append(" · TML season-to-date · multi-surface")
                                 append(" · ")
                                 append(ace.adjustedServerSides)
                                 append("/")
@@ -497,6 +497,9 @@ private fun LivePendingRow(
                                 append(" · ")
                                 append(datasetMatches)
                                 append(" matches")
+                                if (tournament.id == "daviscup") {
+                                    append(" · TML season-to-date · multi-surface")
+                                }
                             }
                         } else if (ace != null) {
                             append(" · ")
