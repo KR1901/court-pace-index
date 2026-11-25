@@ -157,8 +157,11 @@ def load_tml_ongoing_davis_cup(year):
         if not payload.startswith(b"tourney_id,") or b"w_svpt" not in payload[:4096]:
             raise ValueError("TML ongoing feed returned an unexpected CSV schema")
         parsed = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"))))
-        required = {"tourney_level", "tourney_name", "tourney_date", "winner_id",
-                    "loser_id", "w_ace", "l_ace", "w_svpt", "l_svpt"}
+        required = {
+            "tourney_id", "tourney_level", "tourney_name", "tourney_date", "match_num",
+            "winner_id", "winner_name", "loser_id", "loser_name", "score",
+            "w_ace", "l_ace", "w_svpt", "l_svpt",
+        }
         header = set((payload.decode("utf-8-sig").splitlines() or [""])[0].split(","))
         if not required.issubset(header):
             raise ValueError("TML ongoing feed is missing required fields")
