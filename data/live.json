@@ -1,6 +1,6 @@
 {
   "generated": "2026-11-25T14:32:35Z",
-  "note": "Active event windows support ATP live stats; Davis Cup Final 8 is retained as schedule metadata only until an official match-stat source is validated. Ended windows remain as completed-rating backfill metadata and stale-route guards.",
+  "note": "Active ATP events use ATP/Infosys live match statistics. Davis Cup is a separate TML annual season-to-date target refreshed from the annual and ongoing match CSVs; only completed singles with valid serve statistics contribute. Ended windows remain as schedule metadata and stale-route guards.",
   "events": [
     {
       "t": "paris",
