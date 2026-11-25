@@ -59,6 +59,9 @@ internal class TmlDavisCupClient {
                     row["tourney_level"] == "D" &&
                     isDavisCupName(row["tourney_name"]) &&
                     row["tourney_date"].orEmpty().take(4) == year.toString() &&
+                    row["winner_id"].orEmpty().isNotBlank() &&
+                    row["loser_id"].orEmpty().isNotBlank() &&
+                    row["score"].orEmpty().isNotBlank() &&
                     !isDoubles(row)
                 ) {
                     uniqueByRubber[matchKey(row)] = row
@@ -99,10 +102,15 @@ internal class TmlDavisCupClient {
                 throw IllegalStateException("TML request failed: HTTP ${response.code} for ${url.substringAfterLast('/')}")
             }
             val body = response.body?.string().orEmpty()
-            if (body.isBlank() || !body.substringBefore('\n').contains("tourney_id") ||
-                !body.substringBefore('\n').contains("w_svpt")
-            ) {
-                throw IllegalStateException("TML returned an invalid match CSV")
+            val header = body.substringBefore('\n').removePrefix("\uFEFF")
+                .split(',').map { it.trim() }.toSet()
+            val required = setOf(
+                "tourney_id", "tourney_name", "tourney_level", "tourney_date", "match_num",
+                "score", "winner_id", "winner_name", "loser_id", "loser_name",
+                "w_ace", "w_svpt", "l_ace", "l_svpt",
+            )
+            if (body.isBlank() || !header.containsAll(required)) {
+                throw IllegalStateException("TML returned an invalid match CSV schema")
             }
             return body
         }
