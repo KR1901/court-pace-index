@@ -15,6 +15,7 @@ on:
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetPolicyTest.kt'
+      - '.github/workflows/refresh-data.yml'
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
@@ -24,7 +25,7 @@ permissions:
 
 # Never let two dataset refreshes race to publish generated files to the same branch.
 concurrency:
-  group: refresh-data-${{ github.ref }}
+  group: court-pace-dataset-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
