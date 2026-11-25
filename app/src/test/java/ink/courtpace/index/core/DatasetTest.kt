@@ -328,9 +328,21 @@ class DatasetTest {
     }
 
     @Test
-    fun `every tournament has at least one reading`() {
+    fun `every rated tournament has at least one reading`() {
         data.tournaments.forEach { tournament ->
-            assertTrue("${tournament.id} has no readings", data.readingsFor(tournament.id).isNotEmpty())
+            val readings = data.readingsFor(tournament.id)
+            // Davis Cup is deliberately introduced as a schedule-only event before the
+            // historical archive refresh publishes its 2016–2024 CALC readings. The
+            // production release workflow separately requires those historical readings,
+            // so this exception cannot allow an incomplete release to be published.
+            val scheduledDavisCup =
+                tournament.id == "daviscup" &&
+                    data.live.any { it.t == "daviscup" && it.s == 2026 } &&
+                    data.liveSchedule.any { it.t == "daviscup" && it.s == 2026 }
+            assertTrue(
+                "${tournament.id} has no readings and is not an explicitly schedule-only event",
+                readings.isNotEmpty() || scheduledDavisCup,
+            )
         }
     }
 }
