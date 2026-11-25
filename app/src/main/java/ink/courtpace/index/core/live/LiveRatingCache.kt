@@ -23,6 +23,8 @@ data class CachedLiveRating(
     val totalServerSides: Int? = null,
     val aces: Int? = null,
     val adjustmentIssues: List<AceRating.AdjustmentIssue> = emptyList(),
+    /** Input provider identity prevents legacy/unofficial event caches from being restored as TML. */
+    val source: String = ATP_INFOSYS_SOURCE,
 ) {
     /**
      * Old caches predate side-coverage metadata. Do not present them as if their coverage
@@ -78,13 +80,16 @@ data class CachedLiveRating(
         append("\"adjustedServerSides\":").append(adjustedServerSides?.toString() ?: "null").append(',')
         append("\"totalServerSides\":").append(totalServerSides?.toString() ?: "null").append(',')
         append("\"aces\":").append(aces?.toString() ?: "null").append(',')
+        append("\"source\":\"").append(source.replace("\"", "")).append("\",")
         append("\"adjustmentIssues\":\"").append(encodeAdjustmentIssues(adjustmentIssues)).append("\"")
         append('}')
     }
 
     companion object {
-        const val CURRENT_METHOD_VERSION = 7
+        const val CURRENT_METHOD_VERSION = 8
         const val LEGACY_METHOD_VERSION = 1
+        const val ATP_INFOSYS_SOURCE = "ATP/Infosys Stats Plus"
+        const val TML_DAVIS_CUP_SOURCE = "TennisMyLife ATP Match Database"
         /** Tolerant on purpose: a corrupt or older cache must never break the app. */
         fun fromJson(raw: String?): CachedLiveRating? {
             if (raw.isNullOrBlank()) return null
@@ -101,6 +106,7 @@ data class CachedLiveRating(
                 val adjustedServerSides = field(raw, "adjustedServerSides")?.toIntOrNull()
                 val totalServerSides = field(raw, "totalServerSides")?.toIntOrNull()
                 val aces = field(raw, "aces")?.toIntOrNull()
+                val source = field(raw, "source") ?: ATP_INFOSYS_SOURCE
                 val adjustmentIssues = decodeAdjustmentIssues(field(raw, "adjustmentIssues"))
                 CachedLiveRating(
                     tournamentId = tournament,
@@ -116,6 +122,7 @@ data class CachedLiveRating(
                     totalServerSides = totalServerSides,
                     aces = aces,
                     adjustmentIssues = adjustmentIssues,
+                    source = source,
                 )
             }.getOrNull()
         }
