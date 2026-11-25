@@ -49,17 +49,23 @@ internal class TmlDavisCupClient {
     }
 
     internal fun parseMatchRows(annualCsv: String, ongoingCsv: String, year: Int): MatchBatch {
-        val allRows = parseCsv(annualCsv) + parseCsv(ongoingCsv)
-        val uniqueRows = allRows.asSequence()
-            .filter { row ->
-                row["tourney_level"] == "D" &&
+        // Insert annual rows first, then let the ongoing snapshot replace any matching
+        // rubber. The same result may appear in both feeds with newer/corrected statistics;
+        // distinctBy() would keep the stale annual row and silently discard the update.
+        val uniqueByRubber = linkedMapOf<String, Map<String, String>>()
+        listOf(annualCsv, ongoingCsv).forEach { snapshot ->
+            parseCsv(snapshot).forEach { row ->
+                if (
+                    row["tourney_level"] == "D" &&
                     isDavisCupName(row["tourney_name"]) &&
                     row["tourney_date"].orEmpty().take(4) == year.toString() &&
                     !isDoubles(row)
+                ) {
+                    uniqueByRubber[matchKey(row)] = row
+                }
             }
-            .distinctBy(::matchKey)
-            .toList()
-
+        }
+        val uniqueRows = uniqueByRubber.values.toList()
         val matches = uniqueRows.mapNotNull(::toMatchStats)
         return MatchBatch(
             matches = matches,
@@ -113,10 +119,19 @@ internal class TmlDavisCupClient {
         }
     }
 
-    private fun matchKey(row: Map<String, String>): String = listOf(
-        row["tourney_id"], row["tourney_date"], row["match_num"],
-        row["winner_id"], row["loser_id"], row["score"],
-    ).joinToString("|") { it.orEmpty().trim() }
+    private fun matchKey(row: Map<String, String>): String {
+        val tournament = row["tourney_id"].orEmpty().trim()
+        val date = row["tourney_date"].orEmpty().trim()
+        val match = row["match_num"].orEmpty().trim()
+        if (tournament.isNotEmpty() && date.isNotEmpty() && match.isNotEmpty()) {
+            return listOf("rubber", tournament, date, match).joinToString("|")
+        }
+        return listOf(
+            "fallback", tournament, date,
+            row["winner_id"], row["loser_id"],
+            row["winner_name"], row["loser_name"],
+        ).joinToString("|") { it.orEmpty().trim() }
+    }
 
     private fun toMatchStats(row: Map<String, String>): AtpMatchStats? {
         val winner = row["winner_name"]?.trim().orEmpty()
