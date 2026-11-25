@@ -134,27 +134,62 @@ class LiveFeedTest {
     }
 
     @Test
-    fun `a completed event rating remains in season readings after live metadata expires`() {
+    fun `a completed event live estimate cannot override the final archived LOEO CALC`() {
+        val ended = activeParis.copy(
+            status = "completed",
+            start = LocalDate.now().minusDays(7).toString(),
+            end = LocalDate.now().minusDays(1).toString(),
+        )
+        val liveBackfill = ink.courtpace.index.core.model.PaceReading(
+            t = "paris", s = 2026, speed = 1.12, src = "live",
+            live = true, matches = 30,
+        )
+        val finalCalc = ink.courtpace.index.core.model.PaceReading(
+            t = "paris", s = 2026, speed = 1.04, src = "computed",
+            matches = 30,
+        )
+        val finished = withParisLive().copy(
+            live = listOf(ended),
+            liveSchedule = listOf(ended),
+            readings = listOf(liveBackfill, finalCalc),
+        )
+
+        val merged = PaceData(finished)
+
+        assertFalse("A completed event must not be marked active", merged.isLive("paris", 2026))
+        assertTrue(merged.liveEvents(2026, Metric.SPEED).none { it.first.id == "paris" })
+        assertNull("A completed event must not expose a cached LIVE reading", merged.liveReading("paris", 2026))
+        assertEquals(1.04, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals("computed", merged.reading("paris", 2026, Metric.SPEED)!!.src)
+        assertEquals("computed", merged.seasonRows("paris").single().speedSource)
+    }
+
+    @Test
+    fun `a completed event without final CALC does not expose its stale live backfill`() {
         val ended = activeParis.copy(
             status = "completed",
             start = LocalDate.now().minusDays(7).toString(),
             end = LocalDate.now().minusDays(1).toString(),
         )
         val finished = withParisLive().copy(
-            // A stale snapshot may still carry this row; terminal status and date must win.
             live = listOf(ended),
             liveSchedule = listOf(ended),
-            readings = data.dataset.readings + ink.courtpace.index.core.model.PaceReading(
-                t = "paris", s = 2026, speed = 1.12, src = "live",
-                live = true, matches = 30,
+            readings = listOf(
+                ink.courtpace.index.core.model.PaceReading(
+                    t = "paris", s = 2026, speed = 1.12, src = "live",
+                    live = true, matches = 30,
+                ),
+                ink.courtpace.index.core.model.PaceReading(
+                    t = "paris", s = 2026, speed = 0.92, src = "tennisabstract",
+                ),
             ),
         )
+
         val merged = PaceData(finished)
-        assertFalse("A completed event must not be marked active", merged.isLive("paris", 2026))
-        assertTrue(merged.liveEvents(2026, Metric.SPEED).none { it.first.id == "paris" })
-        assertEquals(1.12, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
-        // The rating's provenance remains live even after the red current-status badge disappears.
-        assertEquals("live", merged.reading("paris", 2026, Metric.SPEED)!!.src)
+
+        assertNull(merged.liveReading("paris", 2026))
+        assertEquals(0.92, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals("tennisabstract", merged.speedSource("paris", 2026))
     }
 
     @Test
