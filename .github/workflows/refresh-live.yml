@@ -92,8 +92,13 @@ jobs:
               raise SystemExit("ATP Finals fallback route metadata is incomplete.")
           if finals_key not in {(event.get("t"), event.get("s")) for event in schedule}:
               raise SystemExit("ATP Finals 2026 was dropped from the generated live schedule.")
-          if finals_key not in {(event.get("t"), event.get("s")) for event in visible}:
-              raise SystemExit("ATP Finals 2026 must be available in the visible active-event fallback list.")
+          finals_start = dt_date.fromisoformat(finals_source["start"])
+          finals_end = dt_date.fromisoformat(finals_source["end"])
+          finals_should_be_visible = finals_start <= dt_date.today() <= finals_end
+          if (finals_key in visible_ids) != finals_should_be_visible:
+              raise SystemExit(
+                  "ATP Finals 2026 visibility does not match its active date window."
+              )
           nextgen_key = ("nextgen", 2026)
           nextgen_source = next(
               (event for event in json.load(open("data/live.json", encoding="utf-8")).get("events", [])
