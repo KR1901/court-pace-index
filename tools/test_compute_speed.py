@@ -939,7 +939,7 @@ class DavisCupSourceWindowTests(unittest.TestCase):
             "daviscup", 2026, source="Jeff Sackmann ATP archive", davis_cup_finals_matches_with_stats=2,
         ))
         self.assertFalse(is_supported_davis_cup_calculation_year(
-            "daviscup", 2026, source="TennisMyLife ATP Match Database",
+            "daviscup", 2025, source="TennisMyLife ATP Match Database",
             davis_cup_finals_matches_with_stats=2,
         ))
 
