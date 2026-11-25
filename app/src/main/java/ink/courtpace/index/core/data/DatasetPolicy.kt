@@ -116,14 +116,18 @@ object DatasetPolicy {
         val remoteComparisons = remote.readings.filter { it.publishedSpeed != null }
             .map { it.t to it.s }.toSet()
         if (!remoteComparisons.containsAll(bundledComparisons)) return bundled
-        // Keep the remote ATP live slate authoritative, as before. Only carry forward the
-        // separately sourced Davis Cup row when an ATP-only snapshot does not contain it.
-        // This preserves the new team-event card without resurrecting stale ATP live rows.
+        // Preserve the pre-existing fallback: if a remote snapshot has no live list,
+        // retain the bundled slate. If it has an ATP slate, keep that slate authoritative
+        // and carry forward only the separately sourced Davis Cup row when absent.
         val remoteLiveKeys = remote.live.map { it.t to it.s }.toSet()
-        val bundledDavisCup = bundled.live.filter {
-            it.t == "daviscup" && (it.t to it.s) !in remoteLiveKeys
+        val bundledLiveFallback = if (remote.live.isEmpty()) {
+            bundled.live
+        } else {
+            bundled.live.filter {
+                it.t == "daviscup" && (it.t to it.s) !in remoteLiveKeys
+            }
         }
-        val combinedLive = remote.live + bundledDavisCup
+        val combinedLive = remote.live + bundledLiveFallback
         // Entries written by an older release carry no ATP id; keep the richer definition so
         // the live fetch knows where to look.
         val enriched = combinedLive.map { event ->
