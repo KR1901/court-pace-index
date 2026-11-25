@@ -120,5 +120,6 @@ class DavisCupLiveClient(context: Context) {
                 .map { if (it.startsWith("/")) BASE_URL + it else it }
                 .distinct()
                 .take(MAX_MATCH_PAGES)
+                .toList()
     }
 }
