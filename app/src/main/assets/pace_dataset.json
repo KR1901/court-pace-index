@@ -676,6 +676,16 @@
    "indoor": true,
    "level": "ATP250",
    "altitudeM": null
+  },
+  {
+   "id": "daviscup",
+   "name": "Davis Cup",
+   "city": "Bologna",
+   "country": "ITA",
+   "surface": "MULTI",
+   "indoor": false,
+   "level": "SPECIAL",
+   "altitudeM": null
   }
  ],
  "readings": [
@@ -467048,7 +467058,19 @@
    }
   }
  ],
- "live": [],
+ "live": [
+  {
+   "t": "daviscup",
+   "s": 2026,
+   "status": "in_progress",
+   "start": "2026-11-24",
+   "end": "2026-11-29",
+   "round": "Final 8",
+   "matches": null,
+   "asOf": "2026-11-25T00:00:00Z",
+   "slug": "davis-cup-2026"
+  }
+ ],
  "liveSchedule": [
   {
    "t": "paris",
@@ -467097,6 +467119,17 @@
    "asOf": "2026-11-15T07:15:00Z",
    "atpId": 7696,
    "slug": "next-gen-atp-finals"
+  },
+  {
+   "t": "daviscup",
+   "s": 2026,
+   "status": "in_progress",
+   "start": "2026-11-24",
+   "end": "2026-11-29",
+   "round": "Final 8",
+   "matches": null,
+   "asOf": "2026-11-25T00:00:00Z",
+   "slug": "davis-cup-2026"
   }
  ],
  "speedBaseline": {
