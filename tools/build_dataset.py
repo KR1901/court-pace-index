@@ -353,7 +353,15 @@ if os.path.exists(COMPUTED):
         (tid, int(season)): values
         for season, events in hist["seasons"].items()
         for tid, values in events.items()
-        if tid in known and is_supported_davis_cup_calculation_year(tid, season)
+        if tid in known and is_supported_davis_cup_calculation_year(
+            tid,
+            season,
+            source=hist.get("season_sources", {}).get(str(season)),
+            davis_cup_finals_matches_with_stats=(
+                hist.get("source_metadata", {}).get(str(season), {})
+                .get("davisCupFinalsMatchesWithStats", 0)
+            ),
+        )
     }
 
     # Upgrade the primary value on every overlap while preserving the published figure.
