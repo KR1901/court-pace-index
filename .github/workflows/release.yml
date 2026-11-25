@@ -26,6 +26,33 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Verify bundled Davis Cup schedule and no provisional live rating
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("app/src/main/assets/pace_dataset.json")
+          if not path.is_file() or path.stat().st_size == 0:
+              raise SystemExit("Bundled pace dataset is missing or empty.")
+          dataset = json.loads(path.read_text(encoding="utf-8"))
+          assert any(row.get("id") == "daviscup" for row in dataset.get("tournaments", [])), (
+              "Bundled tournament metadata is missing Davis Cup."
+          )
+          assert any(
+              row.get("t") == "daviscup" and row.get("s") == 2026
+              for row in dataset.get("live", [])
+          ), "Bundled Live now data is missing the 2026 Davis Cup Final 8 schedule row."
+          assert not any(
+              row.get("t") == "daviscup" and row.get("s") == 2026
+              and row.get("src") == "live" and row.get("speed") is not None
+              for row in dataset.get("readings", [])
+          ), "A provisional Davis Cup live rating must not be packaged."
+          print("Bundled Davis Cup metadata and schedule are present; no provisional live rating is packaged.")
+          PY
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
