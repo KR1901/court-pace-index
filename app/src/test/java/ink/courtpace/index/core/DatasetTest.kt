@@ -337,8 +337,8 @@ class DatasetTest {
             // so this exception cannot allow an incomplete release to be published.
             val scheduledDavisCup =
                 tournament.id == "daviscup" &&
-                    data.live.any { it.t == "daviscup" && it.s == 2026 } &&
-                    data.liveSchedule.any { it.t == "daviscup" && it.s == 2026 }
+                    data.dataset.live.any { it.t == "daviscup" && it.s == 2026 } &&
+                    data.dataset.liveSchedule.any { it.t == "daviscup" && it.s == 2026 }
             assertTrue(
                 "${tournament.id} has no readings and is not an explicitly schedule-only event",
                 readings.isNotEmpty() || scheduledDavisCup,
