@@ -22,7 +22,8 @@ MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/ma
 TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
 PROFILE_HISTORY_START_YEAR = 1991
 YEARS = range(PROFILE_HISTORY_START_YEAR, date.today().year + 1)
-LEVELS = {"G", "M", "A", "F", "250", "500"}  # Slams, Masters, ATP 250/500, Finals
+LEVELS = {"G", "M", "A", "F", "250", "500"}  # Standard ATP tour events
+TARGET_LEVELS = LEVELS | {"D"}  # Davis Cup is a separate target, never ATP training
 SOURCE_BY_YEAR = {}
 SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
@@ -91,7 +92,11 @@ for _event_label, _event_id in NAMES.items():
 def tournament_id(event_name):
     """Resolve exact event labels and punctuation/case variants to a known ID."""
     label = str(event_name or "").strip()
-    return NAMES.get(label) or _NORMALISED_EVENT_NAMES.get(_normalise_event_name(label))
+    normalised = _normalise_event_name(label)
+    # The archive stores separate Davis Cup tie labels. Group them into one annual target.
+    if normalised.startswith("daviscup"):
+        return "daviscup"
+    return NAMES.get(label) or _NORMALISED_EVENT_NAMES.get(normalised)
 
 
 def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_DAYS):
@@ -223,7 +228,7 @@ def valid_rows(rows):
     """Tour-level main-draw rows with internally consistent ace/service-point counts."""
     usable = []
     for r in rows:
-        if r.get("tourney_level") not in LEVELS:
+        if r.get("tourney_level") not in TARGET_LEVELS:
             continue
         values = [num(r.get(k)) for k in ("w_svpt", "l_svpt", "w_ace", "l_ace")]
         if any(value is None or not math.isfinite(value) for value in values):
@@ -248,14 +253,16 @@ PROFILE_TRAINING_EXCLUDED_EVENT_KEYS = frozenset({
     "nextgenerationatpfinals",
 })
 CALC_EXCLUDED_EVENT_KEYS = PROFILE_TRAINING_EXCLUDED_EVENT_KEYS  # Backwards-compatible name.
-CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen"})
+CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen", "daviscup"})
 
 
 def calculation_eligible_rows(rows):
     """Rows eligible to train standard ATP player profiles and tour-average priors."""
     return [
         row for row in rows
-        if _normalise_event_name(row.get("tourney_name")) not in PROFILE_TRAINING_EXCLUDED_EVENT_KEYS
+        if row.get("tourney_level") != "D"
+        and not _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
+        and _normalise_event_name(row.get("tourney_name")) not in PROFILE_TRAINING_EXCLUDED_EVENT_KEYS
     ]
 
 
@@ -1132,10 +1139,11 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows):
-    """LOEO ratings; special-format events are targets, never training or normaliser inputs."""
+    """LOEO ratings; Next Gen and Davis Cup are target-only, never ATP training inputs."""
     target_rows = valid_rows(rows)
     # Next Gen is valid as a target event, but its short-set/no-ad matches must never
     # influence standard ATP player histories, same-season priors or live baselines.
+    # Davis Cup is also a target, but stays outside ATP player profiles and the ATP normaliser.
     profile_rows = calculation_eligible_rows(target_rows)
     rows_by_event = defaultdict(list)
     mapped_profile_rows = [
