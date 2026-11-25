@@ -3,6 +3,10 @@ package ink.courtpace.index.core
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
 import ink.courtpace.index.core.model.PaceDataset
+import ink.courtpace.index.core.model.LiveEvent
+import ink.courtpace.index.core.model.Level
+import ink.courtpace.index.core.model.Surface
+import ink.courtpace.index.core.model.Tournament
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -62,6 +66,32 @@ class DatasetPolicyTest {
         val remote = bundled.copy(readings = bundled.readings + extra)
         assertTrue(DatasetPolicy.isAcceptable(remote))
         assertEquals(remote, DatasetPolicy.choose(bundled, remote))
+    }
+
+    @Test
+    fun `a remote ATP slate does not erase a bundled Davis Cup live event`() {
+        val davis = Tournament(
+            id = "daviscup", name = "Davis Cup", city = "Bologna", country = "ITA",
+            surface = Surface.MULTI, indoor = false, level = Level.SPECIAL,
+        )
+        val bundledEvent = LiveEvent(
+            t = "daviscup", s = 2026, status = "in_progress",
+            start = "2026-11-24", end = "2026-11-29", slug = "davis-cup-2026",
+        )
+        val atpEvent = LiveEvent(
+            t = "atpfinals", s = 2026, status = "in_progress",
+            start = "2026-11-15", end = "2026-11-22",
+            atpId = 605, slug = "nitto-atp-finals",
+        )
+        val withDavisCup = bundled.copy(
+            tournaments = bundled.tournaments + davis,
+            live = listOf(bundledEvent),
+        )
+        val remoteAtpOnly = withDavisCup.copy(live = listOf(atpEvent))
+
+        val chosen = DatasetPolicy.choose(withDavisCup, remoteAtpOnly)
+
+        assertEquals(setOf("daviscup", "atpfinals"), chosen.live.map { it.t }.toSet())
     }
 
     @Test

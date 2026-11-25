@@ -116,16 +116,13 @@ object DatasetPolicy {
         val remoteComparisons = remote.readings.filter { it.publishedSpeed != null }
             .map { it.t to it.s }.toSet()
         if (!remoteComparisons.containsAll(bundledComparisons)) return bundled
-        // A published dataset built before the live feed existed carries no live array; taking
-        // it wholesale would erase the event in progress from the screen.
-        val chosen = if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {
-            remote.copy(live = bundled.live)
-        } else {
-            remote
-        }
+        // Merge active rows from both snapshots. A fresh ATP-only snapshot must not remove a
+        // separate active Davis Cup row carried by the bundled dataset (or vice versa).
+        // Remote rows win for a matching event-season; bundled rows fill only missing keys.
+        val combinedLive = (remote.live + bundled.live).distinctBy { it.t to it.s }
         // Entries written by an older release carry no ATP id; keep the richer definition so
         // the live fetch knows where to look.
-        val enriched = chosen.live.map { event ->
+        val enriched = combinedLive.map { event ->
             if (event.atpId != null) event
             else bundled.live.firstOrNull { it.t == event.t && it.s == event.s && it.atpId != null }
                 ?: event
@@ -136,6 +133,6 @@ object DatasetPolicy {
         // Live readings are recomputed on-device from the current ATP match feed. Never
         // trust a static-feed live number here: older builds wrote the pooled-rate method.
         val safeReadings = chosen.readings.filterNot { it.src == "live" && it.speed != null }
-        return chosen.copy(live = enriched, readings = safeReadings, speedBaseline = speedBaseline)
+        return remote.copy(live = enriched, readings = safeReadings, speedBaseline = speedBaseline)
     }
 }
