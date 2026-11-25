@@ -15,6 +15,8 @@ on:
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetPolicyTest.kt'
+      # Version changes must run the validated dataset gate before signed release.
+      - 'app/build.gradle.kts'
       - '.github/workflows/refresh-data.yml'
   schedule:
     - cron: '0 */6 * * *'
