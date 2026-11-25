@@ -509,11 +509,10 @@ doc = {
                 "metric": "Speed",
                 "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); " +
                           "the current season prefers the TennisMyLife ATP Match Database; " +
-                          ("The 2026 Davis Cup target uses the validated source " + TML_DAVIS_CUP_SOURCE + " and remains separate from ATP training/normalisation. " if season_sources.get("2026") == TML_DAVIS_CUP_SOURCE else "") +
-                          "
-                          "Davis Cup target additionally requires the validated ongoing_tourneys.csv " +
-                          "supplement and remains separate from ATP training/normalisation. Historical " +
-                          "events are calculated leave-one-tournament-out, with qualified server and " +
+                          ("The 2026 Davis Cup target uses the validated source " + TML_DAVIS_CUP_SOURCE + " and remains separate from ATP training/normalisation. "
+                           if season_sources.get("2026") == TML_DAVIS_CUP_SOURCE else
+                           "The 2026 Davis Cup CALC is withheld unless the validated TML annual and ongoing feeds are both available. ") +
+                          "Historical events are calculated leave-one-tournament-out, with qualified server and " +
                           "returner rates shrunk toward surface-wide rates using a 150-service-point " +
                           "prior before the neutral clay 1/3, hard/grass 2/3 blend. Pooled returners use " +
                           "the tour-wide prior. Match-level actual/expected ratios are equally weighted, " +
