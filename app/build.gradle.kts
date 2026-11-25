@@ -21,14 +21,14 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Public app identity remains unchanged; 4.1.3 improves H2H score coverage and adds Tiebreak Win%.
-// Keep the existing public-release signing certificate for in-place updates.
+// Public app identity and existing signing certificate remain unchanged for in-place upgrades.
+// 4.1.6 adds TML-backed Davis Cup season-to-date CALC/LIVE ratings with source validation.
     defaultConfig {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
         targetSdk = 37
-        versionCode = 57
-        versionName = "4.1.5"
+        versionCode = 58
+        versionName = "4.1.6"
     }
 
     signingConfigs {
