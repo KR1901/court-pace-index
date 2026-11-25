@@ -204,6 +204,16 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.1.4":
+              lines += [
+                  "### Davis Cup historical Surface Speed and Final 8 schedule",
+                  "- Adds Davis Cup (level D) historical match observations as a separate annual CALC target where valid archive serve statistics are available (2016–2024).",
+                  "- Keeps Davis Cup outside standard ATP player-profile training and the ATP season normaliser; editions are labelled multi-surface.",
+                  "- Adds the 2026 Davis Cup Final 8 as a schedule-only Live now event. A live rating is withheld because a stable official 2026 match-stat feed and its permitted use have not been verified.",
+                  "- Removes the unverified third-party Davis Cup stats prototype and ignores its old locally cached ratings.",
+                  "- Preserves ATP live discovery and ratings, dataset refresh behavior, Player Stats, CPI and existing Surface Speed calculations.",
+                  "",
+              ]
           elif version == "4.1.3":
               lines += [
                   "### H2H score coverage and Tiebreak Win%",
