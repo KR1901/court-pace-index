@@ -107,6 +107,27 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertEqual([atp], compute_speed.calculation_eligible_rows(valid))
         self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
+    def test_davis_cup_diagnostic_ids_do_not_collide_when_tie_match_numbers_repeat(self):
+        rows = [
+            {
+                "tourney_level": "D", "tourney_name": "Davis Cup WG1: FRA vs JPN",
+                "match_num": "1", "winner_id": "1", "loser_id": "2",
+                "winner_name": "Server", "loser_name": "Returner",
+                "w_svpt": "70", "l_svpt": "70", "w_ace": "15", "l_ace": "1",
+            },
+            {
+                "tourney_level": "D", "tourney_name": "Davis Cup Finals: FRA vs JPN",
+                "match_num": "1", "winner_id": "1", "loser_id": "2",
+                "winner_name": "Server", "loser_name": "Returner",
+                "w_svpt": "70", "l_svpt": "70", "w_ace": "1", "l_ace": "15",
+            },
+        ]
+        diagnostics = compute_speed.event_side_diagnostics(rows, profiles={}, tour_rate=0.05)
+        self.assertEqual({"dc001", "dc002"}, {
+            side["matchId"] for side in diagnostics["sideDiagnostics"]
+        })
+        self.assertEqual(4, len(diagnostics["sideDiagnostics"]))
+
     def test_calculation_archive_starts_with_the_first_supported_season(self):
         self.assertEqual(1991, compute_speed.YEARS.start)
 
