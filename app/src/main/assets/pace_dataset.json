@@ -40382,14 +40382,6 @@
    }
   },
   {
-   "t": "daviscup",
-   "s": 1991,
-   "speed": 0.65,
-   "ace": 4.1,
-   "date": "1991-05-20",
-   "src": "tennisabstract"
-  },
-  {
    "t": "estoril",
    "s": 1991,
    "speed": 0.68,
@@ -49710,14 +49702,6 @@
    }
   },
   {
-   "t": "daviscup",
-   "s": 1992,
-   "speed": 0.67,
-   "ace": 3.2,
-   "date": "1992-05-18",
-   "src": "tennisabstract"
-  },
-  {
    "t": "estoril",
    "s": 1992,
    "speed": 0.542,
@@ -59036,14 +59020,6 @@
      }
     ]
    }
-  },
-  {
-   "t": "daviscup",
-   "s": 1993,
-   "speed": 0.86,
-   "ace": 6.3,
-   "date": "1993-05-17",
-   "src": "tennisabstract"
   },
   {
    "t": "doha",
@@ -69816,14 +69792,6 @@
    }
   },
   {
-   "t": "daviscup",
-   "s": 1994,
-   "speed": 0.89,
-   "ace": 6.3,
-   "date": "1994-05-16",
-   "src": "tennisabstract"
-  },
-  {
    "t": "doha",
    "s": 1994,
    "speed": 0.992,
@@ -80304,14 +80272,6 @@
    }
   },
   {
-   "t": "daviscup",
-   "s": 1995,
-   "speed": 0.73,
-   "ace": 5.9,
-   "date": "1995-05-22",
-   "src": "tennisabstract"
-  },
-  {
    "t": "doha",
    "s": 1995,
    "speed": 0.776,
@@ -90774,14 +90734,6 @@
      }
     ]
    }
-  },
-  {
-   "t": "daviscup",
-   "s": 1996,
-   "speed": 0.66,
-   "ace": 4.1,
-   "date": "1996-06-17",
-   "src": "tennisabstract"
   },
   {
    "t": "doha",
@@ -101820,14 +101772,6 @@
    }
   },
   {
-   "t": "daviscup",
-   "s": 1997,
-   "speed": 0.79,
-   "ace": 6.2,
-   "date": "1997-06-09",
-   "src": "tennisabstract"
-  },
-  {
    "t": "doha",
    "s": 1997,
    "speed": 1.026,
@@ -112572,14 +112516,6 @@
      }
     ]
    }
-  },
-  {
-   "t": "daviscup",
-   "s": 1998,
-   "speed": 0.63,
-   "ace": 4.0,
-   "date": "1998-06-08",
-   "src": "tennisabstract"
   },
   {
    "t": "doha",
