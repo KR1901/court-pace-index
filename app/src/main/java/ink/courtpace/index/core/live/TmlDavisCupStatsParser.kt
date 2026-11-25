@@ -8,7 +8,7 @@ package ink.courtpace.index.core.live
  * Raw CSV text is consumed in memory and is never placed in the bundled dataset.
  */
 object TmlDavisCupStatsParser {
-    private val setScore = Regex("""(\\d+)-(\\d+)(?:\\(\\d+\\))?""")
+    private val setScore = Regex("""(\d+)-(\d+)(?:\(\d+\))?""")
 
     fun parseSeason(snapshots: List<String>, season: Int): List<AtpMatchStats> {
         val matches = linkedMapOf<String, AtpMatchStats>()
