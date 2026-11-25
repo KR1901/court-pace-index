@@ -14,6 +14,11 @@ on:
 permissions:
   contents: write
 
+# Serialize app-snapshot publication with the historical dataset refresh.
+concurrency:
+  group: court-pace-dataset-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
