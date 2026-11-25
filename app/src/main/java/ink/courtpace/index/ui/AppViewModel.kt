@@ -254,11 +254,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
             val refs = discovery.events
             val existing = _data.value?.dataset?.live.orEmpty()
-            // Keep the Davis Cup Final 8 schedule row while its ITF-authorised match-stat
-            // feed is not yet connected. Public score pages are not a substitute for a licensed
-            // machine-readable source of the serve statistics required by this calculation.
+            // Davis Cup is read through its separately validated TML annual + ongoing match-stat
+            // feeds. Keep the official schedule row visible while those requests are in flight.
             val davisCupEvent = existing.firstOrNull { it.t == "daviscup" && it.s == year }
-            val davisCupPending = "Awaiting an ITF-authorised match-stat feed"
+            val davisCupPending = "TML · checking annual and ongoing singles statistics"
             liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" } +
                 if (davisCupEvent != null) mapOf("daviscup" to davisCupPending) else emptyMap()
             val refreshedEvents = refs.map { ref ->
