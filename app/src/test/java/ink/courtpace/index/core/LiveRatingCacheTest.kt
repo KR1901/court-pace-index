@@ -26,6 +26,30 @@ class LiveRatingCacheTest {
     }
 
     @Test
+    fun `TML Davis Cup provider identity survives cache round trip`() {
+        val original = CachedLiveRating(
+            tournamentId = "daviscup",
+            season = 2026,
+            speed = 1.08,
+            matches = 150,
+            aceRate = 0.091,
+            asOf = "2026-11-25T14:00:00Z",
+            source = CachedLiveRating.SOURCE_TML_DAVIS_CUP,
+            baselineGenerated = "2026-11-25T13:00:00Z",
+            discoveredMatches = 150,
+            adjustedServerSides = 300,
+            totalServerSides = 300,
+            aces = 820,
+        )
+
+        val restored = CachedLiveRating.fromJson(original.toJson())!!
+
+        assertEquals(original, restored)
+        assertEquals(CachedLiveRating.SOURCE_TML_DAVIS_CUP, restored.source)
+        assertEquals(300, restored.toAceRatingResultOrNull()!!.adjustedServerSides)
+    }
+
+    @Test
     fun `a missing ace rate is tolerated`() {
         val original = CachedLiveRating("paris", 2026, 0.97, 12, null, "2026-11-05T07:00:00Z")
         assertEquals(original, CachedLiveRating.fromJson(original.toJson())!!)
