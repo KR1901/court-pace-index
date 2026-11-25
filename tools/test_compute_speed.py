@@ -107,6 +107,34 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertEqual([atp], compute_speed.calculation_eligible_rows(valid))
         self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
+    def test_davis_cup_calc_is_limited_to_validated_archive_seasons(self):
+        davis = {
+            "tourney_level": "D", "tourney_name": "Davis Cup Finals F: ITA vs ESP",
+            "winner_id": "1", "loser_id": "2",
+            "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
+        }
+        atp = {
+            "tourney_level": "250", "tourney_name": "Dallas",
+            "winner_id": "3", "loser_id": "4",
+            "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
+        }
+
+        for year in (2016, 2024):
+            with self.subTest(year=year):
+                rows = compute_speed.target_rows_for_season(year, [davis, atp])
+                self.assertEqual({"daviscup", "dallas"}, {
+                    compute_speed.tournament_id(row["tourney_name"]) for row in rows
+                })
+
+        for year in (1991, 2015, 2025, 2026):
+            with self.subTest(year=year):
+                rows = compute_speed.target_rows_for_season(year, [davis, atp])
+                event_ids = {
+                    compute_speed.tournament_id(row["tourney_name"]) for row in rows
+                }
+                self.assertNotIn("daviscup", event_ids)
+                self.assertIn("dallas", event_ids)
+
     def test_davis_cup_diagnostic_ids_do_not_collide_when_tie_match_numbers_repeat(self):
         rows = [
             {
