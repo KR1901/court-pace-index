@@ -14,6 +14,7 @@ on:
       - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
+      - 'app/src/test/java/ink/courtpace/index/core/DatasetPolicyTest.kt'
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
