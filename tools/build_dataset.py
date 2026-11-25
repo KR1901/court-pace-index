@@ -335,7 +335,9 @@ else:
     speed_rows = SPEED
 
 for tid, season, date, speed, ace in speed_rows:
-    if tid not in known:
+    if tid not in known or tid == "daviscup":
+        # Defence in depth: never reintroduce an unsupported TA fallback even if an old
+        # snapshot predates the source-refresh sanitizer.
         continue
     readings.append({"t": tid, "s": season, "speed": speed, "ace": ace,
                      "date": date, "src": "tennisabstract"})

@@ -52,6 +52,10 @@ jobs:
           ]
           assert davis_historical, "Bundled dataset has no historical Davis Cup CALC reading."
           historical_years = sorted({row["s"] for row in davis_historical})
+          assert not any(
+              row.get("t") == "daviscup" and row.get("src") == "tennisabstract"
+              for row in dataset.get("readings", [])
+          ), "Tennis Abstract Davis Cup fallback values must never be published."
           assert not any(row.get("t") == "daviscup" and row.get("s") not in range(2016, 2025)
                          and row.get("speed") is not None for row in dataset.get("readings", [])), (
               "Davis Cup readings outside the validated 2016–2024 source-stat window must not be published."

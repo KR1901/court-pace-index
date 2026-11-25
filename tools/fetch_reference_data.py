@@ -19,6 +19,7 @@ BUILD_DATASET = ROOT / "tools" / "build_dataset.py"
 TA_OUTPUT = ROOT / "data" / "tennis_abstract_history.json"
 CPI_OUTPUT = ROOT / "data" / "courtspeed_cpi.json"
 TA_URL = "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year={year}"
+TA_EXCLUDED_TOURNAMENT_IDS = frozenset({"daviscup"})
 CPI_URL = "https://courtspeed.com/"
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -208,6 +209,11 @@ def parse_ta_year(html: str, season: int, aliases, exact) -> tuple[list[dict], l
         if tid is None:
             unmapped.append(event_name)
             continue
+        # Tennis Abstract does not provide a validated Davis Cup Surface Speed reference.
+        # Keep Davis Cup outside TA fallback rows; its app ratings come only from the
+        # independently validated 2016–2024 archive CALC pipeline.
+        if tid in TA_EXCLUDED_TOURNAMENT_IDS:
+            continue
         # The selected TA year is the season key, even when an event starts in December
         # of the preceding calendar year (e.g. Hong Kong/Brisbane/United Cup for 2025).
         readings[tid] = {
@@ -219,6 +225,22 @@ def parse_ta_year(html: str, season: int, aliases, exact) -> tuple[list[dict], l
             "src": "tennisabstract",
         }
     return sorted(readings.values(), key=lambda row: row["t"]), sorted(set(unmapped))
+
+
+def remove_excluded_ta_rows(seasons: dict[str, list[dict]]) -> int:
+    """Purge unsupported event fallbacks already stored in the historical TA snapshot."""
+    removed = 0
+    for year, rows in list(seasons.items()):
+        retained = [
+            row for row in rows
+            if str(row.get("t", "")).casefold() not in TA_EXCLUDED_TOURNAMENT_IDS
+        ]
+        removed += len(rows) - len(retained)
+        if retained:
+            seasons[year] = retained
+        else:
+            seasons.pop(year, None)
+    return removed
 
 
 def split_tables(rows: list[list[str]]) -> list[list[list[str]]]:
@@ -335,11 +357,15 @@ def refresh(start_year: int, end_year: int) -> None:
             unmapped.update(previous.get("unmapped", {}))
         except (OSError, json.JSONDecodeError, TypeError):
             print("WARNING: existing Tennis Abstract snapshot unreadable; backfill requested seasons.")
+    removed_ta_rows = remove_excluded_ta_rows(seasons)
+    if removed_ta_rows:
+        print(f"Removed {removed_ta_rows} unsupported Davis Cup rows from the Tennis Abstract snapshot.")
     years_to_update = ta_years_to_refresh(
         start_year, end_year, seasons, unmapped, aliases, exact
     )
     print(f"Tennis Abstract seasons to fetch: {years_to_update}")
-    ta_updated = False
+    # Persist sanitization even when all historical TA seasons are otherwise stable.
+    ta_updated = removed_ta_rows > 0
     for year in years_to_update:
         try:
             html = fetch(TA_URL.format(year=year))

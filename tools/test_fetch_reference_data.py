@@ -29,6 +29,35 @@ class ReferenceRefreshTests(unittest.TestCase):
         self.assertEqual(0.55, by_id["lavercup"]["speed"])
         self.assertEqual([], unmapped)
 
+    def test_tennis_abstract_davis_cup_rows_are_not_used_as_speed_references(self):
+        html = """
+        <table><tr><th>Date</th><th>Tournament</th><th>Surface</th><th>Ace%</th><th>Speed</th></tr>
+        <tr><td>20-May-1991</td><td>Davis Cup</td><td>Clay</td><td>4.1%</td><td>0.65</td></tr>
+        <tr><td>22-May-1991</td><td>Roland Garros</td><td>Clay</td><td>7.0%</td><td>1.10</td></tr>
+        </table>
+        """
+        rows, unmapped = parse_ta_year(html, 1991, self.aliases, self.exact)
+        self.assertEqual(["rolandgarros"], [row["t"] for row in rows])
+        self.assertNotIn("daviscup", {row["t"] for row in rows})
+        self.assertEqual([], unmapped)
+
+    def test_existing_ta_snapshot_is_sanitized_without_dropping_other_events(self):
+        from fetch_reference_data import remove_excluded_ta_rows
+
+        seasons = {
+            "1991": [
+                {"t": "daviscup", "s": 1991, "speed": 0.65, "src": "tennisabstract"},
+                {"t": "rolandgarros", "s": 1991, "speed": 1.10, "src": "tennisabstract"},
+            ],
+            "1992": [
+                {"t": "daviscup", "s": 1992, "speed": 0.67, "src": "tennisabstract"},
+            ],
+        }
+        removed = remove_excluded_ta_rows(seasons)
+        self.assertEqual(2, removed)
+        self.assertEqual(["rolandgarros"], [row["t"] for row in seasons["1991"]])
+        self.assertNotIn("1992", seasons)
+
     def test_laver_cup_is_stored_as_two_distinct_seasons(self):
         html_2025 = """
         <table><tr><th>Date</th><th>Tournament</th><th>Surface</th><th>Ace%</th><th>Speed</th></tr>
