@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import compute_speed
+from davis_cup_policy import is_supported_davis_cup_calculation_year
 
 
 def profile(
@@ -887,6 +888,21 @@ class InputValidationTests(unittest.TestCase):
         ]
         self.assertEqual([], compute_speed.valid_rows(invalid))
         self.assertEqual(1, len(compute_speed.valid_rows([base])))
+
+
+class DavisCupSourceWindowTests(unittest.TestCase):
+    def test_only_validated_archive_editions_can_publish_davis_cup_calc(self):
+        for year in (2016, 2017, 2020, 2024):
+            with self.subTest(year=year):
+                self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", year))
+
+        for year in (1991, 2015, 2025, 2026, 2030):
+            with self.subTest(year=year):
+                self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", year))
+
+        # The Davis Cup source window must not constrain ordinary ATP event history.
+        self.assertTrue(is_supported_davis_cup_calculation_year("paris", 1991))
+        self.assertTrue(is_supported_davis_cup_calculation_year("paris", 2026))
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):

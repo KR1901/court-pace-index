@@ -17,6 +17,8 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
 
+from davis_cup_policy import is_supported_davis_cup_calculation_year
+
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
 TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
@@ -1161,7 +1163,7 @@ def season_ratings(year, rows):
     ]
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
-        if tid is not None:
+        if tid is not None and is_supported_davis_cup_calculation_year(tid, year):
             rows_by_event[tid].append(row)
 
     details = {}

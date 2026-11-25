@@ -14,6 +14,7 @@ before publishing both the bundled asset and data/latest.json.
 import json, os
 from datetime import date as datetime_date
 from cpi_snapshot import select_cpi_readings
+from davis_cup_policy import is_supported_davis_cup_calculation_year
 
 # id, name, city, country, surface, indoor, level, altitude
 TOURNAMENTS = [
@@ -352,7 +353,7 @@ if os.path.exists(COMPUTED):
         (tid, int(season)): values
         for season, events in hist["seasons"].items()
         for tid, values in events.items()
-        if tid in known
+        if tid in known and is_supported_davis_cup_calculation_year(tid, season)
     }
 
     # Upgrade the primary value on every overlap while preserving the published figure.
@@ -386,7 +387,11 @@ if os.path.exists(COMPUTED):
     for season, events in hist["seasons"].items():
         year = int(season)
         for tid, values in events.items():
-            if tid not in known or (tid, year) in published_keys:
+            if (
+                tid not in known
+                or not is_supported_davis_cup_calculation_year(tid, year)
+                or (tid, year) in published_keys
+            ):
                 continue
             if values.get("speed") is not None:
                 readings.append({
