@@ -85,7 +85,7 @@ These are descriptive associations, not proof that height causes a performance a
 
 Match results, match statistics, indoor/outdoor setting and player heights come from the [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database). The annual CSV files and player roster are listed by its [data-files endpoint](https://stats.tennismylife.org/api/data-files); the dated ranking cohort comes from its ranking API.
 
-The source's public terms limit use to personal, educational and non-commercial research and do not authorize raw database redistribution/resale. This feature is intended for the owner's private hobby app and private repository. Raw source CSVs remain temporary local build inputs. Do not publish the derived asset or distribute an APK containing it without obtaining the necessary source and third-party permissions. Private repository visibility does not itself grant data rights, and the project's MIT software licence does not apply to this dataset.
+The source's public terms limit use to personal, educational and non-commercial research and do not authorize raw database redistribution/resale. This repository is public; therefore any committed TML-derived asset is publicly accessible and should not be treated as cleared for redistribution merely because the source files are not committed. Keep raw source CSVs as temporary local build inputs. Do not publish or distribute derived assets or an APK containing them unless the source terms and any applicable third-party permissions permit it. The project's MIT software licence does not apply to this dataset.
 
 ## Refresh and verification
 
@@ -98,7 +98,7 @@ python3 tools/build_player_stats.py
 
 The dedicated `.github/workflows/refresh-player-stats.yml` workflow tests the parser and formulas, validates every dated Top-100 and Top-1000 season cohort, including co-ranked players and source rank depth, verifies stable IDs and unique player-season rows, checks valid game numerators/denominators, confirms the height and archive-player counts, and verifies the two JSON outputs are byte-identical. It commits only `data/player_stats.json` and `app/src/main/assets/player_stats.json`. It never invokes `tools/compute_speed.py`, `tools/build_dataset.py` or updates the existing CPI/Surface Speed datasets.
 
-The archive workflow runs weekly and refreshes the private repository asset. The installed Android app does not need a new APK for current-season match updates.
+The archive workflow runs weekly and refreshes the repository's generated Player Stats asset. The installed Android app does not need a new APK for current-season match updates.
 
 ### Automatic live updates
 
