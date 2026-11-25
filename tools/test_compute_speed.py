@@ -891,7 +891,7 @@ class InputValidationTests(unittest.TestCase):
 
 
 class DavisCupSourceWindowTests(unittest.TestCase):
-    def test_only_validated_archive_editions_can_publish_davis_cup_calc(self):
+    def test_historical_editions_and_validated_tml_2026_source_gate(self):
         for year in (2016, 2017, 2020, 2024):
             with self.subTest(year=year):
                 self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", year))
@@ -900,9 +900,36 @@ class DavisCupSourceWindowTests(unittest.TestCase):
             with self.subTest(year=year):
                 self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", year))
 
+        self.assertTrue(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source=compute_speed.TML_DAVIS_CUP_SOURCE
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source="TennisMyLife ATP Match Database"
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source="Jeff Sackmann ATP archive (current-year fallback)"
+        ))
+
         # The Davis Cup source window must not constrain ordinary ATP event history.
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 1991))
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 2026))
+
+    def test_tml_ongoing_rows_merge_with_annual_rows_without_duplicates(self):
+        annual = [{
+            "tourney_id": "2026-M-DC-X", "tourney_date": "20261124", "match_num": "1",
+            "winner_id": "P1", "loser_id": "P2", "score": "6-3 6-4",
+        }]
+        ongoing = [
+            dict(annual[0]),
+            {
+                "tourney_id": "2026-M-DC-X", "tourney_date": "20261125", "match_num": "2",
+                "winner_id": "P3", "loser_id": "P4", "score": "6-4 6-4",
+            },
+        ]
+        merged, added = compute_speed.merge_davis_cup_rows(annual, ongoing)
+        self.assertEqual(1, added)
+        self.assertEqual(2, len(merged))
+        self.assertEqual("P4", merged[-1]["loser_id"])
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
