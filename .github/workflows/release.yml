@@ -284,6 +284,17 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.1.6":
+              lines += [
+                  "### Davis Cup 2026 season-to-date Surface Speed",
+                  "- Adds a 2026 Davis Cup CALC reading from TML's annual ATP match CSV plus its ongoing-tournament supplement, with source identity, schema, freshness and SHA-256 validation.",
+                  "- Refreshes the Davis Cup live estimate on-device from newly completed singles rubbers using the same opponent-adjusted expected-aces method as the ATP live ratings.",
+                  "- Labels the figure as a TML season-to-date, multi-surface Davis Cup aggregate; it is not a Bologna-only court measurement.",
+                  "- Keeps Davis Cup out of standard ATP player-profile training and the ATP season normaliser; missing serve statistics are never treated as zero.",
+                  "- Keeps raw TML CSV data out of the repository and APK; only aggregate rating and coverage metadata are stored. This source is restricted to free non-commercial analytical use; obtain written permission before monetisation or commercial use.",
+                  "- Retains the completed-event LOEO CALC selection fix from 4.1.5 and the existing ATP/Infosys live path.",
+                  "",
+              ]
           elif version == "4.1.4":
               lines += [
                   "### Davis Cup historical Surface Speed and Final 8 schedule",
