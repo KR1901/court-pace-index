@@ -264,6 +264,7 @@ jobs:
 
       - name: Verify
         run: |
+          set -o pipefail
           # Retry known transient Maven/Robolectric downloads on cold runners.
           for attempt in 1 2 3; do
             log="$(mktemp)"
