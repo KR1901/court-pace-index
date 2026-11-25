@@ -83,6 +83,7 @@ TOURNAMENTS = [
     ("athens",     "Athens Open",          "Athens",       "GRE", "HARD",  True,  "ATP250",   None),
     ("marseille",  "Open 13 Provence",     "Marseille",    "FRA", "HARD",  True,  "ATP250",   None),
     ("stockholm",  "Stockholm Open",       "Stockholm",    "SWE", "HARD",  True,  "ATP250",   None),
+    ("daviscup",   "Davis Cup",             "Bologna",      "ITA", "MULTI", False, "SPECIAL",  None),
 ]
 
 # Host city and country for travelling Laver Cup editions. 2020 was not held.
@@ -98,6 +99,9 @@ SEASON_VENUES = {
     ("lavercup", 2025): ("San Francisco", "USA"),
     ("lavercup", 2026): ("London", "GBR"),
     ("nextgen", 2026): ("Reggio Calabria", "ITA"),
+    # Historical editions aggregate ties played across multiple host nations.
+    **{("daviscup", year): ("Multiple venues", "INT") for year in range(2016, 2025)},
+    ("daviscup", 2026): ("Bologna", "ITA"),
 }
 
 # CPI readings: (tournament id, season, value). Source: Court Speed / The Racquet ATP Court Speed Database,

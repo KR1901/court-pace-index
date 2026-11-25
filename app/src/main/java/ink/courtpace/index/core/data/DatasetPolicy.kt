@@ -116,26 +116,32 @@ object DatasetPolicy {
         val remoteComparisons = remote.readings.filter { it.publishedSpeed != null }
             .map { it.t to it.s }.toSet()
         if (!remoteComparisons.containsAll(bundledComparisons)) return bundled
-        // A published dataset built before the live feed existed carries no live array; taking
-        // it wholesale would erase the event in progress from the screen.
-        val chosen = if (remote.live.isEmpty() && bundled.live.isNotEmpty()) {
-            remote.copy(live = bundled.live)
+        // Preserve the pre-existing fallback: if a remote snapshot has no live list,
+        // retain the bundled slate. If it has an ATP slate, keep that slate authoritative
+        // and carry forward only the separately sourced Davis Cup row when absent.
+        val remoteLiveKeys = remote.live.map { it.t to it.s }.toSet()
+        val bundledLiveFallback = if (remote.live.isEmpty()) {
+            bundled.live
         } else {
-            remote
+            bundled.live.filter {
+                it.t == "daviscup" && (it.t to it.s) !in remoteLiveKeys
+            }
         }
+        val combinedLive = remote.live + bundledLiveFallback
         // Entries written by an older release carry no ATP id; keep the richer definition so
         // the live fetch knows where to look.
-        val enriched = chosen.live.map { event ->
+        val enriched = combinedLive.map { event ->
             if (event.atpId != null) event
             else bundled.live.firstOrNull { it.t == event.t && it.s == event.s && it.atpId != null }
                 ?: event
         }
+        val chosen = remote.copy(live = enriched)
         val speedBaseline = chosen.speedBaseline
             ?.takeIf { it.season == chosen.meta.season }
             ?: bundled.speedBaseline?.takeIf { it.season == chosen.meta.season }
         // Live readings are recomputed on-device from the current ATP match feed. Never
         // trust a static-feed live number here: older builds wrote the pooled-rate method.
         val safeReadings = chosen.readings.filterNot { it.src == "live" && it.speed != null }
-        return chosen.copy(live = enriched, readings = safeReadings, speedBaseline = speedBaseline)
+        return chosen.copy(readings = safeReadings, speedBaseline = speedBaseline)
     }
 }

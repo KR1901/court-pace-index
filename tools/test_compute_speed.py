@@ -87,6 +87,47 @@ def profile(
 
 
 class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
+    def test_davis_cup_tie_labels_are_grouped_into_one_target_event(self):
+        self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup Finals RR: FRA vs JPN"))
+        self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup WG1 PO: CHN vs POR"))
+
+    def test_davis_cup_rows_are_valid_targets_but_never_profile_training(self):
+        davis = {
+            "tourney_level": "D", "tourney_name": "Davis Cup Finals F: ITA vs ESP",
+            "winner_id": "1", "loser_id": "2",
+            "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
+        }
+        atp = {
+            "tourney_level": "250", "tourney_name": "Dallas",
+            "winner_id": "3", "loser_id": "4",
+            "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
+        }
+        valid = compute_speed.valid_rows([davis, atp])
+        self.assertEqual(2, len(valid))
+        self.assertEqual([atp], compute_speed.calculation_eligible_rows(valid))
+        self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
+
+    def test_davis_cup_diagnostic_ids_do_not_collide_when_tie_match_numbers_repeat(self):
+        rows = [
+            {
+                "tourney_level": "D", "tourney_name": "Davis Cup WG1: FRA vs JPN",
+                "match_num": "1", "winner_id": "1", "loser_id": "2",
+                "winner_name": "Server", "loser_name": "Returner",
+                "w_svpt": "70", "l_svpt": "70", "w_ace": "15", "l_ace": "1",
+            },
+            {
+                "tourney_level": "D", "tourney_name": "Davis Cup Finals: FRA vs JPN",
+                "match_num": "1", "winner_id": "1", "loser_id": "2",
+                "winner_name": "Server", "loser_name": "Returner",
+                "w_svpt": "70", "l_svpt": "70", "w_ace": "1", "l_ace": "15",
+            },
+        ]
+        diagnostics = compute_speed.event_side_diagnostics(rows, profiles={}, tour_rate=0.05)
+        self.assertEqual({"dc001", "dc002"}, {
+            side["matchId"] for side in diagnostics["sideDiagnostics"]
+        })
+        self.assertEqual(4, len(diagnostics["sideDiagnostics"]))
+
     def test_calculation_archive_starts_with_the_first_supported_season(self):
         self.assertEqual(1991, compute_speed.YEARS.start)
 

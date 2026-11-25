@@ -59,6 +59,7 @@ fun accentForSurface(surface: ink.courtpace.index.core.model.Surface): Color = w
     ink.courtpace.index.core.model.Surface.HARD -> Color(0xFF3E92D8)
     ink.courtpace.index.core.model.Surface.CLAY -> Color(0xFFE07A48)
     ink.courtpace.index.core.model.Surface.GRASS -> Color(0xFF4FB07C)
+    ink.courtpace.index.core.model.Surface.MULTI -> Color(0xFF9A8BE8)
 }
 
 val DefaultAccent = Color(0xFF7FE0C0)

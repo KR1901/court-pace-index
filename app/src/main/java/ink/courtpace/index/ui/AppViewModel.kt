@@ -197,6 +197,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Restore cached ratings only when their adjusted-side coverage is also available. */
     private fun restoreCachedLiveRating(cached: ink.courtpace.index.core.live.CachedLiveRating) {
+        // Discard Davis Cup values from the removed unofficial prototype; only a validated
+        // official source may populate this event's live rating in a future release.
+        if (cached.tournamentId == "daviscup") return
         val result = cached.toAceRatingResultOrNull() ?: return
         liveAceByEvent = liveAceByEvent + (cached.tournamentId to result)
         applyLiveRating(
@@ -244,8 +247,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 liveSchedule = initial.dataset.liveSchedule,
             )
             val refs = discovery.events
-            liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" }
             val existing = _data.value?.dataset?.live.orEmpty()
+            // Keep the Davis Cup Final 8 schedule row while ATP events refresh independently.
+            // No official 2026 match-stat feed has been validated for live rating calculation.
+            val davisCupEvent = existing.firstOrNull { it.t == "daviscup" && it.s == year }
+            liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" } +
+                if (davisCupEvent != null) mapOf("daviscup" to "Official match statistics unavailable") else emptyMap()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
                 previous?.copy(
@@ -264,12 +271,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // A live rating is a season observation, not an ephemeral event card. Retain it
             // after the event leaves the active ATP slate; only metadata stays active-only.
             publish(
-                PaceData(latest.dataset.copy(live = refreshedEvents)),
+                PaceData(latest.dataset.copy(live = refreshedEvents + listOfNotNull(davisCupEvent))),
                 keepSeason = true,
             )
             liveAceByEvent = emptyMap()
             if (refs.isEmpty()) {
-                liveProgressByEvent = emptyMap()
+                liveProgressByEvent = if (davisCupEvent != null) {
+                    mapOf("daviscup" to "Official match statistics unavailable")
+                } else emptyMap()
                 val note = if (discovery.hubReadable) {
                     "current ATP hub has no active events"
                 } else {

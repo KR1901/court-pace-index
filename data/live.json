@@ -1,6 +1,6 @@
 {
   "generated": "2026-11-25T07:38:42Z",
-  "note": "Active event windows support the ATP live feed fallback; ended windows remain as completed-rating backfill metadata and stale-route guards.",
+  "note": "Active event windows support ATP live stats; Davis Cup Final 8 is retained as schedule metadata only until an official match-stat source is validated. Ended windows remain as completed-rating backfill metadata and stale-route guards.",
   "events": [
     {
       "t": "paris",
@@ -49,6 +49,17 @@
       "asOf": "2026-11-15T07:15:00Z",
       "atpId": 7696,
       "slug": "next-gen-atp-finals"
+    },
+    {
+      "t": "daviscup",
+      "s": 2026,
+      "status": "in_progress",
+      "start": "2026-11-24",
+      "end": "2026-11-29",
+      "round": "Final 8",
+      "matches": null,
+      "asOf": "2026-11-25T00:00:00Z",
+      "slug": "davis-cup-2026"
     }
   ]
 }

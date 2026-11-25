@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build a private, derived ATP player-statistics asset from TML annual ATP files.
+"""Build a derived ATP player-statistics asset from TML annual ATP files.
 
 Raw CSVs are downloaded to .cache/player_stats and are never added to the repository.
-The output is personal/non-commercial research data and must remain in this private repo.
+The source terms restrict use to personal/non-commercial research; public repository
+visibility does not grant onward publication or redistribution rights for derived data.
 """
 from __future__ import annotations
 

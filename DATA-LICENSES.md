@@ -1,6 +1,6 @@
 # Data licences, terms and attribution
 
-**Last checked: 11 November 2026.** This document distinguishes the MIT licence for project software from the separate rights that may apply to source data, published ratings and generated datasets. It is a provenance and risk guide, not legal advice.
+**Last checked: 25 November 2026.** This document distinguishes the MIT licence for project software from the separate rights that may apply to source data, published ratings and generated datasets. It is a provenance and risk guide, not legal advice.
 
 There is no single licence that covers every data point in this repository. Do not infer that the MIT licence, or one third-party data licence, applies to the entire bundled dataset.
 
@@ -46,6 +46,12 @@ The Android app can retrieve live match results and statistics from ATP/Infosys 
 
 The [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions) limit general website/content use to individual non-commercial, entertainment and informational purposes. They expressly prohibit systematic retrieval of scores, statistics or rankings to create or compile a collection or database without ATP's prior express written permission. The app's on-device implementation does not itself grant permission for systematic retrieval. Users and operators must review the current ATP terms; this repository does not represent that ATP permission has been obtained.
 
+## 6A. Official Davis Cup match statistics
+
+The 2026 Davis Cup Final 8 is listed in the app using the official event schedule. DavisCup.com/ITF has published match scorecards for some past editions, and those scorecards can include aces and service-point totals. However, as checked on 25 November 2026, this project has not verified a stable official machine-readable match-stat feed or published scorecard endpoint for the 2026 Final 8. Official pages currently establish event/match information, but the content retrieved for the current Final 8 did not expose the serve-stat fields needed by the CALC method.
+
+The unverified TennisRace.ai prototype has therefore been removed. The app does not scrape Davis Cup match stats from that provider, and it ignores any locally cached Davis Cup rating created by the prototype. No official data permission is inferred from public website access. Before enabling Davis Cup live ratings, the project must validate the actual official data endpoint and fields, and review the provider's terms or obtain permission for the intended retrieval and in-app calculation. Until then the 2026 Final 8 row is schedule metadata only and no live Davis Cup rating is published.
+
 ## 7. Combined and generated datasets
 
 `app/src/main/assets/pace_dataset.json` and `data/latest.json` combine project metadata, CPI readings, CALC-derived ratings and Tennis Abstract reference/fallback values. Current-season CALC inputs may originate from TennisMyLife; historical inputs may originate from the Jeff Sackmann archive.
@@ -56,15 +62,15 @@ Because sources have different terms, **do not apply one blanket licence to the 
 
 Android/Gradle dependencies, fonts, icons, graphics and any separately sourced assets remain under their own licences. Review dependency metadata and asset notices before redistributing a build.
 
-## 9. Private repository status does not change source rights
+## 9. Public repository status does not change source rights
 
-This repository is currently private for personal development and research. Repository privacy is an access-control measure, not a licence or permission from any data provider. It does not change the non-commercial, attribution, share-alike, redistribution or systematic-retrieval restrictions described above. Do not publish the generated dataset or distribute data-derived functionality beyond the rights available for each source. Obtain source permission where the terms require it.
+This repository is public. Public access to the original project code does not grant rights to third-party data or derived datasets. The MIT licence applies to original software only; it does not override the non-commercial, attribution, share-alike, redistribution or systematic-retrieval restrictions described above. Review each data provider's terms before publishing generated datasets or distributing data-derived functionality, and obtain written permission where the terms require it.
 
 ## 10. Player Stats dataset
 
 The dedicated Player Stats feature uses the annual ATP match files, player roster, heights and dated ranking endpoint published by the [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database). It derives calendar-year player Hold%, Break%, H+B, match results, surface/environment splits and height-group summaries. Each calendar year's Top 100 cohort is loaded from the TML dated ranking API by stable player ID: completed years use that year's final ranking snapshot, while the live year uses its latest available snapshot. Co-ranked players are preserved, so the membership may exceed 100 when the source has ties. Rows with placeholder IDs are counted as unresolved source entries and excluded from player-level height calculations. Each exact snapshot date and identified/unresolved counts are recorded in the asset.
 
-The source's public terms describe use as personal, educational and non-commercial research and do not authorise raw database redistribution or resale. This feature is intended only for this owner's private hobby app and private repository. Raw TML CSVs and API responses remain temporary build inputs and are not committed. Do not publish the derived asset or distribute a public APK containing it without obtaining the necessary source and third-party permissions. The MIT licence applies to original software, not to this dataset. Private repository visibility does not itself grant data rights.
+The source's public terms describe use as personal, educational and non-commercial research and do not authorise raw database redistribution or resale. The repository is public, so any committed or released TML-derived asset is publicly accessible; that public visibility does not itself grant redistribution rights. Raw TML CSVs and API responses are temporary build inputs and should not be committed. Do not publish or distribute TML-derived assets or an APK containing them unless the source terms and any applicable third-party permissions allow that use. The MIT licence applies to original software, not to this dataset.
 
 The annual source files, player roster and current ranking snapshot are fetched by `tools/build_player_stats.py`. Indoor/outdoor hard splits use the explicit source environment flag; unknown values remain unknown. Heights are stored in canonical centimetres; the app derives metric and imperial display strings from that one value.
 
