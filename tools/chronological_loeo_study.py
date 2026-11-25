@@ -74,6 +74,7 @@ def event_metrics(event_rows, profiles, tour_rate):
         "matches": len(event_rows),
         "profileTrainingMatches": None,
         "totalServicePoints": points,
+        "logLoss": nll,
         "logLossPerServicePoint": nll / points if points else None,
         "serverProfilesMatched": details["serverProfilesMatched"],
         "returnerProfilesMatched": details["returnerProfilesMatched"],
@@ -138,39 +139,84 @@ def run(start_year, end_year, quarantine_days):
         if not groups:
             continue
 
-        # This is the production retrospective LOEO result and normaliser for each event.
-        retrospective = compute_speed.season_ratings(year, rows, source=source)
         prior_tour_rate, prior_anchor, prior_error = prior_year_reference(year)
-        if prior_tour_rate is None:
-            prior_tour_rate = compute_speed.tour_average_ace_rate(standard_rows)
-        if prior_anchor is None:
-            # Last-resort anchor only for the earliest covered year. The output marks it.
-            prior_anchor = 1.0
-
         dated_events = []
         for event_id, event_rows in groups.items():
-            start = min(row_date(row) for row in event_rows)
-            dated_events.append((start, event_id, event_rows))
+            start_date = min(row_date(row) for row in event_rows)
+            dated_events.append((start_date, event_id, event_rows))
         dated_events.sort(key=lambda item: (item[0], item[1]))
+
+        # First fit the production retrospective LOEO profile independently for each target.
+        # This reproduces season_ratings(): all same-season standard events except the target
+        # may train profiles and the target-specific tour-average ace anchor.
+        retrospective_by_event = {}
+        for start_date, event_id, event_rows in dated_events:
+            training = [
+                row for row in standard_rows
+                if compute_speed.tournament_id(row.get("tourney_name")) != event_id
+            ]
+            if not training:
+                continue
+            profiles = fit_profiles(year, training)
+            tour_rate = compute_speed.tour_average_ace_rate(training)
+            if tour_rate is None or not 0.0 < tour_rate < 1.0:
+                continue
+            metrics = event_metrics(event_rows, profiles, tour_rate)
+            if metrics is None:
+                continue
+            metrics["profileTrainingMatches"] = len(training)
+            metrics["tourAceRate"] = tour_rate
+            retrospective_by_event[event_id] = metrics
+
+        # Production season normalisation: prefer events with at least twenty adjusted sides;
+        # otherwise use all rateable standard events.
+        ret_stable = [
+            metrics["raw"] for metrics in retrospective_by_event.values()
+            if metrics["adjustedServerSides"] >= compute_speed.MIN_NORMALISER_SERVER_SIDES
+        ]
+        ret_anchor_values = ret_stable or [
+            metrics["raw"] for metrics in retrospective_by_event.values()
+        ]
+        if not ret_anchor_values:
+            continue
+        retrospective_anchor = statistics.mean(ret_anchor_values)
+
+        if prior_tour_rate is None:
+            prior_rows = []
+            try:
+                prior_rows = compute_speed.calculation_eligible_rows(
+                    compute_speed.valid_rows(compute_speed.load(year - 1))
+                )
+            except Exception:
+                prior_rows = []
+            prior_tour_rate = compute_speed.tour_average_ace_rate(prior_rows)
+
+        if prior_anchor is None:
+            # Only the earliest covered season should need this labelled neutral anchor.
+            prior_anchor = retrospective_anchor
 
         chronological_raws = []
         event_items = []
-        for start, event_id, event_rows in dated_events:
-            production = retrospective.get(event_id)
-            if production is None or production.get("speed") is None:
+        for start_date, event_id, event_rows in dated_events:
+            retro = retrospective_by_event.get(event_id)
+            if retro is None:
                 continue
 
-            target_start_cutoff = start - timedelta(days=quarantine_days)
+            # The archive gives tournament start dates rather than individual match dates.
+            # Exclude the target's entire 14-day pre-start window so an overlapping or
+            # two-week event cannot leak matches played after this target began.
+            cutoff = start_date - timedelta(days=quarantine_days)
             chronological_training = [
                 row for row in standard_rows
-                if (row_date(row) is not None and row_date(row) <= target_start_cutoff)
+                if row_date(row) is not None and row_date(row) <= cutoff
             ]
-            # Build a reference only from earlier-season tournaments outside the conservative
-            # overlap window. Current-year player samples and tour anchor both obey this cutoff.
             chrono_profiles = fit_profiles(year, chronological_training)
             current_tour_rate = compute_speed.tour_average_ace_rate(chronological_training)
+
             if current_tour_rate is None:
                 chrono_tour_rate = prior_tour_rate
+            elif prior_tour_rate is None:
+                chrono_tour_rate = current_tour_rate
             else:
                 current_points = sum(
                     compute_speed.num(row.get("w_svpt")) + compute_speed.num(row.get("l_svpt"))
@@ -184,18 +230,17 @@ def run(start_year, end_year, quarantine_days):
                 chrono_tour_rate = (
                     current_aces + prior_tour_rate * prior_points
                 ) / (current_points + prior_points)
+
             if chrono_tour_rate is None or not 0.0 < chrono_tour_rate < 1.0:
                 continue
-
             chronological = event_metrics(event_rows, chrono_profiles, chrono_tour_rate)
             if chronological is None:
                 continue
 
-            # A causal season anchor uses only standard events that began outside the same
-            # quarantine window and have already contributed an event estimate.
+            # Rolling anchor uses only earlier events outside the same quarantine window.
             prior_event_metrics = [
                 item for event_date, item in chronological_raws
-                if event_date <= target_start_cutoff
+                if event_date <= cutoff
             ]
             stable_prior = [
                 item["raw"] for item in prior_event_metrics
@@ -204,57 +249,53 @@ def run(start_year, end_year, quarantine_days):
             if not stable_prior:
                 stable_prior = [item["raw"] for item in prior_event_metrics]
             chrono_anchor = statistics.mean(stable_prior) if stable_prior else prior_anchor
-            chronological_raws.append((start, chronological))
+            chronological_raws.append((start_date, chronological))
 
-            retrospective_diag = production.get("calculationDiagnostics") or {}
+            retro_rating = retro["raw"] / retrospective_anchor
+            chrono_rating = chronological["raw"] / chrono_anchor if chrono_anchor else None
             event = {
                 "year": year,
                 "event": event_id,
-                "startDate": start.isoformat(),
-                "matches": chronological["matches"],
+                "startDate": start_date.isoformat(),
+                "matches": len(event_rows),
                 "retrospective": {
-                    "rating": production.get("speed"),
-                    "raw": retrospective_diag.get("rawAdjustedEventScore"),
-                    "normalisation": retrospective_diag.get("seasonNormalisation"),
-                    "logLossPerServicePoint": None,
-                    "adjustedServerSides": production.get("adjustedServerSides"),
-                    "profileTrainingMatches": None,
+                    "rating": retro_rating,
+                    "raw": retro["raw"],
+                    "normalisation": retrospective_anchor,
+                    "logLoss": retro["logLoss"],
+                    "logLossPerServicePoint": retro["logLossPerServicePoint"],
+                    "totalServicePoints": retro["totalServicePoints"],
+                    "adjustedServerSides": retro["adjustedServerSides"],
+                    "profileTrainingMatches": retro["profileTrainingMatches"],
+                    "tourAceRate": retro["tourAceRate"],
                 },
                 "chronological": {
-                    "rating": chronological["raw"] / chrono_anchor if chrono_anchor else None,
+                    "rating": chrono_rating,
                     "raw": chronological["raw"],
                     "normalisation": chrono_anchor,
+                    "logLoss": chronological["logLoss"],
                     "logLossPerServicePoint": chronological["logLossPerServicePoint"],
+                    "totalServicePoints": chronological["totalServicePoints"],
                     "adjustedServerSides": chronological["adjustedServerSides"],
                     "profileTrainingMatches": len(chronological_training),
                     "tourAceRate": chrono_tour_rate,
                     "quarantineDays": quarantine_days,
                 },
             }
-            # Recreate the production retrospective training context to get a fair held-out
-            # per-service-point log-loss comparison for exactly the same target matches.
-            retro_training = [row for row in standard_rows
-                              if compute_speed.tournament_id(row.get("tourney_name")) != event_id]
-            retro_profiles = fit_profiles(year, retro_training)
-            retro_tour_rate = compute_speed.tour_average_ace_rate(retro_training)
-            if retro_tour_rate and 0.0 < retro_tour_rate < 1.0:
-                retro_metrics = event_metrics(event_rows, retro_profiles, retro_tour_rate)
-                if retro_metrics:
-                    event["retrospective"]["logLossPerServicePoint"] = retro_metrics["logLossPerServicePoint"]
-                    event["retrospective"]["profileTrainingMatches"] = len(retro_training)
             event["ratingDeltaChronologicalMinusRetrospective"] = (
-                event["chronological"]["rating"] - event["retrospective"]["rating"]
-                if event["chronological"]["rating"] is not None else None
+                chrono_rating - retro_rating if chrono_rating is not None else None
             )
             event_items.append(event)
             all_event_pairs.append(event)
 
         retro_scores = {item["event"]: item["retrospective"]["rating"] for item in event_items}
         chrono_scores = {item["event"]: item["chronological"]["rating"] for item in event_items}
-        paired = [item for item in event_items if item["chronological"]["logLossPerServicePoint"] is not None
-                  and item["retrospective"]["logLossPerServicePoint"] is not None]
         deltas = [item["ratingDeltaChronologicalMinusRetrospective"] for item in event_items
                   if item["ratingDeltaChronologicalMinusRetrospective"] is not None]
+        ret_points = sum(item["retrospective"]["totalServicePoints"] for item in event_items)
+        chrono_points = sum(item["chronological"]["totalServicePoints"] for item in event_items)
+        ret_loss = sum(item["retrospective"]["logLoss"] for item in event_items)
+        chrono_loss = sum(item["chronological"]["logLoss"] for item in event_items)
         year_results.append({
             "year": year,
             "source": source,
@@ -262,17 +303,12 @@ def run(start_year, end_year, quarantine_days):
             "meanAbsoluteRatingDelta": statistics.mean(abs(value) for value in deltas) if deltas else None,
             "medianAbsoluteRatingDelta": statistics.median(abs(value) for value in deltas) if deltas else None,
             "spearmanRatingRankCorrelation": spearman_rank(retro_scores, chrono_scores),
-            "retrospectiveMeanLogLoss": (
-                statistics.mean(item["retrospective"]["logLossPerServicePoint"] for item in paired)
-                if paired else None
-            ),
-            "chronologicalMeanLogLoss": (
-                statistics.mean(item["chronological"]["logLossPerServicePoint"] for item in paired)
-                if paired else None
-            ),
+            "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
+            "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
             "priorYearFallbackAnchor": prior_anchor,
             "priorYearTourAceRate": prior_tour_rate,
             "priorYearWarning": prior_error,
+            "retrospectiveNormalisation": retrospective_anchor,
             "events": event_items,
         })
         print(
@@ -282,13 +318,12 @@ def run(start_year, end_year, quarantine_days):
             flush=True,
         )
 
-    paired_events = [
-        item for item in all_event_pairs
-        if item["retrospective"]["logLossPerServicePoint"] is not None
-        and item["chronological"]["logLossPerServicePoint"] is not None
-    ]
     deltas = [item["ratingDeltaChronologicalMinusRetrospective"] for item in all_event_pairs
               if item["ratingDeltaChronologicalMinusRetrospective"] is not None]
+    ret_points = sum(item["retrospective"]["totalServicePoints"] for item in all_event_pairs)
+    chrono_points = sum(item["chronological"]["totalServicePoints"] for item in all_event_pairs)
+    ret_loss = sum(item["retrospective"]["logLoss"] for item in all_event_pairs)
+    chrono_loss = sum(item["chronological"]["logLoss"] for item in all_event_pairs)
     summary = {
         "startYear": start_year,
         "endYear": end_year,
@@ -296,18 +331,13 @@ def run(start_year, end_year, quarantine_days):
         "eventsCompared": len(all_event_pairs),
         "meanAbsoluteRatingDelta": statistics.mean(abs(value) for value in deltas) if deltas else None,
         "medianAbsoluteRatingDelta": statistics.median(abs(value) for value in deltas) if deltas else None,
-        "meanRetrospectiveLogLoss": (
-            statistics.mean(item["retrospective"]["logLossPerServicePoint"] for item in paired_events)
-            if paired_events else None
-        ),
-        "meanChronologicalLogLoss": (
-            statistics.mean(item["chronological"]["logLossPerServicePoint"] for item in paired_events)
-            if paired_events else None
-        ),
+        "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
+        "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
         "warning": (
-            "Research only. CSV tournament_date is a tournament start-date proxy, not an individual "
-            "match timestamp. A 14-day quarantine reduces overlap leakage but removes recent evidence. "
-            "This does not prove one method is objectively superior or change production ratings."
+            "Research only. The source CSV provides tournament start dates, not exact match "
+            "timestamps. The conservative quarantine avoids most overlapping-event leakage but "
+            "also discards recent evidence. The result is a model comparison, not an automatic "
+            "production-methodology change."
         ),
         "years": year_results,
     }
