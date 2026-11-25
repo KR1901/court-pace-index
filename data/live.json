@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-25T07:38:42Z",
+  "generated": "2026-11-25T12:50:58Z",
   "note": "Active event windows support ATP live stats; Davis Cup Final 8 is retained as schedule metadata only until an official match-stat source is validated. Ended windows remain as completed-rating backfill metadata and stale-route guards.",
   "events": [
     {
