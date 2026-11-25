@@ -17,13 +17,12 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
 
-from davis_cup_policy import is_supported_davis_cup_calculation_year
+from davis_cup_policy import TML_DAVIS_CUP_SOURCE, is_supported_davis_cup_calculation_year
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
 TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
 TML_ONGOING_URL = "https://stats.tennismylife.org/data/ongoing_tourneys.csv"
-TML_DAVIS_CUP_SOURCE = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
 PROFILE_HISTORY_START_YEAR = 1991
 YEARS = range(PROFILE_HISTORY_START_YEAR, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F", "250", "500"}  # Standard ATP tour events
