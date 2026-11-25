@@ -24,6 +24,8 @@ PROFILE_HISTORY_START_YEAR = 1991
 YEARS = range(PROFILE_HISTORY_START_YEAR, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F", "250", "500"}  # Standard ATP tour events
 TARGET_LEVELS = LEVELS | {"D"}  # Davis Cup is a separate target, never ATP training
+DAVIS_CUP_CALC_START_YEAR = 2016
+DAVIS_CUP_CALC_END_YEAR = 2024
 SOURCE_BY_YEAR = {}
 SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
@@ -263,6 +265,18 @@ def calculation_eligible_rows(rows):
         if row.get("tourney_level") != "D"
         and not _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
         and _normalise_event_name(row.get("tourney_name")) not in PROFILE_TRAINING_EXCLUDED_EVENT_KEYS
+    ]
+
+
+def target_rows_for_season(year, rows):
+    """Keep Davis Cup as a CALC target only in archive seasons with validated serve stats."""
+    season = int(year)
+    valid = valid_rows(rows)
+    if DAVIS_CUP_CALC_START_YEAR <= season <= DAVIS_CUP_CALC_END_YEAR:
+        return valid
+    return [
+        row for row in valid
+        if tournament_id(row.get("tourney_name")) != "daviscup"
     ]
 
 
@@ -1149,7 +1163,7 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 def season_ratings(year, rows):
     """LOEO ratings; Next Gen and Davis Cup are target-only, never ATP training inputs."""
-    target_rows = valid_rows(rows)
+    target_rows = target_rows_for_season(year, rows)
     # Next Gen is valid as a target event, but its short-set/no-ad matches must never
     # influence standard ATP player histories, same-season priors or live baselines.
     # Davis Cup is also a target, but stays outside ATP player profiles and the ATP normaliser.
