@@ -202,22 +202,43 @@ def load_tml_ongoing_davis_cup(year):
     return davis_rows, metadata
 
 
+def davis_cup_match_key(row):
+    """Stable rubber key across annual and ongoing TML snapshots."""
+    tournament_id = str(row.get("tourney_id") or "").strip()
+    match_date = str(row.get("tourney_date") or "").strip()
+    match_number = str(row.get("match_num") or "").strip()
+    if tournament_id and match_date and match_number:
+        return ("rubber", tournament_id, match_date, match_number)
+    return (
+        "fallback",
+        tournament_id,
+        match_date,
+        str(row.get("winner_id") or "").strip(),
+        str(row.get("loser_id") or "").strip(),
+        str(row.get("winner_name") or "").strip(),
+        str(row.get("loser_name") or "").strip(),
+    )
+
+
 def merge_davis_cup_rows(annual_rows, supplement_rows):
-    """Merge annual and live TML rows without double-counting matches."""
-    merged = list(annual_rows)
-    seen = set()
-    fields = ("tourney_id", "tourney_date", "match_num", "winner_id", "loser_id", "score")
+    """Merge annual and ongoing TML rows, preferring the fresher supplement on overlap."""
+    merged = {}
+    order = []
     for row in annual_rows:
-        seen.add(tuple(str(row.get(field) or "").strip() for field in fields))
+        key = davis_cup_match_key(row)
+        if key not in merged:
+            order.append(key)
+        merged[key] = dict(row)
     added = 0
     for row in supplement_rows:
-        key = tuple(str(row.get(field) or "").strip() for field in fields)
-        if key in seen:
-            continue
-        seen.add(key)
-        merged.append(row)
-        added += 1
-    return merged, added
+        key = davis_cup_match_key(row)
+        if key not in merged:
+            order.append(key)
+            added += 1
+        # The ongoing feed wins even when the annual row has the same rubber but older,
+        # missing or partial statistics. A match must appear exactly once in the target.
+        merged[key] = dict(row)
+    return [merged[key] for key in order], added
 
 
 def load(year):
