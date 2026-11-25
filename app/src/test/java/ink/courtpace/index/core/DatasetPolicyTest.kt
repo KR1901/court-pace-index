@@ -83,8 +83,10 @@ class DatasetPolicyTest {
             start = "2026-11-15", end = "2026-11-22",
             atpId = 605, slug = "nitto-atp-finals",
         )
+        // The full data refresh now bundles Davis Cup metadata. Keep this fixture
+        // valid both before and after that generated asset is present.
         val withDavisCup = bundled.copy(
-            tournaments = bundled.tournaments + davis,
+            tournaments = bundled.tournaments.filterNot { it.id == davis.id } + davis,
             live = listOf(bundledEvent),
         )
         val remoteAtpOnly = withDavisCup.copy(live = listOf(atpEvent))
