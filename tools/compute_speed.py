@@ -22,6 +22,8 @@ from davis_cup_policy import is_supported_davis_cup_calculation_year
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
 TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
+TML_ONGOING_URL = "https://stats.tennismylife.org/data/ongoing_tourneys.csv"
+TML_ONGOING_SOURCE = "TennisMyLife ATP ongoing tournament feed"
 PROFILE_HISTORY_START_YEAR = 1991
 YEARS = range(PROFILE_HISTORY_START_YEAR, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F", "250", "500"}  # Standard ATP tour events
@@ -134,11 +136,53 @@ def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_D
         return False
 
 
+def _match_row_key(row):
+    """Stable key for a match across TML's annual and ongoing snapshots."""
+    tournament = str(row.get("tourney_id") or "").strip()
+    match_num = str(row.get("match_num") or "").strip()
+    if tournament and match_num:
+        return ("id", tournament, match_num)
+    return (
+        "fallback",
+        _normalise_event_name(row.get("tourney_name")),
+        str(row.get("tourney_date") or "").strip(),
+        match_num,
+        str(row.get("winner_id") or "").strip(),
+        str(row.get("loser_id") or "").strip(),
+    )
+
+
+def merge_match_rows(primary_rows, supplement_rows):
+    """Merge annual and ongoing TML snapshots, preferring the fresher ongoing row."""
+    merged = {}
+    order = []
+    for row in primary_rows:
+        key = _match_row_key(row)
+        if key not in merged:
+            order.append(key)
+        merged[key] = dict(row)
+    for row in supplement_rows:
+        key = _match_row_key(row)
+        if key not in merged:
+            order.append(key)
+        merged[key] = dict(row)
+    return [merged[key] for key in order]
+
+
+def _row_has_usable_ace_stats(row):
+    values = [num(row.get(key)) for key in ("w_svpt", "l_svpt", "w_ace", "l_ace")]
+    if any(value is None or not math.isfinite(value) for value in values):
+        return False
+    w_sv, l_sv, w_ac, l_ac = values
+    return w_sv > 0 and l_sv > 0 and 0 <= w_ac <= w_sv and 0 <= l_ac <= l_sv
+
+
 def load(year):
     os.makedirs(CACHE, exist_ok=True)
 
     # Prefer a fresh TML current-season download. After an outage, reuse a cached TML file
-    # only if its sidecar proves it was fetched in the prior seven days.
+    # only if its sidecar proves it was fetched in the prior seven days. The ongoing snapshot
+    # supplies late-season results that have not yet moved into the annual CSV.
     if year == date.today().year:
         SOURCE_BY_YEAR.pop(year, None)
         SOURCE_METADATA_BY_YEAR.pop(year, None)
@@ -207,7 +251,86 @@ def load(year):
                 with open(path, newline="") as f:
                     return list(csv.DictReader(f))
         with open(tml_path, newline="") as f:
-            return list(csv.DictReader(f))
+            annual_rows = list(csv.DictReader(f))
+        ongoing_path = os.path.join(CACHE, "tml_atp_ongoing_tourneys.csv")
+        ongoing_metadata_path = ongoing_path + ".meta.json"
+        ongoing_rows = []
+        ongoing_metadata = None
+        ongoing_request = urllib.request.Request(
+            TML_ONGOING_URL,
+            headers={"User-Agent": "CourtPaceIndex/1.0", "Accept": "text/csv"},
+        )
+        try:
+            with urllib.request.urlopen(ongoing_request, timeout=90) as response:
+                ongoing_payload = response.read()
+            if not ongoing_payload.startswith(b"tourney_id,") or b"w_svpt" not in ongoing_payload[:4096]:
+                raise ValueError("TennisMyLife ongoing feed returned an unexpected CSV schema")
+            ongoing_parsed = list(csv.DictReader(ongoing_payload.decode("utf-8-sig").splitlines()))
+            if not ongoing_parsed:
+                raise ValueError("TennisMyLife ongoing feed is empty")
+            if not {"tourney_id", "tourney_name", "tourney_date", "match_num",
+                    "tourney_level", "winner_id", "loser_id",
+                    "w_svpt", "l_svpt", "w_ace", "l_ace"}.issubset(ongoing_parsed[0]):
+                raise ValueError("TennisMyLife ongoing feed is missing required match/stat fields")
+            with open(ongoing_path, "wb") as f:
+                f.write(ongoing_payload)
+            ongoing_dates = [
+                row.get("tourney_date", "")
+                for row in ongoing_parsed
+                if (row.get("tourney_date") or "").isdigit()
+            ]
+            ongoing_metadata = {
+                "source": TML_ONGOING_SOURCE,
+                "url": TML_ONGOING_URL,
+                "fetchedAtUtc": datetime.now(timezone.utc).isoformat(),
+                "latestMatchDate": max(ongoing_dates) if ongoing_dates else None,
+                "matchRows": len(ongoing_parsed),
+                "bytes": len(ongoing_payload),
+                "sha256": hashlib.sha256(ongoing_payload).hexdigest(),
+            }
+            with open(ongoing_metadata_path, "w", encoding="utf-8") as f:
+                json.dump(ongoing_metadata, f, indent=2)
+            ongoing_rows = ongoing_parsed
+        except (HTTPError, urllib.error.URLError, TimeoutError, ValueError, OSError) as error:
+            if os.path.exists(ongoing_path) and tml_cache_is_fresh(ongoing_metadata_path):
+                with open(ongoing_metadata_path, encoding="utf-8") as f:
+                    ongoing_metadata = json.load(f)
+                with open(ongoing_path, newline="") as f:
+                    ongoing_rows = list(csv.DictReader(f))
+                print(
+                    f"warning: TML ongoing refresh failed ({error}); using verified cache "
+                    f"fetched {ongoing_metadata['fetchedAtUtc']}"
+                )
+            else:
+                print(
+                    f"warning: TML ongoing feed unavailable ({error}); "
+                    "Davis Cup current-season ratings remain source-gated"
+                )
+
+        merged_rows = merge_match_rows(annual_rows, ongoing_rows)
+        davis_finals_rows = [
+            row for row in merged_rows
+            if row.get("tourney_level") == "D"
+            and "finals" in _normalise_event_name(row.get("tourney_name"))
+            and str(row.get("tourney_date") or "").startswith(str(year))
+        ]
+        davis_finals_rows_with_stats = [
+            row for row in davis_finals_rows if _row_has_usable_ace_stats(row)
+        ]
+        metadata["ongoingSourceMetadata"] = ongoing_metadata
+        metadata["ongoingFeedRowsMerged"] = len(ongoing_rows)
+        metadata["davisCupFinalsRows"] = len(davis_finals_rows)
+        metadata["davisCupFinalsMatchesWithStats"] = len(davis_finals_rows_with_stats)
+        metadata["davisCupFinalsLatestMatchDate"] = (
+            max((row.get("tourney_date", "") for row in davis_finals_rows_with_stats), default=None)
+        )
+        with open(metadata_path, "w", encoding="utf-8") as f:
+            json.dump(metadata, f, indent=2)
+        SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database"
+        if davis_finals_rows_with_stats:
+            SOURCE_BY_YEAR[year] += " + validated Davis Cup Finals serve statistics"
+        SOURCE_METADATA_BY_YEAR[year] = metadata
+        return merged_rows
 
     path = os.path.join(CACHE, f"atp_matches_{year}.csv")
     if not os.path.exists(path):
@@ -1163,7 +1286,14 @@ def season_ratings(year, rows):
     ]
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
-        if tid is not None and is_supported_davis_cup_calculation_year(tid, year):
+        if tid is not None and is_supported_davis_cup_calculation_year(
+            tid,
+            year,
+            source=SOURCE_BY_YEAR.get(year),
+            davis_cup_finals_matches_with_stats=(
+                SOURCE_METADATA_BY_YEAR.get(year, {}).get("davisCupFinalsMatchesWithStats", 0)
+            ),
+        ):
             rows_by_event[tid].append(row)
 
     details = {}
