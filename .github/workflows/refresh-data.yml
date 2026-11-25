@@ -9,7 +9,7 @@ on:
   push:
     branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias]
     paths:
-      # Test-only changes run in Android CI; workflow-only edits do not need a data rebuild.
+      # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
       - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
       - 'tools/build_dataset.py'
