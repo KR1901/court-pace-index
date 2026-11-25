@@ -16,6 +16,7 @@ import ink.courtpace.index.core.model.Surface
 import ink.courtpace.index.data.BundledDataset
 import ink.courtpace.index.data.DatasetUpdater
 import ink.courtpace.index.data.RefreshResult
+import ink.courtpace.index.data.TmlDavisCupClient
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -68,6 +69,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     var liveAceProgress by mutableStateOf<String?>(null)
 
     private val atpClient = ink.courtpace.index.data.AtpLiveClient(application)
+    private val tmlDavisCupClient = TmlDavisCupClient()
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
     private val liveRefreshMutex = Mutex()
     private val datasetRefreshMutex = Mutex()
@@ -195,9 +197,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Restore cached ratings only when their adjusted-side coverage is also available. */
     private fun restoreCachedLiveRating(cached: ink.courtpace.index.core.live.CachedLiveRating) {
-        // Discard Davis Cup values from the removed unofficial prototype; only a validated
-        // official source may populate this event's live rating in a future release.
-        if (cached.tournamentId == "daviscup") return
+        // Never restore legacy TennisRace/ATP-prototype Davis Cup values. Only the TML
+        // match-stat adapter may populate this separate annual target.
+        if (
+            cached.tournamentId == "daviscup" &&
+            cached.source != ink.courtpace.index.core.live.CachedLiveRating.TML_DAVIS_CUP_SOURCE
+        ) return
         val result = cached.toAceRatingResultOrNull() ?: return
         liveAceByEvent = liveAceByEvent + (cached.tournamentId to result)
         applyLiveRating(
@@ -379,6 +384,77 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     val message = error.message ?: "match stats unavailable"
                     eventStatus(message)
                     status("$name · $message")
+                }
+            }
+
+            // Davis Cup is a separate target and never enters the ATP training profiles or
+            // ATP normaliser. TML's current-season archive supplies earlier completed rubbers;
+            // ongoing_tourneys.csv adds newly completed Final 8 rubbers. The source is aggregate-
+            // only and is not saved as raw match data.
+            if (davisCupEvent != null) {
+                val baseline = _data.value?.dataset?.speedBaseline
+                    ?.takeIf { it.season == year }
+                if (baseline == null) {
+                    liveProgressByEvent = liveProgressByEvent +
+                        ("daviscup" to "TML · 2026 player baseline unavailable")
+                } else {
+                    liveProgressByEvent = liveProgressByEvent +
+                        ("daviscup" to "TML · reading annual and ongoing match statistics")
+                    runCatching {
+                        val batch = tmlDavisCupClient.fetch(year)
+                        val rating = ink.courtpace.index.core.live.AceRating.rate(
+                            matches = batch.matches,
+                            baseline = baseline,
+                            discoveredMatches = batch.discoveredMatches,
+                        )
+                        if (rating == null) {
+                            liveProgressByEvent = liveProgressByEvent + (
+                                "daviscup" to
+                                    "TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} " +
+                                        "singles matches have serve stats; awaiting rateable sides"
+                            )
+                        } else {
+                            liveAceByEvent = liveAceByEvent + ("daviscup" to rating)
+                            applyLiveRating(
+                                "daviscup",
+                                year,
+                                rating.rating,
+                                rating.matches,
+                                rating.aceRate,
+                            )
+                            ratingStore.write(
+                                ink.courtpace.index.core.live.CachedLiveRating(
+                                    tournamentId = "daviscup",
+                                    season = year,
+                                    speed = rating.rating,
+                                    matches = rating.matches,
+                                    aceRate = rating.aceRate,
+                                    asOf = java.time.Instant.now().toString(),
+                                    baselineGenerated = baseline.generated,
+                                    discoveredMatches = batch.discoveredMatches,
+                                    adjustedServerSides = rating.adjustedServerSides,
+                                    totalServerSides = rating.totalServerSides,
+                                    aces = rating.aces,
+                                    adjustmentIssues = rating.adjustmentIssues,
+                                    source = ink.courtpace.index.core.live.CachedLiveRating.TML_DAVIS_CUP_SOURCE,
+                                ),
+                            )
+                            liveProgressByEvent = liveProgressByEvent + (
+                                "daviscup" to
+                                    "TML · ${rating.matches} matches rated · " +
+                                        "${rating.adjustedServerSides}/${rating.totalServerSides} sides adjusted"
+                            )
+                        }
+                        status(
+                            "Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} " +
+                                "singles matches with serve statistics",
+                        )
+                    }.onFailure { error ->
+                        val detail = error.message ?: "TML match statistics unavailable"
+                        liveProgressByEvent = liveProgressByEvent +
+                            ("daviscup" to "TML · $detail")
+                        status("Davis Cup · TML · $detail")
+                    }
                 }
             }
 
