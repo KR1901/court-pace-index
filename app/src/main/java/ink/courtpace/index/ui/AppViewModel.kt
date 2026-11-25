@@ -297,7 +297,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // Restore valid per-event figures from the local cache while fresh pages render.
             val activeBaseline = _data.value?.dataset?.speedBaseline
             if (activeBaseline != null) {
-                val activeKeys = refs.map { it.tournamentId to it.year }.toSet()
+                val activeKeys = refs.map { it.tournamentId to it.year }.toSet() +
+                    if (davisCupEvent != null) setOf("daviscup" to year) else emptySet()
                 ratingStore.readAll()
                     .filter {
                         it.season == activeBaseline.season &&
