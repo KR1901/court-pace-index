@@ -108,6 +108,34 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertEqual([atp], compute_speed.calculation_eligible_rows(valid))
         self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
+    def test_annual_and_ongoing_tml_snapshots_merge_without_double_counting(self):
+        annual = [
+            {"tourney_id": "event-a", "match_num": "1", "winner_id": "p1", "w_ace": "4"},
+            {"tourney_id": "event-a", "match_num": "2", "winner_id": "p2", "w_ace": "5"},
+        ]
+        ongoing = [
+            {"tourney_id": "event-a", "match_num": "2", "winner_id": "p2", "w_ace": "7"},
+            {"tourney_id": "davis-finals", "match_num": "1", "winner_id": "p3", "w_ace": "9"},
+        ]
+
+        merged = compute_speed.merge_match_rows(annual, ongoing)
+
+        self.assertEqual(3, len(merged))
+        indexed = {(row["tourney_id"], row["match_num"]): row for row in merged}
+        self.assertEqual("4", indexed[("event-a", "1")]["w_ace"])
+        self.assertEqual("7", indexed[("event-a", "2")]["w_ace"])
+        self.assertEqual("9", indexed[("davis-finals", "1")]["w_ace"])
+
+    def test_usable_davis_cup_final_rows_require_complete_singles_serve_statistics(self):
+        complete = {
+            "tourney_level": "D", "tourney_name": "Davis Cup Finals QF",
+            "winner_id": "p1", "loser_id": "p2",
+            "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
+        }
+        incomplete = dict(complete, l_svpt="")
+        self.assertTrue(compute_speed._row_has_usable_ace_stats(complete))
+        self.assertFalse(compute_speed._row_has_usable_ace_stats(incomplete))
+
     def test_davis_cup_diagnostic_ids_do_not_collide_when_tie_match_numbers_repeat(self):
         rows = [
             {
@@ -899,6 +927,21 @@ class DavisCupSourceWindowTests(unittest.TestCase):
         for year in (1991, 2015, 2025, 2026, 2030):
             with self.subTest(year=year):
                 self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", year))
+
+        tml_source = "TennisMyLife ATP Match Database + validated Davis Cup Finals serve statistics"
+        self.assertTrue(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source=tml_source, davis_cup_finals_matches_with_stats=2,
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source=tml_source, davis_cup_finals_matches_with_stats=0,
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source="Jeff Sackmann ATP archive", davis_cup_finals_matches_with_stats=2,
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source="TennisMyLife ATP Match Database",
+            davis_cup_finals_matches_with_stats=2,
+        ))
 
         # The Davis Cup source window must not constrain ordinary ATP event history.
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 1991))
