@@ -80,15 +80,24 @@ class PaceData(val dataset: PaceDataset) {
             .filter { it.s == season && it.value(metric) != null }
         return when (metric) {
             Metric.CPI -> rows.firstOrNull()
-            Metric.SPEED -> rows.firstOrNull { it.src == "live" }
+            // A live estimate is provisional and may only override the archived reading while
+            // that exact tournament edition is still in progress. Completed editions must
+            // resolve to the offline LOEO CALC record, never a cached post-event live backfill.
+            Metric.SPEED -> liveReading(id, season)
                 ?: rows.firstOrNull { it.src == "computed" }
-                ?: rows.firstOrNull()
+                ?: rows.firstOrNull { it.src != "live" }
         }
     }
 
-    /** A live-only reading; historical published values must not masquerade as a live result. */
-    fun liveReading(id: String, season: Int): PaceReading? =
-        dataset.readings.lastOrNull { it.t == id && it.s == season && it.src == "live" }
+    /**
+     * A live-only reading for an event that is still within its active window.
+     * Old cached live estimates are deliberately hidden after completion; the final value
+     * must come from the event's archived leave-one-event-out CALC calculation.
+     */
+    fun liveReading(id: String, season: Int): PaceReading? {
+        if (!isLive(id, season)) return null
+        return dataset.readings.lastOrNull { it.t == id && it.s == season && it.src == "live" }
+    }
 
     /** Original published Tennis Abstract value, including when retained on a CALC record. */
     fun publishedSpeed(id: String, season: Int): Double? {
@@ -135,9 +144,10 @@ class PaceData(val dataset: PaceDataset) {
         readingsFor(id)
             .groupBy { it.s }
             .map { (season, rows) ->
-                val speedReading = rows.firstOrNull { it.src == "live" && it.speed != null }
+                val currentLiveReading = liveReading(id, season)
+                val speedReading = currentLiveReading?.takeIf { it.speed != null }
                     ?: rows.firstOrNull { it.src == "computed" && it.speed != null }
-                    ?: rows.firstOrNull { it.speed != null }
+                    ?: rows.firstOrNull { it.src != "live" && it.speed != null }
                 SeasonRow(
                     season = season,
                     cpi = rows.firstNotNullOfOrNull { it.cpi },

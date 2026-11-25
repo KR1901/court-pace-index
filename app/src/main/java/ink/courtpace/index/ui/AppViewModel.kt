@@ -71,8 +71,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val ratingStore = ink.courtpace.index.data.LiveRatingStore(application)
     private val liveRefreshMutex = Mutex()
     private val datasetRefreshMutex = Mutex()
-    /** Failed completed-event backfills are retried less often than the five-minute live poll. */
-    private val completedBackfillAttemptAt = mutableMapOf<Pair<String, Int>, Long>()
     private var livePollingStarted = false
     private var datasetPollingStarted = false
 
@@ -215,10 +213,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun showCachedLiveRatings() {
         val dataset = _data.value?.dataset ?: return
         val baseline = dataset.speedBaseline ?: return
+        val parsed = PaceData(dataset)
         ratingStore.readAll()
             .filter {
                 it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
-                    it.season == baseline.season && it.baselineGenerated == baseline.generated
+                    it.season == baseline.season &&
+                    it.baselineGenerated == baseline.generated &&
+                    parsed.isLive(it.tournamentId, it.season)
             }
             .forEach(::restoreCachedLiveRating)
     }
@@ -248,11 +249,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
             val refs = discovery.events
             val existing = _data.value?.dataset?.live.orEmpty()
-            // Keep the Davis Cup Final 8 schedule row while ATP events refresh independently.
-            // No official 2026 match-stat feed has been validated for live rating calculation.
+            // Keep the Davis Cup Final 8 schedule row while its ITF-authorised match-stat
+            // feed is not yet connected. Public score pages are not a substitute for a licensed
+            // machine-readable source of the serve statistics required by this calculation.
             val davisCupEvent = existing.firstOrNull { it.t == "daviscup" && it.s == year }
+            val davisCupPending = "Awaiting an ITF-authorised match-stat feed"
             liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" } +
-                if (davisCupEvent != null) mapOf("daviscup" to "Official match statistics unavailable") else emptyMap()
+                if (davisCupEvent != null) mapOf("daviscup" to davisCupPending) else emptyMap()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
                 previous?.copy(
@@ -277,7 +280,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             liveAceByEvent = emptyMap()
             if (refs.isEmpty()) {
                 liveProgressByEvent = if (davisCupEvent != null) {
-                    mapOf("daviscup" to "Official match statistics unavailable")
+                    mapOf("daviscup" to davisCupPending)
                 } else emptyMap()
                 val note = if (discovery.hubReadable) {
                     "current ATP hub has no active events"
@@ -290,9 +293,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // Restore valid per-event figures from the local cache while fresh pages render.
             val activeBaseline = _data.value?.dataset?.speedBaseline
             if (activeBaseline != null) {
+                val activeKeys = refs.map { it.tournamentId to it.year }.toSet()
                 ratingStore.readAll()
                     .filter {
                         it.season == activeBaseline.season &&
+                            (it.tournamentId to it.season) in activeKeys &&
                             it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
                             it.baselineGenerated == activeBaseline.generated
                     }
@@ -377,65 +382,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            // Backfill recently completed events into the season rating table without adding
-            // them to the active Live now list.
-            val baselineForCompleted = _data.value?.dataset?.speedBaseline
-            for (ref in discovery.completedEvents) {
-                val baseline = baselineForCompleted?.takeIf { it.season == ref.year }
-                if (baseline == null) {
-                    status("${ref.slug} · season ${ref.year} opponent-adjustment baseline unavailable")
-                    continue
-                }
-                val cached = ratingStore.read(ref.tournamentId)
-                val cachedResult = cached?.takeIf {
-                    it.season == ref.year &&
-                        it.methodVersion == ink.courtpace.index.core.live.CachedLiveRating.CURRENT_METHOD_VERSION &&
-                        it.baselineGenerated == baseline.generated
-                }?.toAceRatingResultOrNull()
-                if (cachedResult != null) {
-                    restoreCachedLiveRating(cached!!)
-                    continue
-                }
-
-                val key = ref.tournamentId to ref.year
-                val attemptedAt = completedBackfillAttemptAt[key] ?: 0L
-                if (System.currentTimeMillis() - attemptedAt < COMPLETED_BACKFILL_RETRY_MS) continue
-                completedBackfillAttemptAt[key] = System.currentTimeMillis()
-
-                val name = _data.value?.tournament(ref.tournamentId)?.name ?: ref.slug
-                status("$name · backfilling completed matches")
-                val result = withTimeoutOrNull(WALK_TIMEOUT_MS) {
-                    atpClient.fetchAceRating(event = ref, baseline = baseline)
-                } ?: Result.failure(
-                    IllegalStateException("timed out reading completed match stats"),
-                )
-                result.onSuccess { rating ->
-                    liveAceByEvent = liveAceByEvent + (ref.tournamentId to rating)
-                    applyLiveRating(
-                        ref.tournamentId, ref.year, rating.rating, rating.matches, rating.aceRate,
-                    )
-                    ratingStore.write(
-                        ink.courtpace.index.core.live.CachedLiveRating(
-                            tournamentId = ref.tournamentId,
-                            season = ref.year,
-                            speed = rating.rating,
-                            matches = rating.matches,
-                            aceRate = rating.aceRate,
-                            asOf = java.time.Instant.now().toString(),
-                            baselineGenerated = baseline.generated,
-                            discoveredMatches = rating.discoveredMatches,
-                            adjustedServerSides = rating.adjustedServerSides,
-                            totalServerSides = rating.totalServerSides,
-                            aces = rating.aces,
-                            adjustmentIssues = rating.adjustmentIssues,
-                        ),
-                    )
-                    completedBackfillAttemptAt.remove(key)
-                    status("$name · completed rating saved · ${rating.matches} matches")
-                }.onFailure { error ->
-                    status("$name · completed backfill: ${error.message ?: "match stats unavailable"}")
-                }
-            }
+            // Completed events are intentionally not recomputed with the shared live baseline.
+            // Once an event leaves the active slate, its matches re-enter the season archive and
+            // the Python season_ratings() pipeline publishes the final per-event LOEO CALC.
+            // Until that snapshot arrives, retain the last archived value rather than replacing
+            // it with a post-event estimate whose own matches now train its shared baseline.
         } catch (error: CancellationException) {
             throw error
         } catch (error: Exception) {
@@ -507,9 +458,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
         /** Keep the event slate and ace-based reading current while the app is open. */
         const val LIVE_REFRESH_INTERVAL_MS = 5 * 60 * 1_000L
-
-        /** Retry failed completed-event backfills at most every six hours. */
-        const val COMPLETED_BACKFILL_RETRY_MS = 6 * 60 * 60 * 1_000L
 
         const val MAX_COMPARE = 3
     }
