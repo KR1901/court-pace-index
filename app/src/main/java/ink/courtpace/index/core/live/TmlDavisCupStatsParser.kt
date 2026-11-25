@@ -12,44 +12,44 @@ object TmlDavisCupStatsParser {
 
     fun parseSeason(snapshots: List<String>, season: Int): List<AtpMatchStats> {
         val matches = linkedMapOf<String, AtpMatchStats>()
-        snapshots.forEach { csv ->
+        snapshots.forEach snapshotLoop@ { csv ->
             val records = parseCsv(csv)
-            if (records.isEmpty()) return@forEach
+            if (records.isEmpty()) return@snapshotLoop
             val header = records.first().mapIndexed { index, name -> name.trim().removePrefix("\uFEFF") to index }.toMap()
             val required = listOf(
                 "tourney_id", "tourney_name", "tourney_level", "tourney_date", "match_num",
                 "best_of", "score", "winner_id", "winner_name", "loser_id", "loser_name",
                 "w_ace", "w_svpt", "l_ace", "l_svpt",
             )
-            if (required.any { it !in header }) return@forEach
+            if (required.any { it !in header }) return@snapshotLoop
 
-            records.drop(1).forEach { row ->
+            records.drop(1).forEach rowLoop@ { row ->
                 fun field(name: String): String = row.getOrNull(header[name] ?: -1)?.trim().orEmpty()
-                if (field("tourney_level") != "D") return@forEach
-                if (!field("tourney_name").startsWith("Davis Cup", ignoreCase = true)) return@forEach
-                if (field("tourney_date").take(4) != season.toString()) return@forEach
+                if (field("tourney_level") != "D") return@rowLoop
+                if (!field("tourney_name").startsWith("Davis Cup", ignoreCase = true)) return@rowLoop
+                if (field("tourney_date").take(4) != season.toString()) return@rowLoop
 
                 val winnerId = field("winner_id")
                 val loserId = field("loser_id")
-                if (winnerId.isBlank() || loserId.isBlank() || winnerId == loserId) return@forEach
+                if (winnerId.isBlank() || loserId.isBlank() || winnerId == loserId) return@rowLoop
 
                 val winner = field("winner_name")
                 val loser = field("loser_name")
-                if (winner.isBlank() || loser.isBlank()) return@forEach
-                if (isDoublesName(winner) || isDoublesName(loser)) return@forEach
+                if (winner.isBlank() || loser.isBlank()) return@rowLoop
+                if (isDoublesName(winner) || isDoublesName(loser)) return@rowLoop
 
                 val score = field("score")
-                if (!isCompletedScore(score, field("best_of").toIntOrNull() ?: 3)) return@forEach
+                if (!isCompletedScore(score, field("best_of").toIntOrNull() ?: 3)) return@rowLoop
 
-                val winnerAces = field("w_ace").toIntOrNull() ?: return@forEach
-                val loserAces = field("l_ace").toIntOrNull() ?: return@forEach
-                val winnerServicePoints = field("w_svpt").toIntOrNull() ?: return@forEach
-                val loserServicePoints = field("l_svpt").toIntOrNull() ?: return@forEach
+                val winnerAces = field("w_ace").toIntOrNull() ?: return@rowLoop
+                val loserAces = field("l_ace").toIntOrNull() ?: return@rowLoop
+                val winnerServicePoints = field("w_svpt").toIntOrNull() ?: return@rowLoop
+                val loserServicePoints = field("l_svpt").toIntOrNull() ?: return@rowLoop
                 if (
                     winnerServicePoints <= 0 || loserServicePoints <= 0 ||
                     winnerAces < 0 || loserAces < 0 ||
                     winnerAces > winnerServicePoints || loserAces > loserServicePoints
-                ) return@forEach
+                ) return@rowLoop
 
                 val matchId = "${field("tourney_id")}:${field("match_num")}".takeIf { it != ":" }
                     ?: "${field("tourney_date")}:${winnerId}:${loserId}"
