@@ -26,12 +26,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify bundled Davis Cup schedule and no provisional live rating
+      - name: Verify TML Davis Cup CALC and active LIVE rating
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json
+          from datetime import date, datetime, timezone
           from pathlib import Path
 
           path = Path("app/src/main/assets/pace_dataset.json")
@@ -41,10 +42,12 @@ jobs:
           assert any(row.get("id") == "daviscup" for row in dataset.get("tournaments", [])), (
               "Bundled tournament metadata is missing Davis Cup."
           )
-          assert any(
-              row.get("t") == "daviscup" and row.get("s") == 2026
-              for row in dataset.get("live", [])
-          ), "Bundled Live now data is missing the 2026 Davis Cup Final 8 schedule row."
+          davis_live = [
+              row for row in dataset.get("live", [])
+              if row.get("t") == "daviscup" and row.get("s") == 2026
+          ]
+          assert davis_live, "Bundled Live now data is missing the 2026 Davis Cup Final 8 schedule row."
+
           davis_historical = [
               row for row in dataset.get("readings", [])
               if row.get("t") == "daviscup" and row.get("src") == "computed"
@@ -56,18 +59,65 @@ jobs:
               row.get("t") == "daviscup" and row.get("src") == "tennisabstract"
               for row in dataset.get("readings", [])
           ), "Tennis Abstract Davis Cup fallback values must never be published."
-          assert not any(row.get("t") == "daviscup" and row.get("s") not in range(2016, 2025)
-                         and row.get("speed") is not None for row in dataset.get("readings", [])), (
-              "Davis Cup readings outside the validated 2016–2024 source-stat window must not be published."
-          )
           assert not any(
-              row.get("t") == "daviscup" and row.get("s") == 2026
-              and row.get("src") == "live" and row.get("speed") is not None
+              row.get("t") == "daviscup" and row.get("s") not in set(range(2016, 2025)) | {2026}
+              and row.get("speed") is not None
               for row in dataset.get("readings", [])
-          ), "A provisional Davis Cup live rating must not be packaged."
+          ), "Davis Cup readings outside the validated archive/current-source windows must not be published."
+
+          current_calc = [
+              row for row in dataset.get("readings", [])
+              if row.get("t") == "daviscup" and row.get("s") == 2026
+              and row.get("src") == "computed" and row.get("speed") is not None
+          ]
+          assert current_calc and current_calc[-1].get("matches", 0) > 0, (
+              "The 2026 Davis Cup season-to-date CALC value is missing."
+          )
+          baseline = dataset.get("speedBaseline") or {}
+          source_metadata = baseline.get("sourceMetadata") or {}
+          assert "TennisMyLife ATP Match Database" in str(source_metadata.get("source", "")), (
+              "2026 Davis Cup source metadata does not identify the TML annual match source."
+          )
+          assert source_metadata.get("davisCupFinalsMatchesWithStats", 0) > 0, (
+              "TML has not supplied valid 2026 Davis Cup Finals ace/service-point rows."
+          )
+          ongoing = source_metadata.get("ongoingSourceMetadata") or {}
+          assert ongoing.get("source") == "TennisMyLife ATP ongoing tournament feed", (
+              "The TML ongoing-tournament source manifest is missing."
+          )
+          fetched = datetime.fromisoformat(ongoing["fetchedAtUtc"].replace("Z", "+00:00"))
+          age = datetime.now(timezone.utc) - fetched
+          assert age.total_seconds() >= -900 and age.total_seconds() <= 7 * 86400, (
+              f"TML ongoing snapshot is stale: {age}"
+          )
+
+          today = date.today()
+          active = any(
+              row.get("t") == "daviscup" and row.get("s") == 2026
+              and (not row.get("start") or date.fromisoformat(row["start"]) <= today)
+              and (not row.get("end") or date.fromisoformat(row["end"]) >= today)
+              and str(row.get("status", "")).lower() not in {
+                  "completed", "complete", "finished", "final", "cancelled",
+              }
+              for row in davis_live
+          )
+          current_live = [
+              row for row in dataset.get("readings", [])
+              if row.get("t") == "daviscup" and row.get("s") == 2026
+              and row.get("src") == "live" and row.get("speed") is not None
+          ]
+          if active:
+              assert current_live, "The active 2026 Davis Cup Final 8 is missing its TML live rating."
+              assert current_live[-1].get("matches", 0) > 0, "The Davis Cup live rating has no completed match sample."
+              assert current_live[-1].get("adjustedServerSides", 0) > 0, (
+                  "The Davis Cup live rating has no opponent-adjusted server-side observations."
+              )
+          else:
+              assert not current_live, "A completed Davis Cup event must not retain a LIVE rating."
           print(
-              "Bundled Davis Cup historical CALC years=" + ",".join(map(str, historical_years))
-              + "; Final 8 schedule is present; no provisional live rating is packaged."
+              "Davis Cup historical CALC years=" + ",".join(map(str, historical_years))
+              + "; 2026 TML season-to-date CALC is present; "
+              + ("active TML LIVE rating is present." if active else "event is complete; no LIVE overlay.")
           )
           PY
 
@@ -262,9 +312,10 @@ jobs:
           elif version == "4.1.4":
               lines += [
                   "### Davis Cup historical Surface Speed and Final 8 schedule",
-                  "- Adds Davis Cup (level D) historical match observations as a separate annual CALC target where valid archive serve statistics are available (2016–2024).",
-                  "- Keeps Davis Cup outside standard ATP player-profile training and the ATP season normaliser; editions are labelled multi-surface.",
-                  "- Adds the 2026 Davis Cup Final 8 as a schedule-only Live now event. A live rating is withheld because a stable official 2026 match-stat feed and its permitted use have not been verified.",
+                  "- Adds Davis Cup (level D) as a separate annual CALC target: validated historical archive editions (2016–2024) plus 2026 TML current-season match statistics.",
+                  "- Merges TML's annual ATP CSV and ongoing-tournament CSV by tournament/match identity, preferring the ongoing row and avoiding duplicate match observations.",
+                  "- Publishes a 2026 season-to-date Davis Cup live rating from completed singles rubbers with valid aces and total service points; the edition remains multi-surface and outside ATP profile training and the ATP normaliser.",
+                  "- Adds a five-minute on-device TML refresh for newly completed Davis Cup rubbers. Raw TML CSVs are cached privately on-device and are not included in the APK or repository.",
                   "- Removes the unverified third-party Davis Cup stats prototype and ignores its old locally cached ratings.",
                   "- Preserves ATP live discovery and ratings, dataset refresh behavior, Player Stats, CPI and existing Surface Speed calculations.",
                   "",
