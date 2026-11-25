@@ -127,12 +127,13 @@ object DatasetPolicy {
             else bundled.live.firstOrNull { it.t == event.t && it.s == event.s && it.atpId != null }
                 ?: event
         }
+        val chosen = remote.copy(live = enriched)
         val speedBaseline = chosen.speedBaseline
             ?.takeIf { it.season == chosen.meta.season }
             ?: bundled.speedBaseline?.takeIf { it.season == chosen.meta.season }
         // Live readings are recomputed on-device from the current ATP match feed. Never
         // trust a static-feed live number here: older builds wrote the pooled-rate method.
         val safeReadings = chosen.readings.filterNot { it.src == "live" && it.speed != null }
-        return remote.copy(live = enriched, readings = safeReadings, speedBaseline = speedBaseline)
+        return chosen.copy(readings = safeReadings, speedBaseline = speedBaseline)
     }
 }
