@@ -144,8 +144,8 @@ class PaceData(val dataset: PaceDataset) {
         readingsFor(id)
             .groupBy { it.s }
             .map { (season, rows) ->
-                val liveReading = liveReading(id, season)
-                val speedReading = liveReading?.takeIf { it.speed != null }
+                val currentLiveReading = liveReading(id, season)
+                val speedReading = currentLiveReading?.takeIf { it.speed != null }
                     ?: rows.firstOrNull { it.src == "computed" && it.speed != null }
                     ?: rows.firstOrNull { it.src != "live" && it.speed != null }
                 SeasonRow(
