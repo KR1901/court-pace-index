@@ -914,6 +914,24 @@ class DavisCupSourceWindowTests(unittest.TestCase):
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 1991))
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 2026))
 
+    def test_davis_cup_target_population_excludes_doubles(self):
+        singles = {
+            "tourney_name": "Davis Cup Finals QF: CZE vs CAN",
+            "tourney_level": "D",
+            "winner_id": "P1", "loser_id": "P2",
+            "winner_name": "Tomas Machac", "loser_name": "Liam Draxl",
+            "w_svpt": "70", "l_svpt": "90", "w_ace": "9", "l_ace": "6",
+        }
+        doubles = {
+            **singles,
+            "winner_id": "P3", "loser_id": "P4",
+            "winner_name": "Adam Pavlasek / Patrik Rikl",
+            "loser_name": "Felix Auger-Aliassime / Duncan Chan",
+        }
+        rows = compute_speed.valid_rows([singles, doubles])
+        self.assertEqual(1, len(rows))
+        self.assertEqual("Tomas Machac", rows[0]["winner_name"])
+
     def test_tml_ongoing_rows_merge_with_annual_rows_without_duplicates(self):
         annual = [{
             "tourney_id": "2026-M-DC-X", "tourney_date": "20261124", "match_num": "1",
