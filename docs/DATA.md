@@ -41,6 +41,10 @@ Live ratings use the same expected-aces equation, the expanded multi-season prof
 
 The expected-aces floor of 0.5 protects the actual/expected ratio from very small denominators. It does not exclude a mathematically valid server side from coverage.
 
+Davis Cup is a separate target event in Surface Speed. The historical calculator accepts Davis Cup (`D`) rows with valid singles aces and service-point counts, groups separate tie labels into one annual Davis Cup rating, and uses the standard ATP player-profile evidence and season anchor. Davis Cup rows are excluded from ATP profile training and from the ATP normaliser. The underlying historical archive has usable serve-stat fields in 2016–2024; seasons without valid source match statistics remain unrated rather than being filled with TA values or estimates. The annual competition spans multiple venues and surfaces, so the edition is labelled multi-surface rather than assigned to one court type.
+
+The 2026 Davis Cup Final 8 Live now row is discovered separately from ATP/Infosys. Its adapter reads completed singles match pages from TennisRace.ai and uses only the displayed player names, aces and total service points as inputs to the existing `AceRating` calculation; live/in-progress and incomplete stat pages are rejected. This is a separate external source from the ATP match-stat feed, is not a Tennis Abstract reference, and can fail independently without affecting ATP live ratings.
+
 ## Live match population and parsing
 
 The app discovers standard-format Grand Slams, ATP Finals, Masters 1000, ATP 500 and ATP 250 events from ATP current-scores/results pages on-device. Next Gen ATP Finals is also admitted as an explicit format-specific target, without admitting unrelated special events. It reads singles match links and distinguishes completed archive links from live/in-progress links. Result-card markers identify walkovers and retirements generically, not through tournament-specific ID lists. Next Gen matches are rated against standard ATP player profiles and the standard season anchor, but do not enter standard profile training or normalisation; its CALC remains format-specific.

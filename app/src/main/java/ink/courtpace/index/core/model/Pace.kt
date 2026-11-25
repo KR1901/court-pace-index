@@ -8,6 +8,7 @@ enum class Surface(val label: String) {
     HARD("Hard"),
     CLAY("Clay"),
     GRASS("Grass"),
+    MULTI("Multi-surface"),
     ;
 
     companion object {
