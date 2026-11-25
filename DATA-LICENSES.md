@@ -20,15 +20,16 @@ When reusing archive-derived material, attribute Jeff Sackmann, link to the upst
 
 The current-season loader may use the [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database). Its published repository terms describe the datasets as intended for personal, educational and non-commercial research. The public terms limit use to personal, educational and non-commercial research; free downloads do not grant commercial rights. They do not authorise raw-database redistribution or resale. The current terms additionally state that no commercial use is authorised by the public terms and require prior express written permission for commercial services using the data, including model training/validation, statistical predictions and monetisation of derived predictions. They warn that third-party rights may apply.
 
-Accordingly:
+Accordingly, the Davis Cup integration is constrained as follows:
 
-- Do not commit or redistribute the raw TennisMyLife CSV or raw database responses.
-- Do not treat TML-derived current-season values, profiles or models as commercially cleared by this repository.
-- The public terms do not clearly grant a right to sublicense or redistribute TML-derived match records/ratings in a public app. Treat the current-season TML-derived bundled output as **not cleared for onward distribution** until TennisMyLife confirms in writing that this specific use is permitted.
-- Obtain prior written permission for commercial use, training/validation of models for commercial services, monetised derived predictions, or broader redistribution where required by the current terms.
-- Review any third-party rights separately; TennisMyLife cannot grant rights it does not hold.
+- Use TML only for a free, non-commercial analytical feature. No ads, paid tiers, commercial model services or monetised predictions are permitted under this repository's current TML use.
+- Do not commit, persist in app storage, bundle or redistribute the raw TML CSV or raw database responses.
+- The Android client reads the annual ATP CSV and ongoing-tournament CSV into memory, deduplicates Davis Cup singles rubbers and displays only a derived event-level Surface Speed rating and coverage counts. It does not display or export the underlying match-level serve statistics.
+- The refresh builder uses raw CSVs only in a temporary runner cache and commits only derived event-level speed history and dataset values.
+- Obtain prior written permission before commercial use, monetisation, commercial model training/validation, or redistribution of raw/match-level data.
+- TML is not an official ATP/ITF feed and cannot grant rights held by third parties. Review any third-party restrictions separately.
 
-The loader records the source URL, retrieval time, row count, byte count and SHA-256 for traceability. A local cache manifest is not a licence.
+The source manifests support reproducibility and fail-closed source selection. They are not a licence.
 
 ## 4. Tennis Abstract Surface Speed values
 
@@ -46,11 +47,15 @@ The Android app can retrieve live match results and statistics from ATP/Infosys 
 
 The [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions) limit general website/content use to individual non-commercial, entertainment and informational purposes. They expressly prohibit systematic retrieval of scores, statistics or rankings to create or compile a collection or database without ATP's prior express written permission. The app's on-device implementation does not itself grant permission for systematic retrieval. Users and operators must review the current ATP terms; this repository does not represent that ATP permission has been obtained.
 
-## 6A. Official Davis Cup match statistics
+## 6A. Davis Cup match statistics
 
-The 2026 Davis Cup Final 8 is listed in the app using the official event schedule. DavisCup.com/ITF has published match scorecards for some past editions, and those scorecards can include aces and service-point totals. However, as checked on 25 November 2026, this project has not verified a stable official machine-readable match-stat feed or published scorecard endpoint for the 2026 Final 8. Official pages currently establish event/match information, but the content retrieved for the current Final 8 did not expose the serve-stat fields needed by the CALC method.
+The official ATP Davis Cup Finals pages inspected for the 2026 Final 8 provide schedule/results, but no machine-readable ATP Stats Centre feed with the required ace and service-point fields was verified. ATP website terms also restrict systematic collection of scores/statistics without prior written permission. The project therefore does not scrape ATP Davis Cup pages as a substitute feed.
 
-The unverified TennisRace.ai prototype has therefore been removed. The app does not scrape Davis Cup match stats from that provider, and it ignores any locally cached Davis Cup rating created by the prototype. No official data permission is inferred from public website access. Before enabling Davis Cup live ratings, the project must validate the actual official data endpoint and fields, and review the provider's terms or obtain permission for the intended retrieval and in-app calculation. Until then the 2026 Final 8 row is schedule metadata only and no live Davis Cup rating is published.
+The 2026 implementation uses the [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database), specifically its annual `2026.csv` and `ongoing_tourneys.csv` files. The annual file contains earlier 2026 Davis Cup singles rows with ace/service-point fields where published; the ongoing feed supplements newly completed Final 8 rubbers. The app/runtime and refresh builder validate the required columns, retain only `tourney_level=D` singles, deduplicate by tie/date/match/player/result key, and reject invalid or missing serve counts. Missing-stat rubbers remain in the discovered-match denominator and are never treated as zero.
+
+Davis Cup is a separate annual multi-surface target. Its own matches are included in its observed rating but never enter ATP player-profile training or the ATP season normaliser. The 2026 CALC is accepted only when both TML feeds pass source validation; the historical validated window remains 2016–2024. The Android app uses the same feeds for its provisional live rating and caches only the aggregate rating plus coverage diagnostics. No raw CSV rows are bundled or committed.
+
+TML is a third-party research database, not an official ATP/ITF feed. Its public terms limit use to personal/educational/non-commercial research; this app's use must remain free and non-commercial. Do not add ads, paid tiers, commercial services or raw/match-level exports without written permission. No official data rights are inferred from access to ATP/DavisCup.com pages, and TML cannot grant third-party rights it does not hold. The removed TennisRace.ai prototype and its cached ratings remain rejected.
 
 ## 7. Combined and generated datasets
 
