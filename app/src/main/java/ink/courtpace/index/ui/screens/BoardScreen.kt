@@ -450,6 +450,9 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.totalServerSides)
                                 append(" server sides adjusted")
+                                if (tournament.id == "daviscup") {
+                                    append(" · TML season-to-date · multi-surface")
+                                }
                                 if (ace.matches < AceRating.EARLY_SAMPLE_MATCH_THRESHOLD) {
                                     append(" · early sample")
                                 }
@@ -496,6 +499,9 @@ private fun LivePendingRow(
                                 append(" · ")
                                 append(datasetMatches)
                                 append(" matches")
+                                if (tournament.id == "daviscup") {
+                                    append(" · TML season-to-date · multi-surface")
+                                }
                             }
                         } else if (ace != null) {
                             append(" · ")
