@@ -450,6 +450,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 "singles matches with serve statistics",
                         )
                     }.onFailure { error ->
+                        if (error is CancellationException) throw error
                         val detail = error.message ?: "TML match statistics unavailable"
                         liveProgressByEvent = liveProgressByEvent +
                             ("daviscup" to "TML · $detail")
