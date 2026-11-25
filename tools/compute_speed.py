@@ -337,6 +337,15 @@ def valid_rows(rows):
     for r in rows:
         if r.get("tourney_level") not in TARGET_LEVELS:
             continue
+        # Davis Cup ratings are singles-only. Exclude doubles before both target scoring
+        # and profile/normaliser decisions, even if a source provides ace/service-point counts.
+        if r.get("tourney_level") == "D":
+            names = (r.get("winner_name") or "", r.get("loser_name") or "")
+            if any(
+                "/" in name or " & " in name or " and " in name.lower()
+                for name in names
+            ):
+                continue
         values = [num(r.get(k)) for k in ("w_svpt", "l_svpt", "w_ace", "l_ace")]
         if any(value is None or not math.isfinite(value) for value in values):
             continue
