@@ -23,6 +23,7 @@ class TmlDavisCupClientTest {
             row("2026", "2", "P3", "Jiri Lehecka", "P4", "Felix Auger-Aliassime", "", "", "", ""),
             row("2026", "3", "P5", "Player A / Player B", "P6", "Player C / Player D", "4", "40", "3", "42"),
             row("2025", "1", "P7", "Player E", "P8", "Player F", "5", "50", "4", "48"),
+            row("2026", "5", "", "", "", "", "", "", "", ""),
         ).joinToString("\n")
         val ongoing = listOf(
             header,
