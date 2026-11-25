@@ -25,6 +25,7 @@ internal class TmlDavisCupClient {
     )
 
     private data class CachedAnnual(
+        val year: Int,
         val fetchedAtMillis: Long,
         val csv: String,
     )
@@ -70,11 +71,13 @@ internal class TmlDavisCupClient {
 
     private fun annualCsv(year: Int): String {
         val now = System.currentTimeMillis()
-        annualCache?.takeIf { now - it.fetchedAtMillis < ANNUAL_CACHE_TTL_MS }?.let {
+        annualCache?.takeIf {
+            it.year == year && now - it.fetchedAtMillis < ANNUAL_CACHE_TTL_MS
+        }?.let {
             return it.csv
         }
         val csv = requestCsv("$BASE_URL/$year.csv")
-        annualCache = CachedAnnual(now, csv)
+        annualCache = CachedAnnual(year, now, csv)
         return csv
     }
 
