@@ -737,21 +737,44 @@ def _parse_iso_date(value):
 
 
 def _source_match_date(row):
-    """Return an individual UTC played date, never a tournament-start or local-only date."""
+    """Return a UTC completion day, not a scheduled/played-start day or local-only date."""
     if str(row.get("date_is_tournament_start") or "").casefold() in {"true", "1", "yes"}:
         return None
-    # A date without a time can order matches across venues only when the provider
-    # defines it in a common timezone. Local calendar dates are not globally comparable.
+    # Explicit completed-date fields carry their UTC meaning in the field name.
+    for key in ("match_completed_date_utc", "match_finished_date_utc"):
+        parsed = _parse_iso_date(row.get(key))
+        if parsed is not None:
+            return parsed
+    semantics = str(row.get("match_date_semantics") or "").casefold()
     is_utc = (
         str(row.get("match_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
         or str(row.get("match_date_is_utc") or "").casefold() in {"true", "1", "yes"}
     )
-    if not is_utc:
-        return _parse_iso_date(row.get("match_date_utc"))
-    for key in ("match_date_utc", "match_date", "played_date"):
+    # A generic match date is safe only when the provider confirms it is the completion
+    # day in UTC. A start/play date can straddle midnight and is not sufficient.
+    if semantics not in {"completed", "completion", "finished", "completed-day"} or not is_utc:
+        return None
+    for key in ("match_date", "played_date"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
+    return None
+
+
+def _source_event_start_date(row):
+    """Return the target event's verified UTC start day, not its first result date."""
+    parsed = _parse_iso_date(row.get("event_start_date_utc"))
+    if parsed is not None:
+        return parsed
+    is_utc = (
+        str(row.get("event_start_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
+        or str(row.get("event_start_date_is_utc") or "").casefold() in {"true", "1", "yes"}
+    )
+    if is_utc:
+        for key in ("event_start_date", "tournament_start_date"):
+            parsed = _parse_iso_date(row.get(key))
+            if parsed is not None:
+                return parsed
     return None
 
 
@@ -800,8 +823,8 @@ def _actual_match_end(row):
 
 
 def _source_event_end_date(row):
-    """Return an event end only when the source marks it actual or the event completed."""
-    for key in ("actual_event_end_date", "event_actual_end_date", "tournament_actual_end_date"):
+    """Return a confirmed UTC event completion day, never a provisional/local end date."""
+    for key in ("actual_event_end_date_utc", "event_actual_end_date_utc", "tournament_actual_end_date_utc"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
@@ -809,17 +832,15 @@ def _source_event_end_date(row):
         str(row.get("event_status") or "").casefold() in {"completed", "complete", "finished"}
         or str(row.get("event_completed") or "").casefold() in {"true", "1", "yes"}
     )
-    end_date_actual = (
-        str(row.get("event_end_date_is_actual") or "").casefold() in {"true", "1", "yes"}
-        or str(row.get("tournament_end_date_is_actual") or "").casefold() in {"true", "1", "yes"}
+    is_utc = (
+        str(row.get("event_end_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
+        or str(row.get("event_end_date_is_utc") or "").casefold() in {"true", "1", "yes"}
     )
-    if not completed and not end_date_actual:
+    if not completed or not is_utc:
         return None
-    # Some providers expose only end_date plus a provisional flag. Never use a
-    # provisional/planned end to prove that the event had already finished.
     if str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
         return None
-    for key in ("event_end_date", "tournament_end_date", "end_date"):
+    for key in ("event_end_date_utc", "event_end_date", "tournament_end_date", "end_date"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
@@ -844,7 +865,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
     The player profile may use completed matches from an event still in progress. The
     normalisation anchor may only use entire events that had finished before the target.
     """
-    source_target_dates = [_source_match_date(row) for row in target_rows]
+    source_target_dates = [_source_event_start_date(row) for row in target_rows]
     target_start_dates = (
         source_target_dates
         if source_target_dates and all(value is not None for value in source_target_dates)
