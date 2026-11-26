@@ -978,7 +978,11 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
 
         with patch.object(compute_speed, "build_live_profiles", return_value={}), \
              patch.object(compute_speed, "player_rates", return_value={}), \
-             patch.object(compute_speed, "_prior_year_rows", return_value=[]), \
+             patch.object(compute_speed, "_prior_year_rows", return_value=[{
+                 "tourney_name": "Prior Year", "tourney_level": "M", "surface": "Hard",
+                 "winner_id": "p1", "loser_id": "p2", "w_svpt": 100, "l_svpt": 100,
+                 "w_ace": 8, "l_ace": 8,
+             }]), \
              patch.object(compute_speed, "ensure_event_profiles", return_value={}), \
              patch.object(compute_speed, "event_match_ratio_clusters",
                           side_effect=lambda rows, profiles, rate: [[1.0, 1.0] for _ in rows]):
