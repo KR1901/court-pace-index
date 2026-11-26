@@ -209,7 +209,7 @@ jobs:
               dc_audit.get("completedPlayedSingles", 0) +
               dc_audit.get("scorelessSingles", 0) +
               dc_audit.get("walkoverOrNoPlaySingles", 0)
-          ), "Davis Cup identified singles do not reconcile to played, unplayed and no-play buckets"
+          ), "Davis Cup identified singles do not reconcile to played, scoreless and no-play buckets"
           assert dc_audit.get("completedPlayedSingles") == (
               dc_audit.get("completedWithValidServeStats", 0) +
               dc_audit.get("completedMissingServeStats", 0) +
@@ -227,7 +227,7 @@ jobs:
               "Davis Cup audit: "
               f"{dc_audit.get('identifiedSingles')} unique singles · "
               f"{dc_audit.get('completedPlayedSingles')} played · "
-              f"{dc_audit.get('scheduledUnplayedSingles')} unplayed · "
+              f"{dc_audit.get('scorelessSingles')} scoreless/pending result · "
               f"{dc_audit.get('walkoverOrNoPlaySingles')} no-play · "
               f"{dc_audit.get('completedWithValidServeStats')} valid stats · "
               f"{dc_audit.get('completedMissingServeStats')} missing · "
