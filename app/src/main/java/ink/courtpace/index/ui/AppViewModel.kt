@@ -412,7 +412,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 "daviscup" to buildString {
                                     append("TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} completed singles have serve stats")
                                     if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
-                                    if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles missing/invalid serve stats")
+                                    if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing serve stats")
+                                    if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid serve stats")
                                     append(" · awaiting rateable sides")
                                 }
                             )
@@ -451,7 +452,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         status(buildString {
                             append("Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} completed singles with serve statistics")
                             if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
-                            if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles missing/invalid statistics")
+                            if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing statistics")
+                            if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid statistics")
                         })
                     }.onFailure { error ->
                         if (error is CancellationException) throw error
