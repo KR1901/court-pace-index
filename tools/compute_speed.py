@@ -846,6 +846,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
             "mode": "undated-target",
             "targetStartDate": None,
             "targetStartAtUtc": None,
+            "fallbackCutoffDate": None,
             "fallbackMatches": 0,
             "matchDateMatches": 0,
             "matchTimeMatches": 0,
@@ -945,6 +946,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
         "mode": mode,
         "targetStartDate": target_start_date.isoformat(),
         "targetStartAtUtc": target_start_at.isoformat().replace("+00:00", "Z") if target_start_at else None,
+        "fallbackCutoffDate": fallback_cutoff.isoformat(),
         **precision_counts,
     }
     return training, anchor, diagnostics
@@ -1742,6 +1744,10 @@ def season_ratings(year, rows, source=None):
             "speedCiMethod": ci.get("method"),
             "calculationDiagnostics": {
                 "chronologyMode": chronology.get("mode"),
+                # Compatibility field for older diagnostics consumers. It is an explicit
+                # fallback boundary, not the selected chronology boundary in precise modes.
+                "chronologicalCutoff": chronology.get("fallbackCutoffDate"),
+                "fallbackCutoffDate": chronology.get("fallbackCutoffDate"),
                 "targetFirstMatchDate": chronology.get("targetStartDate"),
                 "targetFirstMatchStartUtc": chronology.get("targetStartAtUtc"),
                 "chronologyTrainingMatches": chronology.get("matchTimeMatches", 0)
