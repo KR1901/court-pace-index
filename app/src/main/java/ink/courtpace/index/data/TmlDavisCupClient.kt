@@ -18,10 +18,18 @@ internal class TmlDavisCupClient {
 
     data class MatchBatch(
         val matches: List<AtpMatchStats>,
-        /** Unique Davis Cup singles rubbers, including those with unpublished serve statistics. */
+        /** Unique identified singles rubbers, including scoreless fixtures and walkovers. */
+        val identifiedSingles: Int,
+        /** Completed, played singles rubbers with a published result score. */
         val discoveredMatches: Int,
         val matchesWithServeStats: Int,
         val missingStatsMatches: Int,
+        /** Scoreless rows have no published result yet; they are not completed missing-stat matches. */
+        val scorelessRows: Int,
+        /** Walkovers/defaults have a result marker but no played match statistics. */
+        val noPlayRows: Int,
+        /** Completed score-bearing singles that fail the ace/service-point validation. */
+        val malformedStatsMatches: Int,
     )
 
     private data class CachedAnnual(
@@ -49,9 +57,10 @@ internal class TmlDavisCupClient {
     }
 
     internal fun parseMatchRows(annualCsv: String, ongoingCsv: String, year: Int): MatchBatch {
-        // Insert annual rows first, then let the ongoing snapshot replace any matching
-        // rubber. The same result may appear in both feeds with newer/corrected statistics;
-        // distinctBy() would keep the stale annual row and silently discard the update.
+        // Merge every identified singles rubber first, not only score-bearing rows. The
+        // ongoing snapshot is newer and must replace an annual scoreless fixture when it
+        // becomes a completed result, otherwise that rubber is counted as both scoreless and completed
+        // and completed. The player pair disambiguates same-number rubbers in different ties.
         val uniqueByRubber = linkedMapOf<String, Map<String, String>>()
         listOf(annualCsv, ongoingCsv).forEach { snapshot ->
             parseCsv(snapshot).forEach { row ->
@@ -61,20 +70,37 @@ internal class TmlDavisCupClient {
                     row["tourney_date"].orEmpty().take(4) == year.toString() &&
                     row["winner_id"].orEmpty().isNotBlank() &&
                     row["loser_id"].orEmpty().isNotBlank() &&
-                    row["score"].orEmpty().isNotBlank() &&
                     !isDoubles(row)
                 ) {
                     uniqueByRubber[matchKey(row)] = row
                 }
             }
         }
+
         val uniqueRows = uniqueByRubber.values.toList()
-        val matches = uniqueRows.mapNotNull(::toMatchStats)
+        val scorelessRows = uniqueRows.filter { it["score"].orEmpty().isBlank() }
+        val noPlayRows = uniqueRows.filter { isNoPlayScore(it["score"]) }
+        val completedRows = uniqueRows.filter {
+            it["score"].orEmpty().isNotBlank() && !isNoPlayScore(it["score"])
+        }
+        val matches = completedRows.mapNotNull(::toMatchStats)
+        val requiredServeStats = listOf("w_ace", "w_svpt", "l_ace", "l_svpt")
+        val missingStats = completedRows.count { row ->
+            requiredServeStats.any { row[it].isNullOrBlank() }
+        }
+        val malformedStats = completedRows.count { row ->
+            requiredServeStats.none { row[it].isNullOrBlank() } && toMatchStats(row) == null
+        }
+
         return MatchBatch(
             matches = matches,
-            discoveredMatches = uniqueRows.size,
+            identifiedSingles = uniqueRows.size,
+            discoveredMatches = completedRows.size,
             matchesWithServeStats = matches.size,
-            missingStatsMatches = (uniqueRows.size - matches.size).coerceAtLeast(0),
+            missingStatsMatches = missingStats,
+            scorelessRows = scorelessRows.size,
+            noPlayRows = noPlayRows.size,
+            malformedStatsMatches = malformedStats,
         )
     }
 
@@ -119,6 +145,14 @@ internal class TmlDavisCupClient {
     private fun isDavisCupName(name: String?): Boolean =
         name.orEmpty().lowercase().filter(Char::isLetterOrDigit).startsWith("daviscup")
 
+    private fun isNoPlayScore(score: String?): Boolean {
+        val normalized = score.orEmpty().uppercase().replace(Regex("\\s+"), "")
+        return normalized.contains("W/O") ||
+            normalized == "WO" ||
+            normalized.contains("WALKOVER") ||
+            normalized.contains("DEF")
+    }
+
     private fun isDoubles(row: Map<String, String>): Boolean {
         val names = listOf(row["winner_name"].orEmpty(), row["loser_name"].orEmpty())
         return names.any { name ->
@@ -132,7 +166,11 @@ internal class TmlDavisCupClient {
         val date = row["tourney_date"].orEmpty().trim()
         val match = row["match_num"].orEmpty().trim()
         if (tournament.isNotEmpty() && date.isNotEmpty() && match.isNotEmpty()) {
-            return listOf("rubber", tournament, date, match).joinToString("|")
+            val players = listOf(
+                row["winner_id"].orEmpty().trim(),
+                row["loser_id"].orEmpty().trim(),
+            ).sorted()
+            return (listOf("rubber", tournament, date, match) + players).joinToString("|")
         }
         return listOf(
             "fallback", tournament, date,

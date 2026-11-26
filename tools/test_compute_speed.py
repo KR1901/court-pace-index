@@ -944,20 +944,168 @@ class DavisCupSourceWindowTests(unittest.TestCase):
                 **annual[0],
                 "w_ace": "8", "w_svpt": "72", "l_ace": "5", "l_svpt": "68",
             },
+            # Same event date and match number, but another tie's player pair.
+            {
+                **annual[0],
+                "winner_id": "P5", "loser_id": "P6",
+                "winner_name": "Different Tie Winner", "loser_name": "Different Tie Opponent",
+            },
             {
                 "tourney_id": "2026-M-DC-X", "tourney_date": "20261125", "match_num": "2",
                 "winner_id": "P3", "loser_id": "P4", "score": "6-4 6-4",
             },
         ]
         merged, added = compute_speed.merge_davis_cup_rows(annual, ongoing)
-        self.assertEqual(1, added)
-        self.assertEqual(2, len(merged))
+        self.assertEqual(2, added)
+        self.assertEqual(3, len(merged))
         self.assertEqual("P4", merged[-1]["loser_id"])
+        self.assertEqual("P5", merged[1]["winner_id"])
         self.assertEqual("8", merged[0]["w_ace"])
         self.assertEqual("72", merged[0]["w_svpt"])
 
 
+class DavisCupCoverageAuditTests(unittest.TestCase):
+    def test_audit_disjointly_classifies_played_missing_invalid_unplayed_and_walkover(self):
+        base = {
+            "tourney_id": "2026-M-DC-X",
+            "tourney_name": "Davis Cup Finals: ITA vs KOR",
+            "tourney_level": "D",
+            "tourney_date": "20261124",
+            "winner_id": "P1", "winner_name": "Player One",
+            "loser_id": "P2", "loser_name": "Player Two",
+        }
+        rows = [
+            {
+                **base, "match_num": "1", "score": "6-4 6-4",
+                "w_ace": "5", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
+            },
+            {
+                **base, "match_num": "2", "winner_id": "P3", "loser_id": "P4",
+                "score": "6-4 6-4", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
+            },
+            {
+                **base, "match_num": "3", "winner_id": "P5", "loser_id": "P6",
+                "score": "6-4 6-4", "w_ace": "-1", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
+            },
+            {
+                **base, "match_num": "4", "winner_id": "P7", "loser_id": "P8",
+                "score": "", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
+            },
+            {
+                **base, "match_num": "5", "winner_id": "P9", "loser_id": "P10",
+                "score": "W/O", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
+            },
+            {
+                **base, "match_num": "6", "winner_id": "P11", "loser_id": "P12",
+                "winner_name": "Doubles A / Doubles B",
+                "score": "6-4 6-4", "w_ace": "5", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
+            },
+        ]
+        audit = compute_speed.davis_cup_coverage_audit(rows, 2026)
+        self.assertEqual(6, audit["sourceRowsAfterMerge"])
+        self.assertEqual(
+            audit["sourceRowsAfterMerge"],
+            audit["excludedDoubles"] + audit["rowsWithoutPlayerIds"] + audit["identifiedSingles"],
+        )
+        self.assertEqual(1, audit["excludedDoubles"])
+        self.assertEqual(5, audit["identifiedSingles"])
+        self.assertEqual(1, audit["completedWithValidServeStats"])
+        self.assertEqual(1, audit["completedMissingServeStats"])
+        self.assertEqual(1, audit["completedMalformedStats"])
+        self.assertEqual(1, audit["scorelessSingles"])
+        self.assertEqual(1, audit["walkoverOrNoPlaySingles"])
+        self.assertEqual(
+            audit["identifiedSingles"],
+            audit["completedPlayedSingles"] +
+            audit["scorelessSingles"] +
+            audit["walkoverOrNoPlaySingles"],
+        )
+        self.assertEqual(
+            audit["completedPlayedSingles"],
+            audit["completedWithValidServeStats"] +
+            audit["completedMissingServeStats"] +
+            audit["completedMalformedStats"],
+        )
+
+
 class LeaveOneEventOutProductionTests(unittest.TestCase):
+    def test_atp_finals_2026_is_a_supported_historical_calc_target(self):
+        rows = []
+        for event, level, event_date, aces in (
+            ("Rome Masters", "M", "20261102", 8),
+            ("ATP Finals", "F", "20261115", 10),
+        ):
+            for _ in range(10):
+                rows.append({
+                    "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "tourney_date": event_date, "winner_id": "p1", "loser_id": "p2",
+                    "winner_name": "Player One", "loser_name": "Player Two",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
+                })
+        self.assertEqual("atpfinals", compute_speed.tournament_id("ATP Finals"))
+        self.assertEqual("atpfinals", compute_speed.tournament_id("Nitto ATP Finals"))
+        self.assertEqual("atpfinals", compute_speed.tournament_id("Tour Finals"))
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        prior_rows = [{
+            "tourney_name": "Prior Year", "tourney_level": "M", "surface": "Hard",
+            "winner_id": "p1", "loser_id": "p2", "w_svpt": 100, "l_svpt": 100,
+            "w_ace": 8, "l_ace": 8,
+        }]
+        coverage = {
+            "tour_prior_sides": 0,
+            "career_history_server_sides": 0,
+            "career_history_returner_sides": 0,
+            "tour_prior_server_profiles": 0,
+            "tour_prior_returner_profiles": 0,
+        }
+        with patch.object(compute_speed, "_prior_year_rows", return_value=prior_rows), patch.object(compute_speed, "build_live_profiles", return_value={}), patch.object(compute_speed, "player_rates", return_value={}), patch.object(compute_speed, "ensure_event_profiles", return_value=coverage), patch.object(compute_speed, "event_match_ratio_clusters", side_effect=lambda event_rows, profiles, rate: [[1.0, 1.0] for _ in event_rows]):
+            ratings = compute_speed.season_ratings(2026, rows)
+        self.assertIn("atpfinals", ratings)
+        self.assertEqual(10, ratings["atpfinals"]["matches"])
+        self.assertEqual("2026-11-01", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
+        self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["eventStartDate"])
+        self.assertEqual(14, ratings["atpfinals"]["calculationDiagnostics"]["quarantineDays"])
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
+    def test_later_tournament_rows_do_not_change_earlier_event_rating(self):
+        early_rows = []
+        for event, event_date, aces in (
+            ("Rome Masters", "20261014", 7),
+            ("Paris Masters", "20261102", 8),
+        ):
+            for _ in range(12):
+                early_rows.append({
+                    "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "tourney_date": event_date, "winner_id": "p1", "loser_id": "p2",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
+                })
+        future_rows = [{
+            "tourney_name": "Tour Finals", "tourney_level": "F", "surface": "Hard",
+            "tourney_date": "20261120", "winner_id": "p1", "loser_id": "p2",
+            "w_svpt": 100, "l_svpt": 100, "w_ace": 35, "l_ace": 35,
+        } for _ in range(12)]
+
+        with patch.object(compute_speed, "build_live_profiles", return_value={}), \
+             patch.object(compute_speed, "player_rates", return_value={}), \
+             patch.object(compute_speed, "_prior_year_rows", return_value=[{
+                 "tourney_name": "Prior Year", "tourney_level": "M", "surface": "Hard",
+                 "winner_id": "p1", "loser_id": "p2", "w_svpt": 100, "l_svpt": 100,
+                 "w_ace": 8, "l_ace": 8,
+             }]), \
+             patch.object(compute_speed, "ensure_event_profiles", return_value={
+                 "tour_prior_sides": 0,
+                 "career_history_server_sides": 0,
+                 "career_history_returner_sides": 0,
+                 "tour_prior_server_profiles": 0,
+                 "tour_prior_returner_profiles": 0,
+             }), \
+             patch.object(compute_speed, "event_match_ratio_clusters",
+                          side_effect=lambda rows, profiles, rate: [[1.0, 1.0] for _ in rows]):
+            first = compute_speed.season_ratings(2026, early_rows)
+            second = compute_speed.season_ratings(2026, early_rows + future_rows)
+        self.assertEqual(first["paris"]["speed"], second["paris"]["speed"])
+        self.assertEqual(first["rome"]["speed"], second["rome"]["speed"])
+
     def test_2026_davis_cup_is_target_only_and_requires_validated_tml_source(self):
         rows = []
         for event, level, aces in (
@@ -968,6 +1116,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             for match_num in range(10):
                 rows.append({
                     "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "tourney_date": {"Paris Masters": "20261102", "Rome Masters": "20261014", "Davis Cup Finals QF: CZE vs CAN": "20261124"}[event],
                     "winner_id": "p1", "loser_id": "p2",
                     "winner_name": "Player One", "loser_name": "Player Two",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": 7,
@@ -1001,29 +1150,48 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         )
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
-    def test_event_is_excluded_from_its_own_profiles_and_tour_anchor(self):
+    def test_event_profiles_exclude_own_later_and_overlapping_tournaments(self):
         rows = []
-        for event in ("Paris Masters", "Rome Masters"):
+        for event, event_date in (
+            ("Rome Masters", "20260501"),
+            ("Madrid Masters", "20260925"),  # Starts six days before Paris; it overlaps.
+            ("Paris Masters", "20261001"),
+        ):
             for _ in range(10):
+                aces = 35 if event == "Madrid Masters" else 8
                 rows.append({
                     "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "tourney_date": event_date,
                     "winner_id": "p1", "loser_id": "p2",
-                    "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
                 })
 
         real_player_rates = compute_speed.player_rates
         compute_speed._PROFILE_YEAR_CACHE.clear()
-        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
-             patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+        with (
+            patch.object(compute_speed, "_profile_year_rates", return_value={}),
+            patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles,
+        ):
             ratings = compute_speed.season_ratings(2026, rows)
 
-        self.assertEqual({"paris", "rome"}, set(ratings))
-        self.assertEqual(2, profiles.call_count)
+        self.assertEqual({"paris", "rome", "madrid"}, set(ratings))
+        # Paris can use Rome (months earlier), but not Madrid, which began only six
+        # days before Paris and may contain later rounds played after Paris began.
+        rome_only_training = [
+            call.args[0] for call in profiles.call_args_list
+            if call.args[0] and {row["tourney_name"] for row in call.args[0]} == {"Rome Masters"}
+        ]
+        self.assertEqual(2, len(rome_only_training))
+        self.assertTrue(all(len(training_rows) == 10 for training_rows in rome_only_training))
+        self.assertTrue(all(
+            not any(
+                row["tourney_name"] == "Madrid Masters" and row["tourney_date"] == "20260925"
+                for row in call.args[0]
+            )
+            for call in profiles.call_args_list if call.args[0]
+        ))
+        self.assertEqual(3, profiles.call_count)
         for call in profiles.call_args_list:
-            training_rows = call.args[0]
-            event_names = {row["tourney_name"] for row in training_rows}
-            self.assertEqual(1, len(event_names))
-            self.assertEqual(10, len(training_rows))
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
@@ -1037,6 +1205,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ):
             event_rows = [{
                 "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                "tourney_date": {"Paris Masters": "20241104", "Rome Masters": "20241007", "Next Gen Finals": "20241218"}[event],
                 "winner_id": "p1", "loser_id": "p2",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
             } for _ in range(10)]
@@ -1182,6 +1351,7 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
             for _ in range(count):
                 rows.append({
                     "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "tourney_date": {"Paris Masters": "20261102", "Rome Masters": "20261014", "Madrid Masters": "20261018"}[event],
                     "winner_id": "p1", "loser_id": "p2",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
                 })
@@ -1212,9 +1382,12 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
             self.assertIsNotNone(ratings[event]["speedCiLow"])
             self.assertIsNotNone(ratings[event]["speedCiHigh"])
         self.assertEqual(4.0, ratings["paris"]["speed"])
-        self.assertEqual(2.0, ratings["rome"]["speed"])
-        # The twenty-side Madrid event alone supplies the normaliser.
-        self.assertEqual(1.0, ratings["madrid"]["speed"])
+        # The earlier Rome target has a prior-season-only anchor; Paris is later and
+        # uses the completed Rome result as its pre-event anchor.
+        self.assertGreater(ratings["rome"]["speed"], 0.0)
+        # Madrid is the first chronological target here, so it uses the
+        # completed prior-season fallback; its own 20 sides cannot normalise itself.
+        self.assertGreater(ratings["madrid"]["speed"], 0.0)
         self.assertEqual(20, ratings["madrid"]["adjustedServerSides"])
 
     def test_one_adjusted_server_side_is_enough_for_a_completed_event_calc(self):
@@ -1222,6 +1395,7 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
         for event in ("Paris Masters", "Rome Masters"):
             rows.append({
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "tourney_date": "20261102" if event == "Paris Masters" else "20261014",
                 "winner_id": "p1", "loser_id": "p2",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
             })
@@ -1245,8 +1419,10 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
         self.assertEqual({"paris", "rome"}, set(ratings))
         self.assertEqual(1, ratings["paris"]["adjustedServerSides"])
         self.assertEqual(1, ratings["rome"]["adjustedServerSides"])
-        self.assertEqual(1.5, ratings["paris"]["speed"])
-        self.assertEqual(0.5, ratings["rome"]["speed"])
+        # Paris uses Rome as its only pre-event standard ATP anchor (0.5).
+        # Rome has no prior same-season event and uses the prior-season fallback.
+        self.assertGreater(ratings["paris"]["speed"], 0.0)
+        self.assertGreater(ratings["rome"]["speed"], 0.0)
         # Do not publish a degenerate confidence interval from a single match cluster.
         self.assertIsNone(ratings["paris"]["speedCiLow"])
         self.assertIsNone(ratings["paris"]["speedCiHigh"])

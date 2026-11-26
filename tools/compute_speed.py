@@ -32,6 +32,10 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 MIN_EVENT_RATING_SERVER_SIDES = 1
 MIN_NORMALISER_SERVER_SIDES = 20
+# Source archives expose tournament start dates, not per-match dates. A two-week
+# quarantine avoids using later rounds from an earlier-starting event that overlaps
+# the target tournament.
+CHRONOLOGICAL_QUARANTINE_DAYS = 14
 MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
@@ -46,7 +50,7 @@ NAMES = {
     "Monte Carlo Masters": "montecarlo", "Madrid Masters": "madrid",
     "Rome Masters": "rome", "Canada Masters": "canada",
     "Cincinnati Masters": "cincinnati", "Shanghai Masters": "shanghai",
-    "Paris Masters": "paris", "Tour Finals": "atpfinals",
+    "Paris Masters": "paris", "Tour Finals": "atpfinals", "ATP Finals": "atpfinals", "Nitto ATP Finals": "atpfinals",
     "Brisbane": "brisbane", "Hong Kong": "hongkong", "United Cup": "unitedcup", "Laver Cup": "lavercup", "Auckland": "auckland",
     # TennisMyLife uses these shorter/alternate event labels in its ATP CSV.
     "Monte Carlo": "montecarlo", "Cincinnati": "cincinnati", "Shanghai": "shanghai",
@@ -211,7 +215,11 @@ def davis_cup_match_key(row):
     match_date = str(row.get("tourney_date") or "").strip()
     match_number = str(row.get("match_num") or "").strip()
     if tournament_id and match_date and match_number:
-        return ("rubber", tournament_id, match_date, match_number)
+        players = tuple(sorted((
+            str(row.get("winner_id") or "").strip(),
+            str(row.get("loser_id") or "").strip(),
+        )))
+        return ("rubber", tournament_id, match_date, match_number, *players)
     return (
         "fallback",
         tournament_id,
@@ -242,6 +250,84 @@ def merge_davis_cup_rows(annual_rows, supplement_rows):
         # missing or partial statistics. A match must appear exactly once in the target.
         merged[key] = dict(row)
     return [merged[key] for key in order], added
+
+
+def davis_cup_coverage_audit(rows, year):
+    """Classify the deduplicated current-year TML Davis Cup singles feed without retaining rows."""
+    davis_rows = [
+        row for row in rows
+        if row.get("tourney_level") == "D"
+        and _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
+        and str(row.get("tourney_date") or "").strip()[:4] == str(year)
+    ]
+    unique = {}
+    excluded_doubles = 0
+    rows_without_player_ids = 0
+    for row in davis_rows:
+        names = (str(row.get("winner_name") or ""), str(row.get("loser_name") or ""))
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            excluded_doubles += 1
+            continue
+        if not str(row.get("winner_id") or "").strip() or not str(row.get("loser_id") or "").strip():
+            rows_without_player_ids += 1
+            continue
+        unique[davis_cup_match_key(row)] = row
+
+    required = ("w_ace", "w_svpt", "l_ace", "l_svpt")
+    unplayed = [row for row in unique.values() if not str(row.get("score") or "").strip()]
+    no_play = [
+        row for row in unique.values()
+        if str(row.get("score") or "").strip() and _is_no_play_score(row.get("score"))
+    ]
+    completed = [
+        row for row in unique.values()
+        if str(row.get("score") or "").strip() and not _is_no_play_score(row.get("score"))
+    ]
+    valid_stats = 0
+    missing_stats = 0
+    malformed_stats = 0
+    for row in completed:
+        if any(not str(row.get(key) or "").strip() for key in required):
+            missing_stats += 1
+            continue
+        try:
+            winner_aces, winner_points, loser_aces, loser_points = (
+                int(str(row[key]).strip()) for key in required
+            )
+            valid = (
+                bool(str(row.get("winner_name") or "").strip())
+                and bool(str(row.get("loser_name") or "").strip())
+                and winner_aces >= 0 and loser_aces >= 0
+                and winner_points > 0 and loser_points > 0
+                and winner_aces <= winner_points and loser_aces <= loser_points
+            )
+        except (TypeError, ValueError):
+            valid = False
+        if valid:
+            valid_stats += 1
+        else:
+            malformed_stats += 1
+
+    return {
+        "sourceRowsAfterMerge": len(davis_rows),
+        "excludedDoubles": excluded_doubles,
+        "rowsWithoutPlayerIds": rows_without_player_ids,
+        "identifiedSingles": len(unique),
+        "scorelessSingles": len(unplayed),
+        "walkoverOrNoPlaySingles": len(no_play),
+        "completedPlayedSingles": len(completed),
+        "completedWithValidServeStats": valid_stats,
+        "completedMissingServeStats": missing_stats,
+        "completedMalformedStats": malformed_stats,
+    }
+
+
+def _is_no_play_score(score):
+    normalized = "".join(str(score or "").upper().split())
+    return (
+        "W/O" in normalized or normalized == "WO"
+        or "WALKOVER" in normalized or "DEF" in normalized
+    )
 
 
 def load(year):
@@ -623,10 +709,54 @@ def _shrunk_return_rate(profile, priors):
 
 
 def _profile_year_rates(year):
-    """Cache source rows/profile estimates so a 35-year backfill is not re-parsed per event."""
+    """Cache prior-season profile estimates so a long backfill is parsed only once."""
     if year not in _PROFILE_YEAR_CACHE:
         _PROFILE_YEAR_CACHE[year] = player_rates(calculation_eligible_rows(valid_rows(load(year))))
     return _PROFILE_YEAR_CACHE[year]
+
+
+def _match_date(row):
+    """Parse a source YYYYMMDD match/tournament date, returning None for malformed dates."""
+    raw = str(row.get("tourney_date") or "").strip()
+    if len(raw) != 8 or not raw.isdigit():
+        return None
+    try:
+        return datetime.strptime(raw, "%Y%m%d").date()
+    except ValueError:
+        return None
+
+
+def _prior_year_rows(year):
+    """Return eligible ATP training rows from a completed prior season."""
+    return calculation_eligible_rows(valid_rows(load(year)))
+
+
+def _chronological_profiles_and_anchor(year, rows, cutoff):
+    """Fit profiles using only tournaments whose start date clears the quarantine cutoff."""
+    before = [
+        row for row in calculation_eligible_rows(valid_rows(rows))
+        if _match_date(row) is not None and _match_date(row) <= cutoff
+    ]
+    if before:
+        profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        profiles = build_live_profiles(year, profiles_current)
+        tour_rate = tour_average_ace_rate(before)
+    else:
+        # Opening-event anchor: the completed preceding season is the only permissible
+        # calibration sample. Its profiles are fitted on that prior season's ATP rows and
+        # historical player history, never on any match from the target season.
+        if year <= PROFILE_HISTORY_START_YEAR:
+            return None, None, []
+        prior = _prior_year_rows(year - 1)
+        if not prior:
+            return None, None, []
+        profiles_current = player_rates(prior, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        profiles = build_live_profiles(year - 1, profiles_current)
+        tour_rate = tour_average_ace_rate(prior)
+        before = prior
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        return None, None, []
+    return profiles, tour_rate, before
 
 
 def build_live_profiles(profile_year, current_profiles):
@@ -1288,17 +1418,9 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows, source=None):
-    """LOEO ratings; Next Gen and Davis Cup are target-only, never ATP training inputs."""
+    """Chronological LOEO ratings with a 14-day source-date quarantine against overlap leakage."""
     target_rows = valid_rows(rows)
-    # Next Gen is valid as a target event, but its short-set/no-ad matches must never
-    # influence standard ATP player histories, same-season priors or live baselines.
-    # Davis Cup is also a target, but stays outside ATP player profiles and the ATP normaliser.
-    profile_rows = calculation_eligible_rows(target_rows)
     rows_by_event = defaultdict(list)
-    mapped_profile_rows = [
-        (tournament_id(row.get("tourney_name")), row)
-        for row in profile_rows
-    ]
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
@@ -1306,20 +1428,18 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        # Leave the target event out of current-season profiles. All training rows are
-        # also filtered to the standard ATP format by calculation_eligible_rows above.
-        training_rows = [row for mapped_id, row in mapped_profile_rows if mapped_id != tid]
-        if not training_rows:
+        # Source archives expose tourney_date (event start), not exact match dates.
+        # Apply a two-week quarantine so overlapping events cannot leak later-round
+        # results into the target's profiles or normalisation anchor.
+        dates = [_match_date(row) for row in event_rows]
+        dates = [value for value in dates if value is not None]
+        if not dates:
             continue
-        current_profiles = player_rates(
-            training_rows,
-            prior_points=PROFILE_PRIOR_SERVICE_POINTS,
-        )
-        # Backfill from every available prior ATP season (stats archive begins in 1991).
-        # build_live_profiles crosswalks current TML alphanumeric IDs to historical archive
-        # IDs by unique normalised full name and aggregates weighted career samples.
-        profiles = build_live_profiles(year, current_profiles)
-        tour_rate = tour_average_ace_rate(training_rows)
+        event_start = min(dates)
+        cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
+        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
+        if profiles is None or tour_rate is None:
+            continue
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
             continue
         profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
@@ -1331,14 +1451,27 @@ def season_ratings(year, rows, source=None):
             continue
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
+        event_raw = sum(ratios) / sides
+        # The chronological profiles and tour anchor are already fitted for this target.
+        # Score earlier standard ATP events once here, using that same pre-target snapshot,
+        # rather than refitting the profiles a second time during output serialisation.
+        anchor_events, _, _, _ = event_raw_scores(training_rows, profiles, tour_rate=tour_rate)
+        eligible_anchor = {
+            event_id: value for event_id, value in anchor_events.items()
+            if event_id not in CALC_TARGET_ONLY_EVENT_IDS
+        }
+        mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor) if eligible_anchor else event_raw
         details[tid] = {
-            "raw": sum(ratios) / sides,
+            "raw": event_raw,
+            "normalisation": mean_raw,
             "clusters": clusters,
             "sides": sides,
             "matches": len(event_rows),
             "ace": 100.0 * aces / points if points else None,
             "profile_coverage": profile_coverage,
             "calculation_diagnostics": side_diagnostics,
+            "chronology_cutoff": cutoff.isoformat(),
+            "event_start_date": event_start.isoformat(),
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1349,17 +1482,9 @@ def season_ratings(year, rows, source=None):
         tid: item for tid, item in details.items()
         if tid not in CALC_TARGET_ONLY_EVENT_IDS
     }
-    normaliser_events = {
-        tid: item for tid, item in standard_format_details.items()
-        if item["sides"] >= MIN_NORMALISER_SERVER_SIDES
-    }
-    if not normaliser_events:
-        normaliser_events = standard_format_details
-    if not normaliser_events:
-        return {}
-    mean_raw = sum(item["raw"] for item in normaliser_events.values()) / len(normaliser_events)
     output = {}
     for tid, item in details.items():
+        mean_raw = item["normalisation"]
         seed = int(hashlib.sha256(f"{year}:{tid}:match-cluster-ci-v1".encode()).hexdigest()[:8], 16)
         # A match-cluster interval is not meaningful for fewer than five independent matches.
         interval = (
@@ -1389,6 +1514,9 @@ def season_ratings(year, rows, source=None):
             "speedCiHigh": ci.get("high"),
             "speedCiMethod": ci.get("method"),
             "calculationDiagnostics": {
+                "chronologicalCutoff": item["chronology_cutoff"],
+                "eventStartDate": item["event_start_date"],
+                "quarantineDays": CHRONOLOGICAL_QUARANTINE_DAYS,
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
@@ -1457,6 +1585,7 @@ def main():
 
     history = {}
     season_sources = {}
+    davis_cup_coverage = {}
     for year in YEARS:
         try:
             rows = load(year)
@@ -1465,6 +1594,21 @@ def main():
                 print(f"{year}: archive not published yet; skipping current-year history")
                 continue
             raise
+        if year == date.today().year:
+            audit = davis_cup_coverage_audit(rows, year)
+            audit["source"] = SOURCE_BY_YEAR.get(year, "unknown")
+            audit["validatedSource"] = SOURCE_BY_YEAR.get(year) == TML_DAVIS_CUP_SOURCE
+            davis_cup_coverage[str(year)] = audit
+            print(
+                "Davis Cup source reconciliation: "
+                f"{audit['identifiedSingles']} identified singles · "
+                f"{audit['completedPlayedSingles']} played · "
+                f"{audit['scorelessSingles']} scoreless/pending-result · "
+                f"{audit['walkoverOrNoPlaySingles']} walkovers/no-play · "
+                f"{audit['completedWithValidServeStats']} valid stats · "
+                f"{audit['completedMissingServeStats']} missing stats · "
+                f"{audit['completedMalformedStats']} malformed stats"
+            )
         ratings = season_ratings(year, rows, source=SOURCE_BY_YEAR.get(year))
         history[year] = ratings
         season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
@@ -1629,12 +1773,13 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
+            "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio with a 14-day quarantine on source tournament start dates; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "source_metadata": {
                 str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR
             },
+            "davis_cup_coverage": davis_cup_coverage,
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
                         for y, ratings in history.items()},

@@ -7,7 +7,7 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research, fix/chronological-loeo-davis-cup-coverage]
     paths:
       # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
@@ -21,6 +21,7 @@ on:
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetPolicyTest.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/DatasetTest.kt'
       # Version changes must run the validated dataset gate before signed release.
       - 'app/build.gradle.kts'
       - '.github/workflows/refresh-data.yml'
@@ -197,6 +198,42 @@ jobs:
           baseline = json.loads(Path("data/live_speed_baseline.json").read_text())
           history = json.loads(Path("data/speed_history.json").read_text())
           initial = json.loads(Path("app/src/main/assets/pace_dataset.json").read_text())
+          current_season = str(baseline.get("season"))
+          dc_audit = (history.get("davis_cup_coverage") or {}).get(current_season)
+          assert isinstance(dc_audit, dict), "current season Davis Cup source reconciliation is missing"
+          assert dc_audit.get("sourceRowsAfterMerge") == (
+              dc_audit.get("excludedDoubles", 0) +
+              dc_audit.get("rowsWithoutPlayerIds", 0) +
+              dc_audit.get("identifiedSingles", 0)
+          ), "Davis Cup post-merge source rows do not reconcile to excluded doubles, unidentified rows and unique singles"
+          assert dc_audit.get("identifiedSingles") == (
+              dc_audit.get("completedPlayedSingles", 0) +
+              dc_audit.get("scorelessSingles", 0) +
+              dc_audit.get("walkoverOrNoPlaySingles", 0)
+          ), "Davis Cup identified singles do not reconcile to played, scoreless and no-play buckets"
+          assert dc_audit.get("completedPlayedSingles") == (
+              dc_audit.get("completedWithValidServeStats", 0) +
+              dc_audit.get("completedMissingServeStats", 0) +
+              dc_audit.get("completedMalformedStats", 0)
+          ), "Davis Cup completed singles do not reconcile to valid, missing and malformed stats"
+          assert dc_audit.get("validatedSource") is True, (
+              "2026 Davis Cup source has not passed TML annual + ongoing-feed validation"
+          )
+          dc_values = history.get("seasons", {}).get(current_season, {}).get("daviscup")
+          assert dc_values and dc_values.get("speed") is not None, (
+              "validated 2026 Davis Cup feed did not produce a historical CALC rating"
+          )
+          assert dc_values.get("matches", 0) > 0, "2026 Davis Cup CALC contains no completed-stat matches"
+          print(
+              "Davis Cup audit: "
+              f"{dc_audit.get('identifiedSingles')} unique singles · "
+              f"{dc_audit.get('completedPlayedSingles')} played · "
+              f"{dc_audit.get('scorelessSingles')} scoreless/pending result · "
+              f"{dc_audit.get('walkoverOrNoPlaySingles')} no-play · "
+              f"{dc_audit.get('completedWithValidServeStats')} valid stats · "
+              f"{dc_audit.get('completedMissingServeStats')} missing · "
+              f"{dc_audit.get('completedMalformedStats')} malformed"
+          )
           known = {item["id"] for item in initial["tournaments"]}
           dataset_bytes = Path("app/src/main/assets/pace_dataset.json").read_bytes()
           assert Path("data/latest.json").read_bytes() == dataset_bytes, "data/latest.json differs from the bundled dataset"
@@ -243,6 +280,7 @@ jobs:
                   (2020, "rio"): 31,
                   (2022, "adelaide"): 54,
                   (2023, "adelaide"): 58,
+                  (2026, "atpfinals"): 15,
               }
               for (required_season, required_event), minimum_matches in required_calc.items():
                   values = history["seasons"].get(str(required_season), {}).get(required_event)
@@ -261,6 +299,123 @@ jobs:
               assert checked > 0, f"{filename} has no calculated readings"
           print(f"Bundled and downloadable datasets contain the validated baseline and {checked} current CALC rows match speed_history.json.")
           PY
+
+      - name: Diagnose generated dataset policy invariants
+        run: |
+          python3 - <<'PY'
+          import json, math, unicodedata
+          from pathlib import Path
+
+          dataset = json.loads(Path("app/src/main/assets/pace_dataset.json").read_text())
+          baseline = dataset.get("speedBaseline") or {}
+          history = json.loads(Path("data/speed_history.json").read_text())
+          readings = dataset.get("readings", [])
+          ids = {item.get("id") for item in dataset.get("tournaments", [])}
+          serve_sources = {
+              "current-season-qualified", "prior-season-qualified", "current-season-shrunk",
+              "prior-season-shrunk", "career-history-surface-shrunk",
+              "career-history-pooled-shrunk", "tour-average-prior-only",
+          }
+          concede_sources = {
+              "surface-qualified", "pooled-fallback", "career-history-surface-shrunk",
+              "career-history-pooled-shrunk", "tour-average-prior-only",
+          }
+          normalized_names = [
+              "".join(
+                  ch for ch in unicodedata.normalize("NFD", str(p.get("name", ""))).casefold()
+                  if ch.isalnum()
+              )
+              for p in baseline.get("profiles", [])
+          ]
+          bad_speeds = []
+          bad_published = []
+          for row in readings:
+              speed = row.get("speed")
+              if speed is not None and not (
+                  isinstance(speed, (int, float)) and math.isfinite(speed) and speed >= 0.30 and
+                  (speed <= 2.0 or (row.get("t") == "nextgen" and row.get("src") in ("computed", "live")))
+              ):
+                  bad_speeds.append({
+                      "t": row.get("t"), "s": row.get("s"), "speed": speed,
+                      "src": row.get("src"), "matches": row.get("matches"),
+                      "adjustedServerSides": row.get("adjustedServerSides"),
+                      "diagnostics": row.get("calculationDiagnostics"),
+                  })
+              published = row.get("publishedSpeed")
+              if published is not None and not (
+                  isinstance(published, (int, float)) and math.isfinite(published) and 0.30 <= published <= 2.0
+              ):
+                  bad_published.append({
+                      "t": row.get("t"), "s": row.get("s"), "publishedSpeed": published,
+                  })
+
+          invalid_profile_sources = {
+              "serve": sorted({
+                  str(p.get("serveRateSource")) for p in baseline.get("profiles", [])
+                  if p.get("serveRateSource") is not None and p.get("serveRateSource") not in serve_sources
+              }),
+              "concede": sorted({
+                  str(p.get("concedeRateSource")) for p in baseline.get("profiles", [])
+                  if p.get("concedeRateSource") is not None and p.get("concedeRateSource") not in concede_sources
+              }),
+          }
+          duplicate_names = len(normalized_names) - len(set(normalized_names))
+          invalid_rates = sum(
+              1 for p in baseline.get("profiles", [])
+              for key in ("serveRate", "concedeRate")
+              if p.get(key) is not None and (
+                  not isinstance(p[key], (int, float)) or not math.isfinite(p[key]) or not 0 <= p[key] <= 1
+              )
+          )
+          invalid_seasons = sum(
+              1 for p in baseline.get("profiles", [])
+              for key in ("serveRateSeason", "concedeRateSeason")
+              if p.get(key) is not None and not 1991 <= int(p[key]) <= int(baseline.get("season", 0))
+          )
+
+          current = str(baseline.get("season"))
+          dc_audit = (history.get("davis_cup_coverage") or {}).get(current)
+          dc_calc = (history.get("seasons") or {}).get(current, {}).get("daviscup")
+          finals = (history.get("seasons") or {}).get(current, {}).get("atpfinals")
+          ng24 = (history.get("seasons") or {}).get("2024", {}).get("nextgen")
+          audit = {
+              "dataset": {
+                  "season": dataset.get("meta", {}).get("season"),
+                  "tournaments": len(dataset.get("tournaments", [])),
+                  "readings": len(readings),
+                  "unknownTournamentRows": sum(1 for row in readings if row.get("t") not in ids),
+                  "speedOutliers": bad_speeds[:50],
+                  "speedOutlierCount": len(bad_speeds),
+                  "publishedSpeedOutliers": bad_published[:50],
+                  "publishedSpeedOutlierCount": len(bad_published),
+              },
+              "baseline": {
+                  "season": baseline.get("season"),
+                  "profileSeason": baseline.get("profileSeason"),
+                  "profiles": len(baseline.get("profiles", [])),
+                  "duplicateNormalizedNames": duplicate_names,
+                  "invalidRates": invalid_rates,
+                  "invalidProfileSeasons": invalid_seasons,
+                  "invalidProfileSources": invalid_profile_sources,
+                  "profileCoverage": baseline.get("profileCoverage"),
+              },
+              "atpFinals2026": finals,
+              "nextGen2024": ng24,
+              "davisCupAudit2026": dc_audit,
+              "davisCupCalc2026": dc_calc,
+          }
+          Path("build").mkdir(exist_ok=True)
+          Path("build/dataset-policy-audit.json").write_text(json.dumps(audit, indent=2) + "\n")
+          print(json.dumps(audit, indent=2))
+          PY
+
+      - name: Upload generated dataset policy audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-policy-audit-current
+          path: build/dataset-policy-audit.json
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Verify
         run: |
@@ -283,6 +438,130 @@ jobs:
           done
           echo "Robolectric runtime download failed after three attempts."
           exit 1
+
+      - name: Diagnose generated dataset and Android policy failures
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, math, unicodedata
+          from pathlib import Path
+
+          dataset_path = Path("app/src/main/assets/pace_dataset.json")
+          baseline_path = Path("data/live_speed_baseline.json")
+          if not dataset_path.is_file() or not baseline_path.is_file():
+              raise SystemExit("Generated dataset or baseline is missing.")
+          dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
+          baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+          readings = dataset.get("readings", [])
+          profiles = baseline.get("profiles", [])
+          speed = [row for row in readings if row.get("speed") is not None]
+          computed = [row for row in speed if row.get("src") == "computed"]
+          published = [row for row in speed if row.get("src") == "tennisabstract" or row.get("publishedSpeed") is not None]
+
+          outliers = [
+              {"t": row.get("t"), "s": row.get("s"), "speed": row.get("speed"), "src": row.get("src")}
+              for row in speed
+              if not (isinstance(row.get("speed"), (int, float)) and math.isfinite(row["speed"])
+                      and row["speed"] >= 0.30
+                      and (row["speed"] <= 2.0 or
+                           (row.get("t") == "nextgen" and row.get("src") in {"computed", "live"})))
+          ]
+          published_outliers = [
+              {"t": row.get("t"), "s": row.get("s"), "publishedSpeed": row.get("publishedSpeed")}
+              for row in readings
+              if row.get("publishedSpeed") is not None and
+                 not (isinstance(row["publishedSpeed"], (int, float)) and
+                      math.isfinite(row["publishedSpeed"]) and 0.30 <= row["publishedSpeed"] <= 2.0)
+          ]
+          cpi_outliers = [
+              {"t": row.get("t"), "s": row.get("s"), "cpi": row.get("cpi")}
+              for row in readings
+              if row.get("cpi") is not None and
+                 not (isinstance(row["cpi"], (int, float)) and 10.0 <= row["cpi"] <= 60.0)
+          ]
+
+          serve_sources = {
+              "current-season-qualified", "prior-season-qualified",
+              "current-season-shrunk", "prior-season-shrunk",
+              "career-history-surface-shrunk", "career-history-pooled-shrunk",
+              "tour-average-prior-only",
+          }
+          concede_sources = {
+              "surface-qualified", "pooled-fallback",
+              "career-history-surface-shrunk", "career-history-pooled-shrunk",
+              "tour-average-prior-only",
+          }
+          normalized_names = [
+              "".join(ch for ch in unicodedata.normalize("NFD", p.get("name", "")).lower()
+                      if ch.isalnum())
+              for p in profiles
+          ]
+          bad_profiles = []
+          for p in profiles:
+              issues = []
+              for key in ("serveRate", "concedeRate"):
+                  value = p.get(key)
+                  if value is not None and (
+                      not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1
+                  ):
+                      issues.append(f"invalid {key}")
+              for key in ("serveRateSeason", "concedeRateSeason"):
+                  value = p.get(key)
+                  if value is not None and value not in range(1991, baseline.get("season", 0) + 1):
+                      issues.append(f"invalid {key}={value}")
+              for prefix in ("serveRate", "concedeRate"):
+                  value = p.get(prefix + "SampleMatches")
+                  rate = p.get(prefix[0].lower() + prefix[1:])
+                  source = p.get(prefix + "Source")
+                  if value is not None and (
+                      value < 0 or (value == 0 and rate is not None and source != "tour-average-prior-only")
+                  ):
+                      issues.append(f"invalid {prefix}SampleMatches={value}")
+                  points = p.get(prefix + "SampleServicePoints")
+                  if points is not None and (
+                      points < 0 or (points == 0 and rate is not None and source != "tour-average-prior-only")
+                  ):
+                      issues.append(f"invalid {prefix}SampleServicePoints={points}")
+              source = p.get("serveRateSource")
+              if source is not None and source not in serve_sources:
+                  issues.append(f"unsupported serveRateSource={source}")
+              source = p.get("concedeRateSource")
+              if source is not None and source not in concede_sources:
+                  issues.append(f"unsupported concedeRateSource={source}")
+              if p.get("serveRatePriorServicePoints") is not None and p["serveRatePriorServicePoints"] <= 0:
+                  issues.append("invalid serveRatePriorServicePoints")
+              if p.get("concedeRatePriorServicePoints") is not None and p["concedeRatePriorServicePoints"] <= 0:
+                  issues.append("invalid concedeRatePriorServicePoints")
+              if issues:
+                  bad_profiles.append({"name": p.get("name"), "issues": issues})
+
+          print("GENERATED DATASET DIAGNOSTICS")
+          print(f"tournaments={len(dataset.get('tournaments', []))} readings={len(readings)} "
+                f"speed={len(speed)} computed={len(computed)} published-comparison={len(published)} "
+                f"CPI={sum(row.get('cpi') is not None for row in readings)}")
+          print(f"speed_outliers={outliers}")
+          print(f"published_speed_outliers={published_outliers}")
+          print(f"CPI_outliers={cpi_outliers}")
+          print(f"baseline_profiles={len(profiles)} unique_normalized_names={len(set(normalized_names))} "
+                f"usable_profiles={sum(p.get('serveRate') is not None or p.get('concedeRate') is not None for p in profiles)}")
+          print(f"invalid_baseline_profiles={bad_profiles[:30]}")
+          print(f"serve_sources={dict((source, sum(p.get('serveRateSource') == source for p in profiles)) for source in sorted(serve_sources))}")
+          print(f"concede_sources={dict((source, sum(p.get('concedeRateSource') == source for p in profiles)) for source in sorted(concede_sources))}")
+          print(f"2026_CALC={[(row['t'], row['matches'], row['speed']) for row in computed if row.get('s') == 2026]}")
+          PY
+
+      - name: Upload generated dataset and Android test reports for diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-dataset-and-test-diagnostics
+          path: |
+            app/src/main/assets/pace_dataset.json
+            app/build/test-results/testDebugUnitTest/*.xml
+            data/live_speed_baseline.json
+            data/speed_history.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Commit if anything changed
         run: |

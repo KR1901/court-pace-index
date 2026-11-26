@@ -16,12 +16,25 @@ class TmlDavisCupClientTest {
     ).joinToString(",")
 
     @Test
-    fun `annual and ongoing feeds deduplicate and ignore doubles and other seasons`() {
+    fun `annual and ongoing feeds deduplicate and classify Davis Cup singles correctly`() {
         val annual = listOf(
             header,
             row("2026", "1", "P1", "Tomas Machac", "P2", "Liam Draxl", "4", "68", "3", "65"),
+            // A different tie can reuse match_num 1 on the same tournament date.
+            row("2026", "1", "P17", "Another Tie Winner", "P18", "Another Tie Opponent", "2", "70", "2", "70"),
             row("2026", "2", "P3", "Jiri Lehecka", "P4", "Felix Auger-Aliassime", "", "", "", ""),
             row("2026", "3", "P5", "Player A / Player B", "P6", "Player C / Player D", "4", "40", "3", "42"),
+            // Annual scoreless row is superseded by the completed ongoing snapshot below.
+            row("2026", "6", "P11", "Recently Completed", "P12", "Recent Opponent", "", "", "", "")
+                .replace("6-4 6-4", ""),
+            // This fixture remains unplayed in the latest snapshot.
+            row("2026", "7", "P13", "Scheduled Winner", "P14", "Scheduled Opponent", "", "", "", "")
+                .replace("6-4 6-4", ""),
+            // Complete numeric fields with an impossible ace count are malformed, not missing.
+            row("2026", "8", "P15", "Malformed Winner", "P16", "Malformed Opponent", "-1", "60", "2", "60"),
+            // A walkover is neither unplayed nor a played match missing statistics.
+            row("2026", "9", "P19", "Walkover Winner", "P20", "Walkover Opponent", "", "", "", "")
+                .replace("6-4 6-4", "W/O"),
             row("2025", "1", "P7", "Player E", "P8", "Player F", "5", "50", "4", "48"),
             row("2026", "5", "", "", "", "", "", "", "", ""),
         ).joinToString("\n")
@@ -29,18 +42,29 @@ class TmlDavisCupClientTest {
             header,
             row("2026", "1", "P1", "Tomas Machac", "P2", "Liam Draxl", "9", "70", "6", "90"),
             row("2026", "4", "P9", "Player G", "P10", "Player H", "7", "61", "2", "60"),
+            row("2026", "6", "P11", "Recently Completed", "P12", "Recent Opponent", "5", "70", "3", "65"),
         ).joinToString("\n")
 
         val batch = TmlDavisCupClient().parseMatchRows(annual, ongoing, 2026)
 
-        assertEquals(3, batch.discoveredMatches)
-        assertEquals(2, batch.matchesWithServeStats)
+        assertEquals(8, batch.identifiedSingles)
+        assertEquals(6, batch.discoveredMatches)
+        assertEquals(4, batch.matchesWithServeStats)
         assertEquals(1, batch.missingStatsMatches)
-        assertEquals(2, batch.matches.size)
-        assertEquals(setOf("Tomas Machac", "Player G"), batch.matches.map { it.firstPlayer }.toSet())
+        assertEquals(1, batch.malformedStatsMatches)
+        assertEquals(1, batch.scorelessRows)
+        assertEquals(1, batch.noPlayRows)
+        assertEquals(4, batch.matches.size)
+        assertEquals(
+            setOf("Tomas Machac", "Another Tie Winner", "Player G", "Recently Completed"),
+            batch.matches.map { it.firstPlayer }.toSet(),
+        )
         val machac = batch.matches.first { it.firstPlayer == "Tomas Machac" }
         assertEquals("Ongoing feed must replace the annual stats for the same rubber", 9, machac.firstAces)
         assertEquals(70, machac.firstServePoints)
+        val recent = batch.matches.first { it.firstPlayer == "Recently Completed" }
+        assertEquals(5, recent.firstAces)
+        assertEquals(70, recent.firstServePoints)
     }
 
     @Test
