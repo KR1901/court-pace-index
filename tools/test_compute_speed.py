@@ -1227,6 +1227,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         same_day = match("Madrid Masters", "20261001", aces=35)
         later = match("Madrid Masters", "20261002", aces=35)
         one_date_edition = match("Dallas Open", "20260920", aces=35)
+        one_date_edition["tourney_level"] = "250"
         target = [
             match("Paris Masters", "20261001") for _ in range(5)
         ] + [
