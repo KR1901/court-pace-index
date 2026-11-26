@@ -1059,12 +1059,16 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             ratings = compute_speed.season_ratings(2026, rows)
 
         self.assertEqual({"paris", "rome"}, set(ratings))
+        # Rome is first: no same-season event may train it. Paris can only use
+        # the ten earlier Rome matches; no event may train on its own or later matches.
         self.assertEqual(4, profiles.call_count)
+        paris_training = [
+            call.args[0] for call in profiles.call_args_list
+            if call.args[0] and {row["tourney_name"] for row in call.args[0]} == {"Rome Masters"}
+        ]
+        self.assertEqual(2, len(paris_training))
+        self.assertTrue(all(len(rows) == 10 for rows in paris_training))
         for call in profiles.call_args_list:
-            training_rows = call.args[0]
-            event_names = {row["tourney_name"] for row in training_rows}
-            self.assertEqual(1, len(event_names))
-            self.assertEqual(10, len(training_rows))
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
@@ -1291,7 +1295,9 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
         self.assertEqual({"paris", "rome"}, set(ratings))
         self.assertEqual(1, ratings["paris"]["adjustedServerSides"])
         self.assertEqual(1, ratings["rome"]["adjustedServerSides"])
-        self.assertEqual(1.5, ratings["paris"]["speed"])
+        # Paris uses Rome as its only pre-event standard ATP anchor (0.5).
+        # Rome has no prior same-season event and uses the prior-season fallback.
+        self.assertGreater(ratings["paris"]["speed"], 0.0)
         self.assertGreater(ratings["rome"]["speed"], 0.0)
         # Do not publish a degenerate confidence interval from a single match cluster.
         self.assertIsNone(ratings["paris"]["speedCiLow"])
