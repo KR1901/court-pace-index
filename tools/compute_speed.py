@@ -800,17 +800,29 @@ def _actual_match_end(row):
 
 
 def _source_event_end_date(row):
-    """Return a verified event end date, not an unconfirmed planned end."""
-    for key in ("event_end_date", "tournament_end_date"):
+    """Return an event end only when the source marks it actual or the event completed."""
+    for key in ("actual_event_end_date", "event_actual_end_date", "tournament_actual_end_date"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
+    completed = (
+        str(row.get("event_status") or "").casefold() in {"completed", "complete", "finished"}
+        or str(row.get("event_completed") or "").casefold() in {"true", "1", "yes"}
+    )
+    end_date_actual = (
+        str(row.get("event_end_date_is_actual") or "").casefold() in {"true", "1", "yes"}
+        or str(row.get("tournament_end_date_is_actual") or "").casefold() in {"true", "1", "yes"}
+    )
+    if not completed and not end_date_actual:
+        return None
     # Some providers expose only end_date plus a provisional flag. Never use a
     # provisional/planned end to prove that the event had already finished.
     if str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
         return None
-    if str(row.get("event_status") or "").casefold() in {"completed", "complete", "finished"}:
-        return _parse_iso_date(row.get("end_date"))
+    for key in ("event_end_date", "tournament_end_date", "end_date"):
+        parsed = _parse_iso_date(row.get(key))
+        if parsed is not None:
+            return parsed
     return None
 
 
