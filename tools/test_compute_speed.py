@@ -88,6 +88,15 @@ def profile(
 
 
 class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
+    def test_davis_cup_and_final8_publication_policies_are_separate(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", 2024))
+        self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", 2026, source=tml))
+        self.assertTrue(is_supported_davis_cup_calculation_year("daviscupfinal8", 2026, source=tml))
+        self.assertFalse(is_supported_davis_cup_calculation_year("daviscupfinal8", 2025, source=tml))
+        self.assertFalse(is_supported_davis_cup_calculation_year("daviscupfinal8", 2026))
+        self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", 2026))
+
     def test_davis_cup_tie_labels_are_grouped_into_one_target_event(self):
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup Finals RR: FRA vs JPN"))
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup WG1 PO: CHN vs POR"))
@@ -113,10 +122,16 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
             "winner_id": "3", "loser_id": "4",
             "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
         }
-        valid = compute_speed.valid_rows([davis, atp])
-        self.assertEqual(2, len(valid))
+        final8 = {
+            **davis,
+            "tourney_name": "Davis Cup Finals QF: CZE vs CAN",
+            "tourney_id": "2026-M-DC-2026-FLS-M-CZE-CAN-01",
+        }
+        valid = compute_speed.valid_rows([davis, final8, atp])
+        self.assertEqual(3, len(valid))
         self.assertEqual([atp], compute_speed.calculation_eligible_rows(valid))
         self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
+        self.assertIn("daviscupfinal8", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
     def test_davis_cup_diagnostic_ids_do_not_collide_when_tie_match_numbers_repeat(self):
         rows = [

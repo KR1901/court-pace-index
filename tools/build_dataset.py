@@ -511,7 +511,7 @@ doc = {
                 "metric": "Speed",
                 "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); " +
                           "the current season prefers the TennisMyLife ATP Match Database; " +
-                          ("The 2026 Davis Cup target uses the validated source " + TML_DAVIS_CUP_SOURCE + " and remains separate from ATP training/normalisation. "
+                          ("The 2026 Davis Cup qualifiers/group ties and separately identified Final 8 target use the validated source " + TML_DAVIS_CUP_SOURCE + " and remain separate from ATP training/normalisation. "
                            if season_sources.get("2026") == TML_DAVIS_CUP_SOURCE else
                            "The 2026 Davis Cup CALC is withheld unless the validated TML annual and ongoing feeds are both available. ") +
                           "Historical events are calculated leave-one-tournament-out, with qualified server and " +

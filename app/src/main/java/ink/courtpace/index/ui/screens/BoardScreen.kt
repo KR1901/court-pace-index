@@ -445,7 +445,7 @@ private fun LivePendingRow(
                                 append("/")
                                 append(ace.discoveredMatches)
                                 append(" completed")
-                                if (tournament.id == "daviscup") append(" · TML season-to-date · multi-surface")
+                                if (tournament.id == "daviscupfinal8") append(" · TML Final 8")
                                 append(" · ")
                                 append(ace.adjustedServerSides)
                                 append("/")
