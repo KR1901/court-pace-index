@@ -1216,7 +1216,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
                 "l_ace": aces,
             }
             if timestamp:
-                row["match_start_utc"] = timestamp
+                row["actual_start_at_utc"] = timestamp
                 row["start_time_kind"] = "actual"
             return row
 
@@ -1407,6 +1407,34 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             )[compute_speed._source_event_key(singles)],
         )
 
+    def test_scheduled_order_of_play_times_are_not_actual_match_timestamps(self):
+        scheduled_only = {
+            "scheduled_at": "2026-10-01T13:00:00Z",
+            "not_before_utc": "2026-10-01T13:00:00Z",
+            "match_start_utc": "2026-10-01T13:00:00Z",
+            "match_start_at": "2026-10-01T13:00:00Z",
+            "match_datetime_utc": "2026-10-01T13:00:00Z",
+        }
+        self.assertIsNone(compute_speed._match_start_timestamp(scheduled_only))
+        self.assertIsNone(compute_speed._match_start_timestamp({
+            "start_time_kind": "scheduled",
+            "started_at": "2026-10-01T13:00:00Z",
+        }))
+
+        # Generic adapter fields become usable only when the source explicitly labels
+        # them as an actual observed start, with an offset-aware timestamp.
+        explicitly_actual = {
+            **scheduled_only,
+            "start_time_kind": "actual",
+        }
+        self.assertEqual(
+            datetime(2026, 10, 1, 13, 0, tzinfo=timezone.utc),
+            compute_speed._match_start_timestamp(explicitly_actual),
+        )
+        self.assertIsNone(compute_speed._match_start_timestamp({
+            "actual_start_at_utc": "2026-10-01T13:00:00",
+        }))
+
     def test_match_timestamps_can_order_same_day_matches_when_offsets_are_present(self):
         def match(event, match_date, timestamp=None, aces=8, finish_timestamp=None):
             row = {
@@ -1425,7 +1453,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
                 "l_ace": aces,
             }
             if timestamp:
-                row["match_start_utc"] = timestamp
+                row["actual_start_at_utc"] = timestamp
             if finish_timestamp:
                 row["match_finished_at_utc"] = finish_timestamp
             return row
@@ -1464,7 +1492,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             and row.get("tourney_date") == "20261001"
         ]
         self.assertEqual(1, len(same_day_training))
-        self.assertEqual("2026-10-01T13:00:00Z", same_day_training[0]["match_start_utc"])
+        self.assertEqual("2026-10-01T13:00:00Z", same_day_training[0]["actual_start_at_utc"])
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):

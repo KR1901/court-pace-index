@@ -749,19 +749,23 @@ def _parse_utc_datetime(value):
 
 
 def _match_start_timestamp(row):
-    """Return a confirmed actual match start, never a scheduled/not-before time."""
-    # These specific field names are accepted as actual UTC observations. Generic
-    # scheduled/not-before fields below are ignored unless explicitly marked actual.
+    """Return an actual match start only when its field is explicit or tagged as actual."""
+    # Unambiguous source-normalized actual timestamp fields. Every value must carry
+    # an explicit UTC offset; scheduled and not-before order-of-play fields are absent.
     for key in (
-        "match_started_at_utc", "actual_start_at_utc", "actual_started_at_utc",
-        "actual_started_at", "match_start_utc", "actual_start_utc",
-        "match_start_at", "match_datetime_utc",
+        "actual_match_start_utc", "match_started_at_utc", "actual_start_at_utc",
+        "actual_started_at_utc", "actual_started_at", "actual_start_utc",
     ):
         parsed = _parse_utc_datetime(row.get(key))
         if parsed is not None:
             return parsed
+
+    # A source adapter may normalize a generic timestamp only while explicitly
+    # marking its semantic type. Never infer that a field named "match_start" or
+    # "start_time" is actual merely from its name.
     if str(row.get("start_time_kind") or "").casefold() == "actual":
-        for key in ("started_at", "start_time_utc", "scheduled_at"):
+        for key in ("started_at", "start_time_utc", "match_start_utc",
+                    "match_start_at", "match_datetime_utc"):
             parsed = _parse_utc_datetime(row.get(key))
             if parsed is not None:
                 return parsed
