@@ -12,6 +12,9 @@ object DatasetPolicy {
     const val MIN_TOURNAMENTS = 20
     const val MIN_READINGS = 50
     const val MIN_SPEED_BASELINE_PROFILES = 20
+    /** Upper guard for well-supported standard CALC ratios; the metric is not a probability. */
+    const val MAX_SUPPORTED_COMPUTED_SPEED = 3.0
+    const val MIN_SUPPORTED_COMPUTED_SERVER_SIDES = 20
 
     fun isAcceptable(dataset: PaceDataset): Boolean {
         if (dataset.tournaments.size < MIN_TOURNAMENTS) return false
@@ -89,9 +92,24 @@ object DatasetPolicy {
         }
         return dataset.readings.all { reading ->
             val speed = reading.speed
+            // CALC is a normalized actual/expected-aces ratio, not a probability, so a
+            // genuinely fast standard event can exceed 2.0. Permit that only for a
+            // substantial sample with a finite, bounded match-cluster interval. Published
+            // references and on-device live ratings retain the established 2.0 ceiling.
+            val supportedStandardCalcAboveTwo = reading.t != "nextgen" &&
+                reading.src == "computed" &&
+                (reading.adjustedServerSides ?: 0) >= MIN_SUPPORTED_COMPUTED_SERVER_SIDES &&
+                reading.speedCiMethod == "match-cluster-conditional-v1" &&
+                reading.speedCiLow?.isFinite() == true &&
+                reading.speedCiHigh?.isFinite() == true &&
+                reading.speedCiLow >= 0.30 &&
+                reading.speedCiHigh >= reading.speedCiLow &&
+                reading.speedCiHigh <= MAX_SUPPORTED_COMPUTED_SPEED &&
+                speed != null && speed <= MAX_SUPPORTED_COMPUTED_SPEED
             val speedIsValid = speed == null || (
                 speed.isFinite() && speed >= 0.30 &&
-                    (speed <= 2.0 || (reading.t == "nextgen" && reading.src in setOf("computed", "live")))
+                    (speed <= 2.0 || supportedStandardCalcAboveTwo ||
+                        (reading.t == "nextgen" && reading.src in setOf("computed", "live")))
             )
             (reading.cpi == null || reading.cpi in 10.0..60.0) &&
                 speedIsValid &&
