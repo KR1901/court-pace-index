@@ -367,7 +367,7 @@ def run(start_year, end_year, quarantine_days):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-year", type=int, default=2016)
-    parser.add_argument("--end-year", type=int, default=2025)
+    parser.add_argument("--end-year", type=int, default=date.today().year)
     parser.add_argument("--quarantine-days", type=int, default=14)
     parser.add_argument("--output", default="build/chronological-loeo-study.json")
     args = parser.parse_args()
