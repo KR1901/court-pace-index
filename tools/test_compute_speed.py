@@ -1062,7 +1062,9 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             ratings = compute_speed.season_ratings(2026, rows)
         self.assertIn("atpfinals", ratings)
         self.assertEqual(10, ratings["atpfinals"]["matches"])
-        self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
+        self.assertEqual("2026-11-01", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
+        self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["eventStartDate"])
+        self.assertEqual(14, ratings["atpfinals"]["calculationDiagnostics"]["quarantineDays"])
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
     def test_later_tournament_rows_do_not_change_earlier_event_rating(self):
@@ -1148,33 +1150,38 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         )
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
-    def test_event_is_excluded_from_its_own_profiles_and_tour_anchor(self):
+    def test_event_profiles_exclude_own_later_and_overlapping_tournaments(self):
         rows = []
-        for event in ("Paris Masters", "Rome Masters"):
+        for event, event_date in (
+            ("Rome Masters", "20260501"),
+            ("Madrid Masters", "20260925"),  # Starts six days before Paris; it overlaps.
+            ("Paris Masters", "20261001"),
+        ):
             for _ in range(10):
+                aces = 35 if event == "Madrid Masters" else 8
                 rows.append({
                     "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                    "tourney_date": "20260501" if event == "Rome Masters" else "20261001",
+                    "tourney_date": event_date,
                     "winner_id": "p1", "loser_id": "p2",
-                    "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
                 })
 
         real_player_rates = compute_speed.player_rates
         compute_speed._PROFILE_YEAR_CACHE.clear()
-        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \\
              patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
             ratings = compute_speed.season_ratings(2026, rows)
 
-        self.assertEqual({"paris", "rome"}, set(ratings))
-        # Rome is first: no same-season event may train it. Paris can only use
-        # the ten earlier Rome matches; no event may train on its own or later matches.
-        self.assertEqual(2, profiles.call_count)
+        self.assertEqual({"paris", "rome", "madrid"}, set(ratings))
+        # Paris can use Rome (months earlier), but not Madrid, which began only six
+        # days before Paris and may contain later rounds played after Paris began.
         paris_training = [
             call.args[0] for call in profiles.call_args_list
             if call.args[0] and {row["tourney_name"] for row in call.args[0]} == {"Rome Masters"}
         ]
         self.assertEqual(1, len(paris_training))
-        self.assertTrue(all(len(rows) == 10 for rows in paris_training))
+        self.assertTrue(all(len(training_rows) == 10 for training_rows in paris_training))
+        self.assertEqual(3, profiles.call_count)
         for call in profiles.call_args_list:
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
@@ -1335,7 +1342,7 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
             for _ in range(count):
                 rows.append({
                     "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                    "tourney_date": {"Paris Masters": "20261102", "Rome Masters": "20261014", "Madrid Masters": "20261021"}[event],
+                    "tourney_date": {"Paris Masters": "20261102", "Rome Masters": "20261014", "Madrid Masters": "20261018"}[event],
                     "winner_id": "p1", "loser_id": "p2",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
                 })
