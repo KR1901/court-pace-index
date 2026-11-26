@@ -44,7 +44,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-26T05:23:25.915176+00:00",
+   "fetchedAtUtc": "2026-11-26T05:32:04.213890+00:00",
    "latestMatchDate": "20261122",
    "matchRows": 2816,
    "bytes": 595598,
@@ -52,7 +52,7 @@
    "ongoingDavisCup": {
     "source": "TennisMyLife ATP Match Database ongoing tournament feed",
     "url": "https://stats.tennismylife.org/data/ongoing_tourneys.csv",
-    "fetchedAtUtc": "2026-11-26T05:23:26.613792+00:00",
+    "fetchedAtUtc": "2026-11-26T05:32:04.759951+00:00",
     "bytes": 1477,
     "sha256": "e61fc1c7f31bf44669701056dd932b8ba2ce72439c826136207435d65286a085",
     "matchRows": 4,
@@ -433053,8 +433053,8 @@
     "speedCiHigh": 1.481,
     "speedCiMethod": "match-cluster-conditional-v1",
     "calculationDiagnostics": {
-     "chronologicalCutoff": "2023-01-20",
-     "eventStartDate": "2023-02-03",
+     "chronologicalCutoff": "2023-01-19",
+     "eventStartDate": "2023-02-02",
      "chronologyPrecision": "tournament_start",
      "targetDateGranularity": "tournament_start",
      "sourceDateGranularity": "tournament_start",
@@ -433065,7 +433065,7 @@
      "legacyFallbackBufferExcludedMatches": 0,
      "legacyFallbackTrainingMatches": 285,
      "legacyFallbackDays": 14,
-     "legacyFallbackCutoff": "2023-01-20",
+     "legacyFallbackCutoff": "2023-01-19",
      "quarantineDays": 14,
      "completedMatches": 68,
      "adjustedServerSides": 136,
