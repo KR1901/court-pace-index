@@ -226,25 +226,12 @@ def run(start_year, end_year, quarantine_days):
                 )
             ]
             chrono_profiles = fit_profiles(year, chronological_training)
+            # Match production: use this pre-target sample's tour rate directly;
+            # use the completed prior-year rate only when no same-season sample exists.
             current_tour_rate = compute_speed.tour_average_ace_rate(chronological_training)
-
-            if current_tour_rate is None:
-                chrono_tour_rate = prior_tour_rate
-            elif prior_tour_rate is None:
-                chrono_tour_rate = current_tour_rate
-            else:
-                current_points = sum(
-                    compute_speed.num(row.get("w_svpt")) + compute_speed.num(row.get("l_svpt"))
-                    for row in chronological_training
-                )
-                current_aces = sum(
-                    compute_speed.num(row.get("w_ace")) + compute_speed.num(row.get("l_ace"))
-                    for row in chronological_training
-                )
-                prior_points = compute_speed.PROFILE_PRIOR_SERVICE_POINTS
-                chrono_tour_rate = (
-                    current_aces + prior_tour_rate * prior_points
-                ) / (current_points + prior_points)
+            chrono_tour_rate = (
+                current_tour_rate if current_tour_rate is not None else prior_tour_rate
+            )
 
             if chrono_tour_rate is None or not 0.0 < chrono_tour_rate < 1.0:
                 continue
@@ -261,7 +248,10 @@ def run(start_year, end_year, quarantine_days):
                 event_id: value for event_id, value in anchor_events.items()
                 if event_id not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
             }
-            chrono_anchor = statistics.mean(eligible_anchor.values()) if eligible_anchor else prior_anchor
+            chrono_anchor = (
+                statistics.mean(eligible_anchor.values())
+                if eligible_anchor else chronological["raw"]
+            )
 
             retro_rating = retro["raw"] / retrospective_anchor
             chrono_rating = chronological["raw"] / chrono_anchor if chrono_anchor else None
