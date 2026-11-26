@@ -53,9 +53,10 @@ internal class TmlDavisCupClient {
     }
 
     internal fun parseMatchRows(annualCsv: String, ongoingCsv: String, year: Int): MatchBatch {
-        // Insert annual rows first, then let the ongoing snapshot replace any matching
-        // rubber. The same result may appear in both feeds with newer/corrected statistics;
-        // distinctBy() would keep the stale annual row and silently discard the update.
+        // Merge every identified singles rubber first, not only score-bearing rows. The
+        // ongoing snapshot is newer and must replace an annual scoreless fixture when it
+        // becomes a completed result, otherwise that rubber is counted as both unplayed
+        // and completed.
         val uniqueByRubber = linkedMapOf<String, Map<String, String>>()
         listOf(annualCsv, ongoingCsv).forEach { snapshot ->
             parseCsv(snapshot).forEach { row ->
@@ -65,36 +66,32 @@ internal class TmlDavisCupClient {
                     row["tourney_date"].orEmpty().take(4) == year.toString() &&
                     row["winner_id"].orEmpty().isNotBlank() &&
                     row["loser_id"].orEmpty().isNotBlank() &&
-                    row["score"].orEmpty().isNotBlank() &&
                     !isDoubles(row)
                 ) {
                     uniqueByRubber[matchKey(row)] = row
                 }
             }
         }
+
         val uniqueRows = uniqueByRubber.values.toList()
-        val matches = uniqueRows.mapNotNull(::toMatchStats)
-        val unplayed = linkedMapOf<String, Map<String, String>>()
-        listOf(annualCsv, ongoingCsv).forEach { snapshot ->
-            parseCsv(snapshot).forEach { row ->
-                if (
-                    row["tourney_level"] == "D" &&
-                    isDavisCupName(row["tourney_name"]) &&
-                    row["tourney_date"].orEmpty().take(4) == year.toString() &&
-                    row["winner_id"].orEmpty().isNotBlank() &&
-                    row["loser_id"].orEmpty().isNotBlank() &&
-                    row["score"].orEmpty().isBlank() &&
-                    !isDoubles(row)
-                ) unplayed[matchKey(row)] = row
-            }
+        val completedRows = uniqueRows.filter { it["score"].orEmpty().isNotBlank() }
+        val matches = completedRows.mapNotNull(::toMatchStats)
+        val requiredServeStats = listOf("w_ace", "w_svpt", "l_ace", "l_svpt")
+        val missingStats = completedRows.count { row ->
+            requiredServeStats.any { row[it].isNullOrBlank() }
         }
+        val malformedStats = completedRows.count { row ->
+            requiredServeStats.none { row[it].isNullOrBlank() } && toMatchStats(row) == null
+        }
+        val unplayed = uniqueRows.count { it["score"].orEmpty().isBlank() }
+
         return MatchBatch(
             matches = matches,
-            discoveredMatches = uniqueRows.size,
+            discoveredMatches = completedRows.size,
             matchesWithServeStats = matches.size,
-            missingStatsMatches = (uniqueRows.size - matches.size).coerceAtLeast(0),
-            unplayedRows = unplayed.size,
-            malformedStatsMatches = (uniqueRows.size - matches.size).coerceAtLeast(0),
+            missingStatsMatches = missingStats,
+            unplayedRows = unplayed,
+            malformedStatsMatches = malformedStats,
         )
     }
 
