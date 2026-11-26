@@ -91,6 +91,16 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
     def test_davis_cup_tie_labels_are_grouped_into_one_target_event(self):
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup Finals RR: FRA vs JPN"))
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup WG1 PO: CHN vs POR"))
+        self.assertEqual("daviscupfinal8", compute_speed._row_tournament_id({
+            "tourney_name": "Davis Cup Finals QF: CZE vs CAN",
+            "tourney_id": "2026-M-DC-2026-FLS-M-CZE-CAN-01",
+        }))
+        self.assertEqual("daviscup", compute_speed._row_tournament_id({
+            "tourney_name": "Davis Cup WG2: TIE A",
+            "tourney_id": "2026-M-DC-WG2-M-TIE-A-01",
+        }))
+        self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
+        self.assertIn("daviscupfinal8", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
     def test_davis_cup_rows_are_valid_targets_but_never_profile_training(self):
         davis = {

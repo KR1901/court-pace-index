@@ -68,6 +68,40 @@ class TmlDavisCupClientTest {
     }
 
     @Test
+    fun `separates Final 8 rubbers from earlier Davis Cup ties by source tournament ID`() {
+        val annual = listOf(
+            header,
+            row("2026", "1", "P1", "Qualifier Winner", "P2", "Qualifier Opponent", "7", "70", "4", "65",
+                tournamentId = "2026-M-DC-WG2"),
+            row("2026", "2", "P3", "Group Winner", "P4", "Group Opponent", "", "", "", "",
+                tournamentId = "2026-M-DC-GRP"),
+            row("2026", "3", "P5", "Final 8 Winner", "P6", "Final 8 Opponent", "9", "80", "5", "75"),
+        ).joinToString("\n")
+        val ongoing = listOf(
+            header,
+            row("2026", "3", "P5", "Final 8 Winner", "P6", "Final 8 Opponent", "10", "82", "5", "76"),
+            row("2026", "4", "P7", "Second Final 8 Winner", "P8", "Second Final 8 Opponent", "6", "72", "3", "69"),
+        ).joinToString("\n")
+
+        val batch = TmlDavisCupClient().parseMatchRows(annual, ongoing, 2026)
+
+        assertEquals(4, batch.identifiedSingles)
+        assertEquals(3, batch.discoveredMatches)
+        assertEquals(2, batch.restOfDavisCup.identifiedSingles)
+        assertEquals(2, batch.restOfDavisCup.discoveredMatches)
+        assertEquals(1, batch.restOfDavisCup.matchesWithServeStats)
+        assertEquals(1, batch.restOfDavisCup.missingStatsMatches)
+        assertEquals(2, batch.final8.identifiedSingles)
+        assertEquals(2, batch.final8.discoveredMatches)
+        assertEquals(2, batch.final8.matchesWithServeStats)
+        assertEquals(0, batch.final8.missingStatsMatches)
+        assertEquals(2, batch.final8.matches.size)
+        assertEquals(setOf("Final 8 Winner", "Second Final 8 Winner"),
+            batch.final8.matches.map { it.firstPlayer }.toSet())
+        assertEquals(10, batch.final8.matches.first { it.firstPlayer == "Final 8 Winner" }.firstAces)
+    }
+
+    @Test
     fun `Davis Cup target can be calculated while missing-stat rows remain in coverage denominator`() {
         val annual = listOf(
             header,
@@ -105,8 +139,9 @@ class TmlDavisCupClientTest {
         winnerServicePoints: String,
         loserAces: String,
         loserServicePoints: String,
+        tournamentId: String = "2026-M-DC-FLS",
     ): String = listOf(
-        "2026-M-DC-FLS",
+        tournamentId,
         "Davis Cup Final 8 QF: TST vs TST",
         "Hard",
         "D",
