@@ -287,7 +287,7 @@ jobs:
           elif version == "4.1.7":
               lines += [
                   "### Chronological CALC and Davis Cup coverage corrections",
-                  "- Recomputes tournament CALC chronologically: player profiles and each event's normalisation anchor use only eligible ATP matches from before that event, so later tournaments cannot change earlier ratings.",
+                  "- Recomputes tournament CALC chronologically with a 14-day quarantine on source tournament start dates. The source CSV does not provide individual match dates, so the quarantine prevents overlapping later rounds from leaking into earlier tournament profiles and normalisation anchors.",
                   "- Restores the 2026 ATP Finals source label variants (ATP Finals and Nitto ATP Finals) to the app's atpfinals event, with the data-refresh gate requiring all 15 singles matches.",
                   "- Merges annual and ongoing TML Davis Cup rows before deduplication and status classification, using player identities to distinguish separate rubbers that reuse a match number.",
                   "- Separates played singles with valid serve statistics, missing statistics, malformed statistics, scoreless/pending-result rows and walkovers/no-play; doubles remain excluded.",
