@@ -334,10 +334,10 @@ def run(start_year, end_year, quarantine_days):
         "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
         "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
         "warning": (
-            "Research only. The source CSV provides tournament start dates, not exact match "
-            "timestamps. The conservative quarantine avoids most overlapping-event leakage but "
-            "also discards recent evidence. The result is a model comparison, not an automatic "
-            "production-methodology change."
+            "Research only. This report evaluates the 14-day fallback required by the current "
+            "Sackmann/TML tournament-start-date-only source. Production prefers precise match "
+            "timestamps, UTC match dates and verified event end dates whenever a permitted source "
+            "supplies them. Do not apply this fallback to events with precise chronology."
         ),
         "years": year_results,
     }
