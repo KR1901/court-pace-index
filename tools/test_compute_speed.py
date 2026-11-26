@@ -1248,8 +1248,9 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual("match_day", diagnostics["chronologyPrecision"])
         self.assertEqual("strictly_before_target_local_match_day", diagnostics["chronologyRule"])
         self.assertEqual(0, diagnostics["quarantineDays"])
-        self.assertEqual("2026-09-30", diagnostics["trainingMatchDateMax"])
+        self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
         self.assertEqual(1, diagnostics["sameDayExcludedMatches"])
+        self.assertEqual(1, diagnostics["dateIntervalExcludedMatches"])
 
         # The Paris profile fit can use Madrid's 25/28/30 September matches, even though
         # Madrid overlaps Paris, but never the 1/2 October matches played on/after Paris began.
@@ -1261,7 +1262,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ]
         self.assertTrue(paris_training)
         self.assertTrue(all(
-            {row["tourney_date"] for row in rows} == {"20260925", "20260928", "20260930"}
+            {row["tourney_date"] for row in rows} == {"20260925", "20260928"}
             for rows in paris_training
         ))
         compute_speed._PROFILE_YEAR_CACHE.clear()
