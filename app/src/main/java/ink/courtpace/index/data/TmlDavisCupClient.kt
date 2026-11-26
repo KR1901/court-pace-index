@@ -24,8 +24,8 @@ internal class TmlDavisCupClient {
         val discoveredMatches: Int,
         val matchesWithServeStats: Int,
         val missingStatsMatches: Int,
-        /** Scoreless rows are scheduled/unplayed fixtures, not completed missing-stat matches. */
-        val unplayedRows: Int,
+        /** Scoreless rows have no published result yet; they are not completed missing-stat matches. */
+        val scorelessRows: Int,
         /** Walkovers/defaults have a result marker but no played match statistics. */
         val noPlayRows: Int,
         /** Completed score-bearing singles that fail the ace/service-point validation. */
@@ -78,7 +78,7 @@ internal class TmlDavisCupClient {
         }
 
         val uniqueRows = uniqueByRubber.values.toList()
-        val unplayedRows = uniqueRows.filter { it["score"].orEmpty().isBlank() }
+        val scorelessRows = uniqueRows.filter { it["score"].orEmpty().isBlank() }
         val noPlayRows = uniqueRows.filter { isNoPlayScore(it["score"]) }
         val completedRows = uniqueRows.filter {
             it["score"].orEmpty().isNotBlank() && !isNoPlayScore(it["score"])
@@ -98,7 +98,7 @@ internal class TmlDavisCupClient {
             discoveredMatches = completedRows.size,
             matchesWithServeStats = matches.size,
             missingStatsMatches = missingStats,
-            unplayedRows = unplayedRows.size,
+            scorelessRows = scorelessRows.size,
             noPlayRows = noPlayRows.size,
             malformedStatsMatches = malformedStats,
         )
