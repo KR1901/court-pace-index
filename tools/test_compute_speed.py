@@ -1095,12 +1095,12 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual({"paris", "rome"}, set(ratings))
         # Rome is first: no same-season event may train it. Paris can only use
         # the ten earlier Rome matches; no event may train on its own or later matches.
-        self.assertEqual(4, profiles.call_count)
+        self.assertEqual(2, profiles.call_count)
         paris_training = [
             call.args[0] for call in profiles.call_args_list
             if call.args[0] and {row["tourney_name"] for row in call.args[0]} == {"Rome Masters"}
         ]
-        self.assertEqual(2, len(paris_training))
+        self.assertEqual(1, len(paris_training))
         self.assertTrue(all(len(rows) == 10 for rows in paris_training))
         for call in profiles.call_args_list:
             self.assertEqual(150.0, call.kwargs["prior_points"])
@@ -1135,7 +1135,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             ratings = compute_speed.season_ratings(2024, all_rows)
 
         self.assertEqual({"paris", "rome", "nextgen"}, set(ratings))
-        self.assertEqual(6, profiles.call_count)
+        self.assertEqual(3, profiles.call_count)
         for call in profiles.call_args_list:
             training_rows = call.args[0]
             event_names = {row["tourney_name"] for row in training_rows}
