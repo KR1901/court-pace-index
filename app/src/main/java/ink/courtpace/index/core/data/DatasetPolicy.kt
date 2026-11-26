@@ -137,15 +137,20 @@ object DatasetPolicy {
         // Preserve the pre-existing fallback: if a remote snapshot has no live list,
         // retain the bundled slate. If it has an ATP slate, keep that slate authoritative
         // and carry forward only the separately sourced Davis Cup row when absent.
-        val remoteLiveKeys = remote.live.map { it.t to it.s }.toSet()
-        val bundledLiveFallback = if (remote.live.isEmpty()) {
-            bundled.live
+        // v4.1.8 cached snapshots may still contain the old aggregate Davis Cup
+        // live row. It is now a completed-history target only; Final 8 has its own ID.
+        // Strip the legacy row before composing remote and bundled live slates.
+        val remoteLive = remote.live.filterNot { it.t == "daviscup" }
+        val bundledLive = bundled.live.filterNot { it.t == "daviscup" }
+        val remoteLiveKeys = remoteLive.map { it.t to it.s }.toSet()
+        val bundledLiveFallback = if (remoteLive.isEmpty()) {
+            bundledLive
         } else {
-            bundled.live.filter {
+            bundledLive.filter {
                 it.t == "daviscupfinal8" && (it.t to it.s) !in remoteLiveKeys
             }
         }
-        val combinedLive = remote.live + bundledLiveFallback
+        val combinedLive = remoteLive + bundledLiveFallback
         // Entries written by an older release carry no ATP id; keep the richer definition so
         // the live fetch knows where to look.
         val enriched = combinedLive.map { event ->

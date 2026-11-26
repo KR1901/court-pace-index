@@ -97,6 +97,50 @@ class DatasetPolicyTest {
     }
 
     @Test
+    fun `a v4.1.8 cached aggregate Davis Cup live row is migrated to Final 8 only`() {
+        val earlierDavisCup = Tournament(
+            id = "daviscup", name = "Davis Cup", city = "Various", country = "INT",
+            surface = Surface.HARD, indoor = false, level = Level.SPECIAL,
+        )
+        val final8 = bundled.tournaments.firstOrNull { it.id == "daviscupfinal8" }
+            ?: Tournament(
+                id = "daviscupfinal8", name = "Davis Cup Final 8", city = "Bologna", country = "ITA",
+                surface = Surface.HARD, indoor = true, level = Level.SPECIAL,
+            )
+        val atpEvent = LiveEvent(
+            t = "atpfinals", s = 2026, status = "in_progress",
+            start = "2026-11-15", end = "2026-11-22",
+            atpId = 605, slug = "nitto-atp-finals",
+        )
+        val legacyAggregate = LiveEvent(
+            t = "daviscup", s = 2026, status = "in_progress",
+            start = "2026-11-17", end = "2026-11-29", slug = "davis-cup-finals",
+        )
+        val currentFinal8 = LiveEvent(
+            t = "daviscupfinal8", s = 2026, status = "in_progress",
+            start = "2026-11-24", end = "2026-11-29", slug = "davis-cup-final-8-2026",
+        )
+        val currentBundled = bundled.copy(
+            tournaments = bundled.tournaments.filterNot {
+                it.id in setOf("daviscup", "daviscupfinal8")
+            } + listOf(earlierDavisCup, final8),
+            live = listOf(currentFinal8),
+        )
+        // Simulate a valid v4.1.8 remote cache: it has a richer/equal dataset and
+        // still identifies the whole Davis Cup competition as live.
+        val legacyRemote = currentBundled.copy(live = listOf(legacyAggregate, atpEvent))
+        assertTrue(DatasetPolicy.isAcceptable(legacyRemote))
+
+        val chosen = DatasetPolicy.choose(currentBundled, legacyRemote)
+
+        assertEquals(
+            setOf("daviscupfinal8", "atpfinals"),
+            chosen.live.map { it.t }.toSet(),
+        )
+        assertFalse(chosen.live.any { it.t == "daviscup" })
+    }
+
+    @Test
     fun `a smaller but valid remote copy is ignored`() {
         val smaller = bundled.copy(readings = bundled.readings.drop(20))
         assertTrue(DatasetPolicy.isAcceptable(smaller))

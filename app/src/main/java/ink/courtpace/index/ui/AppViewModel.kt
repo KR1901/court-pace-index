@@ -197,10 +197,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Restore cached ratings only when their adjusted-side coverage is also available. */
     private fun restoreCachedLiveRating(cached: ink.courtpace.index.core.live.CachedLiveRating) {
-        // Never restore legacy TennisRace/ATP-prototype Davis Cup values. Only the TML
-        // match-stat adapter may populate this separate annual target.
+        // The pre-split aggregate Davis Cup cache is obsolete and must never reappear
+        // as Live now after upgrade. The earlier phases now have archived CALC readings.
+        if (cached.tournamentId == "daviscup") return
+        // Only the separately identified Final 8 may be restored from TML live cache.
         if (
-            cached.tournamentId in setOf("daviscup", "daviscupfinal8") &&
+            cached.tournamentId == "daviscupfinal8" &&
             cached.source != ink.courtpace.index.core.live.CachedLiveRating.TML_DAVIS_CUP_SOURCE
         ) return
         val result = cached.toAceRatingResultOrNull() ?: return
