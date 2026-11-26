@@ -409,9 +409,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         )
                         if (rating == null) {
                             liveProgressByEvent = liveProgressByEvent + (
-                                "daviscup" to
-                                    "TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} " +
-                                        "singles matches have serve stats; awaiting rateable sides"
+                                "daviscup" to buildString {
+                                    append("TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} completed singles have serve stats")
+                                    if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
+                                    if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles missing/invalid serve stats")
+                                    append(" · awaiting rateable sides")
+                                }
                             )
                         } else {
                             liveAceByEvent = liveAceByEvent + ("daviscup" to rating)
@@ -445,10 +448,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                         "${rating.adjustedServerSides}/${rating.totalServerSides} sides adjusted"
                             )
                         }
-                        status(
-                            "Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} " +
-                                "singles matches with serve statistics",
-                        )
+                        status(buildString {
+                            append("Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} completed singles with serve statistics")
+                            if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
+                            if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles missing/invalid statistics")
+                        })
                     }.onFailure { error ->
                         if (error is CancellationException) throw error
                         val detail = error.message ?: "TML match statistics unavailable"
