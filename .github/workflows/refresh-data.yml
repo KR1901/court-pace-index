@@ -66,7 +66,6 @@ jobs:
           python3 tools/chronological_loeo_study.py \
             --start-year 2016 \
             --end-year "$(date -u +%Y)" \
-            --quarantine-days 14 \
             --output build/chronological-loeo-study.json
 
       - name: Upload LOEO methodology research
