@@ -1062,9 +1062,11 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             ratings = compute_speed.season_ratings(2026, rows)
         self.assertIn("atpfinals", ratings)
         self.assertEqual(10, ratings["atpfinals"]["matches"])
-        self.assertEqual("2026-11-01", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
         self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["eventStartDate"])
-        self.assertEqual(14, ratings["atpfinals"]["calculationDiagnostics"]["quarantineDays"])
+        self.assertEqual("prior-season-fallback", ratings["atpfinals"]["calculationDiagnostics"]["chronologyMode"])
+        self.assertIsNone(ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
+        self.assertIsNone(ratings["atpfinals"]["calculationDiagnostics"]["quarantineDays"])
+        self.assertEqual(1, ratings["atpfinals"]["calculationDiagnostics"]["chronologyPriorSeasonFallbackMatches"])
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
     def test_later_tournament_rows_do_not_change_earlier_event_rating(self):
