@@ -1381,6 +1381,31 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertTrue(compute_speed._match_day_definitely_precedes_target(date(2026, 9, 28), target))
         self.assertFalse(compute_speed._match_day_definitely_precedes_target(target, target))
 
+    def test_doubles_dates_do_not_upgrade_singles_source_precision(self):
+        singles = {
+            "tourney_name": "Dallas Open",
+            "tourney_level": "250",
+            "tourney_date": "20260920",
+            "winner_id": "p1",
+            "loser_id": "p2",
+            "winner_name": "Player One",
+            "loser_name": "Player Two",
+        }
+        doubles = {
+            **singles,
+            "tourney_date": "20260922",
+            "winner_id": "d1",
+            "loser_id": "d2",
+            "winner_name": "Player A / Player B",
+            "loser_name": "Player C / Player D",
+        }
+        self.assertEqual(
+            "tournament_start",
+            compute_speed._source_event_date_granularity(
+                [singles, doubles], "TennisMyLife ATP Match Database",
+            )[compute_speed._source_event_key(singles)],
+        )
+
     def test_match_timestamps_can_order_same_day_matches_when_offsets_are_present(self):
         def match(event, match_date, timestamp=None, aces=8):
             row = {
