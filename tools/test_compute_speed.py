@@ -958,6 +958,35 @@ class DavisCupSourceWindowTests(unittest.TestCase):
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
+    def test_later_tournament_rows_do_not_change_earlier_event_rating(self):
+        early_rows = []
+        for event, event_date, aces in (
+            ("Rome Masters", "20261014", 7),
+            ("Paris Masters", "20261102", 8),
+        ):
+            for _ in range(12):
+                early_rows.append({
+                    "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "tourney_date": event_date, "winner_id": "p1", "loser_id": "p2",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
+                })
+        future_rows = [{
+            "tourney_name": "Tour Finals", "tourney_level": "F", "surface": "Hard",
+            "tourney_date": "20261120", "winner_id": "p1", "loser_id": "p2",
+            "w_svpt": 100, "l_svpt": 100, "w_ace": 35, "l_ace": 35,
+        } for _ in range(12)]
+
+        with patch.object(compute_speed, "build_live_profiles", return_value={}), \
+             patch.object(compute_speed, "player_rates", return_value={}), \
+             patch.object(compute_speed, "_prior_year_rows", return_value=[]), \
+             patch.object(compute_speed, "ensure_event_profiles", return_value={}), \
+             patch.object(compute_speed, "event_match_ratio_clusters",
+                          side_effect=lambda rows, profiles, rate: [[1.0, 1.0] for _ in rows]):
+            first = compute_speed.season_ratings(2026, early_rows)
+            second = compute_speed.season_ratings(2026, early_rows + future_rows)
+        self.assertEqual(first["paris"]["speed"], second["paris"]["speed"])
+        self.assertEqual(first["rome"]["speed"], second["rome"]["speed"])
+
     def test_2026_davis_cup_is_target_only_and_requires_validated_tml_source(self):
         rows = []
         for event, level, aces in (
