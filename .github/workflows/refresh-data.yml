@@ -207,7 +207,7 @@ jobs:
           ), "Davis Cup post-merge source rows do not reconcile to excluded doubles, unidentified rows and unique singles"
           assert dc_audit.get("identifiedSingles") == (
               dc_audit.get("completedPlayedSingles", 0) +
-              dc_audit.get("scheduledUnplayedSingles", 0) +
+              dc_audit.get("scorelessSingles", 0) +
               dc_audit.get("walkoverOrNoPlaySingles", 0)
           ), "Davis Cup identified singles do not reconcile to played, unplayed and no-play buckets"
           assert dc_audit.get("completedPlayedSingles") == (
