@@ -59,7 +59,7 @@ internal class TmlDavisCupClient {
     internal fun parseMatchRows(annualCsv: String, ongoingCsv: String, year: Int): MatchBatch {
         // Merge every identified singles rubber first, not only score-bearing rows. The
         // ongoing snapshot is newer and must replace an annual scoreless fixture when it
-        // becomes a completed result, otherwise that rubber is counted as both unplayed
+        // becomes a completed result, otherwise that rubber is counted as both scoreless and completed
         // and completed. The player pair disambiguates same-number rubbers in different ties.
         val uniqueByRubber = linkedMapOf<String, Map<String, String>>()
         listOf(annualCsv, ongoingCsv).forEach { snapshot ->
