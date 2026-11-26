@@ -1168,8 +1168,10 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
 
         real_player_rates = compute_speed.player_rates
         compute_speed._PROFILE_YEAR_CACHE.clear()
-        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \\
-             patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+        with (
+            patch.object(compute_speed, "_profile_year_rates", return_value={}),
+            patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles,
+        ):
             ratings = compute_speed.season_ratings(2026, rows)
 
         self.assertEqual({"paris", "rome", "madrid"}, set(ratings))
