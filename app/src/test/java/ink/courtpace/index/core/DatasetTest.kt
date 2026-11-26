@@ -100,9 +100,19 @@ class DatasetTest {
             reading.cpi?.let { assertTrue("cpi $it at ${reading.t}", it in 10.0..60.0) }
             reading.speed?.let {
                 val validStandardRating = it in 0.30..2.0
+                val validSupportedStandardCalc = reading.t != "nextgen" &&
+                    reading.src == "computed" &&
+                    it in 2.0..DatasetPolicy.MAX_SUPPORTED_COMPUTED_SPEED &&
+                    (reading.adjustedServerSides ?: 0) >= DatasetPolicy.MIN_SUPPORTED_COMPUTED_SERVER_SIDES &&
+                    reading.speedCiMethod == "match-cluster-conditional-v1" &&
+                    reading.speedCiLow?.isFinite() == true &&
+                    reading.speedCiHigh?.isFinite() == true &&
+                    reading.speedCiLow >= 0.30 &&
+                    reading.speedCiHigh >= reading.speedCiLow &&
+                    reading.speedCiHigh <= DatasetPolicy.MAX_SUPPORTED_COMPUTED_SPEED
                 val validFormatSpecificNextGenRating =
                     reading.t == "nextgen" && reading.src in setOf("computed", "live") && it.isFinite() && it >= 0.30
-                assertTrue("speed $it at ${reading.t}", validStandardRating || validFormatSpecificNextGenRating)
+                assertTrue("speed $it at ${reading.t}", validStandardRating || validSupportedStandardCalc || validFormatSpecificNextGenRating)
             }
             reading.ace?.let { assertTrue("ace $it at ${reading.t}", it in 0.0..30.0) }
         }
@@ -281,7 +291,7 @@ class DatasetTest {
     }
 
     @Test
-    fun `only computed Next Gen ratings may exceed the standard two point range`() {
+    fun `supported standard CALC and format-specific Next Gen ratings may exceed two`() {
         val nextGen = data.dataset.readings.first { it.t == "nextgen" && it.s == 2025 }
         val nextGenCalc = nextGen.copy(
             speed = 2.45,
@@ -294,13 +304,30 @@ class DatasetTest {
         assertTrue("format-specific Next Gen CALC above 2.0 must be accepted",
             DatasetPolicy.isAcceptable(withNextGenOutlier))
 
-        val rio = data.dataset.readings.first { it.t == "rio" && it.s == 2025 }
-        val standardOutlier = rio.copy(speed = 2.45, src = "computed")
-        val withStandardOutlier = data.dataset.copy(
-            readings = data.dataset.readings.filterNot { it.t == "rio" && it.s == 2025 } + standardOutlier,
+        // Marseille 1995 is a standard-format event, but its 2.268 CALC is supported by
+        // 31 matches, 62 adjusted sides and a finite match-cluster interval.
+        val marseille = data.dataset.readings.first { it.t == "marseille" && it.s == 1995 }
+        assertTrue("well-supported standard CALC above 2.0 must be accepted",
+            marseille.speed!! > 2.0 && DatasetPolicy.isAcceptable(data.dataset))
+
+        val unsupportedStandardOutlier = marseille.copy(
+            speed = 2.45,
+            speedCiHigh = 3.2,
         )
-        assertTrue("standard ATP CALC must retain the 2.0 upper bound",
-            !DatasetPolicy.isAcceptable(withStandardOutlier))
+        val withUnsupportedOutlier = data.dataset.copy(
+            readings = data.dataset.readings.filterNot { it.t == "marseille" && it.s == 1995 } +
+                unsupportedStandardOutlier,
+        )
+        assertTrue("standard CALC without a bounded interval must be rejected",
+            !DatasetPolicy.isAcceptable(withUnsupportedOutlier))
+
+        val excessiveStandardOutlier = marseille.copy(speed = 3.01)
+        val withExcessiveOutlier = data.dataset.copy(
+            readings = data.dataset.readings.filterNot { it.t == "marseille" && it.s == 1995 } +
+                excessiveStandardOutlier,
+        )
+        assertTrue("standard CALC above the supported ceiling must be rejected",
+            !DatasetPolicy.isAcceptable(withExcessiveOutlier))
     }
 
     @Test
