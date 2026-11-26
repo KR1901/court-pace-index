@@ -1296,7 +1296,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         def row(event, event_date, end_date):
             return {
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                "tourney_date": event_date, "event_end_date": end_date,
+                "tourney_date": event_date, "event_end_date": end_date, "event_status": "completed",
                 "winner_id": "p1", "loser_id": "p2",
                 "winner_name": "Player One", "loser_name": "Player Two",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
@@ -1316,6 +1316,23 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual(2, len(training))
         self.assertEqual(2, len(anchor))
         self.assertEqual(0, diagnostics["fallbackMatches"])
+
+    def test_provisional_event_end_does_not_prove_completion(self):
+        row = {
+            "tourney_name": "Rome Masters", "tourney_level": "M", "surface": "Hard",
+            "tourney_date": "20261104", "event_end_date": "2026-11-08",
+            "end_date_provisional": True,
+            "winner_id": "p1", "loser_id": "p2",
+            "winner_name": "Player One", "loser_name": "Player Two",
+            "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+        }
+        self.assertIsNone(compute_speed._source_event_end_date(row))
+        self.assertEqual(
+            "2026-11-08",
+            compute_speed._source_event_end_date({
+                **row, "end_date_provisional": False, "event_status": "completed",
+            }).isoformat(),
+        )
 
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
         standard_rows = []
