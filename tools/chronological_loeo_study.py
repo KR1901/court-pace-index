@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Research-only comparison of retrospective LOEO and chronological pre-event CALC.
+"""Research-only comparison of retrospective LOEO with the source-date fallback baseline.
 
-This script does not change production ratings. It compares the existing cross-fitted
-season method with a conservative as-of-event candidate using only match records from
-tournaments whose archive start date is at least 14 days before the target event. The
-14-day quarantine is necessary because the Sackmann/TML yearly CSV stores tournament
-start dates, not individual match dates; this deliberately sacrifices some recent history
-rather than risk training on matches played after the target event began.
+This script does not change production ratings. It measures the conservative fallback
+needed when the yearly Sackmann/TML archive provides only a tournament start date. In
+that case it admits training events whose start date is at least 14 days before the target.
+The production calculation now prefers actual UTC match times, explicit UTC match dates,
+and verified event end dates when a permitted source supplies them; this study isolates
+the legacy fallback for comparison and reproducibility.
 
 The target event's own complete match sample is included in both methods. Only the
 reference player profiles and tour anchor are event-excluded.
