@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  */
 internal class TmlDavisCupClient {
 
-    data class MatchBatch(
+    data class PhaseBatch(
         val matches: List<AtpMatchStats>,
         /** Unique identified singles rubbers, including scoreless fixtures and walkovers. */
         val identifiedSingles: Int,
@@ -30,6 +30,22 @@ internal class TmlDavisCupClient {
         val noPlayRows: Int,
         /** Completed score-bearing singles that fail the ace/service-point validation. */
         val malformedStatsMatches: Int,
+    )
+
+    data class MatchBatch(
+        /** Aggregate totals retained for source-population reconciliation. */
+        val matches: List<AtpMatchStats>,
+        val identifiedSingles: Int,
+        val discoveredMatches: Int,
+        val matchesWithServeStats: Int,
+        val missingStatsMatches: Int,
+        val scorelessRows: Int,
+        val noPlayRows: Int,
+        val malformedStatsMatches: Int,
+        /** Earlier Davis Cup qualifiers/group ties, excluding the Final 8. */
+        val restOfDavisCup: PhaseBatch,
+        /** Only rubbers whose source tournament ID contains the FLS (Final 8) token. */
+        val final8: PhaseBatch,
     )
 
     private data class CachedAnnual(
@@ -78,9 +94,28 @@ internal class TmlDavisCupClient {
         }
 
         val uniqueRows = uniqueByRubber.values.toList()
-        val scorelessRows = uniqueRows.filter { it["score"].orEmpty().isBlank() }
-        val noPlayRows = uniqueRows.filter { isNoPlayScore(it["score"]) }
-        val completedRows = uniqueRows.filter {
+        val aggregate = summarize(uniqueRows)
+        val earlier = summarize(uniqueRows.filterNot(::isFinal8))
+        val final8 = summarize(uniqueRows.filter(::isFinal8))
+
+        return MatchBatch(
+            matches = aggregate.matches,
+            identifiedSingles = aggregate.identifiedSingles,
+            discoveredMatches = aggregate.discoveredMatches,
+            matchesWithServeStats = aggregate.matchesWithServeStats,
+            missingStatsMatches = aggregate.missingStatsMatches,
+            scorelessRows = aggregate.scorelessRows,
+            noPlayRows = aggregate.noPlayRows,
+            malformedStatsMatches = aggregate.malformedStatsMatches,
+            restOfDavisCup = earlier,
+            final8 = final8,
+        )
+    }
+
+    private fun summarize(rows: List<Map<String, String>>): PhaseBatch {
+        val scorelessRows = rows.count { it["score"].orEmpty().isBlank() }
+        val noPlayRows = rows.count { isNoPlayScore(it["score"]) }
+        val completedRows = rows.filter {
             it["score"].orEmpty().isNotBlank() && !isNoPlayScore(it["score"])
         }
         val matches = completedRows.mapNotNull(::toMatchStats)
@@ -91,17 +126,23 @@ internal class TmlDavisCupClient {
         val malformedStats = completedRows.count { row ->
             requiredServeStats.none { row[it].isNullOrBlank() } && toMatchStats(row) == null
         }
-
-        return MatchBatch(
+        return PhaseBatch(
             matches = matches,
-            identifiedSingles = uniqueRows.size,
+            identifiedSingles = rows.size,
             discoveredMatches = completedRows.size,
             matchesWithServeStats = matches.size,
             missingStatsMatches = missingStats,
-            scorelessRows = scorelessRows.size,
-            noPlayRows = noPlayRows.size,
+            scorelessRows = scorelessRows,
+            noPlayRows = noPlayRows,
             malformedStatsMatches = malformedStats,
         )
+    }
+
+    private fun isFinal8(row: Map<String, String>): Boolean {
+        val tokens = row["tourney_id"].orEmpty()
+            .uppercase()
+            .split(Regex("[^A-Z0-9]+"))
+        return "FLS" in tokens
     }
 
     private fun annualCsv(year: Int): String {
