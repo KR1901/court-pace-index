@@ -770,6 +770,8 @@ def _match_start_timestamp(row):
             if parsed is not None:
                 return parsed
     return None
+
+
 def _match_end_timestamp(row):
     """Return a confirmed UTC finish, or actual start + recorded duration + safety minute."""
     for key in (

@@ -1453,7 +1453,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
                 "l_ace": aces,
             }
             if timestamp:
-                row["match_start_utc"] = timestamp
+                row["actual_start_at_utc"] = timestamp
             if finish_timestamp:
                 row["match_finished_at_utc"] = finish_timestamp
             return row
