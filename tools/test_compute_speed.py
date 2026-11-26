@@ -1217,6 +1217,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             }
             if timestamp:
                 row["match_start_utc"] = timestamp
+                row["start_time_kind"] = "actual"
             return row
 
         earlier = [
@@ -1801,6 +1802,90 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
             )
         self.assertEqual([], anchor_rows)
         self.assertEqual("no_completed_event_anchor", anchor_mode)
+
+    def test_partial_concurrent_event_can_train_profiles_but_not_normalisation_anchor(self):
+        def row(event, match_day, event_id):
+            return {
+                "tourney_id": event_id,
+                "tourney_name": event,
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": match_day,
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "winner_name": "Player One",
+                "loser_name": "Player Two",
+                "w_svpt": 100,
+                "l_svpt": 100,
+                "w_ace": 8,
+                "l_ace": 8,
+            }
+
+        rows = [
+            row("Madrid Masters", "20260925", "2026-1536"),
+            row("Madrid Masters", "20260928", "2026-1536"),
+            row("Madrid Masters", "20260930", "2026-1536"),
+            row("Paris Masters", "20261001", "2026-414"),
+            row("Paris Masters", "20261002", "2026-414"),
+        ]
+        source = "TennisMyLife ATP Match Database"
+        precisions = compute_speed._source_event_date_granularity(rows, source)
+        target_start = date(2026, 10, 1)
+        profile_rows = [
+            r for r in compute_speed.calculation_eligible_rows(compute_speed.valid_rows(rows))
+            if compute_speed.tournament_id(r["tourney_name"]) != "paris"
+            and compute_speed._row_precedes_target(
+                r, target_start,
+                precisions.get(compute_speed._source_event_key(r), "tournament_start"),
+                None,
+            )
+        ]
+        self.assertEqual(["20260925", "20260928"], sorted(r["tourney_date"] for r in profile_rows))
+        with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
+            anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
+                2026, rows, "paris", target_start, {}, profiles={}, tour_rate=0.08,
+            )
+        self.assertEqual([], anchor_rows)
+        self.assertEqual("no_completed_event_anchor", anchor_mode)
+
+    def test_missing_stat_match_prevents_partial_event_from_becoming_anchor(self):
+        def row(day, valid=True):
+            return {
+                "tourney_id": "2026-1536",
+                "tourney_name": "Madrid Masters",
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": day,
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "winner_name": "Player One",
+                "loser_name": "Player Two",
+                "w_svpt": 100 if valid else "",
+                "l_svpt": 100 if valid else "",
+                "w_ace": 8 if valid else "",
+                "l_ace": 8 if valid else "",
+            }
+        rows = [
+            row("20260925"),
+            row("20260928"),
+            row("20260930", valid=False),  # Later match has no stats but still proves the event is partial.
+            {
+                "tourney_id": "2026-414",
+                "tourney_name": "Paris Masters",
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": "20261001",
+                "winner_id": "p3", "loser_id": "p4",
+                "winner_name": "Player Three", "loser_name": "Player Four",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+            },
+        ]
+        with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
+            anchor_rows, mode = compute_speed._chronological_normalisation_anchor_rows(
+                2026, rows, "paris", date(2026, 10, 1), {}, profiles={}, tour_rate=0.08,
+            )
+        self.assertEqual([], anchor_rows)
+        self.assertEqual("no_completed_event_anchor", mode)
 
     def test_confirmed_event_end_date_proves_anchor_completion_but_provisional_end_does_not(self):
         event_rows = [

@@ -750,15 +750,18 @@ def _parse_utc_datetime(value):
 
 def _match_start_timestamp(row):
     """Return a confirmed actual match start, never a scheduled/not-before time."""
+    # These specific field names are accepted as actual UTC observations. Generic
+    # scheduled/not-before fields below are ignored unless explicitly marked actual.
     for key in (
         "match_started_at_utc", "actual_start_at_utc", "actual_started_at_utc",
-        "actual_started_at",
+        "actual_started_at", "match_start_utc", "actual_start_utc",
+        "match_start_at", "match_datetime_utc",
     ):
         parsed = _parse_utc_datetime(row.get(key))
         if parsed is not None:
             return parsed
     if str(row.get("start_time_kind") or "").casefold() == "actual":
-        for key in ("started_at", "start_time_utc", "match_start_utc"):
+        for key in ("started_at", "start_time_utc", "scheduled_at"):
             parsed = _parse_utc_datetime(row.get(key))
             if parsed is not None:
                 return parsed
@@ -1018,6 +1021,37 @@ def _event_completion_precedes_target(event_rows, target_start_date, target_star
     return _match_day_definitely_precedes_target(latest_day, target_start_date)
 
 
+def _normalisation_anchor_event_scores(rows, profiles, tour_rate):
+    """
+    Score each completed standard event and apply the production normaliser cohort rule.
+
+    Prefer events with >= MIN_NORMALISER_SERVER_SIDES. If none clear the stable cohort,
+    use all rateable completed events. Next Gen and Davis Cup are never anchor events.
+    """
+    by_event = defaultdict(list)
+    for row in calculation_eligible_rows(valid_rows(rows)):
+        event_id = tournament_id(row.get("tourney_name"))
+        if event_id is None or event_id in CALC_TARGET_ONLY_EVENT_IDS:
+            continue
+        by_event[event_id].append(row)
+
+    scored = {}
+    for event_id, event_rows in by_event.items():
+        clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
+        ratios = [ratio for cluster in clusters for ratio in cluster]
+        if ratios:
+            scored[event_id] = {
+                "raw": sum(ratios) / len(ratios),
+                "adjustedServerSides": len(ratios),
+                "matches": len(event_rows),
+            }
+    stable = {
+        event_id: value for event_id, value in scored.items()
+        if value["adjustedServerSides"] >= MIN_NORMALISER_SERVER_SIDES
+    }
+    return stable or scored
+
+
 def _chronological_normalisation_anchor_rows(
     year, rows, target_event_id, target_start_date, profiles, tour_rate,
     target_start_timestamp=None,
@@ -1025,25 +1059,49 @@ def _chronological_normalisation_anchor_rows(
     """
     Select full completed earlier events for the normalisation anchor, separately from
     profile training. Partial concurrent events may train profiles but never define 1.00.
+    Chronology checks inspect all identified singles, including missing-stat matches;
+    only valid-stat rows enter the resulting normalisation sample.
     """
-    grouped = defaultdict(list)
+    chronology_by_source_event = defaultdict(list)
+    for row in rows:
+        if row.get("tourney_level") not in LEVELS:
+            continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            continue
+        event_id = tournament_id(row.get("tourney_name"))
+        if event_id is None or event_id == target_event_id:
+            continue
+        if _match_date(row) is None:
+            continue
+        chronology_by_source_event[_source_event_key(row)].append(row)
+
+    valid_by_source_event = defaultdict(list)
     for row in calculation_eligible_rows(valid_rows(rows)):
         event_id = tournament_id(row.get("tourney_name"))
         if event_id is None or event_id == target_event_id:
             continue
-        grouped[_source_event_key(row)].append(row)
-    completed = []
-    for event_rows in grouped.values():
-        if _event_completion_precedes_target(event_rows, target_start_date, target_start_timestamp):
-            completed.extend(event_rows)
-    anchor_events, _, _, _ = event_raw_scores(completed, profiles, tour_rate=tour_rate)
-    if any(event_id not in CALC_TARGET_ONLY_EVENT_IDS for event_id in anchor_events):
-        return completed, "completed_same_season_events"
+        valid_by_source_event[_source_event_key(row)].append(row)
+
+    completed_valid_rows = []
+    for source_event_key, chronology_rows in chronology_by_source_event.items():
+        if _event_completion_precedes_target(
+            chronology_rows, target_start_date, target_start_timestamp,
+        ):
+            completed_valid_rows.extend(valid_by_source_event.get(source_event_key, []))
+
+    anchor_scores = _normalisation_anchor_event_scores(
+        completed_valid_rows, profiles, tour_rate,
+    )
+    if anchor_scores:
+        return completed_valid_rows, "completed_same_season_events"
+
     if year > PROFILE_HISTORY_START_YEAR:
         prior = _prior_year_rows(year - 1)
-        prior_events, _, _, _ = event_raw_scores(prior, profiles, tour_rate=tour_rate)
-        if any(event_id not in CALC_TARGET_ONLY_EVENT_IDS for event_id in prior_events):
+        prior_scores = _normalisation_anchor_event_scores(prior, profiles, tour_rate)
+        if prior_scores:
             return prior, "prior_season_fallback"
+
     return [], "no_completed_event_anchor"
 
 
