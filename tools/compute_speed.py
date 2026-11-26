@@ -1425,7 +1425,7 @@ def season_ratings(year, rows, source=None):
             "speedCiHigh": ci.get("high"),
             "speedCiMethod": ci.get("method"),
             "calculationDiagnostics": {
-                "chronologicalCutoff": cutoff.isoformat(),
+                "chronologicalCutoff": item["chronology_cutoff"],
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
