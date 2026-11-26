@@ -997,6 +997,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             for match_num in range(10):
                 rows.append({
                     "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "tourney_date": {"Paris Masters": "20261102", "Rome Masters": "20261014", "Davis Cup Finals QF: CZE vs CAN": "20261124"}[event],
                     "winner_id": "p1", "loser_id": "p2",
                     "winner_name": "Player One", "loser_name": "Player Two",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": 7,
@@ -1036,6 +1037,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             for _ in range(10):
                 rows.append({
                     "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "tourney_date": "20260501" if event == "Rome Masters" else "20261001",
                     "winner_id": "p1", "loser_id": "p2",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
                 })
@@ -1066,6 +1068,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ):
             event_rows = [{
                 "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                "tourney_date": {"Paris Masters": "20241104", "Rome Masters": "20241007", "Next Gen Finals": "20241218"}[event],
                 "winner_id": "p1", "loser_id": "p2",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
             } for _ in range(10)]
@@ -1211,6 +1214,7 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
             for _ in range(count):
                 rows.append({
                     "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                    "tourney_date": {"Paris Masters": "20261102", "Rome Masters": "20261014", "Madrid Masters": "20261021"}[event],
                     "winner_id": "p1", "loser_id": "p2",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
                 })
@@ -1251,6 +1255,7 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
         for event in ("Paris Masters", "Rome Masters"):
             rows.append({
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "tourney_date": "20261102" if event == "Paris Masters" else "20261014",
                 "winner_id": "p1", "loser_id": "p2",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
             })
