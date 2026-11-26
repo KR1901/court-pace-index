@@ -200,6 +200,11 @@ jobs:
           current_season = str(baseline.get("season"))
           dc_audit = (history.get("davis_cup_coverage") or {}).get(current_season)
           assert isinstance(dc_audit, dict), "current season Davis Cup source reconciliation is missing"
+          assert dc_audit.get("sourceRowsAfterMerge") == (
+              dc_audit.get("excludedDoubles", 0) +
+              dc_audit.get("rowsWithoutPlayerIds", 0) +
+              dc_audit.get("identifiedSingles", 0)
+          ), "Davis Cup post-merge source rows do not reconcile to excluded doubles, unidentified rows and unique singles"
           assert dc_audit.get("identifiedSingles") == (
               dc_audit.get("completedPlayedSingles", 0) +
               dc_audit.get("scheduledUnplayedSingles", 0) +
@@ -210,6 +215,14 @@ jobs:
               dc_audit.get("completedMissingServeStats", 0) +
               dc_audit.get("completedMalformedStats", 0)
           ), "Davis Cup completed singles do not reconcile to valid, missing and malformed stats"
+          assert dc_audit.get("validatedSource") is True, (
+              "2026 Davis Cup source has not passed TML annual + ongoing-feed validation"
+          )
+          dc_values = history.get("seasons", {}).get(current_season, {}).get("daviscup")
+          assert dc_values and dc_values.get("speed") is not None, (
+              "validated 2026 Davis Cup feed did not produce a historical CALC rating"
+          )
+          assert dc_values.get("matches", 0) > 0, "2026 Davis Cup CALC contains no completed-stat matches"
           print(
               "Davis Cup audit: "
               f"{dc_audit.get('identifiedSingles')} unique singles · "
