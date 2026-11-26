@@ -623,10 +623,52 @@ def _shrunk_return_rate(profile, priors):
 
 
 def _profile_year_rates(year):
-    """Cache source rows/profile estimates so a 35-year backfill is not re-parsed per event."""
+    """Cache prior-season profile estimates so a long backfill is parsed only once."""
     if year not in _PROFILE_YEAR_CACHE:
         _PROFILE_YEAR_CACHE[year] = player_rates(calculation_eligible_rows(valid_rows(load(year))))
     return _PROFILE_YEAR_CACHE[year]
+
+
+def _match_date(row):
+    """Parse a source YYYYMMDD match/tournament date, returning None for malformed dates."""
+    raw = str(row.get("tourney_date") or "").strip()
+    if len(raw) != 8 or not raw.isdigit():
+        return None
+    try:
+        return datetime.strptime(raw, "%Y%m%d").date()
+    except ValueError:
+        return None
+
+
+def _prior_year_rows(year):
+    """Return eligible ATP training rows from a completed prior season."""
+    return calculation_eligible_rows(valid_rows(load(year)))
+
+
+def _chronological_profiles_and_anchor(year, rows, cutoff):
+    """Fit profiles and tour anchor using only ATP matches completed before cutoff."""
+    before = [
+        row for row in calculation_eligible_rows(valid_rows(rows))
+        if _match_date(row) is not None and _match_date(row) < cutoff
+    ]
+    profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS) if before else {}
+    profiles = build_live_profiles(year, profiles_current)
+    tour_rate = tour_average_ace_rate(before)
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        if year <= PROFILE_HISTORY_START_YEAR:
+            return None, None, []
+        prior = _prior_year_rows(year - 1)
+        if not prior:
+            return None, None, []
+        profiles = build_live_profiles(
+            year - 1,
+            player_rates(prior, prior_points=PROFILE_PRIOR_SERVICE_POINTS),
+        )
+        tour_rate = tour_average_ace_rate(prior)
+        before = prior
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        return None, None, []
+    return profiles, tour_rate, before
 
 
 def build_live_profiles(profile_year, current_profiles):
@@ -1288,17 +1330,9 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows, source=None):
-    """LOEO ratings; Next Gen and Davis Cup are target-only, never ATP training inputs."""
+    """Chronological leave-one-tournament-out ratings; later events cannot affect earlier ones."""
     target_rows = valid_rows(rows)
-    # Next Gen is valid as a target event, but its short-set/no-ad matches must never
-    # influence standard ATP player histories, same-season priors or live baselines.
-    # Davis Cup is also a target, but stays outside ATP player profiles and the ATP normaliser.
-    profile_rows = calculation_eligible_rows(target_rows)
     rows_by_event = defaultdict(list)
-    mapped_profile_rows = [
-        (tournament_id(row.get("tourney_name")), row)
-        for row in profile_rows
-    ]
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
@@ -1306,20 +1340,16 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        # Leave the target event out of current-season profiles. All training rows are
-        # also filtered to the standard ATP format by calculation_eligible_rows above.
-        training_rows = [row for mapped_id, row in mapped_profile_rows if mapped_id != tid]
-        if not training_rows:
+        # The cutoff is the target event's first match date. Neither later rounds of the
+        # target nor any later tournament can influence its profiles or tour anchor.
+        dates = [_match_date(row) for row in event_rows]
+        dates = [value for value in dates if value is not None]
+        if not dates:
             continue
-        current_profiles = player_rates(
-            training_rows,
-            prior_points=PROFILE_PRIOR_SERVICE_POINTS,
-        )
-        # Backfill from every available prior ATP season (stats archive begins in 1991).
-        # build_live_profiles crosswalks current TML alphanumeric IDs to historical archive
-        # IDs by unique normalised full name and aggregates weighted career samples.
-        profiles = build_live_profiles(year, current_profiles)
-        tour_rate = tour_average_ace_rate(training_rows)
+        cutoff = min(dates)
+        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
+        if profiles is None or tour_rate is None:
+            continue
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
             continue
         profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
@@ -1339,6 +1369,7 @@ def season_ratings(year, rows, source=None):
             "ace": 100.0 * aces / points if points else None,
             "profile_coverage": profile_coverage,
             "calculation_diagnostics": side_diagnostics,
+            "chronology_cutoff": cutoff.isoformat(),
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1349,17 +1380,21 @@ def season_ratings(year, rows, source=None):
         tid: item for tid, item in details.items()
         if tid not in CALC_TARGET_ONLY_EVENT_IDS
     }
-    normaliser_events = {
-        tid: item for tid, item in standard_format_details.items()
-        if item["sides"] >= MIN_NORMALISER_SERVER_SIDES
-    }
-    if not normaliser_events:
-        normaliser_events = standard_format_details
-    if not normaliser_events:
-        return {}
-    mean_raw = sum(item["raw"] for item in normaliser_events.values()) / len(normaliser_events)
     output = {}
     for tid, item in details.items():
+        cutoff = date.fromisoformat(item["chronology_cutoff"])
+        profiles, tour_rate, anchor_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
+        if profiles is None or tour_rate is None:
+            continue
+        # Score only earlier standard ATP events using the exact pre-target profiles and
+        # prior anchor. This prevents a future tournament changing an earlier event's
+        # denominator as well as its player-rate estimates.
+        anchor_events, _, _, _ = event_raw_scores(anchor_rows, profiles, tour_rate=tour_rate)
+        eligible_anchor = {
+            event_id: value for event_id, value in anchor_events.items()
+            if event_id not in CALC_TARGET_ONLY_EVENT_IDS
+        }
+        mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor) if eligible_anchor else item["raw"]
         seed = int(hashlib.sha256(f"{year}:{tid}:match-cluster-ci-v1".encode()).hexdigest()[:8], 16)
         # A match-cluster interval is not meaningful for fewer than five independent matches.
         interval = (
@@ -1389,6 +1424,7 @@ def season_ratings(year, rows, source=None):
             "speedCiHigh": ci.get("high"),
             "speedCiMethod": ci.get("method"),
             "calculationDiagnostics": {
+                "chronologicalCutoff": cutoff.isoformat(),
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
