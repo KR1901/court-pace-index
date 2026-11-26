@@ -97,7 +97,7 @@ class DatasetPolicyTest {
     }
 
     @Test
-    fun `a v4.1.8 cached aggregate Davis Cup live row is migrated to Final 8 only`() {
+    fun `a legacy aggregate Davis Cup live row is migrated to Final 8 only`() {
         val earlierDavisCup = Tournament(
             id = "daviscup", name = "Davis Cup", city = "Various", country = "INT",
             surface = Surface.HARD, indoor = false, level = Level.SPECIAL,
