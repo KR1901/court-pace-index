@@ -1003,6 +1003,10 @@ class DavisCupCoverageAuditTests(unittest.TestCase):
         ]
         audit = compute_speed.davis_cup_coverage_audit(rows, 2026)
         self.assertEqual(6, audit["sourceRowsAfterMerge"])
+        self.assertEqual(
+            audit["sourceRowsAfterMerge"],
+            audit["excludedDoubles"] + audit["rowsWithoutPlayerIds"] + audit["identifiedSingles"],
+        )
         self.assertEqual(1, audit["excludedDoubles"])
         self.assertEqual(5, audit["identifiedSingles"])
         self.assertEqual(1, audit["completedWithValidServeStats"])
