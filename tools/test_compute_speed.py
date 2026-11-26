@@ -958,6 +958,40 @@ class DavisCupSourceWindowTests(unittest.TestCase):
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
+    def test_atp_finals_2026_is_a_supported_historical_calc_target(self):
+        rows = []
+        for event, level, event_date, aces in (
+            ("Rome Masters", "M", "20261102", 8),
+            ("Tour Finals", "F", "20261115", 10),
+        ):
+            for _ in range(10):
+                rows.append({
+                    "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "tourney_date": event_date, "winner_id": "p1", "loser_id": "p2",
+                    "winner_name": "Player One", "loser_name": "Player Two",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
+                })
+        self.assertEqual("atpfinals", compute_speed.tournament_id("Tour Finals"))
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        prior_rows = [{
+            "tourney_name": "Prior Year", "tourney_level": "M", "surface": "Hard",
+            "winner_id": "p1", "loser_id": "p2", "w_svpt": 100, "l_svpt": 100,
+            "w_ace": 8, "l_ace": 8,
+        }]
+        coverage = {
+            "tour_prior_sides": 0,
+            "career_history_server_sides": 0,
+            "career_history_returner_sides": 0,
+            "tour_prior_server_profiles": 0,
+            "tour_prior_returner_profiles": 0,
+        }
+        with patch.object(compute_speed, "_prior_year_rows", return_value=prior_rows), patch.object(compute_speed, "build_live_profiles", return_value={}), patch.object(compute_speed, "player_rates", return_value={}), patch.object(compute_speed, "ensure_event_profiles", return_value=coverage), patch.object(compute_speed, "event_match_ratio_clusters", side_effect=lambda event_rows, profiles, rate: [[1.0, 1.0] for _ in event_rows]):
+            ratings = compute_speed.season_ratings(2026, rows)
+        self.assertIn("atpfinals", ratings)
+        self.assertEqual(10, ratings["atpfinals"]["matches"])
+        self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
     def test_later_tournament_rows_do_not_change_earlier_event_rating(self):
         early_rows = []
         for event, event_date, aces in (
