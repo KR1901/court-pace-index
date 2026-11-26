@@ -729,8 +729,8 @@ def _match_date(row):
 def _match_start_timestamp(row):
     """Return an explicitly timezone-aware match-start instant when the source supplies one."""
     for key in (
-        "match_start_utc", "match_start_at", "match_datetime_utc",
-        "scheduled_start_utc", "start_time_utc",
+        "match_start_utc", "match_started_at_utc", "actual_start_utc",
+        "match_start_at", "match_datetime_utc",
     ):
         raw = str(row.get(key) or "").strip()
         if not raw:
