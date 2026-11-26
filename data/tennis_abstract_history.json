@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-26T09:40:03+00:00",
+  "generated": "2026-11-26T21:14:03+00:00",
   "source": "https://www.tennisabstract.com/cgi-bin/surface-speed.cgi?year=2026",
   "seasonPolicy": "Tennis Abstract year selector",
   "seasons": {
@@ -514,7 +514,7 @@
         "t": "acapulco",
         "s": 2026,
         "date": "2026-02-23",
-        "speed": 1.11,
+        "speed": 1.1,
         "ace": 12.1,
         "src": "tennisabstract"
       },
@@ -535,10 +535,18 @@
         "src": "tennisabstract"
       },
       {
+        "t": "atpfinals",
+        "s": 2026,
+        "date": "2026-11-15",
+        "speed": 1.81,
+        "ace": 15.2,
+        "src": "tennisabstract"
+      },
+      {
         "t": "auckland",
         "s": 2026,
         "date": "2026-01-12",
-        "speed": 1.14,
+        "speed": 1.13,
         "ace": 11.8,
         "src": "tennisabstract"
       },
@@ -546,7 +554,7 @@
         "t": "ausopen",
         "s": 2026,
         "date": "2026-01-19",
-        "speed": 1.13,
+        "speed": 1.12,
         "ace": 11.9,
         "src": "tennisabstract"
       },
@@ -554,7 +562,7 @@
         "t": "barcelona",
         "s": 2026,
         "date": "2026-04-13",
-        "speed": 0.55,
+        "speed": 0.54,
         "ace": 5.2,
         "src": "tennisabstract"
       },
@@ -562,7 +570,7 @@
         "t": "basel",
         "s": 2026,
         "date": "2026-10-26",
-        "speed": 1.22,
+        "speed": 1.21,
         "ace": 15.5,
         "src": "tennisabstract"
       },
@@ -578,7 +586,7 @@
         "t": "beijing",
         "s": 2026,
         "date": "2026-09-30",
-        "speed": 1.06,
+        "speed": 1.04,
         "ace": 11.5,
         "src": "tennisabstract"
       },
@@ -586,7 +594,7 @@
         "t": "brisbane",
         "s": 2026,
         "date": "2026-01-04",
-        "speed": 1.15,
+        "speed": 1.14,
         "ace": 14.6,
         "src": "tennisabstract"
       },
@@ -594,7 +602,7 @@
         "t": "brussels",
         "s": 2026,
         "date": "2026-10-19",
-        "speed": 1.16,
+        "speed": 1.15,
         "ace": 13.5,
         "src": "tennisabstract"
       },
@@ -618,7 +626,7 @@
         "t": "canada",
         "s": 2026,
         "date": "2026-08-02",
-        "speed": 0.87,
+        "speed": 0.86,
         "ace": 9.4,
         "src": "tennisabstract"
       },
@@ -626,7 +634,7 @@
         "t": "chengdu",
         "s": 2026,
         "date": "2026-09-23",
-        "speed": 1.43,
+        "speed": 1.42,
         "ace": 13.3,
         "src": "tennisabstract"
       },
@@ -642,7 +650,7 @@
         "t": "dallas",
         "s": 2026,
         "date": "2026-02-09",
-        "speed": 1.45,
+        "speed": 1.43,
         "ace": 16.5,
         "src": "tennisabstract"
       },
@@ -650,7 +658,7 @@
         "t": "delraybeach",
         "s": 2026,
         "date": "2026-02-16",
-        "speed": 1.28,
+        "speed": 1.27,
         "ace": 13.6,
         "src": "tennisabstract"
       },
@@ -658,7 +666,7 @@
         "t": "doha",
         "s": 2026,
         "date": "2026-02-16",
-        "speed": 0.9,
+        "speed": 0.89,
         "ace": 9.1,
         "src": "tennisabstract"
       },
@@ -674,7 +682,7 @@
         "t": "eastbourne",
         "s": 2026,
         "date": "2026-06-22",
-        "speed": 1.17,
+        "speed": 1.16,
         "ace": 11.9,
         "src": "tennisabstract"
       },
@@ -706,7 +714,7 @@
         "t": "halle",
         "s": 2026,
         "date": "2026-06-15",
-        "speed": 1.19,
+        "speed": 1.16,
         "ace": 13.8,
         "src": "tennisabstract"
       },
@@ -722,7 +730,7 @@
         "t": "hangzhou",
         "s": 2026,
         "date": "2026-09-23",
-        "speed": 1.35,
+        "speed": 1.33,
         "ace": 14.1,
         "src": "tennisabstract"
       },
@@ -730,7 +738,7 @@
         "t": "hongkong",
         "s": 2026,
         "date": "2026-01-05",
-        "speed": 1.09,
+        "speed": 1.1,
         "ace": 11.3,
         "src": "tennisabstract"
       },
@@ -746,7 +754,7 @@
         "t": "indianwells",
         "s": 2026,
         "date": "2026-03-04",
-        "speed": 1.13,
+        "speed": 1.12,
         "ace": 11.2,
         "src": "tennisabstract"
       },
@@ -786,7 +794,7 @@
         "t": "madrid",
         "s": 2026,
         "date": "2026-04-22",
-        "speed": 0.86,
+        "speed": 0.85,
         "ace": 8.8,
         "src": "tennisabstract"
       },
@@ -794,7 +802,7 @@
         "t": "mallorca",
         "s": 2026,
         "date": "2026-06-21",
-        "speed": 1.2,
+        "speed": 1.19,
         "ace": 11.0,
         "src": "tennisabstract"
       },
@@ -802,7 +810,7 @@
         "t": "marrakech",
         "s": 2026,
         "date": "2026-03-30",
-        "speed": 0.92,
+        "speed": 0.91,
         "ace": 8.0,
         "src": "tennisabstract"
       },
@@ -810,7 +818,7 @@
         "t": "miami",
         "s": 2026,
         "date": "2026-03-18",
-        "speed": 1.18,
+        "speed": 1.17,
         "ace": 12.3,
         "src": "tennisabstract"
       },
@@ -818,7 +826,7 @@
         "t": "montecarlo",
         "s": 2026,
         "date": "2026-04-05",
-        "speed": 0.57,
+        "speed": 0.56,
         "ace": 5.9,
         "src": "tennisabstract"
       },
@@ -842,7 +850,7 @@
         "t": "paris",
         "s": 2026,
         "date": "2026-11-02",
-        "speed": 1.44,
+        "speed": 1.43,
         "ace": 13.4,
         "src": "tennisabstract"
       },
@@ -874,7 +882,7 @@
         "t": "rome",
         "s": 2026,
         "date": "2026-05-06",
-        "speed": 0.66,
+        "speed": 0.65,
         "ace": 6.8,
         "src": "tennisabstract"
       },
@@ -898,7 +906,7 @@
         "t": "shanghai",
         "s": 2026,
         "date": "2026-10-07",
-        "speed": 1.28,
+        "speed": 1.26,
         "ace": 12.7,
         "src": "tennisabstract"
       },
@@ -906,7 +914,7 @@
         "t": "shertogenbosch",
         "s": 2026,
         "date": "2026-06-08",
-        "speed": 0.96,
+        "speed": 0.95,
         "ace": 10.7,
         "src": "tennisabstract"
       },
@@ -946,7 +954,7 @@
         "t": "unitedcup",
         "s": 2026,
         "date": "2026-01-02",
-        "speed": 1.09,
+        "speed": 1.08,
         "ace": 14.0,
         "src": "tennisabstract"
       },
@@ -954,7 +962,7 @@
         "t": "usopen",
         "s": 2026,
         "date": "2026-08-31",
-        "speed": 0.97,
+        "speed": 0.96,
         "ace": 10.7,
         "src": "tennisabstract"
       },
@@ -962,7 +970,7 @@
         "t": "vienna",
         "s": 2026,
         "date": "2026-10-26",
-        "speed": 1.09,
+        "speed": 1.07,
         "ace": 9.7,
         "src": "tennisabstract"
       },
@@ -970,7 +978,7 @@
         "t": "washington",
         "s": 2026,
         "date": "2026-07-27",
-        "speed": 1.14,
+        "speed": 1.13,
         "ace": 12.5,
         "src": "tennisabstract"
       },
@@ -978,7 +986,7 @@
         "t": "wimbledon",
         "s": 2026,
         "date": "2026-06-29",
-        "speed": 1.11,
+        "speed": 1.1,
         "ace": 12.1,
         "src": "tennisabstract"
       },
