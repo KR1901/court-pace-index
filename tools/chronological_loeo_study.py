@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Research-only comparison of retrospective LOEO and chronological pre-event CALC.
 
-This script does not change production ratings. It compares the existing cross-fitted
-season method with a conservative as-of-event candidate using only match records from
-tournaments whose archive start date is at least 14 days before the target event. The
-14-day quarantine is necessary because the Sackmann/TML yearly CSV stores tournament
-start dates, not individual match dates; this deliberately sacrifices some recent history
-rather than risk training on matches played after the target event began.
+This script does not change production ratings. It compares the retrospective cross-fit
+with the production as-of-event chronology policy. Sources with verified per-match
+timestamps use strict UTC ordering; sources with per-match calendar days use strict
+day-before ordering (same-day matches are excluded when no clock is available). Legacy
+archives containing only tournament-start dates retain the explicitly-labelled 14-day
+fallback until a permitted match-day or event-window source is available.
 
-The target event's own complete match sample is included in both methods. Only the
-reference player profiles and tour anchor are event-excluded.
+The target event's complete sample is included in its observed score. Only training
+profiles and the normalisation anchor are restricted to information available before it.
 """
 import argparse
 import json
@@ -139,6 +139,7 @@ def run(start_year, end_year, quarantine_days):
         if not groups:
             continue
 
+        date_granularity = compute_speed._source_match_date_granularity(rows, source)
         prior_tour_rate, prior_anchor, prior_error = prior_year_reference(year)
         dated_events = []
         for event_id, event_rows in groups.items():
@@ -195,20 +196,34 @@ def run(start_year, end_year, quarantine_days):
             # Only the earliest covered season should need this labelled neutral anchor.
             prior_anchor = retrospective_anchor
 
-        chronological_raws = []
         event_items = []
         for start_date, event_id, event_rows in dated_events:
             retro = retrospective_by_event.get(event_id)
             if retro is None:
                 continue
 
-            # The archive gives tournament start dates rather than individual match dates.
-            # Exclude the target's entire 14-day pre-start window so an overlapping or
-            # two-week event cannot leak matches played after this target began.
-            cutoff = start_date - timedelta(days=quarantine_days)
+            target_start_timestamp = compute_speed._event_first_match_timestamp(event_rows)
+            if target_start_timestamp is not None:
+                chronology_precision = "match_timestamp"
+                cutoff = start_date
+                chronology_rule = "strictly_before_target_match_timestamp_utc"
+                event_quarantine_days = 0
+            elif date_granularity == "match_day":
+                chronology_precision = "match_day"
+                cutoff = start_date
+                chronology_rule = "strictly_before_target_local_match_day"
+                event_quarantine_days = 0
+            else:
+                chronology_precision = "tournament_start"
+                cutoff = start_date - timedelta(days=quarantine_days)
+                chronology_rule = f"legacy_tournament_start_minus_{quarantine_days}_days"
+                event_quarantine_days = quarantine_days
+
             chronological_training = [
                 row for row in standard_rows
-                if row_date(row) is not None and row_date(row) <= cutoff
+                if compute_speed._row_precedes_target(
+                    row, start_date, cutoff, chronology_precision, target_start_timestamp,
+                )
             ]
             chrono_profiles = fit_profiles(year, chronological_training)
             current_tour_rate = compute_speed.tour_average_ace_rate(chronological_training)
@@ -237,19 +252,16 @@ def run(start_year, end_year, quarantine_days):
             if chronological is None:
                 continue
 
-            # Rolling anchor uses only earlier events outside the same quarantine window.
-            prior_event_metrics = [
-                item for event_date, item in chronological_raws
-                if event_date <= cutoff
-            ]
-            stable_prior = [
-                item["raw"] for item in prior_event_metrics
-                if item["adjustedServerSides"] >= compute_speed.MIN_NORMALISER_SERVER_SIDES
-            ]
-            if not stable_prior:
-                stable_prior = [item["raw"] for item in prior_event_metrics]
-            chrono_anchor = statistics.mean(stable_prior) if stable_prior else prior_anchor
-            chronological_raws.append((start_date, chronological))
+            # Match production exactly: derive the normalisation anchor from the same
+            # pre-target training rows and frozen player profile used for this target.
+            anchor_events, _, _, _ = compute_speed.event_raw_scores(
+                chronological_training, chrono_profiles, tour_rate=chrono_tour_rate,
+            )
+            eligible_anchor = {
+                event_id: value for event_id, value in anchor_events.items()
+                if event_id not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
+            }
+            chrono_anchor = statistics.mean(eligible_anchor.values()) if eligible_anchor else prior_anchor
 
             retro_rating = retro["raw"] / retrospective_anchor
             chrono_rating = chronological["raw"] / chrono_anchor if chrono_anchor else None
@@ -279,7 +291,13 @@ def run(start_year, end_year, quarantine_days):
                     "adjustedServerSides": chronological["adjustedServerSides"],
                     "profileTrainingMatches": len(chronological_training),
                     "tourAceRate": chrono_tour_rate,
-                    "quarantineDays": quarantine_days,
+                    "datePrecision": chronology_precision,
+                    "chronologyRule": chronology_rule,
+                    "trainingMatchDateMax": (
+                        max(filter(None, (row_date(row) for row in chronological_training))).isoformat()
+                        if chronological_training else None
+                    ),
+                    "quarantineDays": event_quarantine_days,
                 },
             }
             event["ratingDeltaChronologicalMinusRetrospective"] = (
@@ -308,6 +326,7 @@ def run(start_year, end_year, quarantine_days):
             "priorYearFallbackAnchor": prior_anchor,
             "priorYearTourAceRate": prior_tour_rate,
             "priorYearWarning": prior_error,
+            "sourceDateGranularity": date_granularity,
             "retrospectiveNormalisation": retrospective_anchor,
             "events": event_items,
         })
@@ -334,10 +353,11 @@ def run(start_year, end_year, quarantine_days):
         "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
         "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
         "warning": (
-            "Research only. The source CSV provides tournament start dates, not exact match "
-            "timestamps. The conservative quarantine avoids most overlapping-event leakage but "
-            "also discards recent evidence. The result is a model comparison, not an automatic "
-            "production-methodology change."
+            "Research only. Match-day and timestamp precision is source-dependent. The legacy "
+            "Sackmann/TML historical archive still provides tournament-start dates only; those "
+            "years retain the documented 14-day fallback. The current-season TML feed can provide "
+            "per-match calendar days, but no clock time. ATP website automation is not used because "
+            "ATP terms require prior written permission for systematic retrieval."
         ),
         "years": year_results,
     }
