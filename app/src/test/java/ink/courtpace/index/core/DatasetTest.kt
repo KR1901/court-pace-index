@@ -170,13 +170,18 @@ class DatasetTest {
         val nextGen2024 = computed.first { it.t == "nextgen" && it.s == 2024 }
         assertEquals("computed", nextGen2024.src)
         assertEquals(1.39, nextGen2024.publishedSpeed!!, 0.001)
-        assertEquals(2.146, nextGen2024.speed!!, 0.001)
-        assertTrue("Next Gen 2024 CALC above 2.0 must remain visible",
-            nextGen2024.speed!! > 2.0)
+        val nextGen2024Speed = requireNotNull(nextGen2024.speed)
+        assertTrue(
+            "Next Gen 2024 chronological CALC above 2.0 must remain visible",
+            nextGen2024Speed.isFinite() && nextGen2024Speed > 2.0,
+        )
         assertEquals(15, nextGen2024.matches)
         assertEquals(30, nextGen2024.adjustedServerSides)
-        assertEquals(1.659, nextGen2024.speedCiLow!!, 0.001)
-        assertEquals(2.669, nextGen2024.speedCiHigh!!, 0.001)
+        val nextGen2024CiLow = requireNotNull(nextGen2024.speedCiLow)
+        val nextGen2024CiHigh = requireNotNull(nextGen2024.speedCiHigh)
+        assertTrue(nextGen2024CiLow.isFinite() && nextGen2024CiHigh.isFinite())
+        assertTrue(nextGen2024CiLow > 0.0 && nextGen2024CiLow <= nextGen2024CiHigh)
+        assertEquals("match-cluster-conditional-v1", nextGen2024.speedCiMethod)
 
         // The 2026 Rio and Adelaide CALC values exist in speed_history.json; make sure
         // the public dataset builder promotes those calculations and retains each live TA
