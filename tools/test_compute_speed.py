@@ -1062,9 +1062,13 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             ratings = compute_speed.season_ratings(2026, rows)
         self.assertIn("atpfinals", ratings)
         self.assertEqual(10, ratings["atpfinals"]["matches"])
-        self.assertEqual("2026-11-01", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
+        self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["chronologicalCutoff"])
         self.assertEqual("2026-11-15", ratings["atpfinals"]["calculationDiagnostics"]["eventStartDate"])
-        self.assertEqual(14, ratings["atpfinals"]["calculationDiagnostics"]["quarantineDays"])
+        self.assertEqual(0, ratings["atpfinals"]["calculationDiagnostics"]["quarantineDays"])
+        self.assertEqual(
+            "legacy_max_event_window_by_source_level",
+            ratings["atpfinals"]["calculationDiagnostics"]["chronologyRule"],
+        )
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
     def test_later_tournament_rows_do_not_change_earlier_event_rating(self):
@@ -1243,11 +1247,23 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
                 earlier + [same_day, later, one_date_edition] + target, source,
             ),
         )
-        # The one-date Dallas edition cannot claim its 20 September row is a match day;
-        # it remains subject to the target's 14-day legacy fallback (cutoff 17 September).
+        # The one-date Dallas edition cannot claim 20 September is an exact match day,
+        # but its maximum 8-day ATP 250 window ends 27 September and is safely before Paris.
+        self.assertEqual(date(2026, 9, 27), compute_speed._legacy_event_window_end_date(one_date_edition))
+        self.assertTrue(compute_speed._row_precedes_target(
+            one_date_edition, date(2026, 10, 1), precision_by_event[one_date_key],
+        ))
+        long_slam = {
+            **one_date_edition,
+            "tourney_name": "Roland Garros",
+            "tourney_level": "G",
+            "tourney_date": "20260917",
+        }
+        # A fixed 14-day cutoff would have admitted this 17 September row at a 1 October
+        # target, even though a 15-day Slam could still be finishing on/after 1 October.
+        self.assertEqual(date(2026, 10, 1), compute_speed._legacy_event_window_end_date(long_slam))
         self.assertFalse(compute_speed._row_precedes_target(
-            one_date_edition, date(2026, 10, 1), date(2026, 9, 17),
-            precision_by_event[one_date_key],
+            long_slam, date(2026, 10, 1), "tournament_start",
         ))
 
         compute_speed._PROFILE_YEAR_CACHE.clear()
@@ -1273,8 +1289,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
         self.assertEqual(1, diagnostics["sameDayExcludedMatches"])
         self.assertEqual(1, diagnostics["dateIntervalExcludedMatches"])
-        self.assertEqual(1, diagnostics["legacyFallbackBufferExcludedMatches"])
-        self.assertEqual(0, diagnostics["legacyFallbackTrainingMatches"])
+        self.assertEqual(0, diagnostics["legacyFallbackEventWindowExcludedMatches"])
+        self.assertEqual(1, diagnostics["legacyFallbackTrainingMatches"])
 
         # The Paris profile fit can use Madrid's 25/28 September matches, even though
         # Madrid overlaps Paris, but never the 1/2 October matches played on/after Paris began.
