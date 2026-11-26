@@ -1222,6 +1222,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ]
         same_day = match("Madrid Masters", "20261001", aces=35)
         later = match("Madrid Masters", "20261002", aces=35)
+        one_date_edition = match("Dallas Open", "20260920", aces=35)
         target = [
             match("Paris Masters", "20261001") for _ in range(5)
         ] + [
@@ -1230,10 +1231,23 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
 
         source = "TennisMyLife ATP Match Database"
         precision_by_event = compute_speed._source_event_date_granularity(
-            earlier + [same_day, later] + target, source,
+            earlier + [same_day, later, one_date_edition] + target, source,
         )
         self.assertEqual("match_day", precision_by_event["event:madrid"])
         self.assertEqual("match_day", precision_by_event["event:paris"])
+        self.assertEqual("tournament_start", precision_by_event["event:dallas"])
+        self.assertEqual(
+            "mixed",
+            compute_speed._source_match_date_granularity(
+                earlier + [same_day, later, one_date_edition] + target, source,
+            ),
+        )
+        # The one-date Dallas edition cannot claim its 20 September row is a match day;
+        # it remains subject to the target's 14-day legacy fallback (cutoff 17 September).
+        self.assertFalse(compute_speed._row_precedes_target(
+            one_date_edition, date(2026, 10, 1), date(2026, 9, 17),
+            precision_by_event["event:dallas"],
+        ))
 
         compute_speed._PROFILE_YEAR_CACHE.clear()
         with (
@@ -1243,7 +1257,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ):
             baseline = compute_speed.season_ratings(2026, earlier + target, source=source)
             with_future = compute_speed.season_ratings(
-                2026, earlier + [same_day, later] + target, source=source,
+                2026, earlier + [same_day, later, one_date_edition] + target, source=source,
             )
 
         self.assertIn("paris", baseline)
