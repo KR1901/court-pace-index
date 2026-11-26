@@ -746,27 +746,61 @@ def _match_start_timestamp(row):
     return None
 
 
-def _source_match_date_granularity(rows, source=None):
-    """
-    Determine whether this source provides per-match dates or only event start dates.
+def _source_event_key(row):
+    """Stable source-edition key for date-precision detection, with alias fallback for fixtures."""
+    raw_id = str(row.get("tourney_id") or "").strip()
+    if raw_id:
+        return f"id:{raw_id}"
+    resolved = tournament_id(row.get("tourney_name"))
+    if resolved:
+        return f"event:{resolved}"
+    return f"name:{_normalise_event_name(row.get('tourney_name'))}"
 
-    TennisMyLife's current-season feed has daily dates (multiple dates within the same
-    tournament edition). Its archived annual files revert to a single week/start date,
-    so source name alone is not sufficient: the feed itself must demonstrate within-event
-    date variation before its dates are treated as match days.
+
+def _source_event_date_granularity(rows, source=None):
+    """
+    Determine date precision per source tournament edition.
+
+    A TML 2026 feed is not automatically assumed to be daily for every row. An edition
+    is considered match-day precise only when that edition itself has multiple distinct
+    date values. This keeps a one-date/incomplete edition on the legacy fallback even if
+    other tournaments in the same annual file already show daily dates.
     """
     if "TennisMyLife ATP Match Database" not in str(source or ""):
-        return "tournament_start"
+        return {}
 
     dates_by_event = defaultdict(set)
     for row in rows:
-        event_key = str(row.get("tourney_id") or "").strip()
-        if not event_key:
-            event_key = str(tournament_id(row.get("tourney_name")) or "").strip()
+        event_key = _source_event_key(row)
         match_date = _match_date(row)
         if event_key and match_date is not None:
             dates_by_event[event_key].add(match_date)
-    return "match_day" if any(len(values) > 1 for values in dates_by_event.values()) else "tournament_start"
+    return {
+        event_key: ("match_day" if len(values) > 1 else "tournament_start")
+        for event_key, values in dates_by_event.items()
+    }
+
+
+def _event_date_granularity(event_rows, source_precision_by_event):
+    """Use daily precision for a grouped app event only if each source edition proves it."""
+    keys = {_source_event_key(row) for row in event_rows}
+    return (
+        "match_day"
+        if keys and all(source_precision_by_event.get(key) == "match_day" for key in keys)
+        else "tournament_start"
+    )
+
+
+def _source_match_date_granularity(rows, source=None):
+    """Backward-compatible summary of the finest precision observed in a source."""
+    precisions = set(_source_event_date_granularity(rows, source).values())
+    if not precisions:
+        return "tournament_start"
+    if precisions == {"match_day"}:
+        return "match_day"
+    if precisions == {"tournament_start"}:
+        return "tournament_start"
+    return "mixed"
 
 
 def _event_first_match_timestamp(event_rows):
@@ -1522,7 +1556,8 @@ def season_ratings(year, rows, source=None):
     calendar-day precedence (same-day matches are excluded when no clock is supplied).
     Legacy week/start-date archives retain the 14-day quarantine as an explicit fallback.
     """
-    date_granularity = _source_match_date_granularity(rows, source)
+    source_precision_by_event = _source_event_date_granularity(rows, source)
+    source_precision_summary = _source_match_date_granularity(rows, source)
     target_rows = valid_rows(rows)
     rows_by_event = defaultdict(list)
     for row in target_rows:
@@ -1538,22 +1573,24 @@ def season_ratings(year, rows, source=None):
             continue
         event_start = min(dates)
         target_start_timestamp = _event_first_match_timestamp(event_rows)
+        target_date_granularity = _event_date_granularity(event_rows, source_precision_by_event)
         if target_start_timestamp is not None:
             chronology_precision = "match_timestamp"
-            legacy_cutoff = event_start
             chronology_rule = "strictly_before_target_match_timestamp_utc"
             quarantine_days = 0
-        elif date_granularity == "match_day":
+        elif target_date_granularity == "match_day":
             chronology_precision = "match_day"
-            legacy_cutoff = event_start
             chronology_rule = "strictly_before_target_local_match_day"
             quarantine_days = 0
         else:
             chronology_precision = "tournament_start"
-            legacy_cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
             chronology_rule = "legacy_tournament_start_minus_14_days"
             quarantine_days = CHRONOLOGICAL_QUARANTINE_DAYS
 
+        # Source rows that only expose tournament week/start dates retain the explicit
+        # 14-day fallback even when the target edition itself has exact daily matches.
+        legacy_cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
+        training_precision_by_event = source_precision_by_event
         profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
             year, rows, event_start, legacy_cutoff, chronology_precision, target_start_timestamp,
         )
@@ -1589,7 +1626,10 @@ def season_ratings(year, rows, source=None):
                 if tournament_id(row.get("tourney_name")) == tid:
                     continue
                 row_date = _match_date(row)
-                if row_date == event_start:
+                row_precision = training_precision_by_event.get(
+                    _source_event_key(row), "tournament_start",
+                )
+                if row_date == event_start and row_precision == "match_day":
                     row_timestamp = _match_start_timestamp(row)
                     if (
                         target_start_timestamp is not None and row_timestamp is not None
@@ -1598,9 +1638,10 @@ def season_ratings(year, rows, source=None):
                         continue
                     same_day_excluded += 1
                 elif (
-                    row_date is not None and row_date < event_start
+                    row_precision == "match_day" and row_date is not None
+                    and row_date < event_start
                     and not _row_precedes_target(
-                        row, event_start, legacy_cutoff, chronology_precision, target_start_timestamp,
+                        row, event_start, legacy_cutoff, row_precision, target_start_timestamp,
                     )
                 ):
                     date_interval_excluded += 1
@@ -1625,6 +1666,11 @@ def season_ratings(year, rows, source=None):
             "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
             "same_day_excluded_matches": same_day_excluded,
             "date_interval_excluded_matches": date_interval_excluded,
+            "legacy_fallback_training_matches": sum(
+                1 for row in training_rows
+                if training_precision_by_event.get(_source_event_key(row), "tournament_start")
+                != "match_day"
+            ),
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1674,6 +1720,7 @@ def season_ratings(year, rows, source=None):
                 "trainingMatchDateMax": item["training_match_date_max"],
                 "sameDayExcludedMatches": item["same_day_excluded_matches"],
                 "dateIntervalExcludedMatches": item["date_interval_excluded_matches"],
+                "legacyFallbackTrainingMatches": item["legacy_fallback_training_matches"],
                 "quarantineDays": item["quarantine_days"],
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
