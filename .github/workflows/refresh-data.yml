@@ -7,7 +7,7 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research, fix/chronological-loeo-davis-cup-coverage, fix/match-day-chronology-no-arbitrary-quarantine, fix/exact-match-date-loeo-chronology]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research, fix/chronological-loeo-davis-cup-coverage, fix/match-day-chronology-no-arbitrary-quarantine, fix/exact-match-date-loeo-chronology, feature/davis-cup-final8-separation]
     paths:
       # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
@@ -281,6 +281,8 @@ jobs:
                   (2022, "adelaide"): 54,
                   (2023, "adelaide"): 58,
                   (2026, "atpfinals"): 15,
+                  (2026, "daviscup"): 1,
+                  (2026, "daviscupfinal8"): 1,
               }
               for (required_season, required_event), minimum_matches in required_calc.items():
                   values = history["seasons"].get(str(required_season), {}).get(required_event)
