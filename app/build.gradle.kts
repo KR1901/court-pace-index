@@ -21,14 +21,14 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Public app identity remains unchanged; 4.1.3 improves H2H score coverage and adds Tiebreak Win%.
+// Public app identity remains unchanged; 4.1.8 uses source-aware match chronology for chronological CALC.
 // Keep the existing public-release signing certificate for in-place updates.
     defaultConfig {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
         targetSdk = 37
-        versionCode = 59
-        versionName = "4.1.7"
+        versionCode = 60
+        versionName = "4.1.8"
     }
 
     signingConfigs {

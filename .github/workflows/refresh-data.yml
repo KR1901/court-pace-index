@@ -7,10 +7,11 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research, fix/chronological-loeo-davis-cup-coverage]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research, fix/chronological-loeo-davis-cup-coverage, fix/match-day-chronology-no-arbitrary-quarantine, fix/exact-match-date-loeo-chronology]
     paths:
       # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
+      - 'tools/chronological_loeo_study.py'
       - 'tools/davis_cup_policy.py'
       - 'tools/test_compute_speed.py'
       - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
@@ -64,15 +65,14 @@ jobs:
         run: |
           python3 tools/chronological_loeo_study.py \
             --start-year 2016 \
-            --end-year 2025 \
-            --quarantine-days 14 \
-            --output build/chronological-loeo-2016-2025.json
+            --end-year "$(date -u +%Y)" \
+            --output build/chronological-loeo-study.json
 
       - name: Upload LOEO methodology research
         uses: actions/upload-artifact@v4
         with:
-          name: chronological-loeo-study-2016-2025
-          path: build/chronological-loeo-2016-2025.json
+          name: chronological-loeo-study-current
+          path: build/chronological-loeo-study.json
           if-no-files-found: error
           retention-days: 90
 

@@ -32,10 +32,18 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 MIN_EVENT_RATING_SERVER_SIDES = 1
 MIN_NORMALISER_SERVER_SIDES = 20
-# Source archives expose tournament start dates, not per-match dates. A two-week
-# quarantine avoids using later rounds from an earlier-starting event that overlaps
-# the target tournament.
-CHRONOLOGICAL_QUARANTINE_DAYS = 14
+# Legacy archives expose tournament start/week dates, not individual match days.
+# Bound the latest possible source event day by a conservative maximum duration for
+# its level, instead of pretending every event lasts exactly fourteen days.
+LEGACY_MAX_EVENT_DAYS_BY_LEVEL = {
+    "G": 15,   # Grand Slam main-draw window
+    "M": 12,   # Extended Masters 1000 window
+    "F": 8,    # ATP Finals / Next Gen week
+    "A": 12,   # Historical ATP umbrella / multi-day team formats
+    "500": 8,
+    "250": 8,
+}
+LEGACY_UNKNOWN_MAX_EVENT_DAYS = 15
 MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
@@ -726,16 +734,428 @@ def _match_date(row):
         return None
 
 
+def _parse_utc_datetime(value):
+    """Parse ISO-8601 timestamps only when the source supplies an explicit UTC offset."""
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _match_start_timestamp(row):
+    """Return a confirmed actual match start, never a scheduled/not-before time."""
+    # These specific field names are accepted as actual UTC observations. Generic
+    # scheduled/not-before fields below are ignored unless explicitly marked actual.
+    for key in (
+        "match_started_at_utc", "actual_start_at_utc", "actual_started_at_utc",
+        "actual_started_at", "match_start_utc", "actual_start_utc",
+        "match_start_at", "match_datetime_utc",
+    ):
+        parsed = _parse_utc_datetime(row.get(key))
+        if parsed is not None:
+            return parsed
+    if str(row.get("start_time_kind") or "").casefold() == "actual":
+        for key in ("started_at", "start_time_utc", "scheduled_at"):
+            parsed = _parse_utc_datetime(row.get(key))
+            if parsed is not None:
+                return parsed
+    return None
+
+
+def _match_end_timestamp(row):
+    """Return a confirmed UTC finish, or actual start + recorded duration + safety minute."""
+    for key in (
+        "match_finished_at_utc", "actual_end_at_utc", "completed_at_utc",
+        "match_completed_at_utc", "finished_at_utc",
+    ):
+        parsed = _parse_utc_datetime(row.get(key))
+        if parsed is not None:
+            return parsed
+    started = _match_start_timestamp(row)
+    duration = num(row.get("duration_minutes", row.get("minutes")))
+    if started is not None and duration is not None and math.isfinite(duration) and duration > 0:
+        return started + timedelta(minutes=duration + 1)
+    return None
+
+
+def _source_event_end_date(row):
+    """Return a confirmed UTC event completion day; local or provisional end dates are ignored."""
+    for key in (
+        "actual_event_end_date_utc", "event_actual_end_date_utc",
+        "tournament_actual_end_date_utc",
+    ):
+        raw = str(row.get(key) or "").strip()
+        if raw:
+            try:
+                return date.fromisoformat(raw[:10])
+            except ValueError:
+                pass
+    completed = (
+        str(row.get("event_status") or "").casefold() in {"completed", "complete", "finished"}
+        or str(row.get("event_completed") or "").casefold() in {"true", "1", "yes"}
+    )
+    if not completed or str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
+        return None
+    raw_utc = str(row.get("event_end_date_utc") or "").strip()
+    if raw_utc:
+        try:
+            return date.fromisoformat(raw_utc[:10])
+        except ValueError:
+            return None
+    is_utc = (
+        str(row.get("event_end_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
+        or str(row.get("event_end_date_is_utc") or "").casefold() in {"true", "1", "yes"}
+    )
+    if not is_utc:
+        return None
+    for key in ("event_end_date", "tournament_end_date", "end_date"):
+        raw = str(row.get(key) or "").strip()
+        if raw:
+            try:
+                return date.fromisoformat(raw[:10])
+            except ValueError:
+                pass
+    return None
+
+
+def _source_event_key(row):
+    """Stable source-edition key for date-precision detection, with alias fallback for fixtures."""
+    raw_id = str(row.get("tourney_id") or "").strip()
+    if raw_id:
+        return f"id:{raw_id}"
+    resolved = tournament_id(row.get("tourney_name"))
+    if resolved:
+        return f"event:{resolved}"
+    return f"name:{_normalise_event_name(row.get('tourney_name'))}"
+
+
+def _source_event_date_granularity(rows, source=None):
+    """
+    Determine date precision per source tournament edition.
+
+    A TML 2026 feed is not automatically assumed to be daily for every row. An edition
+    is considered match-day precise only when that edition itself has multiple distinct
+    date values. This keeps a one-date/incomplete edition on the legacy fallback even if
+    other tournaments in the same annual file already show daily dates.
+    """
+    if "TennisMyLife ATP Match Database" not in str(source or ""):
+        return {}
+
+    dates_by_event = defaultdict(set)
+    for row in rows:
+        if row.get("tourney_level") not in TARGET_LEVELS:
+            continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            continue
+        event_key = _source_event_key(row)
+        match_date = _match_date(row)
+        if event_key and match_date is not None:
+            dates_by_event[event_key].add(match_date)
+    return {
+        event_key: ("match_day" if len(values) > 1 else "tournament_start")
+        for event_key, values in dates_by_event.items()
+    }
+
+
+def _event_date_granularity(event_rows, source_precision_by_event):
+    """Use daily precision for a grouped app event only if each source edition proves it."""
+    keys = {_source_event_key(row) for row in event_rows}
+    return (
+        "match_day"
+        if keys and all(source_precision_by_event.get(key) == "match_day" for key in keys)
+        else "tournament_start"
+    )
+
+
+def _source_match_date_granularity(rows, source=None):
+    """Backward-compatible summary of the finest precision observed in a source."""
+    precisions = set(_source_event_date_granularity(rows, source).values())
+    if not precisions:
+        return "tournament_start"
+    if precisions == {"match_day"}:
+        return "match_day"
+    if precisions == {"tournament_start"}:
+        return "tournament_start"
+    return "mixed"
+
+
+def _event_first_match_timestamp(event_rows):
+    """Return the first event match instant only when every target row has a real timestamp."""
+    timestamps = [_match_start_timestamp(row) for row in event_rows]
+    if not timestamps or any(value is None for value in timestamps):
+        return None
+    return min(timestamps)
+
+
+def _match_day_definitely_precedes_target(source_day, target_day):
+    """
+    Compare local calendar days without guessing their time zones.
+
+    A local day may span UTC from 14 hours before its date (UTC+14) to 12 hours
+    after the following midnight (UTC-12). Include the source day only when its
+    latest possible UTC instant is no later than the target day's earliest possible
+    UTC instant. This protects overlapping events in different time zones without
+    inventing a local clock time.
+    """
+    source_latest_utc = (
+        datetime.combine(source_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+        + timedelta(hours=12)
+    )
+    target_earliest_utc = (
+        datetime.combine(target_day, datetime.min.time(), tzinfo=timezone.utc)
+        - timedelta(hours=14)
+    )
+    return source_latest_utc <= target_earliest_utc
+
+
+def _legacy_max_event_days(row):
+    """Conservative maximum main-draw duration for a legacy source event level."""
+    level = str(row.get("tourney_level") or "").strip()
+    return LEGACY_MAX_EVENT_DAYS_BY_LEVEL.get(level, LEGACY_UNKNOWN_MAX_EVENT_DAYS)
+
+
+def _legacy_event_window_end_date(row):
+    """Latest possible event day for a legacy row, based on its source-level duration bound."""
+    match_date = _match_date(row)
+    if match_date is None:
+        return None
+    return match_date + timedelta(days=_legacy_max_event_days(row) - 1)
+
+
+def _legacy_event_window_precedes_target(row, target_start_date, target_start_timestamp=None):
+    """
+    Whether the complete maximum possible source-event window precedes the target.
+
+    This is an explicitly conservative duration bound, not a recovered actual event-end
+    date. Historical annual sources do not contain individual match dates or end dates.
+    """
+    last_possible_day = _legacy_event_window_end_date(row)
+    if last_possible_day is None:
+        return False
+    if target_start_timestamp is not None:
+        source_latest_utc = (
+            datetime.combine(last_possible_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+            + timedelta(hours=12)
+        )
+        return source_latest_utc <= target_start_timestamp
+    return _match_day_definitely_precedes_target(last_possible_day, target_start_date)
+
+
+def _target_day_earliest_utc(target_day):
+    """Earliest possible UTC instant of a venue-local calendar day (UTC+14 bound)."""
+    return (
+        datetime.combine(target_day, datetime.min.time(), tzinfo=timezone.utc)
+        - timedelta(hours=14)
+    )
+
+
+def _utc_day_end_exclusive(day_value):
+    """Exclusive UTC end boundary for a UTC calendar day."""
+    return datetime.combine(day_value + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+
+
+def _row_precedes_target(
+    row, target_start_date, date_precision, target_start_timestamp=None,
+):
+    """Whether a completed training match is provably earlier than the target's first match."""
+    match_date = _match_date(row)
+    if match_date is None:
+        return False
+    match_end = _match_end_timestamp(row)
+    if match_end is not None:
+        if target_start_timestamp is not None:
+            return match_end < target_start_timestamp
+        return match_end < _target_day_earliest_utc(target_start_date)
+    if date_precision in {"match_day", "match_timestamp"}:
+        return _match_day_definitely_precedes_target(match_date, target_start_date)
+    event_end = _source_event_end_date(row)
+    if event_end is not None:
+        event_end_exclusive = _utc_day_end_exclusive(event_end)
+        target_boundary = (
+            target_start_timestamp if target_start_timestamp is not None
+            else _target_day_earliest_utc(target_start_date)
+        )
+        return event_end_exclusive <= target_boundary
+    return _legacy_event_window_precedes_target(row, target_start_date, target_start_timestamp)
+
 def _prior_year_rows(year):
     """Return eligible ATP training rows from a completed prior season."""
     return calculation_eligible_rows(valid_rows(load(year)))
 
 
-def _chronological_profiles_and_anchor(year, rows, cutoff):
-    """Fit profiles using only tournaments whose start date clears the quarantine cutoff."""
+def _latest_possible_utc_finish_of_venue_day(venue_day):
+    """Latest UTC instant of a venue-local day, assuming the global civil TZ bound UTC-12."""
+    return (
+        datetime.combine(venue_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+        + timedelta(hours=12)
+    )
+
+
+def _event_completion_precedes_target(
+    event_rows, target_start_date, target_start_timestamp=None, match_day_precision=False,
+):
+    """Prove that every match in an earlier event edition finished before the target."""
+    if not event_rows:
+        return False
+    target_boundary = (
+        target_start_timestamp
+        if target_start_timestamp is not None
+        else _target_day_earliest_utc(target_start_date)
+    )
+    match_ends = [_match_end_timestamp(row) for row in event_rows]
+    if match_ends and all(value is not None for value in match_ends):
+        return max(match_ends) < target_boundary
+    event_ends = [_source_event_end_date(row) for row in event_rows]
+    if event_ends and all(value is not None for value in event_ends) and len(set(event_ends)) == 1:
+        return _utc_day_end_exclusive(event_ends[0]) <= target_boundary
+
+    # The TML ATP feed includes the actual played date and round for every singles result.
+    # A scored Final row proves the event edition reached its final rubber; its match day
+    # therefore establishes the event's latest completed match day. Use timezone bounds,
+    # not an invented time-of-day or a level-based event window, for these daily editions.
+    if match_day_precision:
+        final_rows = [
+            row for row in event_rows
+            if str(row.get("round") or "").strip().upper() in {"F", "FINAL"}
+            and str(row.get("score") or "").strip()
+        ]
+        final_days = [_match_date(row) for row in final_rows]
+        final_days = [value for value in final_days if value is not None]
+        if final_days:
+            final_day = max(final_days)
+            if target_start_timestamp is not None:
+                return _latest_possible_utc_finish_of_venue_day(final_day) < target_start_timestamp
+            return _match_day_definitely_precedes_target(final_day, target_start_date)
+
+    starts = [_match_date(row) for row in event_rows]
+    starts = [value for value in starts if value is not None]
+    if not starts:
+        return False
+    event_start = min(starts)
+    max_days = max(_legacy_max_event_days(row) for row in event_rows)
+    latest_day = event_start + timedelta(days=max_days - 1)
+    if target_start_timestamp is not None:
+        return _latest_possible_utc_finish_of_venue_day(latest_day) <= target_start_timestamp
+    return _match_day_definitely_precedes_target(latest_day, target_start_date)
+
+
+def _normalisation_anchor_event_scores(rows, profiles, tour_rate):
+    """
+    Score each completed standard event and apply the production normaliser cohort rule.
+
+    Prefer events with >= MIN_NORMALISER_SERVER_SIDES. If none clear the stable cohort,
+    use all rateable completed events. Next Gen and Davis Cup are never anchor events.
+    """
+    by_event = defaultdict(list)
+    for row in calculation_eligible_rows(valid_rows(rows)):
+        event_id = tournament_id(row.get("tourney_name"))
+        if event_id is None or event_id in CALC_TARGET_ONLY_EVENT_IDS:
+            continue
+        by_event[event_id].append(row)
+
+    scored = {}
+    for event_id, event_rows in by_event.items():
+        clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
+        ratios = [ratio for cluster in clusters for ratio in cluster]
+        if ratios:
+            scored[event_id] = {
+                "raw": sum(ratios) / len(ratios),
+                "adjustedServerSides": len(ratios),
+                "matches": len(event_rows),
+            }
+    stable = {
+        event_id: value for event_id, value in scored.items()
+        if value["adjustedServerSides"] >= MIN_NORMALISER_SERVER_SIDES
+    }
+    return stable or scored
+
+
+def _normalisation_rows_for_scored_events(rows, event_scores):
+    """Return only rows belonging to the event cohort actually used by the anchor."""
+    event_ids = set(event_scores)
+    return [
+        row for row in rows
+        if tournament_id(row.get("tourney_name")) in event_ids
+    ]
+
+
+def _chronological_normalisation_anchor_rows(
+    year, rows, target_event_id, target_start_date, profiles, tour_rate,
+    target_start_timestamp=None, source_precision_by_event=None,
+):
+    """
+    Select full completed earlier events for the normalisation anchor, separately from
+    profile training. Partial concurrent events may train profiles but never define 1.00.
+    Chronology checks inspect all identified singles, including missing-stat matches;
+    only valid-stat rows enter the resulting normalisation sample.
+    """
+    chronology_by_source_event = defaultdict(list)
+    for row in rows:
+        if row.get("tourney_level") not in LEVELS:
+            continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            continue
+        event_id = tournament_id(row.get("tourney_name"))
+        if event_id is None or event_id == target_event_id:
+            continue
+        if _match_date(row) is None:
+            continue
+        chronology_by_source_event[_source_event_key(row)].append(row)
+
+    valid_by_source_event = defaultdict(list)
+    for row in calculation_eligible_rows(valid_rows(rows)):
+        event_id = tournament_id(row.get("tourney_name"))
+        if event_id is None or event_id == target_event_id:
+            continue
+        valid_by_source_event[_source_event_key(row)].append(row)
+
+    completed_valid_rows = []
+    for source_event_key, chronology_rows in chronology_by_source_event.items():
+        if _event_completion_precedes_target(
+            chronology_rows, target_start_date, target_start_timestamp,
+            match_day_precision=(
+                (source_precision_by_event or {}).get(source_event_key) == "match_day"
+            ),
+        ):
+            completed_valid_rows.extend(valid_by_source_event.get(source_event_key, []))
+
+    anchor_scores = _normalisation_anchor_event_scores(
+        completed_valid_rows, profiles, tour_rate,
+    )
+    if anchor_scores:
+        used_rows = _normalisation_rows_for_scored_events(completed_valid_rows, anchor_scores)
+        return used_rows, "completed_same_season_events", anchor_scores
+
+    if year > PROFILE_HISTORY_START_YEAR:
+        prior = _prior_year_rows(year - 1)
+        prior_scores = _normalisation_anchor_event_scores(prior, profiles, tour_rate)
+        if prior_scores:
+            used_prior_rows = _normalisation_rows_for_scored_events(prior, prior_scores)
+            return used_prior_rows, "prior_season_fallback", prior_scores
+
+    return [], "no_completed_event_anchor", {}
+
+
+def _chronological_profiles_and_anchor(
+    year, rows, target_start_date, training_precision_by_event, target_start_timestamp=None,
+):
+    """Fit profiles using each source edition's own verified date precision."""
     before = [
         row for row in calculation_eligible_rows(valid_rows(rows))
-        if _match_date(row) is not None and _match_date(row) <= cutoff
+        if _row_precedes_target(
+            row,
+            target_start_date,
+            training_precision_by_event.get(_source_event_key(row), "tournament_start"),
+            target_start_timestamp,
+        )
     ]
     if before:
         profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
@@ -757,7 +1177,6 @@ def _chronological_profiles_and_anchor(year, rows, cutoff):
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
         return None, None, []
     return profiles, tour_rate, before
-
 
 def build_live_profiles(profile_year, current_profiles):
     """
@@ -1418,9 +1837,32 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows, source=None):
-    """Chronological LOEO ratings with a 14-day source-date quarantine against overlap leakage."""
+    """
+    Chronological LOEO ratings using the finest trustworthy source chronology available.
+
+    Per-match timestamp sources are ordered by UTC instant; daily sources use strict
+    timezone-safe calendar-day precedence when no clock is supplied. Legacy week/start-date
+    archives use a conservative maximum event-window bound by source level, not a fixed
+    quarantine shared by Grand Slams, Masters, ATP 500s and ATP 250s.
+    """
+    source_precision_by_event = _source_event_date_granularity(rows, source)
+    source_precision_summary = _source_match_date_granularity(rows, source)
     target_rows = valid_rows(rows)
     rows_by_event = defaultdict(list)
+    chronology_rows_by_event = defaultdict(list)
+    for row in rows:
+        if row.get("tourney_level") not in TARGET_LEVELS:
+            continue
+        # Chronology evidence must describe the same singles population as the rating.
+        # Preserve singles with missing serve stats, but do not let doubles or unrelated
+        # draw levels set an earlier target start date.
+        if row.get("tourney_level") == "D":
+            names = (row.get("winner_name") or "", row.get("loser_name") or "")
+            if any("/" in name or " & " in name or " and " in name.lower() for name in names):
+                continue
+        tid = tournament_id(row.get("tourney_name"))
+        if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
+            chronology_rows_by_event[tid].append(row)
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
@@ -1428,16 +1870,39 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        # Source archives expose tourney_date (event start), not exact match dates.
-        # Apply a two-week quarantine so overlapping events cannot leak later-round
-        # results into the target's profiles or normalisation anchor.
-        dates = [_match_date(row) for row in event_rows]
+        # Establish the target's true first observed day from every identified source row,
+        # including matches whose serve statistics are missing/invalid. Only the target's
+        # score sample is restricted to valid rows; missing-stat matches still set chronology.
+        chronology_rows = chronology_rows_by_event.get(tid) or event_rows
+        dates = [_match_date(row) for row in chronology_rows]
         dates = [value for value in dates if value is not None]
         if not dates:
             continue
         event_start = min(dates)
-        cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
-        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
+        event_last_observed_match_date = max(dates)
+        target_start_timestamp = _event_first_match_timestamp(chronology_rows)
+        target_date_granularity = _event_date_granularity(chronology_rows, source_precision_by_event)
+        if target_date_granularity != "match_day":
+            event_last_observed_match_date = None
+        if target_start_timestamp is not None:
+            chronology_precision = "match_timestamp"
+            chronology_rule = "strictly_before_target_match_timestamp_utc"
+            quarantine_days = 0
+        elif target_date_granularity == "match_day":
+            chronology_precision = "match_day"
+            chronology_rule = "strictly_before_target_local_match_day"
+            quarantine_days = 0
+        else:
+            chronology_precision = "tournament_start"
+            chronology_rule = "legacy_max_event_window_by_source_level"
+            quarantine_days = 0
+
+        # Legacy rows use their own level's maximum possible event window. A source row
+        # enters training only after that entire window is safely before the target.
+        training_precision_by_event = source_precision_by_event
+        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
+            year, rows, event_start, training_precision_by_event, target_start_timestamp,
+        )
         if profiles is None or tour_rate is None:
             continue
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
@@ -1452,26 +1917,87 @@ def season_ratings(year, rows, source=None):
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
         event_raw = sum(ratios) / sides
-        # The chronological profiles and tour anchor are already fitted for this target.
-        # Score earlier standard ATP events once here, using that same pre-target snapshot,
-        # rather than refitting the profiles a second time during output serialisation.
-        anchor_events, _, _, _ = event_raw_scores(training_rows, profiles, tour_rate=tour_rate)
-        eligible_anchor = {
-            event_id: value for event_id, value in anchor_events.items()
-            if event_id not in CALC_TARGET_ONLY_EVENT_IDS
-        }
-        mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor) if eligible_anchor else event_raw
+        # Profile training may use earlier matches from an event still in progress.
+        # The normalisation anchor is stricter: only fully completed earlier event editions
+        # qualify, with the prior completed season as fallback when no stable cohort exists.
+        anchor_rows, normalisation_anchor_mode, eligible_anchor = _chronological_normalisation_anchor_rows(
+            year, rows, tid, event_start, profiles, tour_rate, target_start_timestamp,
+            source_precision_by_event=training_precision_by_event,
+        )
+        if eligible_anchor:
+            mean_raw = sum(value["raw"] for value in eligible_anchor.values()) / len(eligible_anchor)
+        else:
+            mean_raw = event_raw
+            normalisation_anchor_mode = "target_self_fallback_no_prior_anchor"
+        training_dates = [_match_date(row) for row in training_rows]
+        training_dates = [value for value in training_dates if value is not None]
+        same_day_excluded = 0
+        date_interval_excluded = 0
+        legacy_fallback_buffer_excluded = 0
+        eligible_training_population = calculation_eligible_rows(valid_rows(rows))
+        for row in eligible_training_population:
+            if tournament_id(row.get("tourney_name")) == tid:
+                continue
+            row_date = _match_date(row)
+            if row_date is None:
+                continue
+            row_precision = training_precision_by_event.get(
+                _source_event_key(row), "tournament_start",
+            )
+            row_end_timestamp = _match_end_timestamp(row)
+            timestamp_comparable = target_start_timestamp is not None and row_end_timestamp is not None
+            if timestamp_comparable and row_end_timestamp < target_start_timestamp:
+                continue
+            if row_precision == "match_day":
+                if row_date == event_start:
+                    same_day_excluded += 1
+                elif (
+                    row_date < event_start
+                    and not _row_precedes_target(
+                        row, event_start, row_precision, target_start_timestamp,
+                    )
+                ):
+                    date_interval_excluded += 1
+            elif not _legacy_event_window_precedes_target(
+                row, event_start, target_start_timestamp,
+            ):
+                legacy_fallback_buffer_excluded += 1
+
         details[tid] = {
             "raw": event_raw,
             "normalisation": mean_raw,
+            "normalisation_anchor_mode": normalisation_anchor_mode,
+            "normalisation_anchor_event_count": len(eligible_anchor),
+            "normalisation_anchor_matches": len(anchor_rows),
             "clusters": clusters,
             "sides": sides,
             "matches": len(event_rows),
             "ace": 100.0 * aces / points if points else None,
             "profile_coverage": profile_coverage,
             "calculation_diagnostics": side_diagnostics,
-            "chronology_cutoff": cutoff.isoformat(),
+            "chronology_cutoff": (
+                target_start_timestamp.isoformat().replace("+00:00", "Z")
+                if target_start_timestamp is not None else event_start.isoformat()
+            ),
             "event_start_date": event_start.isoformat(),
+            "event_last_observed_match_date": (
+                event_last_observed_match_date.isoformat()
+                if event_last_observed_match_date is not None else None
+            ),
+            "chronology_precision": chronology_precision,
+            "target_date_granularity": target_date_granularity,
+            "source_date_granularity": source_precision_summary,
+            "chronology_rule": chronology_rule,
+            "quarantine_days": quarantine_days,
+            "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
+            "same_day_excluded_matches": same_day_excluded,
+            "date_interval_excluded_matches": date_interval_excluded,
+            "legacy_fallback_buffer_excluded_matches": legacy_fallback_buffer_excluded,
+            "legacy_fallback_training_matches": sum(
+                1 for row in training_rows
+                if training_precision_by_event.get(_source_event_key(row), "tournament_start")
+                != "match_day"
+            ),
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1516,7 +2042,22 @@ def season_ratings(year, rows, source=None):
             "calculationDiagnostics": {
                 "chronologicalCutoff": item["chronology_cutoff"],
                 "eventStartDate": item["event_start_date"],
-                "quarantineDays": CHRONOLOGICAL_QUARANTINE_DAYS,
+                "eventLastObservedMatchDate": item["event_last_observed_match_date"],
+                "chronologyPrecision": item["chronology_precision"],
+                "targetDateGranularity": item["target_date_granularity"],
+                "sourceDateGranularity": item["source_date_granularity"],
+                "chronologyRule": item["chronology_rule"],
+                "normalisationAnchorMode": item["normalisation_anchor_mode"],
+                "normalisationAnchorEvents": item["normalisation_anchor_event_count"],
+                "normalisationAnchorMatches": item["normalisation_anchor_matches"],
+                "trainingMatchDateMax": item["training_match_date_max"],
+                "sameDayExcludedMatches": item["same_day_excluded_matches"],
+                "dateIntervalExcludedMatches": item["date_interval_excluded_matches"],
+                "legacyFallbackEventWindowExcludedMatches": item["legacy_fallback_buffer_excluded_matches"],
+                "legacyFallbackTrainingMatches": item["legacy_fallback_training_matches"],
+                "legacyMaxEventDaysByLevel": LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
+                "legacyUnknownMaxEventDays": LEGACY_UNKNOWN_MAX_EVENT_DAYS,
+                "quarantineDays": 0,
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
@@ -1773,7 +2314,7 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio with a 14-day quarantine on source tournament start dates; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
+            "method": "chronological leave-one-tournament-out calibrated server/returner expected-aces odds ratio using actual match timestamps/days where available and conservative level-based event-window bounds for legacy tournament-start-only archives; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "source_metadata": {
