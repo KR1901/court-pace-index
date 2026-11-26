@@ -1701,10 +1701,10 @@ def season_ratings(year, rows, source=None):
             )
             row_timestamp = _match_start_timestamp(row)
             timestamp_comparable = target_start_timestamp is not None and row_timestamp is not None
+            if timestamp_comparable and row_timestamp < target_start_timestamp:
+                continue
             if row_precision == "match_day":
                 if row_date == event_start:
-                    if timestamp_comparable and row_timestamp < target_start_timestamp:
-                        continue
                     same_day_excluded += 1
                 elif (
                     row_date < event_start
