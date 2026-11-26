@@ -142,7 +142,7 @@ object DatasetPolicy {
             bundled.live
         } else {
             bundled.live.filter {
-                it.t in setOf("daviscup", "daviscupfinal8") && (it.t to it.s) !in remoteLiveKeys
+                it.t == "daviscupfinal8" && (it.t to it.s) !in remoteLiveKeys
             }
         }
         val combinedLive = remote.live + bundledLiveFallback
