@@ -1696,21 +1696,20 @@ def season_ratings(year, rows, source=None):
             )
             row_timestamp = _match_start_timestamp(row)
             timestamp_comparable = target_start_timestamp is not None and row_timestamp is not None
-            if row_date == event_start:
-                if timestamp_comparable and row_timestamp < target_start_timestamp:
-                    continue
-                if row_precision == "match_day" or timestamp_comparable:
+            if row_precision == "match_day":
+                if row_date == event_start:
+                    if timestamp_comparable and row_timestamp < target_start_timestamp:
+                        continue
                     same_day_excluded += 1
-            elif (
-                row_precision == "match_day" and row_date < event_start
-                and not _row_precedes_target(
-                    row, event_start, row_precision, target_start_timestamp,
-                )
-            ):
-                date_interval_excluded += 1
-            elif (
-                row_precision != "match_day"
-                and not _legacy_event_window_precedes_target(row, event_start, target_start_timestamp)
+                elif (
+                    row_date < event_start
+                    and not _row_precedes_target(
+                        row, event_start, row_precision, target_start_timestamp,
+                    )
+                ):
+                    date_interval_excluded += 1
+            elif not _legacy_event_window_precedes_target(
+                row, event_start, target_start_timestamp,
             ):
                 legacy_fallback_buffer_excluded += 1
 
