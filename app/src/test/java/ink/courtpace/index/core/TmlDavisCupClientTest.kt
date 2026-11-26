@@ -52,7 +52,7 @@ class TmlDavisCupClientTest {
         assertEquals(4, batch.matchesWithServeStats)
         assertEquals(1, batch.missingStatsMatches)
         assertEquals(1, batch.malformedStatsMatches)
-        assertEquals(1, batch.unplayedRows)
+        assertEquals(1, batch.scorelessRows)
         assertEquals(1, batch.noPlayRows)
         assertEquals(4, batch.matches.size)
         assertEquals(
