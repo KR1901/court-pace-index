@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-26T14:08:11Z",
+  "generated": "2026-11-26T15:18:37Z",
   "note": "Active event windows support ATP live stats; Davis Cup Final 8 is a distinct live target; the earlier Davis Cup ties are a separate archived CALC target. Ended windows remain as completed-rating backfill metadata and stale-route guards.",
   "events": [
     {
