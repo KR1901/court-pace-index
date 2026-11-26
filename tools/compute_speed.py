@@ -32,10 +32,18 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 MIN_EVENT_RATING_SERVER_SIDES = 1
 MIN_NORMALISER_SERVER_SIDES = 20
-# Legacy archives expose only tournament start dates. Keep a clearly-labelled
-# fallback quarantine for those years; match-day and timestamped sources use strict
-# as-of-target comparisons and do not need an arbitrary buffer.
-CHRONOLOGICAL_QUARANTINE_DAYS = 14
+# Legacy archives expose tournament start/week dates, not individual match days.
+# Bound the latest possible source event day by a conservative maximum duration for
+# its level, instead of pretending every event lasts exactly fourteen days.
+LEGACY_MAX_EVENT_DAYS_BY_LEVEL = {
+    "G": 15,   # Grand Slam main-draw window
+    "M": 12,   # Extended Masters 1000 window
+    "F": 8,    # ATP Finals / Next Gen week
+    "A": 12,   # Historical ATP umbrella / multi-day team formats
+    "500": 8,
+    "250": 8,
+}
+LEGACY_UNKNOWN_MAX_EVENT_DAYS = 15
 MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
