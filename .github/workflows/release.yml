@@ -284,6 +284,19 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.1.7":
+              lines += [
+                  "### Chronological CALC and Davis Cup coverage corrections",
+                  "- Recomputes tournament CALC chronologically: player profiles and each event's normalisation anchor use only eligible ATP matches from before that event, so later tournaments cannot change earlier ratings.",
+                  "- Restores the 2026 ATP Finals source label variants (ATP Finals and Nitto ATP Finals) to the app's atpfinals event, with the data-refresh gate requiring all 15 singles matches.",
+                  "- Merges annual and ongoing TML Davis Cup rows before deduplication and status classification, using player identities to distinguish separate rubbers that reuse a match number.",
+                  "- Separates played singles with valid serve statistics, missing statistics, malformed statistics, scoreless/pending-result rows and walkovers/no-play; doubles remain excluded.",
+                  "- Adds a reconciled, aggregate-only Davis Cup source audit and blocks publication when source buckets or 2026 CALC output do not balance.",
+                  "- Never fills missing serve statistics with invented values or uses Davis Cup matches to train standard ATP player profiles or the ATP season normaliser.",
+                  "- Keeps raw TML match rows out of the repository and APK; only aggregate event ratings and coverage diagnostics are published. TML data remains restricted to free non-commercial analytical use unless written permission is obtained.",
+                  "- Preserves the existing ATP/Infosys live path, CPI and Tennis Abstract reference series.",
+                  "",
+              ]
           elif version == "4.1.6":
               lines += [
                   "### Davis Cup 2026 season-to-date Surface Speed",
