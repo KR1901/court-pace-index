@@ -1200,7 +1200,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         def row(event, event_date, match_date):
             return {
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                "tourney_date": event_date, "match_date_utc": match_date,
+                "tourney_date": event_date, "event_start_date_utc": f"{event_date[:4]}-{event_date[4:6]}-{event_date[6:8]}",
+                "match_completed_date_utc": match_date,
                 "winner_id": "p1", "loser_id": "p2",
                 "winner_name": "Player One", "loser_name": "Player Two",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
@@ -1250,13 +1251,15 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertIsNone(compute_speed._actual_match_end(base))
 
         # An explicitly UTC calendar day is usable, but an unspecified/local day is not.
-        dated = {**base, "date_is_tournament_start": False, "match_date": "2026-11-08"}
-        self.assertIsNone(compute_speed._source_match_date(dated))
-        dated["match_date_timezone"] = "UTC"
+        dated = {
+            **base, "date_is_tournament_start": False, "match_date": "2026-11-08",
+            "match_date_timezone": "UTC", "match_date_semantics": "completed",
+        }
         self.assertEqual(
-            "2026-11-08",
-            compute_speed._source_match_date(dated).isoformat(),
+            "2026-11-08", compute_speed._source_match_date(dated).isoformat(),
         )
+        dated.pop("match_date_semantics")
+        self.assertIsNone(compute_speed._source_match_date(dated))
 
     def test_actual_match_times_allow_safe_same_day_training_but_not_partial_anchor(self):
         def row(event, event_date, started_at, duration):
@@ -1296,7 +1299,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         def row(event, event_date, end_date):
             return {
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                "tourney_date": event_date, "event_end_date": end_date, "event_status": "completed",
+                "tourney_date": event_date, "event_start_date_utc": f"{event_date[:4]}-{event_date[4:6]}-{event_date[6:8]}",
+                "event_end_date_utc": end_date, "event_status": "completed",
                 "winner_id": "p1", "loser_id": "p2",
                 "winner_name": "Player One", "loser_name": "Player Two",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
@@ -1320,7 +1324,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
     def test_provisional_event_end_does_not_prove_completion(self):
         row = {
             "tourney_name": "Rome Masters", "tourney_level": "M", "surface": "Hard",
-            "tourney_date": "20261104", "event_end_date": "2026-11-08",
+            "tourney_date": "20261104", "event_end_date_utc": "2026-11-08",
             "end_date_provisional": True,
             "winner_id": "p1", "loser_id": "p2",
             "winner_name": "Player One", "loser_name": "Player Two",
@@ -1338,7 +1342,9 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         def row(event, event_start, match_day):
             return {
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                "tourney_date": event_start, "match_date_utc": match_day,
+                "tourney_date": event_start,
+                "event_start_date_utc": f"{event_start[:4]}-{event_start[4:6]}-{event_start[6:8]}",
+                "match_completed_date_utc": match_day,
                 "winner_id": "p1", "loser_id": "p2",
                 "winner_name": "Player One", "loser_name": "Player Two",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
