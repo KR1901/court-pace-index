@@ -276,19 +276,12 @@ def run(start_year, end_year):
 
             # Profile training may contain earlier rounds of a concurrent event, but the
             # normalisation anchor may contain completed event editions only.
-            anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
+            anchor_rows, anchor_mode, eligible_anchor = compute_speed._chronological_normalisation_anchor_rows(
                 year, rows, event_id, start_date, chrono_profiles, chrono_tour_rate,
                 target_start_timestamp,
             )
-            anchor_events, _, _, _ = compute_speed.event_raw_scores(
-                anchor_rows, chrono_profiles, tour_rate=chrono_tour_rate,
-            )
-            eligible_anchor = {
-                event_id: value for event_id, value in anchor_events.items()
-                if event_id not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
-            }
             chrono_anchor = (
-                statistics.mean(eligible_anchor.values())
+                statistics.mean(value["raw"] for value in eligible_anchor.values())
                 if eligible_anchor else chronological["raw"]
             )
             if not eligible_anchor:

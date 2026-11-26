@@ -1094,15 +1094,15 @@ def _chronological_normalisation_anchor_rows(
         completed_valid_rows, profiles, tour_rate,
     )
     if anchor_scores:
-        return completed_valid_rows, "completed_same_season_events"
+        return completed_valid_rows, "completed_same_season_events", anchor_scores
 
     if year > PROFILE_HISTORY_START_YEAR:
         prior = _prior_year_rows(year - 1)
         prior_scores = _normalisation_anchor_event_scores(prior, profiles, tour_rate)
         if prior_scores:
-            return prior, "prior_season_fallback"
+            return prior, "prior_season_fallback", prior_scores
 
-    return [], "no_completed_event_anchor"
+    return [], "no_completed_event_anchor", {}
 
 
 def _chronological_profiles_and_anchor(
@@ -1881,16 +1881,11 @@ def season_ratings(year, rows, source=None):
         # Profile training may use earlier matches from an event still in progress.
         # The normalisation anchor is stricter: only fully completed earlier event editions
         # qualify, with the prior completed season as fallback when no stable cohort exists.
-        anchor_rows, normalisation_anchor_mode = _chronological_normalisation_anchor_rows(
+        anchor_rows, normalisation_anchor_mode, eligible_anchor = _chronological_normalisation_anchor_rows(
             year, rows, tid, event_start, profiles, tour_rate, target_start_timestamp,
         )
-        anchor_events, _, _, _ = event_raw_scores(anchor_rows, profiles, tour_rate=tour_rate)
-        eligible_anchor = {
-            event_id: value for event_id, value in anchor_events.items()
-            if event_id not in CALC_TARGET_ONLY_EVENT_IDS
-        }
         if eligible_anchor:
-            mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor)
+            mean_raw = sum(value["raw"] for value in eligible_anchor.values()) / len(eligible_anchor)
         else:
             mean_raw = event_raw
             normalisation_anchor_mode = "target_self_fallback_no_prior_anchor"

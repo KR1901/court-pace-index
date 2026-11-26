@@ -1802,7 +1802,7 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         ]
         self.assertEqual(["20260925", "20260928"], sorted(r["tourney_date"] for r in profile_rows))
         with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
-            anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
+            anchor_rows, anchor_mode, anchor_scores = compute_speed._chronological_normalisation_anchor_rows(
                 2026, rows, "paris", target_start, profiles={}, tour_rate=0.08,
             )
         self.assertEqual([], anchor_rows)
@@ -1847,7 +1847,7 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         ]
         self.assertEqual(["20260925", "20260928"], sorted(r["tourney_date"] for r in profile_rows))
         with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
-            anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
+            anchor_rows, anchor_mode, anchor_scores = compute_speed._chronological_normalisation_anchor_rows(
                 2026, rows, "paris", target_start, profiles={}, tour_rate=0.08,
             )
         self.assertEqual([], anchor_rows)
@@ -1886,7 +1886,7 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
             },
         ]
         with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
-            anchor_rows, mode = compute_speed._chronological_normalisation_anchor_rows(
+            anchor_rows, mode, anchor_scores = compute_speed._chronological_normalisation_anchor_rows(
                 2026, rows, "paris", date(2026, 10, 1), profiles={}, tour_rate=0.08,
             )
         self.assertEqual([], anchor_rows)
