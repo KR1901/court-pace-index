@@ -1338,6 +1338,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertIn("paris", ratings)
         diagnostics = ratings["paris"]["calculationDiagnostics"]
         self.assertEqual("2026-10-01", diagnostics["eventStartDate"])
+        self.assertEqual("2026-10-04", diagnostics["eventLastObservedMatchDate"])
         self.assertEqual("match_day", diagnostics["targetDateGranularity"])
         self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
         profile_inputs = [
