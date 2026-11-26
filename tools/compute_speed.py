@@ -737,10 +737,14 @@ def _parse_iso_date(value):
 
 
 def _source_match_date(row):
-    """Return an individual played date only when the source does not mark it as an event date."""
+    """Return an individual UTC played date, never a tournament-start or local-only date."""
     if row.get("date_is_tournament_start") is True:
         return None
-    for key in ("match_date", "played_date", "match_date_local"):
+    # A date without a time can order matches across venues only when the provider
+    # defines it in a common timezone. Local calendar dates are not globally comparable.
+    if str(row.get("match_date_timezone") or "").upper() != "UTC" and row.get("match_date_is_utc") is not True:
+        return _parse_iso_date(row.get("match_date_utc"))
+    for key in ("match_date_utc", "match_date", "played_date"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
