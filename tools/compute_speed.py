@@ -12,16 +12,17 @@ current season. Only tour-level main-draw matches with serve stats are used.
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, hashlib, json, math, os, random, sys, urllib.request, unicodedata
+import csv, hashlib, io, json, math, os, random, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
 
-from davis_cup_policy import is_supported_davis_cup_calculation_year
+from davis_cup_policy import TML_DAVIS_CUP_SOURCE, is_supported_davis_cup_calculation_year
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
 TML_CURRENT_URL = "https://stats.tennismylife.org/data/{}.csv"
+TML_ONGOING_URL = "https://stats.tennismylife.org/data/ongoing_tourneys.csv"
 PROFILE_HISTORY_START_YEAR = 1991
 YEARS = range(PROFILE_HISTORY_START_YEAR, date.today().year + 1)
 LEVELS = {"G", "M", "A", "F", "250", "500"}  # Standard ATP tour events
@@ -134,6 +135,115 @@ def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_D
         return False
 
 
+
+def load_tml_ongoing_davis_cup(year):
+    """Load only current-year Davis Cup rows from TML's live supplement.
+
+    Raw CSVs stay in the temporary build cache; they are never bundled or committed.
+    A header-only feed is valid when no new rubbers are published yet.
+    """
+    os.makedirs(CACHE, exist_ok=True)
+    path = os.path.join(CACHE, "tml_ongoing_tourneys.csv")
+    metadata_path = path + ".meta.json"
+    payload = None
+    metadata = None
+    try:
+        request = urllib.request.Request(
+            TML_ONGOING_URL,
+            headers={"User-Agent": "CourtPaceIndex/1.0", "Accept": "text/csv"},
+        )
+        with urllib.request.urlopen(request, timeout=45) as response:
+            payload = response.read()
+        if not payload.startswith(b"tourney_id,") or b"w_svpt" not in payload[:4096]:
+            raise ValueError("TML ongoing feed returned an unexpected CSV schema")
+        parsed = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"))))
+        required = {
+            "tourney_id", "tourney_level", "tourney_name", "tourney_date", "match_num",
+            "winner_id", "winner_name", "loser_id", "loser_name", "score",
+            "w_ace", "l_ace", "w_svpt", "l_svpt",
+        }
+        header = set((payload.decode("utf-8-sig").splitlines() or [""])[0].split(","))
+        if not required.issubset(header):
+            raise ValueError("TML ongoing feed is missing required fields")
+        if parsed and not required.issubset(parsed[0]):
+            raise ValueError("TML ongoing feed is missing required fields")
+        with open(path, "wb") as cached:
+            cached.write(payload)
+        metadata = {
+            "source": "TennisMyLife ATP Match Database ongoing tournament feed",
+            "url": TML_ONGOING_URL,
+            "fetchedAtUtc": datetime.now(timezone.utc).isoformat(),
+            "bytes": len(payload),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+            "matchRows": len(parsed),
+        }
+        with open(metadata_path, "w", encoding="utf-8") as output:
+            json.dump(metadata, output, indent=2)
+    except (HTTPError, urllib.error.URLError, TimeoutError, ValueError, OSError) as error:
+        if not os.path.exists(path) or not tml_cache_is_fresh(metadata_path):
+            print(f"warning: TML ongoing Davis Cup supplement unavailable: {error}")
+            return [], None
+        with open(metadata_path, encoding="utf-8") as source:
+            metadata = json.load(source)
+        with open(path, "rb") as cached:
+            payload = cached.read()
+        print(f"warning: TML ongoing refresh failed ({error}); using a fresh cached supplement")
+
+    parsed = list(csv.DictReader(io.StringIO(payload.decode("utf-8-sig"))))
+    davis_rows = []
+    for row in parsed:
+        if row.get("tourney_level") != "D":
+            continue
+        if not _normalise_event_name(row.get("tourney_name")).startswith("daviscup"):
+            continue
+        match_date = str(row.get("tourney_date") or "")
+        if len(match_date) < 4 or not match_date[:4].isdigit() or int(match_date[:4]) != int(year):
+            continue
+        davis_rows.append(row)
+    metadata = dict(metadata or {})
+    metadata["davisCupRows"] = len(davis_rows)
+    return davis_rows, metadata
+
+
+def davis_cup_match_key(row):
+    """Stable rubber key across annual and ongoing TML snapshots."""
+    tournament_id = str(row.get("tourney_id") or "").strip()
+    match_date = str(row.get("tourney_date") or "").strip()
+    match_number = str(row.get("match_num") or "").strip()
+    if tournament_id and match_date and match_number:
+        return ("rubber", tournament_id, match_date, match_number)
+    return (
+        "fallback",
+        tournament_id,
+        match_date,
+        str(row.get("winner_id") or "").strip(),
+        str(row.get("loser_id") or "").strip(),
+        str(row.get("winner_name") or "").strip(),
+        str(row.get("loser_name") or "").strip(),
+    )
+
+
+def merge_davis_cup_rows(annual_rows, supplement_rows):
+    """Merge annual and ongoing TML rows, preferring the fresher supplement on overlap."""
+    merged = {}
+    order = []
+    for row in annual_rows:
+        key = davis_cup_match_key(row)
+        if key not in merged:
+            order.append(key)
+        merged[key] = dict(row)
+    added = 0
+    for row in supplement_rows:
+        key = davis_cup_match_key(row)
+        if key not in merged:
+            order.append(key)
+            added += 1
+        # The ongoing feed wins even when the annual row has the same rubber but older,
+        # missing or partial statistics. A match must appear exactly once in the target.
+        merged[key] = dict(row)
+    return [merged[key] for key in order], added
+
+
 def load(year):
     os.makedirs(CACHE, exist_ok=True)
 
@@ -207,7 +317,26 @@ def load(year):
                 with open(path, newline="") as f:
                     return list(csv.DictReader(f))
         with open(tml_path, newline="") as f:
-            return list(csv.DictReader(f))
+            annual_rows = list(csv.DictReader(f))
+        ongoing_rows, ongoing_metadata = load_tml_ongoing_davis_cup(year)
+        if ongoing_metadata is not None:
+            merged_rows, added = merge_davis_cup_rows(annual_rows, ongoing_rows)
+            metadata = dict(SOURCE_METADATA_BY_YEAR[year])
+            metadata["ongoingDavisCup"] = {
+                **ongoing_metadata,
+                "rowsAdded": added,
+            }
+            SOURCE_METADATA_BY_YEAR[year] = metadata
+            SOURCE_BY_YEAR[year] = TML_DAVIS_CUP_SOURCE
+            print(
+                f"{year}: TML Davis Cup supplement validated · "
+                f"{len(ongoing_rows)} source rows · {added} new annual rows"
+            )
+            return merged_rows
+        # Without a validated live supplement, keep ordinary ATP calculations but
+        # withhold the 2026 Davis Cup target instead of using an unverified/stale source.
+        SOURCE_BY_YEAR[year] = "TennisMyLife ATP Match Database (Davis Cup supplement unavailable)"
+        return annual_rows
 
     path = os.path.join(CACHE, f"atp_matches_{year}.csv")
     if not os.path.exists(path):
@@ -232,6 +361,15 @@ def valid_rows(rows):
     for r in rows:
         if r.get("tourney_level") not in TARGET_LEVELS:
             continue
+        # Davis Cup ratings are singles-only. Exclude doubles before both target scoring
+        # and profile/normaliser decisions, even if a source provides ace/service-point counts.
+        if r.get("tourney_level") == "D":
+            names = (r.get("winner_name") or "", r.get("loser_name") or "")
+            if any(
+                "/" in name or " & " in name or " and " in name.lower()
+                for name in names
+            ):
+                continue
         values = [num(r.get(k)) for k in ("w_svpt", "l_svpt", "w_ace", "l_ace")]
         if any(value is None or not math.isfinite(value) for value in values):
             continue
@@ -1149,7 +1287,7 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 
-def season_ratings(year, rows):
+def season_ratings(year, rows, source=None):
     """LOEO ratings; Next Gen and Davis Cup are target-only, never ATP training inputs."""
     target_rows = valid_rows(rows)
     # Next Gen is valid as a target event, but its short-set/no-ad matches must never
@@ -1163,7 +1301,7 @@ def season_ratings(year, rows):
     ]
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
-        if tid is not None and is_supported_davis_cup_calculation_year(tid, year):
+        if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
             rows_by_event[tid].append(row)
 
     details = {}
@@ -1327,7 +1465,7 @@ def main():
                 print(f"{year}: archive not published yet; skipping current-year history")
                 continue
             raise
-        ratings = season_ratings(year, rows)
+        ratings = season_ratings(year, rows, source=SOURCE_BY_YEAR.get(year))
         history[year] = ratings
         season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
@@ -1492,7 +1630,7 @@ def main():
         payload = {
             "generated": date.today().isoformat(),
             "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
-            "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife for the current season when available.",
+            "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "source_metadata": {
                 str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR

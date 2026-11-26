@@ -891,7 +891,7 @@ class InputValidationTests(unittest.TestCase):
 
 
 class DavisCupSourceWindowTests(unittest.TestCase):
-    def test_only_validated_archive_editions_can_publish_davis_cup_calc(self):
+    def test_historical_editions_and_validated_tml_2026_source_gate(self):
         for year in (2016, 2017, 2020, 2024):
             with self.subTest(year=year):
                 self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", year))
@@ -900,12 +900,107 @@ class DavisCupSourceWindowTests(unittest.TestCase):
             with self.subTest(year=year):
                 self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", year))
 
+        self.assertTrue(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source=compute_speed.TML_DAVIS_CUP_SOURCE
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source="TennisMyLife ATP Match Database"
+        ))
+        self.assertFalse(is_supported_davis_cup_calculation_year(
+            "daviscup", 2026, source="Jeff Sackmann ATP archive (current-year fallback)"
+        ))
+
         # The Davis Cup source window must not constrain ordinary ATP event history.
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 1991))
         self.assertTrue(is_supported_davis_cup_calculation_year("paris", 2026))
 
+    def test_davis_cup_target_population_excludes_doubles(self):
+        singles = {
+            "tourney_name": "Davis Cup Finals QF: CZE vs CAN",
+            "tourney_level": "D",
+            "winner_id": "P1", "loser_id": "P2",
+            "winner_name": "Tomas Machac", "loser_name": "Liam Draxl",
+            "w_svpt": "70", "l_svpt": "90", "w_ace": "9", "l_ace": "6",
+        }
+        doubles = {
+            **singles,
+            "winner_id": "P3", "loser_id": "P4",
+            "winner_name": "Adam Pavlasek / Patrik Rikl",
+            "loser_name": "Felix Auger-Aliassime / Duncan Chan",
+        }
+        rows = compute_speed.valid_rows([singles, doubles])
+        self.assertEqual(1, len(rows))
+        self.assertEqual("Tomas Machac", rows[0]["winner_name"])
+
+    def test_tml_ongoing_rows_merge_with_annual_rows_without_duplicates(self):
+        annual = [{
+            "tourney_id": "2026-M-DC-X", "tourney_date": "20261124", "match_num": "1",
+            "winner_id": "P1", "loser_id": "P2", "score": "6-3 6-4",
+            "w_ace": "4", "w_svpt": "70", "l_ace": "3", "l_svpt": "65",
+        }]
+        # Same rubber identity and score, but the ongoing snapshot contains corrected stats.
+        ongoing = [
+            {
+                **annual[0],
+                "w_ace": "8", "w_svpt": "72", "l_ace": "5", "l_svpt": "68",
+            },
+            {
+                "tourney_id": "2026-M-DC-X", "tourney_date": "20261125", "match_num": "2",
+                "winner_id": "P3", "loser_id": "P4", "score": "6-4 6-4",
+            },
+        ]
+        merged, added = compute_speed.merge_davis_cup_rows(annual, ongoing)
+        self.assertEqual(1, added)
+        self.assertEqual(2, len(merged))
+        self.assertEqual("P4", merged[-1]["loser_id"])
+        self.assertEqual("8", merged[0]["w_ace"])
+        self.assertEqual("72", merged[0]["w_svpt"])
+
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
+    def test_2026_davis_cup_is_target_only_and_requires_validated_tml_source(self):
+        rows = []
+        for event, level, aces in (
+            ("Paris Masters", "M", 8),
+            ("Rome Masters", "M", 9),
+            ("Davis Cup Finals QF: CZE vs CAN", "D", 11),
+        ):
+            for match_num in range(10):
+                rows.append({
+                    "tourney_name": event, "tourney_level": level, "surface": "Hard",
+                    "winner_id": "p1", "loser_id": "p2",
+                    "winner_name": "Player One", "loser_name": "Player Two",
+                    "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": 7,
+                    "match_num": str(match_num + 1),
+                })
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}):
+            without_source = compute_speed.season_ratings(2026, rows)
+        self.assertNotIn("daviscup", without_source)
+
+        real_player_rates = compute_speed.player_rates
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with patch.object(compute_speed, "_profile_year_rates", return_value={}), \
+             patch.object(compute_speed, "player_rates", wraps=real_player_rates) as profiles:
+            with_source = compute_speed.season_ratings(
+                2026, rows, source=compute_speed.TML_DAVIS_CUP_SOURCE,
+            )
+
+        self.assertIn("daviscup", with_source)
+        self.assertEqual({"paris", "rome", "daviscup"}, set(with_source))
+        # Every training invocation contains only the two standard ATP targets. The Davis Cup
+        # target's 10 matches are observed for its own rating but never enter profile fitting.
+        for call in profiles.call_args_list:
+            self.assertTrue(all(row["tourney_level"] != "D" for row in call.args[0]))
+        self.assertEqual(
+            without_source["paris"]["speed"], with_source["paris"]["speed"],
+        )
+        self.assertEqual(
+            without_source["rome"]["speed"], with_source["rome"]["speed"],
+        )
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
     def test_event_is_excluded_from_its_own_profiles_and_tour_anchor(self):
         rows = []
         for event in ("Paris Masters", "Rome Masters"):

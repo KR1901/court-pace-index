@@ -461,8 +461,10 @@ object AceRating {
     fun rate(
         matches: List<AtpMatchStats>,
         baseline: ink.courtpace.index.core.model.LiveSpeedBaseline,
+        /** All discovered completed singles rubbers, including rows whose source has no serve stats. */
+        discoveredMatches: Int = matches.size,
     ): Result? {
-        if (matches.isEmpty()) return null
+        if (matches.isEmpty() || discoveredMatches < matches.size) return null
         val evaluation = evaluate(matches, baseline)
         // No arbitrary match-count or adjusted-side floor: even one valid server side from the
         // first completed match is enough to publish an explicitly early live reading.
@@ -476,7 +478,8 @@ object AceRating {
             aces = evaluation.totalAces,
             aceRate = pooledAceRate,
             adjustedServerSides = evaluation.coverage.adjustedServerSides,
-            totalServerSides = evaluation.coverage.totalServerSides,
+            totalServerSides = discoveredMatches * 2,
+            discoveredMatches = discoveredMatches,
             adjustmentIssues = evaluation.coverage.issues,
             rawEventScore = rawEventScore,
             normalisation = baseline.normalisation,

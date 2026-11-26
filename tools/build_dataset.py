@@ -14,7 +14,7 @@ before publishing both the bundled asset and data/latest.json.
 import json, os
 from datetime import date as datetime_date
 from cpi_snapshot import select_cpi_readings
-from davis_cup_policy import is_supported_davis_cup_calculation_year
+from davis_cup_policy import TML_DAVIS_CUP_SOURCE, is_supported_davis_cup_calculation_year
 
 # id, name, city, country, surface, indoor, level, altitude
 TOURNAMENTS = [
@@ -349,11 +349,14 @@ if os.path.exists(COMPUTED):
     hist = json.load(open(COMPUTED))
     published_keys = {(r["t"], r["s"]) for r in readings
                       if "speed" in r and r["src"] == "tennisabstract"}
+    season_sources = hist.get("season_sources", {})
     computed_by_key = {
         (tid, int(season)): values
         for season, events in hist["seasons"].items()
         for tid, values in events.items()
-        if tid in known and is_supported_davis_cup_calculation_year(tid, season)
+        if tid in known and is_supported_davis_cup_calculation_year(
+            tid, season, source=season_sources.get(str(season))
+        )
     }
 
     # Upgrade the primary value on every overlap while preserving the published figure.
@@ -389,7 +392,9 @@ if os.path.exists(COMPUTED):
         for tid, values in events.items():
             if (
                 tid not in known
-                or not is_supported_davis_cup_calculation_year(tid, year)
+                or not is_supported_davis_cup_calculation_year(
+                    tid, year, source=season_sources.get(str(year))
+                )
                 or (tid, year) in published_keys
             ):
                 continue
@@ -503,8 +508,11 @@ doc = {
                 "name": "Computed history - ATP match archives",
                 "metric": "Speed",
                 "detail": "Historical seasons use the Jeff Sackmann ATP archive (CC BY-NC-SA 4.0); " +
-                          "the current season prefers the TennisMyLife ATP Match Database. Historical " +
-                          "events are calculated leave-one-tournament-out, with qualified server and " +
+                          "the current season prefers the TennisMyLife ATP Match Database; " +
+                          ("The 2026 Davis Cup target uses the validated source " + TML_DAVIS_CUP_SOURCE + " and remains separate from ATP training/normalisation. "
+                           if season_sources.get("2026") == TML_DAVIS_CUP_SOURCE else
+                           "The 2026 Davis Cup CALC is withheld unless the validated TML annual and ongoing feeds are both available. ") +
+                          "Historical events are calculated leave-one-tournament-out, with qualified server and " +
                           "returner rates shrunk toward surface-wide rates using a 150-service-point " +
                           "prior before the neutral clay 1/3, hard/grass 2/3 blend. Pooled returners use " +
                           "the tour-wide prior. Match-level actual/expected ratios are equally weighted, " +

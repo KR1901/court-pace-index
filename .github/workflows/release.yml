@@ -56,17 +56,42 @@ jobs:
               row.get("t") == "daviscup" and row.get("src") == "tennisabstract"
               for row in dataset.get("readings", [])
           ), "Tennis Abstract Davis Cup fallback values must never be published."
-          assert not any(row.get("t") == "daviscup" and row.get("s") not in range(2016, 2025)
-                         and row.get("speed") is not None for row in dataset.get("readings", [])), (
-              "Davis Cup readings outside the validated 2016–2024 source-stat window must not be published."
+          computed_source = next(
+              (source for source in dataset.get("meta", {}).get("sources", [])
+               if source.get("id") == "computed"),
+              {},
           )
+          tml_davis_source = (
+              "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+          )
+          davis_2026 = [
+              row for row in dataset.get("readings", [])
+              if row.get("t") == "daviscup" and row.get("s") == 2026
+              and row.get("src") == "computed" and row.get("speed") is not None
+          ]
+          if tml_davis_source in computed_source.get("detail", ""):
+              assert davis_2026, (
+                  "The validated TML 2026 source is declared, but the 2026 Davis Cup CALC is missing."
+              )
+          else:
+              assert not davis_2026, (
+                  "A 2026 Davis Cup CALC cannot be packaged without validated TML annual + ongoing source provenance."
+              )
           assert not any(
               row.get("t") == "daviscup" and row.get("s") == 2026
               and row.get("src") == "live" and row.get("speed") is not None
               for row in dataset.get("readings", [])
           ), "A provisional Davis Cup live rating must not be packaged."
+          assert not any(
+              row.get("t") == "daviscup" and row.get("speed") is not None
+              and row.get("s") not in range(2016, 2025)
+              and not (row.get("s") == 2026 and row.get("src") == "computed"
+                       and tml_davis_source in computed_source.get("detail", ""))
+              for row in dataset.get("readings", [])
+          ), "Davis Cup CALC outside 2016–2024 requires the validated TML 2026 source."
           print(
               "Bundled Davis Cup historical CALC years=" + ",".join(map(str, historical_years))
+              + "; TML 2026 CALC=" + ("present" if davis_2026 else "withheld")
               + "; Final 8 schedule is present; no provisional live rating is packaged."
           )
           PY
@@ -257,6 +282,17 @@ jobs:
                   "- Makes ATP title counts follow the selected All, Hard, Outdoor Hard, Indoor Hard, Grass or Clay filter in both record sections.",
                   "- Uses source-derived tournament venue metadata for Indoor Hard/Outdoor Hard title attribution; unknown or conflicting venue settings are not guessed.",
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
+                  "",
+              ]
+          elif version == "4.1.6":
+              lines += [
+                  "### Davis Cup 2026 season-to-date Surface Speed",
+                  "- Adds a 2026 Davis Cup CALC reading from TML's annual ATP match CSV plus its ongoing-tournament supplement, with source identity, schema, freshness and SHA-256 validation.",
+                  "- Refreshes the Davis Cup live estimate on-device from newly completed singles rubbers using the same opponent-adjusted expected-aces method as the ATP live ratings.",
+                  "- Labels the figure as a TML season-to-date, multi-surface Davis Cup aggregate; it is not a Bologna-only court measurement.",
+                  "- Keeps Davis Cup out of standard ATP player-profile training and the ATP season normaliser; missing serve statistics are never treated as zero.",
+                  "- Keeps raw TML CSV data out of the repository and APK; only aggregate rating and coverage metadata are stored. This source is restricted to free non-commercial analytical use; obtain written permission before monetisation or commercial use.",
+                  "- Retains the completed-event LOEO CALC selection fix from 4.1.5 and the existing ATP/Infosys live path.",
                   "",
               ]
           elif version == "4.1.4":

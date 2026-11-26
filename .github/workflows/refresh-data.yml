@@ -7,11 +7,17 @@ name: Refresh dataset
 
 on:
   push:
-    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias]
+    branches: [main, fix/live-tournament-discovery-and-refresh, analysis/expected-aces-formula-comparison, fix/nextgen-finals-live-and-archive-calcs, fix/courtspeed-rome-cpi-alias, fix/davis-cup-tml-live-and-loeo-research]
     paths:
       # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
+      - 'tools/davis_cup_policy.py'
+      - 'tools/test_compute_speed.py'
       - 'app/src/main/java/ink/courtpace/index/core/data/PaceData.kt'
+      - 'app/src/main/java/ink/courtpace/index/data/TmlDavisCupClient.kt'
+      - 'app/src/main/java/ink/courtpace/index/core/live/LiveRatingCache.kt'
+      - 'app/src/main/java/ink/courtpace/index/ui/AppViewModel.kt'
+      - 'app/src/test/java/ink/courtpace/index/core/TmlDavisCupClientTest.kt'
       - 'tools/build_dataset.py'
       - 'tools/fetch_reference_data.py'
       - 'app/src/test/java/ink/courtpace/index/core/DatasetPolicyTest.kt'
@@ -52,6 +58,22 @@ jobs:
 
       - name: Test live player profile fallback
         run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+
+      - name: Compare retrospective and chronological LOEO methods
+        run: |
+          python3 tools/chronological_loeo_study.py \
+            --start-year 2016 \
+            --end-year 2025 \
+            --quarantine-days 14 \
+            --output build/chronological-loeo-2016-2025.json
+
+      - name: Upload LOEO methodology research
+        uses: actions/upload-artifact@v4
+        with:
+          name: chronological-loeo-study-2016-2025
+          path: build/chronological-loeo-2016-2025.json
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Refresh calendar-year TA and CPI source tables
         run: python3 tools/fetch_reference_data.py --start-year 1991 --end-year "$(date -u +%Y)"
@@ -241,7 +263,26 @@ jobs:
           PY
 
       - name: Verify
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+        run: |
+          set -o pipefail
+          # Retry known transient Maven/Robolectric downloads on cold runners.
+          for attempt in 1 2 3; do
+            log="$(mktemp)"
+            if ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee "$log"; then
+              rm -f "$log"
+              exit 0
+            fi
+            if ! grep -Eq 'MavenArtifactFetcher|Could not GET|Read timed out|Connection reset|java.io.IOException' "$log"; then
+              rm -f "$log"
+              exit 1
+            fi
+            rm -f "$log"
+            [ "$attempt" -lt 3 ] || break
+            echo "Transient Maven/Robolectric download failure; retrying (attempt $((attempt + 1))/3)."
+            sleep $((attempt * 10))
+          done
+          echo "Robolectric runtime download failed after three attempts."
+          exit 1
 
       - name: Commit if anything changed
         run: |

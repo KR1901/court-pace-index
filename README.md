@@ -64,7 +64,7 @@ The checked-in `data/live.json` is an **event-window metadata file**, not the pr
 
 The scheduled `refresh-live.yml` workflow rebuilds and publishes the dataset snapshot as `data/latest.json`; it does **not** fetch match statistics or calculate live Surface Speed. The `probe_sofascore.py` script is a reachability diagnostic only. The old `tools/live_update.py` script is a retired experiment and is not called by the app or scheduled workflows.
 
-Live ratings are calculated at runtime by the Android app: `AppViewModel` calls `AtpLiveClient`, which discovers completed singles links on ATP results pages, requests match statistics through `AtpInfosysStatsClient`, and passes them to the current opponent-adjusted `AceRating` method with the published season baseline. Ratings are cached locally on the device. This separation is intentional: a missing `speed` value in `data/live.json` or `data/latest.json` does not, by itself, mean the on-device live rating path is broken.
+ATP live ratings are calculated at runtime by the Android app: `AtpLiveClient` discovers completed singles links on ATP results pages, reads ATP/Infosys match statistics and passes them to the opponent-adjusted `AceRating` method with the published season baseline. Davis Cup is a separate annual target: `TmlDavisCupClient` combines TML's annual ATP CSV with `ongoing_tourneys.csv`, validates/deduplicates singles match rows and calculates a provisional aggregate rating without adding Davis Cup to ATP profile training or the ATP normaliser. Only aggregate ratings and coverage diagnostics are cached; raw TML match rows are not persisted or bundled. This TML feature is non-commercial and is not an official ATP/ITF feed.
 
 ## Calculation evidence
 
@@ -93,7 +93,7 @@ Lower-tier profile backfill is research-only and is not used in production. The 
 | Physical CPI | [courtspeed.com](https://courtspeed.com/) | Published physical measurements |
 | Behavioural reference | [Tennis Abstract](https://tennisabstract.com/reports/atp_surface_speed.html) | Published reference values and labelled fallbacks |
 | Historical match statistics | [Jeff Sackmann ATP archive](https://github.com/JeffSackmann/tennis_atp) via [archive mirror](https://github.com/Aneeshers/tennis-sackmann-archive) | Historical CALC inputs |
-| Current-season match statistics | [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database) | Current-season CALC inputs when available |
+| Current-season ATP match statistics | [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database) | Current-season CALC inputs when available |\n| Davis Cup 2026 target/live statistics | TML annual ATP CSV + ongoing tournament feed | Separate non-commercial target; no raw match rows bundled |
 | Live match statistics | [ATP/Infosys Stats Plus](https://www.atptour.com/) | Read-only runtime statistics retrieval |
 | Player Stats annual matches, player heights and current cohort | [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database) and its dated ranking API | Separate non-commercial player-statistics asset |
 
