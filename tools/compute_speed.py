@@ -1603,7 +1603,7 @@ def main():
                 "Davis Cup source reconciliation: "
                 f"{audit['identifiedSingles']} identified singles · "
                 f"{audit['completedPlayedSingles']} played · "
-                f"{audit['scheduledUnplayedSingles']} unplayed · "
+                f"{audit['scorelessSingles']} scoreless/pending-result · "
                 f"{audit['walkoverOrNoPlaySingles']} walkovers/no-play · "
                 f"{audit['completedWithValidServeStats']} valid stats · "
                 f"{audit['completedMissingServeStats']} missing stats · "
