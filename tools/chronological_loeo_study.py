@@ -5,8 +5,8 @@ This script does not change production ratings. It compares the retrospective cr
 with the production as-of-event chronology policy. Sources with verified per-match
 timestamps use strict UTC ordering; sources with per-match calendar days use strict
 day-before ordering (same-day matches are excluded when no clock is available). Legacy
-archives containing only tournament-start dates retain the explicitly-labelled 14-day
-fallback until a permitted match-day or event-window source is available.
+archives containing only tournament-start dates use conservative maximum event windows
+by source level (15 days for Grand Slams, 12 for Masters/ATP umbrella, 8 for Finals/500/250).
 
 The target event's complete sample is included in its observed score. Only training
 profiles and the normalisation anchor are restricted to information available before it.
