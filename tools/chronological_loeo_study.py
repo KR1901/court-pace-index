@@ -152,7 +152,7 @@ def spearman_rank(left, right):
     return 1.0 - (6.0 * d2) / (n * (n * n - 1))
 
 
-def run(start_year, end_year, quarantine_days):
+def run(start_year, end_year):
     year_results = []
     all_event_pairs = []
     for year in range(start_year, end_year + 1):
@@ -244,18 +244,16 @@ def run(start_year, end_year, quarantine_days):
                 event_quarantine_days = 0
             else:
                 chronology_precision = "tournament_start"
-                chronology_rule = f"legacy_tournament_start_minus_{quarantine_days}_days"
-                event_quarantine_days = quarantine_days
+                chronology_rule = "legacy_max_event_window_by_source_level"
+                event_quarantine_days = 0
 
-            # Legacy start-date rows keep the explicit fallback; daily editions use
-            # their own per-event evidence even when the target is a different edition.
-            cutoff = start_date - timedelta(days=quarantine_days)
+            # Legacy start-date rows keep their own maximum event window; daily editions
+            # are ordered by verified per-match dates, independently of the target source.
             chronological_training = [
                 row for row in standard_rows
                 if compute_speed._row_precedes_target(
                     row,
                     start_date,
-                    cutoff,
                     source_precision_by_event.get(
                         compute_speed._source_event_key(row), "tournament_start",
                     ),
@@ -326,8 +324,8 @@ def run(start_year, end_year, quarantine_days):
                     "targetDateGranularity": target_date_granularity,
                     "sourceDateGranularity": date_granularity,
                     "chronologyRule": chronology_rule,
-                    "legacyFallbackDays": quarantine_days,
-                    "legacyFallbackCutoff": cutoff.isoformat(),
+                    "legacyMaxEventDaysByLevel": compute_speed.LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
+                    "legacyUnknownMaxEventDays": compute_speed.LEGACY_UNKNOWN_MAX_EVENT_DAYS,
                     "legacyFallbackTrainingMatches": sum(
                         1 for row in chronological_training
                         if source_precision_by_event.get(
@@ -409,7 +407,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-year", type=int, default=2016)
     parser.add_argument("--end-year", type=int, default=date.today().year)
-    parser.add_argument("--quarantine-days", type=int, default=14)
     parser.add_argument("--output", default="build/chronological-loeo-study.json")
     args = parser.parse_args()
     if args.start_year < compute_speed.PROFILE_HISTORY_START_YEAR:
@@ -417,7 +414,7 @@ def main():
     if args.end_year < args.start_year:
         parser.error("end year must be >= start year")
 
-    report = run(args.start_year, args.end_year, args.quarantine_days)
+    report = run(args.start_year, args.end_year)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
