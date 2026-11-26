@@ -840,8 +840,41 @@ def _match_day_definitely_precedes_target(source_day, target_day):
     return source_latest_utc <= target_earliest_utc
 
 
+def _legacy_max_event_days(row):
+    """Conservative maximum main-draw duration for a legacy source event level."""
+    level = str(row.get("tourney_level") or "").strip()
+    return LEGACY_MAX_EVENT_DAYS_BY_LEVEL.get(level, LEGACY_UNKNOWN_MAX_EVENT_DAYS)
+
+
+def _legacy_event_window_end_date(row):
+    """Latest possible event day for a legacy row, based on its source-level duration bound."""
+    match_date = _match_date(row)
+    if match_date is None:
+        return None
+    return match_date + timedelta(days=_legacy_max_event_days(row) - 1)
+
+
+def _legacy_event_window_precedes_target(row, target_start_date, target_start_timestamp=None):
+    """
+    Whether the complete maximum possible source-event window precedes the target.
+
+    This is an explicitly conservative duration bound, not a recovered actual event-end
+    date. Historical annual sources do not contain individual match dates or end dates.
+    """
+    last_possible_day = _legacy_event_window_end_date(row)
+    if last_possible_day is None:
+        return False
+    if target_start_timestamp is not None:
+        source_latest_utc = (
+            datetime.combine(last_possible_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+            + timedelta(hours=12)
+        )
+        return source_latest_utc <= target_start_timestamp
+    return _match_day_definitely_precedes_target(last_possible_day, target_start_date)
+
+
 def _row_precedes_target(
-    row, target_start_date, legacy_cutoff, date_precision, target_start_timestamp=None,
+    row, target_start_date, date_precision, target_start_timestamp=None,
 ):
     """Whether a training match is provably earlier than the target event's first match."""
     match_date = _match_date(row)
@@ -857,9 +890,7 @@ def _row_precedes_target(
         # possible tournament time zone. Adjacent local calendar dates can overlap in UTC.
         return _match_day_definitely_precedes_target(match_date, target_start_date)
 
-    # Legacy event-start-only archives cannot distinguish earlier and later rounds
-    # inside a tournament. Retain the explicitly-labelled historical fallback.
-    return match_date <= legacy_cutoff
+    return _legacy_event_window_precedes_target(row, target_start_date, target_start_timestamp)
 
 def _prior_year_rows(year):
     """Return eligible ATP training rows from a completed prior season."""
