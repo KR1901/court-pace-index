@@ -32,9 +32,9 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 MIN_EVENT_RATING_SERVER_SIDES = 1
 MIN_NORMALISER_SERVER_SIDES = 20
-# Source archives expose tournament start dates, not per-match dates. A two-week
-# quarantine avoids using later rounds from an earlier-starting event that overlaps
-# the target tournament.
+# Legacy archives expose only tournament start dates. Keep a clearly-labelled
+# fallback quarantine for those years; match-day and timestamped sources use strict
+# as-of-target comparisons and do not need an arbitrary buffer.
 CHRONOLOGICAL_QUARANTINE_DAYS = 14
 MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
@@ -726,16 +726,92 @@ def _match_date(row):
         return None
 
 
+def _match_start_timestamp(row):
+    """Return an explicitly timezone-aware match-start instant when the source supplies one."""
+    for key in (
+        "match_start_utc", "match_start_at", "match_datetime_utc",
+        "scheduled_start_utc", "start_time_utc",
+    ):
+        raw = str(row.get(key) or "").strip()
+        if not raw:
+            continue
+        try:
+            value = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        # A clock without an offset is not comparable across tournament locations.
+        if value.tzinfo is None:
+            continue
+        return value.astimezone(timezone.utc)
+    return None
+
+
+def _source_match_date_granularity(rows, source=None):
+    """
+    Determine whether this source provides per-match dates or only event start dates.
+
+    TennisMyLife's current-season feed has daily dates (multiple dates within the same
+    tournament edition). Its archived annual files revert to a single week/start date,
+    so source name alone is not sufficient: the feed itself must demonstrate within-event
+    date variation before its dates are treated as match days.
+    """
+    if "TennisMyLife ATP Match Database" not in str(source or ""):
+        return "tournament_start"
+
+    dates_by_event = defaultdict(set)
+    for row in rows:
+        event_key = str(row.get("tourney_id") or "").strip()
+        if not event_key:
+            event_key = str(tournament_id(row.get("tourney_name")) or "").strip()
+        match_date = _match_date(row)
+        if event_key and match_date is not None:
+            dates_by_event[event_key].add(match_date)
+    return "match_day" if any(len(values) > 1 for values in dates_by_event.values()) else "tournament_start"
+
+
+def _event_first_match_timestamp(event_rows):
+    """Return the first event match instant only when every target row has a real timestamp."""
+    timestamps = [_match_start_timestamp(row) for row in event_rows]
+    if not timestamps or any(value is None for value in timestamps):
+        return None
+    return min(timestamps)
+
+
+def _row_precedes_target(
+    row, target_start_date, legacy_cutoff, date_precision, target_start_timestamp=None,
+):
+    """Whether a training match is provably earlier than the target event's first match."""
+    match_date = _match_date(row)
+    if match_date is None:
+        return False
+
+    if date_precision in {"match_day", "match_timestamp"}:
+        row_timestamp = _match_start_timestamp(row)
+        if target_start_timestamp is not None and row_timestamp is not None:
+            return row_timestamp < target_start_timestamp
+        # Day-only feeds cannot order two matches on the same local calendar day.
+        # Exclude the whole target day rather than guess which match started first.
+        return match_date < target_start_date
+
+    # Legacy event-start-only archives cannot distinguish earlier and later rounds
+    # inside a tournament. Retain the explicitly-labelled historical fallback.
+    return match_date <= legacy_cutoff
+
+
 def _prior_year_rows(year):
     """Return eligible ATP training rows from a completed prior season."""
     return calculation_eligible_rows(valid_rows(load(year)))
 
 
-def _chronological_profiles_and_anchor(year, rows, cutoff):
-    """Fit profiles using only tournaments whose start date clears the quarantine cutoff."""
+def _chronological_profiles_and_anchor(
+    year, rows, target_start_date, legacy_cutoff, date_precision, target_start_timestamp=None,
+):
+    """Fit profiles only from matches provably available before the target event begins."""
     before = [
         row for row in calculation_eligible_rows(valid_rows(rows))
-        if _match_date(row) is not None and _match_date(row) <= cutoff
+        if _row_precedes_target(
+            row, target_start_date, legacy_cutoff, date_precision, target_start_timestamp,
+        )
     ]
     if before:
         profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
@@ -1418,7 +1494,14 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows, source=None):
-    """Chronological LOEO ratings with a 14-day source-date quarantine against overlap leakage."""
+    """
+    Chronological LOEO ratings using the finest trustworthy source chronology available.
+
+    Per-match timestamp sources are ordered by UTC instant; daily sources use strict
+    calendar-day precedence (same-day matches are excluded when no clock is supplied).
+    Legacy week/start-date archives retain the 14-day quarantine as an explicit fallback.
+    """
+    date_granularity = _source_match_date_granularity(rows, source)
     target_rows = valid_rows(rows)
     rows_by_event = defaultdict(list)
     for row in target_rows:
@@ -1428,16 +1511,31 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        # Source archives expose tourney_date (event start), not exact match dates.
-        # Apply a two-week quarantine so overlapping events cannot leak later-round
-        # results into the target's profiles or normalisation anchor.
         dates = [_match_date(row) for row in event_rows]
         dates = [value for value in dates if value is not None]
         if not dates:
             continue
         event_start = min(dates)
-        cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
-        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
+        target_start_timestamp = _event_first_match_timestamp(event_rows)
+        if target_start_timestamp is not None:
+            chronology_precision = "match_timestamp"
+            legacy_cutoff = event_start
+            chronology_rule = "strictly_before_target_match_timestamp_utc"
+            quarantine_days = 0
+        elif date_granularity == "match_day":
+            chronology_precision = "match_day"
+            legacy_cutoff = event_start
+            chronology_rule = "strictly_before_target_local_match_day"
+            quarantine_days = 0
+        else:
+            chronology_precision = "tournament_start"
+            legacy_cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
+            chronology_rule = "legacy_tournament_start_minus_14_days"
+            quarantine_days = CHRONOLOGICAL_QUARANTINE_DAYS
+
+        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
+            year, rows, event_start, legacy_cutoff, chronology_precision, target_start_timestamp,
+        )
         if profiles is None or tour_rate is None:
             continue
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
@@ -1461,6 +1559,23 @@ def season_ratings(year, rows, source=None):
             if event_id not in CALC_TARGET_ONLY_EVENT_IDS
         }
         mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor) if eligible_anchor else event_raw
+        training_dates = [_match_date(row) for row in training_rows]
+        training_dates = [value for value in training_dates if value is not None]
+        same_day_excluded = 0
+        if chronology_precision in {"match_day", "match_timestamp"}:
+            for row in calculation_eligible_rows(valid_rows(rows)):
+                if tournament_id(row.get("tourney_name")) == tid:
+                    continue
+                if _match_date(row) != event_start:
+                    continue
+                row_timestamp = _match_start_timestamp(row)
+                if (
+                    target_start_timestamp is not None and row_timestamp is not None
+                    and row_timestamp < target_start_timestamp
+                ):
+                    continue
+                same_day_excluded += 1
+
         details[tid] = {
             "raw": event_raw,
             "normalisation": mean_raw,
@@ -1470,8 +1585,16 @@ def season_ratings(year, rows, source=None):
             "ace": 100.0 * aces / points if points else None,
             "profile_coverage": profile_coverage,
             "calculation_diagnostics": side_diagnostics,
-            "chronology_cutoff": cutoff.isoformat(),
+            "chronology_cutoff": (
+                target_start_timestamp.isoformat().replace("+00:00", "Z")
+                if target_start_timestamp is not None else legacy_cutoff.isoformat()
+            ),
             "event_start_date": event_start.isoformat(),
+            "chronology_precision": chronology_precision,
+            "chronology_rule": chronology_rule,
+            "quarantine_days": quarantine_days,
+            "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
+            "same_day_excluded_matches": same_day_excluded,
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1516,7 +1639,11 @@ def season_ratings(year, rows, source=None):
             "calculationDiagnostics": {
                 "chronologicalCutoff": item["chronology_cutoff"],
                 "eventStartDate": item["event_start_date"],
-                "quarantineDays": CHRONOLOGICAL_QUARANTINE_DAYS,
+                "chronologyPrecision": item["chronology_precision"],
+                "chronologyRule": item["chronology_rule"],
+                "trainingMatchDateMax": item["training_match_date_max"],
+                "sameDayExcludedMatches": item["same_day_excluded_matches"],
+                "quarantineDays": item["quarantine_days"],
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
