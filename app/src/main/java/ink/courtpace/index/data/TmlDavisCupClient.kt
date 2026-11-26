@@ -18,10 +18,14 @@ internal class TmlDavisCupClient {
 
     data class MatchBatch(
         val matches: List<AtpMatchStats>,
-        /** Unique Davis Cup singles rubbers, including those with unpublished serve statistics. */
+        /** Unique completed Davis Cup singles rubbers with a published result score. */
         val discoveredMatches: Int,
         val matchesWithServeStats: Int,
         val missingStatsMatches: Int,
+        /** Scoreless rows are scheduled/unplayed fixtures, not completed missing-stat matches. */
+        val unplayedRows: Int,
+        /** Completed score-bearing singles that fail the ace/service-point validation. */
+        val malformedStatsMatches: Int,
     )
 
     private data class CachedAnnual(
@@ -70,11 +74,27 @@ internal class TmlDavisCupClient {
         }
         val uniqueRows = uniqueByRubber.values.toList()
         val matches = uniqueRows.mapNotNull(::toMatchStats)
+        val unplayed = linkedMapOf<String, Map<String, String>>()
+        listOf(annualCsv, ongoingCsv).forEach { snapshot ->
+            parseCsv(snapshot).forEach { row ->
+                if (
+                    row["tourney_level"] == "D" &&
+                    isDavisCupName(row["tourney_name"]) &&
+                    row["tourney_date"].orEmpty().take(4) == year.toString() &&
+                    row["winner_id"].orEmpty().isNotBlank() &&
+                    row["loser_id"].orEmpty().isNotBlank() &&
+                    row["score"].orEmpty().isBlank() &&
+                    !isDoubles(row)
+                ) unplayed[matchKey(row)] = row
+            }
+        }
         return MatchBatch(
             matches = matches,
             discoveredMatches = uniqueRows.size,
             matchesWithServeStats = matches.size,
             missingStatsMatches = (uniqueRows.size - matches.size).coerceAtLeast(0),
+            unplayedRows = unplayed.size,
+            malformedStatsMatches = (uniqueRows.size - matches.size).coerceAtLeast(0),
         )
     }
 
