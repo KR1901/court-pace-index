@@ -32,6 +32,10 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 MIN_EVENT_RATING_SERVER_SIDES = 1
 MIN_NORMALISER_SERVER_SIDES = 20
+# Source archives expose tournament start dates, not per-match dates. A two-week
+# quarantine avoids using later rounds from an earlier-starting event that overlaps
+# the target tournament.
+CHRONOLOGICAL_QUARANTINE_DAYS = 14
 MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
 PROFILE_PRIOR_SERVICE_POINTS = 150.0
@@ -728,10 +732,10 @@ def _prior_year_rows(year):
 
 
 def _chronological_profiles_and_anchor(year, rows, cutoff):
-    """Fit profiles and tour anchor using only ATP matches completed before cutoff."""
+    """Fit profiles using only tournaments whose start date clears the quarantine cutoff."""
     before = [
         row for row in calculation_eligible_rows(valid_rows(rows))
-        if _match_date(row) is not None and _match_date(row) < cutoff
+        if _match_date(row) is not None and _match_date(row) <= cutoff
     ]
     if before:
         profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
@@ -1414,7 +1418,7 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows, source=None):
-    """Chronological leave-one-tournament-out ratings; later events cannot affect earlier ones."""
+    """Chronological LOEO ratings with a 14-day source-date quarantine against overlap leakage."""
     target_rows = valid_rows(rows)
     rows_by_event = defaultdict(list)
     for row in target_rows:
@@ -1424,13 +1428,15 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        # The cutoff is the target event's first match date. Neither later rounds of the
-        # target nor any later tournament can influence its profiles or tour anchor.
+        # Source archives expose tourney_date (event start), not exact match dates.
+        # Apply a two-week quarantine so overlapping events cannot leak later-round
+        # results into the target's profiles or normalisation anchor.
         dates = [_match_date(row) for row in event_rows]
         dates = [value for value in dates if value is not None]
         if not dates:
             continue
-        cutoff = min(dates)
+        event_start = min(dates)
+        cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
         profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
         if profiles is None or tour_rate is None:
             continue
@@ -1465,6 +1471,7 @@ def season_ratings(year, rows, source=None):
             "profile_coverage": profile_coverage,
             "calculation_diagnostics": side_diagnostics,
             "chronology_cutoff": cutoff.isoformat(),
+            "event_start_date": event_start.isoformat(),
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1508,6 +1515,8 @@ def season_ratings(year, rows, source=None):
             "speedCiMethod": ci.get("method"),
             "calculationDiagnostics": {
                 "chronologicalCutoff": item["chronology_cutoff"],
+                "eventStartDate": item["event_start_date"],
+                "quarantineDays": CHRONOLOGICAL_QUARANTINE_DAYS,
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
@@ -1764,7 +1773,7 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
+            "method": "leave-one-tournament-out calibrated server/returner expected-aces odds ratio with a 14-day quarantine on source tournament start dates; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "source_metadata": {
