@@ -1408,7 +1408,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         )
 
     def test_match_timestamps_can_order_same_day_matches_when_offsets_are_present(self):
-        def match(event, match_date, timestamp=None, aces=8):
+        def match(event, match_date, timestamp=None, aces=8, finish_timestamp=None):
             row = {
                 "tourney_name": event,
                 "tourney_level": "M",
@@ -1426,11 +1426,16 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             }
             if timestamp:
                 row["match_start_utc"] = timestamp
+            if finish_timestamp:
+                row["match_finished_at_utc"] = finish_timestamp
             return row
 
         rows = [
             match("Madrid Masters", "20260930"),
-            match("Madrid Masters", "20261001", "2026-10-01T13:00:00Z"),
+            # A confirmed finish before the target's first match is eligible.
+            match("Madrid Masters", "20261001", "2026-10-01T13:00:00Z",
+                  finish_timestamp="2026-10-01T13:45:00Z"),
+            # A later start is excluded even without a recorded finish.
             match("Madrid Masters", "20261001", "2026-10-01T15:00:00Z", aces=35),
         ]
         target = [
@@ -1626,7 +1631,7 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
 
         def fake_clusters(event_rows, profiles, tour_rate):
             event = event_rows[0]["tourney_name"]
-            ratio = {"Paris Masters": 4.0, "Rome Masters": 2.0, "Madrid Masters": 1.0}[event]
+            ratio = {"Paris Masters": 4.0, "Rome Masters": 2.0, "Madrid Masters": 1.0}.get(event, 1.0)
             return [[ratio, ratio] for _ in event_rows]
 
         coverage = {
@@ -1798,7 +1803,7 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         self.assertEqual(["20260925", "20260928"], sorted(r["tourney_date"] for r in profile_rows))
         with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
             anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
-                2026, rows, "paris", target_start, {}, profiles={}, tour_rate=0.08,
+                2026, rows, "paris", target_start, profiles={}, tour_rate=0.08,
             )
         self.assertEqual([], anchor_rows)
         self.assertEqual("no_completed_event_anchor", anchor_mode)
@@ -1843,7 +1848,7 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         self.assertEqual(["20260925", "20260928"], sorted(r["tourney_date"] for r in profile_rows))
         with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
             anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
-                2026, rows, "paris", target_start, {}, profiles={}, tour_rate=0.08,
+                2026, rows, "paris", target_start, profiles={}, tour_rate=0.08,
             )
         self.assertEqual([], anchor_rows)
         self.assertEqual("no_completed_event_anchor", anchor_mode)
@@ -1882,7 +1887,7 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         ]
         with patch.object(compute_speed, "_prior_year_rows", return_value=[]):
             anchor_rows, mode = compute_speed._chronological_normalisation_anchor_rows(
-                2026, rows, "paris", date(2026, 10, 1), {}, profiles={}, tour_rate=0.08,
+                2026, rows, "paris", date(2026, 10, 1), profiles={}, tour_rate=0.08,
             )
         self.assertEqual([], anchor_rows)
         self.assertEqual("no_completed_event_anchor", mode)
