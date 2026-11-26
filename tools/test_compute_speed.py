@@ -944,17 +944,84 @@ class DavisCupSourceWindowTests(unittest.TestCase):
                 **annual[0],
                 "w_ace": "8", "w_svpt": "72", "l_ace": "5", "l_svpt": "68",
             },
+            # Same event date and match number, but another tie's player pair.
+            {
+                **annual[0],
+                "winner_id": "P5", "loser_id": "P6",
+                "winner_name": "Different Tie Winner", "loser_name": "Different Tie Opponent",
+            },
             {
                 "tourney_id": "2026-M-DC-X", "tourney_date": "20261125", "match_num": "2",
                 "winner_id": "P3", "loser_id": "P4", "score": "6-4 6-4",
             },
         ]
         merged, added = compute_speed.merge_davis_cup_rows(annual, ongoing)
-        self.assertEqual(1, added)
-        self.assertEqual(2, len(merged))
+        self.assertEqual(2, added)
+        self.assertEqual(3, len(merged))
         self.assertEqual("P4", merged[-1]["loser_id"])
+        self.assertEqual("P5", merged[1]["winner_id"])
         self.assertEqual("8", merged[0]["w_ace"])
         self.assertEqual("72", merged[0]["w_svpt"])
+
+
+class DavisCupCoverageAuditTests(unittest.TestCase):
+    def test_audit_disjointly_classifies_played_missing_invalid_unplayed_and_walkover(self):
+        base = {
+            "tourney_id": "2026-M-DC-X",
+            "tourney_name": "Davis Cup Finals: ITA vs KOR",
+            "tourney_level": "D",
+            "tourney_date": "20261124",
+            "winner_id": "P1", "winner_name": "Player One",
+            "loser_id": "P2", "loser_name": "Player Two",
+        }
+        rows = [
+            {
+                **base, "match_num": "1", "score": "6-4 6-4",
+                "w_ace": "5", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
+            },
+            {
+                **base, "match_num": "2", "winner_id": "P3", "loser_id": "P4",
+                "score": "6-4 6-4", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
+            },
+            {
+                **base, "match_num": "3", "winner_id": "P5", "loser_id": "P6",
+                "score": "6-4 6-4", "w_ace": "-1", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
+            },
+            {
+                **base, "match_num": "4", "winner_id": "P7", "loser_id": "P8",
+                "score": "", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
+            },
+            {
+                **base, "match_num": "5", "winner_id": "P9", "loser_id": "P10",
+                "score": "W/O", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
+            },
+            {
+                **base, "match_num": "6", "winner_id": "P11", "loser_id": "P12",
+                "winner_name": "Doubles A / Doubles B",
+                "score": "6-4 6-4", "w_ace": "5", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
+            },
+        ]
+        audit = compute_speed.davis_cup_coverage_audit(rows, 2026)
+        self.assertEqual(6, audit["sourceRowsAfterMerge"])
+        self.assertEqual(1, audit["excludedDoubles"])
+        self.assertEqual(4, audit["identifiedSingles"])
+        self.assertEqual(1, audit["completedWithValidServeStats"])
+        self.assertEqual(1, audit["completedMissingServeStats"])
+        self.assertEqual(1, audit["completedMalformedStats"])
+        self.assertEqual(1, audit["scheduledUnplayedSingles"])
+        self.assertEqual(1, audit["walkoverOrNoPlaySingles"])
+        self.assertEqual(
+            audit["identifiedSingles"],
+            audit["completedPlayedSingles"] +
+            audit["scheduledUnplayedSingles"] +
+            audit["walkoverOrNoPlaySingles"],
+        )
+        self.assertEqual(
+            audit["completedPlayedSingles"],
+            audit["completedWithValidServeStats"] +
+            audit["completedMissingServeStats"] +
+            audit["completedMalformedStats"],
+        )
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):
