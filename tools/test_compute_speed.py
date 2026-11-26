@@ -1012,12 +1012,12 @@ class DavisCupCoverageAuditTests(unittest.TestCase):
         self.assertEqual(1, audit["completedWithValidServeStats"])
         self.assertEqual(1, audit["completedMissingServeStats"])
         self.assertEqual(1, audit["completedMalformedStats"])
-        self.assertEqual(1, audit["scheduledUnplayedSingles"])
+        self.assertEqual(1, audit["scorelessSingles"])
         self.assertEqual(1, audit["walkoverOrNoPlaySingles"])
         self.assertEqual(
             audit["identifiedSingles"],
             audit["completedPlayedSingles"] +
-            audit["scheduledUnplayedSingles"] +
+            audit["scorelessSingles"] +
             audit["walkoverOrNoPlaySingles"],
         )
         self.assertEqual(
