@@ -1566,6 +1566,15 @@ def season_ratings(year, rows, source=None):
     rows_by_event = defaultdict(list)
     chronology_rows_by_event = defaultdict(list)
     for row in rows:
+        if row.get("tourney_level") not in TARGET_LEVELS:
+            continue
+        # Chronology evidence must describe the same singles population as the rating.
+        # Preserve singles with missing serve stats, but do not let doubles or unrelated
+        # draw levels set an earlier target start date.
+        if row.get("tourney_level") == "D":
+            names = (row.get("winner_name") or "", row.get("loser_name") or "")
+            if any("/" in name or " & " in name or " and " in name.lower() for name in names):
+                continue
         tid = tournament_id(row.get("tourney_name"))
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
             chronology_rows_by_event[tid].append(row)
