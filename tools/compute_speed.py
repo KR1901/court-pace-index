@@ -651,19 +651,21 @@ def _chronological_profiles_and_anchor(year, rows, cutoff):
         row for row in calculation_eligible_rows(valid_rows(rows))
         if _match_date(row) is not None and _match_date(row) < cutoff
     ]
-    profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS) if before else {}
-    profiles = build_live_profiles(year, profiles_current)
-    tour_rate = tour_average_ace_rate(before)
-    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+    if before:
+        profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        profiles = build_live_profiles(year, profiles_current)
+        tour_rate = tour_average_ace_rate(before)
+    else:
+        # Opening-event anchor: the completed preceding season is the only permissible
+        # calibration sample. Its profiles are fitted on that prior season's ATP rows and
+        # historical player history, never on any match from the target season.
         if year <= PROFILE_HISTORY_START_YEAR:
             return None, None, []
         prior = _prior_year_rows(year - 1)
         if not prior:
             return None, None, []
-        profiles = build_live_profiles(
-            year - 1,
-            player_rates(prior, prior_points=PROFILE_PRIOR_SERVICE_POINTS),
-        )
+        profiles_current = player_rates(prior, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+        profiles = build_live_profiles(year - 1, profiles_current)
         tour_rate = tour_average_ace_rate(prior)
         before = prior
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
