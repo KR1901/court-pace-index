@@ -1594,8 +1594,9 @@ def season_ratings(year, rows, source=None):
     Chronological LOEO ratings using the finest trustworthy source chronology available.
 
     Per-match timestamp sources are ordered by UTC instant; daily sources use strict
-    calendar-day precedence (same-day matches are excluded when no clock is supplied).
-    Legacy week/start-date archives retain the 14-day quarantine as an explicit fallback.
+    timezone-safe calendar-day precedence when no clock is supplied. Legacy week/start-date
+    archives use a conservative maximum event-window bound by source level, not a fixed
+    quarantine shared by Grand Slams, Masters, ATP 500s and ATP 250s.
     """
     source_precision_by_event = _source_event_date_granularity(rows, source)
     source_precision_summary = _source_match_date_granularity(rows, source)
@@ -1646,15 +1647,14 @@ def season_ratings(year, rows, source=None):
             quarantine_days = 0
         else:
             chronology_precision = "tournament_start"
-            chronology_rule = "legacy_tournament_start_minus_14_days"
-            quarantine_days = CHRONOLOGICAL_QUARANTINE_DAYS
+            chronology_rule = "legacy_max_event_window_by_source_level"
+            quarantine_days = 0
 
-        # Source rows that only expose tournament week/start dates retain the explicit
-        # 14-day fallback even when the target edition itself has exact daily matches.
-        legacy_cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
+        # Legacy rows use their own level's maximum possible event window. A source row
+        # enters training only after that entire window is safely before the target.
         training_precision_by_event = source_precision_by_event
         profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
-            year, rows, event_start, legacy_cutoff, training_precision_by_event, target_start_timestamp,
+            year, rows, event_start, training_precision_by_event, target_start_timestamp,
         )
         if profiles is None or tour_rate is None:
             continue
@@ -1704,13 +1704,13 @@ def season_ratings(year, rows, source=None):
             elif (
                 row_precision == "match_day" and row_date < event_start
                 and not _row_precedes_target(
-                    row, event_start, legacy_cutoff, row_precision, target_start_timestamp,
+                    row, event_start, row_precision, target_start_timestamp,
                 )
             ):
                 date_interval_excluded += 1
             elif (
                 row_precision != "match_day"
-                and legacy_cutoff < row_date <= event_start
+                and not _legacy_event_window_precedes_target(row, event_start, target_start_timestamp)
             ):
                 legacy_fallback_buffer_excluded += 1
 
@@ -1725,12 +1725,8 @@ def season_ratings(year, rows, source=None):
             "calculation_diagnostics": side_diagnostics,
             "chronology_cutoff": (
                 target_start_timestamp.isoformat().replace("+00:00", "Z")
-                if target_start_timestamp is not None else (
-                    event_start.isoformat()
-                    if chronology_precision == "match_day" else legacy_cutoff.isoformat()
-                )
+                if target_start_timestamp is not None else event_start.isoformat()
             ),
-            "legacy_fallback_cutoff": legacy_cutoff.isoformat(),
             "event_start_date": event_start.isoformat(),
             "event_last_observed_match_date": (
                 event_last_observed_match_date.isoformat()
@@ -1802,11 +1798,11 @@ def season_ratings(year, rows, source=None):
                 "trainingMatchDateMax": item["training_match_date_max"],
                 "sameDayExcludedMatches": item["same_day_excluded_matches"],
                 "dateIntervalExcludedMatches": item["date_interval_excluded_matches"],
-                "legacyFallbackBufferExcludedMatches": item["legacy_fallback_buffer_excluded_matches"],
+                "legacyFallbackEventWindowExcludedMatches": item["legacy_fallback_buffer_excluded_matches"],
                 "legacyFallbackTrainingMatches": item["legacy_fallback_training_matches"],
-                "legacyFallbackDays": CHRONOLOGICAL_QUARANTINE_DAYS,
-                "legacyFallbackCutoff": item["legacy_fallback_cutoff"],
-                "quarantineDays": item["quarantine_days"],
+                "legacyMaxEventDaysByLevel": LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
+                "legacyUnknownMaxEventDays": LEGACY_UNKNOWN_MAX_EVENT_DAYS,
+                "quarantineDays": 0,
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
