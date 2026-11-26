@@ -296,6 +296,10 @@ def run(start_year, end_year, quarantine_days):
                 "year": year,
                 "event": event_id,
                 "startDate": start_date.isoformat(),
+                "lastObservedMatchDate": (
+                    max(row_date(row) for row in chronology_rows).isoformat()
+                    if target_date_granularity == "match_day" else None
+                ),
                 "matches": len(event_rows),
                 "retrospective": {
                     "rating": retro_rating,
