@@ -86,7 +86,7 @@ class TmlDavisCupClientTest {
         val batch = TmlDavisCupClient().parseMatchRows(annual, ongoing, 2026)
 
         assertEquals(4, batch.identifiedSingles)
-        assertEquals(3, batch.discoveredMatches)
+        assertEquals(4, batch.discoveredMatches)
         assertEquals(2, batch.restOfDavisCup.identifiedSingles)
         assertEquals(2, batch.restOfDavisCup.discoveredMatches)
         assertEquals(1, batch.restOfDavisCup.matchesWithServeStats)
