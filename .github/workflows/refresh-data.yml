@@ -438,6 +438,130 @@ jobs:
           echo "Robolectric runtime download failed after three attempts."
           exit 1
 
+      - name: Diagnose generated dataset and Android policy failures
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, math, unicodedata
+          from pathlib import Path
+
+          dataset_path = Path("app/src/main/assets/pace_dataset.json")
+          baseline_path = Path("data/live_speed_baseline.json")
+          if not dataset_path.is_file() or not baseline_path.is_file():
+              raise SystemExit("Generated dataset or baseline is missing.")
+          dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
+          baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+          readings = dataset.get("readings", [])
+          profiles = baseline.get("profiles", [])
+          speed = [row for row in readings if row.get("speed") is not None]
+          computed = [row for row in speed if row.get("src") == "computed"]
+          published = [row for row in speed if row.get("src") == "tennisabstract" or row.get("publishedSpeed") is not None]
+
+          outliers = [
+              {"t": row.get("t"), "s": row.get("s"), "speed": row.get("speed"), "src": row.get("src")}
+              for row in speed
+              if not (isinstance(row.get("speed"), (int, float)) and math.isfinite(row["speed"])
+                      and row["speed"] >= 0.30
+                      and (row["speed"] <= 2.0 or
+                           (row.get("t") == "nextgen" and row.get("src") in {"computed", "live"})))
+          ]
+          published_outliers = [
+              {"t": row.get("t"), "s": row.get("s"), "publishedSpeed": row.get("publishedSpeed")}
+              for row in readings
+              if row.get("publishedSpeed") is not None and
+                 not (isinstance(row["publishedSpeed"], (int, float)) and
+                      math.isfinite(row["publishedSpeed"]) and 0.30 <= row["publishedSpeed"] <= 2.0)
+          ]
+          cpi_outliers = [
+              {"t": row.get("t"), "s": row.get("s"), "cpi": row.get("cpi")}
+              for row in readings
+              if row.get("cpi") is not None and
+                 not (isinstance(row["cpi"], (int, float)) and 10.0 <= row["cpi"] <= 60.0)
+          ]
+
+          serve_sources = {
+              "current-season-qualified", "prior-season-qualified",
+              "current-season-shrunk", "prior-season-shrunk",
+              "career-history-surface-shrunk", "career-history-pooled-shrunk",
+              "tour-average-prior-only",
+          }
+          concede_sources = {
+              "surface-qualified", "pooled-fallback",
+              "career-history-surface-shrunk", "career-history-pooled-shrunk",
+              "tour-average-prior-only",
+          }
+          normalized_names = [
+              "".join(ch for ch in unicodedata.normalize("NFD", p.get("name", "")).lower()
+                      if ch.isalnum())
+              for p in profiles
+          ]
+          bad_profiles = []
+          for p in profiles:
+              issues = []
+              for key in ("serveRate", "concedeRate"):
+                  value = p.get(key)
+                  if value is not None and (
+                      not isinstance(value, (int, float)) or not math.isfinite(value) or not 0 <= value <= 1
+                  ):
+                      issues.append(f"invalid {key}")
+              for key in ("serveRateSeason", "concedeRateSeason"):
+                  value = p.get(key)
+                  if value is not None and value not in range(1991, baseline.get("season", 0) + 1):
+                      issues.append(f"invalid {key}={value}")
+              for prefix in ("serveRate", "concedeRate"):
+                  value = p.get(prefix + "SampleMatches")
+                  rate = p.get(prefix[0].lower() + prefix[1:])
+                  source = p.get(prefix + "Source")
+                  if value is not None and (
+                      value < 0 or (value == 0 and rate is not None and source != "tour-average-prior-only")
+                  ):
+                      issues.append(f"invalid {prefix}SampleMatches={value}")
+                  points = p.get(prefix + "SampleServicePoints")
+                  if points is not None and (
+                      points < 0 or (points == 0 and rate is not None and source != "tour-average-prior-only")
+                  ):
+                      issues.append(f"invalid {prefix}SampleServicePoints={points}")
+              source = p.get("serveRateSource")
+              if source is not None and source not in serve_sources:
+                  issues.append(f"unsupported serveRateSource={source}")
+              source = p.get("concedeRateSource")
+              if source is not None and source not in concede_sources:
+                  issues.append(f"unsupported concedeRateSource={source}")
+              if p.get("serveRatePriorServicePoints") is not None and p["serveRatePriorServicePoints"] <= 0:
+                  issues.append("invalid serveRatePriorServicePoints")
+              if p.get("concedeRatePriorServicePoints") is not None and p["concedeRatePriorServicePoints"] <= 0:
+                  issues.append("invalid concedeRatePriorServicePoints")
+              if issues:
+                  bad_profiles.append({"name": p.get("name"), "issues": issues})
+
+          print("GENERATED DATASET DIAGNOSTICS")
+          print(f"tournaments={len(dataset.get('tournaments', []))} readings={len(readings)} "
+                f"speed={len(speed)} computed={len(computed)} published-comparison={len(published)} "
+                f"CPI={sum(row.get('cpi') is not None for row in readings)}")
+          print(f"speed_outliers={outliers}")
+          print(f"published_speed_outliers={published_outliers}")
+          print(f"CPI_outliers={cpi_outliers}")
+          print(f"baseline_profiles={len(profiles)} unique_normalized_names={len(set(normalized_names))} "
+                f"usable_profiles={sum(p.get('serveRate') is not None or p.get('concedeRate') is not None for p in profiles)}")
+          print(f"invalid_baseline_profiles={bad_profiles[:30]}")
+          print(f"serve_sources={dict((source, sum(p.get('serveRateSource') == source for p in profiles)) for source in sorted(serve_sources))}")
+          print(f"concede_sources={dict((source, sum(p.get('concedeRateSource') == source for p in profiles)) for source in sorted(concede_sources))}")
+          print(f"2026_CALC={[(row['t'], row['matches'], row['speed']) for row in computed if row.get('s') == 2026]}")
+          PY
+
+      - name: Upload generated dataset and Android test reports for diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-dataset-and-test-diagnostics
+          path: |
+            app/src/main/assets/pace_dataset.json
+            app/build/test-results/testDebugUnitTest/*.xml
+            data/live_speed_baseline.json
+            data/speed_history.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Commit if anything changed
         run: |
           git config user.name "court-pace-bot"
