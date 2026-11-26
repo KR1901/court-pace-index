@@ -84,7 +84,8 @@ TOURNAMENTS = [
     ("athens",     "Athens Open",          "Athens",       "GRE", "HARD",  True,  "ATP250",   None),
     ("marseille",  "Open 13 Provence",     "Marseille",    "FRA", "HARD",  True,  "ATP250",   None),
     ("stockholm",  "Stockholm Open",       "Stockholm",    "SWE", "HARD",  True,  "ATP250",   None),
-    ("daviscup",   "Davis Cup",             "Bologna",      "ITA", "MULTI", False, "SPECIAL",  None),
+    ("daviscup",      "Davis Cup",          "Multiple venues", "INT", "MULTI", False, "SPECIAL", None),
+    ("daviscupfinal8","Davis Cup Final 8",   "Bologna",         "ITA", "HARD",  True,  "SPECIAL", None),
 ]
 
 # Host city and country for travelling Laver Cup editions. 2020 was not held.
@@ -102,7 +103,8 @@ SEASON_VENUES = {
     ("nextgen", 2026): ("Reggio Calabria", "ITA"),
     # Historical editions aggregate ties played across multiple host nations.
     **{("daviscup", year): ("Multiple venues", "INT") for year in range(2016, 2025)},
-    ("daviscup", 2026): ("Bologna", "ITA"),
+    ("daviscup", 2026): ("Multiple venues", "INT"),
+    ("daviscupfinal8", 2026): ("Bologna", "ITA"),
 }
 
 # CPI readings: (tournament id, season, value). Source: Court Speed / The Racquet ATP Court Speed Database,
@@ -336,7 +338,7 @@ else:
     speed_rows = SPEED
 
 for tid, season, date, speed, ace in speed_rows:
-    if tid not in known or tid == "daviscup":
+    if tid not in known or tid in {"daviscup", "daviscupfinal8"}:
         # Defence in depth: never reintroduce an unsupported TA fallback even if an old
         # snapshot predates the source-refresh sanitizer.
         continue

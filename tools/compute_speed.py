@@ -104,14 +104,19 @@ for _event_label, _event_id in NAMES.items():
     _NORMALISED_EVENT_NAMES[_event_key] = _event_id
 
 
-def tournament_id(event_name):
-    """Resolve exact event labels and punctuation/case variants to a known ID."""
+def tournament_id(event_name, source_event_id=None):
+    """Resolve event labels, preserving the separately identified Davis Cup Final 8."""
     label = str(event_name or "").strip()
     normalised = _normalise_event_name(label)
-    # The archive stores separate Davis Cup tie labels. Group them into one annual target.
     if normalised.startswith("daviscup"):
-        return "daviscup"
+        source_tokens = re.split(r"[^A-Z0-9]+", str(source_event_id or "").upper())
+        return "daviscupfinal8" if "FLS" in source_tokens else "daviscup"
     return NAMES.get(label) or _NORMALISED_EVENT_NAMES.get(normalised)
+
+
+def _row_tournament_id(row):
+    """Resolve a source row without collapsing the TML Final 8 into the annual Davis Cup target."""
+    return tournament_id(row.get("tourney_name"), row.get("tourney_id"))
 
 
 def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_DAYS):
@@ -487,7 +492,7 @@ PROFILE_TRAINING_EXCLUDED_EVENT_KEYS = frozenset({
     "nextgenerationatpfinals",
 })
 CALC_EXCLUDED_EVENT_KEYS = PROFILE_TRAINING_EXCLUDED_EVENT_KEYS  # Backwards-compatible name.
-CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen", "daviscup"})
+CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen", "daviscup", "daviscupfinal8"})
 
 
 def calculation_eligible_rows(rows):
@@ -833,7 +838,7 @@ def _source_event_key(row):
     raw_id = str(row.get("tourney_id") or "").strip()
     if raw_id:
         return f"id:{raw_id}"
-    resolved = tournament_id(row.get("tourney_name"))
+    resolved = _row_tournament_id(row)
     if resolved:
         return f"event:{resolved}"
     return f"name:{_normalise_event_name(row.get('tourney_name'))}"
@@ -1059,7 +1064,7 @@ def _normalisation_anchor_event_scores(rows, profiles, tour_rate):
     """
     by_event = defaultdict(list)
     for row in calculation_eligible_rows(valid_rows(rows)):
-        event_id = tournament_id(row.get("tourney_name"))
+        event_id = _row_tournament_id(row)
         if event_id is None or event_id in CALC_TARGET_ONLY_EVENT_IDS:
             continue
         by_event[event_id].append(row)
@@ -1086,7 +1091,7 @@ def _normalisation_rows_for_scored_events(rows, event_scores):
     event_ids = set(event_scores)
     return [
         row for row in rows
-        if tournament_id(row.get("tourney_name")) in event_ids
+        if _row_tournament_id(row) in event_ids
     ]
 
 
@@ -1107,7 +1112,7 @@ def _chronological_normalisation_anchor_rows(
         names = (row.get("winner_name") or "", row.get("loser_name") or "")
         if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
             continue
-        event_id = tournament_id(row.get("tourney_name"))
+        event_id = _row_tournament_id(row)
         if event_id is None or event_id == target_event_id:
             continue
         if _match_date(row) is None:
@@ -1116,7 +1121,7 @@ def _chronological_normalisation_anchor_rows(
 
     valid_by_source_event = defaultdict(list)
     for row in calculation_eligible_rows(valid_rows(rows)):
-        event_id = tournament_id(row.get("tourney_name"))
+        event_id = _row_tournament_id(row)
         if event_id is None or event_id == target_event_id:
             continue
         valid_by_source_event[_source_event_key(row)].append(row)
@@ -1669,7 +1674,7 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
     event_matches = defaultdict(int)
 
     for r in usable:
-        tid = tournament_id(r.get("tourney_name"))
+        tid = _row_tournament_id(r)
         if tid is None or tid in excluded:
             continue
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
@@ -1864,11 +1869,11 @@ def season_ratings(year, rows, source=None):
             names = (row.get("winner_name") or "", row.get("loser_name") or "")
             if any("/" in name or " & " in name or " and " in name.lower() for name in names):
                 continue
-        tid = tournament_id(row.get("tourney_name"))
+        tid = _row_tournament_id(row)
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
             chronology_rows_by_event[tid].append(row)
     for row in target_rows:
-        tid = tournament_id(row.get("tourney_name"))
+        tid = _row_tournament_id(row)
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
             rows_by_event[tid].append(row)
 
@@ -1940,7 +1945,7 @@ def season_ratings(year, rows, source=None):
         legacy_fallback_buffer_excluded = 0
         eligible_training_population = calculation_eligible_rows(valid_rows(rows))
         for row in eligible_training_population:
-            if tournament_id(row.get("tourney_name")) == tid:
+            if _row_tournament_id(row) == tid:
                 continue
             row_date = _match_date(row)
             if row_date is None:
@@ -2118,7 +2123,7 @@ def exclude_live_event_rows(rows, event_ids):
     excluded = set(event_ids or ())
     if not excluded:
         return list(rows)
-    return [row for row in rows if tournament_id(row.get("tourney_name")) not in excluded]
+    return [row for row in rows if _row_tournament_id(row) not in excluded]
 
 
 def main():
