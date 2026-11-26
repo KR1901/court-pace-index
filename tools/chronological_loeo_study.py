@@ -139,6 +139,7 @@ def run(start_year, end_year, quarantine_days):
         if not groups:
             continue
 
+        source_precision_by_event = compute_speed._source_event_date_granularity(rows, source)
         date_granularity = compute_speed._source_match_date_granularity(rows, source)
         prior_tour_rate, prior_anchor, prior_error = prior_year_reference(year)
         dated_events = []
@@ -203,26 +204,35 @@ def run(start_year, end_year, quarantine_days):
                 continue
 
             target_start_timestamp = compute_speed._event_first_match_timestamp(event_rows)
+            target_date_granularity = compute_speed._event_date_granularity(
+                event_rows, source_precision_by_event,
+            )
             if target_start_timestamp is not None:
                 chronology_precision = "match_timestamp"
-                cutoff = start_date
                 chronology_rule = "strictly_before_target_match_timestamp_utc"
                 event_quarantine_days = 0
-            elif date_granularity == "match_day":
+            elif target_date_granularity == "match_day":
                 chronology_precision = "match_day"
-                cutoff = start_date
                 chronology_rule = "strictly_before_target_local_match_day"
                 event_quarantine_days = 0
             else:
                 chronology_precision = "tournament_start"
-                cutoff = start_date - timedelta(days=quarantine_days)
                 chronology_rule = f"legacy_tournament_start_minus_{quarantine_days}_days"
                 event_quarantine_days = quarantine_days
 
+            # Legacy start-date rows keep the explicit fallback; daily editions use
+            # their own per-event evidence even when the target is a different edition.
+            cutoff = start_date - timedelta(days=quarantine_days)
             chronological_training = [
                 row for row in standard_rows
                 if compute_speed._row_precedes_target(
-                    row, start_date, cutoff, chronology_precision, target_start_timestamp,
+                    row,
+                    start_date,
+                    cutoff,
+                    source_precision_by_event.get(
+                        compute_speed._source_event_key(row), "tournament_start",
+                    ),
+                    target_start_timestamp,
                 )
             ]
             chrono_profiles = fit_profiles(year, chronological_training)
@@ -282,6 +292,8 @@ def run(start_year, end_year, quarantine_days):
                     "profileTrainingMatches": len(chronological_training),
                     "tourAceRate": chrono_tour_rate,
                     "datePrecision": chronology_precision,
+                    "targetDateGranularity": target_date_granularity,
+                    "sourceDateGranularity": date_granularity,
                     "chronologyRule": chronology_rule,
                     "trainingMatchDateMax": (
                         max(filter(None, (row_date(row) for row in chronological_training))).isoformat()
