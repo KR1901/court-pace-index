@@ -1363,8 +1363,19 @@ def season_ratings(year, rows, source=None):
             continue
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
+        event_raw = sum(ratios) / sides
+        # The chronological profiles and tour anchor are already fitted for this target.
+        # Score earlier standard ATP events once here, using that same pre-target snapshot,
+        # rather than refitting the profiles a second time during output serialisation.
+        anchor_events, _, _, _ = event_raw_scores(training_rows, profiles, tour_rate=tour_rate)
+        eligible_anchor = {
+            event_id: value for event_id, value in anchor_events.items()
+            if event_id not in CALC_TARGET_ONLY_EVENT_IDS
+        }
+        mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor) if eligible_anchor else event_raw
         details[tid] = {
-            "raw": sum(ratios) / sides,
+            "raw": event_raw,
+            "normalisation": mean_raw,
             "clusters": clusters,
             "sides": sides,
             "matches": len(event_rows),
@@ -1384,19 +1395,7 @@ def season_ratings(year, rows, source=None):
     }
     output = {}
     for tid, item in details.items():
-        cutoff = date.fromisoformat(item["chronology_cutoff"])
-        profiles, tour_rate, anchor_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
-        if profiles is None or tour_rate is None:
-            continue
-        # Score only earlier standard ATP events using the exact pre-target profiles and
-        # prior anchor. This prevents a future tournament changing an earlier event's
-        # denominator as well as its player-rate estimates.
-        anchor_events, _, _, _ = event_raw_scores(anchor_rows, profiles, tour_rate=tour_rate)
-        eligible_anchor = {
-            event_id: value for event_id, value in anchor_events.items()
-            if event_id not in CALC_TARGET_ONLY_EVENT_IDS
-        }
-        mean_raw = sum(eligible_anchor.values()) / len(eligible_anchor) if eligible_anchor else item["raw"]
+        mean_raw = item["normalisation"]
         seed = int(hashlib.sha256(f"{year}:{tid}:match-cluster-ci-v1".encode()).hexdigest()[:8], 16)
         # A match-cluster interval is not meaningful for fewer than five independent matches.
         interval = (
