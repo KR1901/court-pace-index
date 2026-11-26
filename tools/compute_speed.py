@@ -46,7 +46,7 @@ NAMES = {
     "Monte Carlo Masters": "montecarlo", "Madrid Masters": "madrid",
     "Rome Masters": "rome", "Canada Masters": "canada",
     "Cincinnati Masters": "cincinnati", "Shanghai Masters": "shanghai",
-    "Paris Masters": "paris", "Tour Finals": "atpfinals",
+    "Paris Masters": "paris", "Tour Finals": "atpfinals", "ATP Finals": "atpfinals", "Nitto ATP Finals": "atpfinals",
     "Brisbane": "brisbane", "Hong Kong": "hongkong", "United Cup": "unitedcup", "Laver Cup": "lavercup", "Auckland": "auckland",
     # TennisMyLife uses these shorter/alternate event labels in its ATP CSV.
     "Monte Carlo": "montecarlo", "Cincinnati": "cincinnati", "Shanghai": "shanghai",
