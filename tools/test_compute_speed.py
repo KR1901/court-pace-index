@@ -1223,7 +1223,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual("match-date", diagnostics["mode"])
         self.assertEqual(
             ["2026-10-03", "2026-10-05", "2026-11-05", "2026-11-08"],
-            sorted(row["match_date"] for row in training),
+            sorted(row["match_date_utc"] for row in training),
         )
         # Rome was still in progress on the target's first day, so none of its
         # partial event sample may define the normalisation anchor.
