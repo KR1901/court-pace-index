@@ -197,6 +197,29 @@ jobs:
           baseline = json.loads(Path("data/live_speed_baseline.json").read_text())
           history = json.loads(Path("data/speed_history.json").read_text())
           initial = json.loads(Path("app/src/main/assets/pace_dataset.json").read_text())
+          current_season = str(baseline.get("season"))
+          dc_audit = (history.get("davis_cup_coverage") or {}).get(current_season)
+          assert isinstance(dc_audit, dict), "current season Davis Cup source reconciliation is missing"
+          assert dc_audit.get("identifiedSingles") == (
+              dc_audit.get("completedPlayedSingles", 0) +
+              dc_audit.get("scheduledUnplayedSingles", 0) +
+              dc_audit.get("walkoverOrNoPlaySingles", 0)
+          ), "Davis Cup identified singles do not reconcile to played, unplayed and no-play buckets"
+          assert dc_audit.get("completedPlayedSingles") == (
+              dc_audit.get("completedWithValidServeStats", 0) +
+              dc_audit.get("completedMissingServeStats", 0) +
+              dc_audit.get("completedMalformedStats", 0)
+          ), "Davis Cup completed singles do not reconcile to valid, missing and malformed stats"
+          print(
+              "Davis Cup audit: "
+              f"{dc_audit.get('identifiedSingles')} unique singles · "
+              f"{dc_audit.get('completedPlayedSingles')} played · "
+              f"{dc_audit.get('scheduledUnplayedSingles')} unplayed · "
+              f"{dc_audit.get('walkoverOrNoPlaySingles')} no-play · "
+              f"{dc_audit.get('completedWithValidServeStats')} valid stats · "
+              f"{dc_audit.get('completedMissingServeStats')} missing · "
+              f"{dc_audit.get('completedMalformedStats')} malformed"
+          )
           known = {item["id"] for item in initial["tournaments"]}
           dataset_bytes = Path("app/src/main/assets/pace_dataset.json").read_bytes()
           assert Path("data/latest.json").read_bytes() == dataset_bytes, "data/latest.json differs from the bundled dataset"
