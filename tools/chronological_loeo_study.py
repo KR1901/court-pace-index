@@ -278,7 +278,7 @@ def run(start_year, end_year):
             # normalisation anchor may contain completed event editions only.
             anchor_rows, anchor_mode, eligible_anchor = compute_speed._chronological_normalisation_anchor_rows(
                 year, rows, event_id, start_date, chrono_profiles, chrono_tour_rate,
-                target_start_timestamp,
+                target_start_timestamp, source_precision_by_event=source_precision_by_event,
             )
             chrono_anchor = (
                 statistics.mean(value["raw"] for value in eligible_anchor.values())

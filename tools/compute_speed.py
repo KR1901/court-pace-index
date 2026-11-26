@@ -990,7 +990,17 @@ def _prior_year_rows(year):
     return calculation_eligible_rows(valid_rows(load(year)))
 
 
-def _event_completion_precedes_target(event_rows, target_start_date, target_start_timestamp=None):
+def _latest_possible_utc_finish_of_venue_day(venue_day):
+    """Latest UTC instant of a venue-local day, assuming the global civil TZ bound UTC-12."""
+    return (
+        datetime.combine(venue_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+        + timedelta(hours=12)
+    )
+
+
+def _event_completion_precedes_target(
+    event_rows, target_start_date, target_start_timestamp=None, match_day_precision=False,
+):
     """Prove that every match in an earlier event edition finished before the target."""
     if not event_rows:
         return False
@@ -1005,6 +1015,25 @@ def _event_completion_precedes_target(event_rows, target_start_date, target_star
     event_ends = [_source_event_end_date(row) for row in event_rows]
     if event_ends and all(value is not None for value in event_ends) and len(set(event_ends)) == 1:
         return _utc_day_end_exclusive(event_ends[0]) <= target_boundary
+
+    # The TML ATP feed includes the actual played date and round for every singles result.
+    # A scored Final row proves the event edition reached its final rubber; its match day
+    # therefore establishes the event's latest completed match day. Use timezone bounds,
+    # not an invented time-of-day or a level-based event window, for these daily editions.
+    if match_day_precision:
+        final_rows = [
+            row for row in event_rows
+            if str(row.get("round") or "").strip().upper() in {"F", "FINAL"}
+            and str(row.get("score") or "").strip()
+        ]
+        final_days = [_match_date(row) for row in final_rows]
+        final_days = [value for value in final_days if value is not None]
+        if final_days:
+            final_day = max(final_days)
+            if target_start_timestamp is not None:
+                return _latest_possible_utc_finish_of_venue_day(final_day) < target_start_timestamp
+            return _match_day_definitely_precedes_target(final_day, target_start_date)
+
     starts = [_match_date(row) for row in event_rows]
     starts = [value for value in starts if value is not None]
     if not starts:
@@ -1013,11 +1042,7 @@ def _event_completion_precedes_target(event_rows, target_start_date, target_star
     max_days = max(_legacy_max_event_days(row) for row in event_rows)
     latest_day = event_start + timedelta(days=max_days - 1)
     if target_start_timestamp is not None:
-        latest_possible_utc = (
-            datetime.combine(latest_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
-            + timedelta(hours=12)
-        )
-        return latest_possible_utc <= target_start_timestamp
+        return _latest_possible_utc_finish_of_venue_day(latest_day) <= target_start_timestamp
     return _match_day_definitely_precedes_target(latest_day, target_start_date)
 
 
@@ -1063,7 +1088,7 @@ def _normalisation_rows_for_scored_events(rows, event_scores):
 
 def _chronological_normalisation_anchor_rows(
     year, rows, target_event_id, target_start_date, profiles, tour_rate,
-    target_start_timestamp=None,
+    target_start_timestamp=None, source_precision_by_event=None,
 ):
     """
     Select full completed earlier events for the normalisation anchor, separately from
@@ -1096,6 +1121,9 @@ def _chronological_normalisation_anchor_rows(
     for source_event_key, chronology_rows in chronology_by_source_event.items():
         if _event_completion_precedes_target(
             chronology_rows, target_start_date, target_start_timestamp,
+            match_day_precision=(
+                (source_precision_by_event or {}).get(source_event_key) == "match_day"
+            ),
         ):
             completed_valid_rows.extend(valid_by_source_event.get(source_event_key, []))
 
@@ -1894,6 +1922,7 @@ def season_ratings(year, rows, source=None):
         # qualify, with the prior completed season as fallback when no stable cohort exists.
         anchor_rows, normalisation_anchor_mode, eligible_anchor = _chronological_normalisation_anchor_rows(
             year, rows, tid, event_start, profiles, tour_rate, target_start_timestamp,
+            source_precision_by_event=training_precision_by_event,
         )
         if eligible_anchor:
             mean_raw = sum(value["raw"] for value in eligible_anchor.values()) / len(eligible_anchor)

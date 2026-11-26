@@ -1894,11 +1894,11 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
 
     def test_normalisation_anchor_rows_match_stable_cohort_when_available(self):
         rows = []
-        for event, count in (("Small 250", 5), ("Large Masters", 10)):
+        for event, count in (("Stockholm", 5), ("Rome Masters", 10)):
             for _ in range(count):
                 rows.append({
                     "tourney_name": event,
-                    "tourney_level": "M" if event == "Large Masters" else "250",
+                    "tourney_level": "M" if event == "Rome Masters" else "250",
                     "surface": "Hard",
                     "tourney_date": "20260901",
                     "winner_id": f"{event}-winner",
@@ -1914,10 +1914,55 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
             return [[0.8] * (len(event_rows) * 2)]
         with patch.object(compute_speed, "event_match_ratio_clusters", side_effect=fake_clusters):
             scores = compute_speed._normalisation_anchor_event_scores(rows, {}, 0.08)
-        self.assertEqual({"largemasters"}, set(scores))
+        self.assertEqual({"rome"}, set(scores))
         used_rows = compute_speed._normalisation_rows_for_scored_events(rows, scores)
         self.assertEqual(10, len(used_rows))
-        self.assertEqual({"Large Masters"}, {row["tourney_name"] for row in used_rows})
+        self.assertEqual({"Rome Masters"}, {row["tourney_name"] for row in used_rows})
+
+    def test_tml_final_round_date_proves_event_completion_without_level_window(self):
+        event_rows = [
+            {
+                "tourney_name": "Adelaide",
+                "tourney_level": "250",
+                "tourney_date": "20260112",
+                "round": "R32",
+                "score": "6-4 6-4",
+            },
+            {
+                "tourney_name": "Adelaide",
+                "tourney_level": "250",
+                "tourney_date": "20260115",
+                "round": "SF",
+                "score": "6-4 6-4",
+            },
+            {
+                "tourney_name": "Adelaide",
+                "tourney_level": "250",
+                "tourney_date": "20260117",
+                "round": "F",
+                "score": "6-4 6-4",
+            },
+        ]
+        # TML match-day timestamps establish the final rubber's venue-local day.
+        self.assertTrue(
+            compute_speed._event_completion_precedes_target(
+                event_rows, date(2026, 1, 21), None, match_day_precision=True,
+            )
+        )
+        # The final round missing a result does not prove completion.
+        incomplete = [{**row, "score": ""} if row["round"] == "F" else row for row in event_rows]
+        self.assertFalse(
+            compute_speed._event_completion_precedes_target(
+                incomplete, date(2026, 1, 21), None, match_day_precision=True,
+            )
+        )
+        # A final on the target's local day is not proven earlier without a match clock.
+        self.assertFalse(
+            compute_speed._event_completion_precedes_target(
+                event_rows, date(2026, 1, 17), None, match_day_precision=True,
+            )
+        )
+
 
     def test_confirmed_event_end_date_proves_anchor_completion_but_provisional_end_does_not(self):
         event_rows = [
