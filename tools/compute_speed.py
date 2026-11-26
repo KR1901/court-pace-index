@@ -874,6 +874,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
         if source_target_dates and all(value is not None for value in source_target_dates)
         else []
     )
+    target_start_date_is_utc = bool(target_start_dates)
     target_start_date = min(target_start_dates) if target_start_dates else min(
         (_match_date(row) for row in target_rows if _match_date(row) is not None),
         default=None,
@@ -886,11 +887,13 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
     )
     if target_start_at is not None:
         target_start_date = target_start_at.date()
+        target_start_date_is_utc = True
 
     if target_start_date is None:
         return [], [], {
             "mode": "undated-target",
             "targetStartDate": None,
+            "targetStartDateIsUtc": False,
             "targetStartAtUtc": None,
             "fallbackCutoffDate": None,
             "priorSeasonFallbackMatches": 0,
@@ -928,13 +931,17 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
             include = match_end < target_start_at
             if include:
                 precision_counts["matchTimeMatches"] += 1
-        elif match_day is not None:
+        elif target_start_date_is_utc and match_end is not None:
+            include = match_end.date() < target_start_date
+            if include:
+                precision_counts["matchTimeMatches"] += 1
+        elif target_start_date_is_utc and match_day is not None:
             # Date precision is deliberately strict: do not infer the order of two
             # matches on the same calendar day without trustworthy actual timestamps.
             include = match_day < target_start_date
             if include:
                 precision_counts["matchDateMatches"] += 1
-        elif event_end is not None:
+        elif target_start_date_is_utc and event_end is not None:
             include = event_end < target_start_date
             if include:
                 precision_counts["eventWindowMatches"] += 1
@@ -963,9 +970,11 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
         complete_before_target = False
         if target_start_at is not None and all(value is not None for value in end_times):
             complete_before_target = max(end_times) < target_start_at
-        elif target_start_date is not None and all(value is not None for value in match_days):
+        elif target_start_date_is_utc and all(value is not None for value in end_times):
+            complete_before_target = max(value.date() for value in end_times) < target_start_date
+        elif target_start_date_is_utc and all(value is not None for value in match_days):
             complete_before_target = max(match_days) < target_start_date
-        elif target_start_date is not None and all(value is not None for value in event_ends):
+        elif target_start_date_is_utc and all(value is not None for value in event_ends):
             complete_before_target = max(event_ends) < target_start_date
         elif all(value is not None for value in event_starts):
             # Legacy fallback: preserve the previous anchor population for events where
@@ -992,6 +1001,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
     diagnostics = {
         "mode": mode,
         "targetStartDate": target_start_date.isoformat(),
+        "targetStartDateIsUtc": target_start_date_is_utc,
         "targetStartAtUtc": target_start_at.isoformat().replace("+00:00", "Z") if target_start_at else None,
         "fallbackCutoffDate": fallback_cutoff.isoformat(),
         "priorSeasonFallbackMatches": 0,
