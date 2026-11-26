@@ -1564,6 +1564,11 @@ def season_ratings(year, rows, source=None):
     source_precision_summary = _source_match_date_granularity(rows, source)
     target_rows = valid_rows(rows)
     rows_by_event = defaultdict(list)
+    chronology_rows_by_event = defaultdict(list)
+    for row in rows:
+        tid = tournament_id(row.get("tourney_name"))
+        if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
+            chronology_rows_by_event[tid].append(row)
     for row in target_rows:
         tid = tournament_id(row.get("tourney_name"))
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
@@ -1571,13 +1576,17 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        dates = [_match_date(row) for row in event_rows]
+        # Establish the target's true first observed day from every identified source row,
+        # including matches whose serve statistics are missing/invalid. Only the target's
+        # score sample is restricted to valid rows; missing-stat matches still set chronology.
+        chronology_rows = chronology_rows_by_event.get(tid) or event_rows
+        dates = [_match_date(row) for row in chronology_rows]
         dates = [value for value in dates if value is not None]
         if not dates:
             continue
         event_start = min(dates)
-        target_start_timestamp = _event_first_match_timestamp(event_rows)
-        target_date_granularity = _event_date_granularity(event_rows, source_precision_by_event)
+        target_start_timestamp = _event_first_match_timestamp(chronology_rows)
+        target_date_granularity = _event_date_granularity(chronology_rows, source_precision_by_event)
         if target_start_timestamp is not None:
             chronology_precision = "match_timestamp"
             chronology_rule = "strictly_before_target_match_timestamp_utc"
