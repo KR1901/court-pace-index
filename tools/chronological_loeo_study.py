@@ -17,7 +17,7 @@ import math
 import os
 import statistics
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 import compute_speed
@@ -385,7 +385,8 @@ def run(start_year, end_year):
     summary = {
         "startYear": start_year,
         "endYear": end_year,
-        "quarantineDays": quarantine_days,
+        "legacyMaxEventDaysByLevel": compute_speed.LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
+        "legacyUnknownMaxEventDays": compute_speed.LEGACY_UNKNOWN_MAX_EVENT_DAYS,
         "eventsCompared": len(all_event_pairs),
         "meanAbsoluteRatingDelta": statistics.mean(abs(value) for value in deltas) if deltas else None,
         "medianAbsoluteRatingDelta": statistics.median(abs(value) for value in deltas) if deltas else None,
@@ -393,10 +394,11 @@ def run(start_year, end_year):
         "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
         "warning": (
             "Research only. Match-day and timestamp precision is source-dependent. The legacy "
-            "Sackmann/TML historical archive still provides tournament-start dates only; those "
-            "years retain the documented 14-day fallback. The current-season TML feed can provide "
-            "per-match calendar days, but no clock time. ATP website automation is not used because "
-            "ATP terms require prior written permission for systematic retrieval."
+            "Sackmann/TML historical archive provides tournament-start dates only; those years use "
+            "conservative maximum event windows by source level (15 days for Grand Slams, 12 for "
+            "Masters/ATP umbrella, 8 for Finals/500/250). These are upper bounds, not actual end dates. "
+            "The current-season TML feed can provide per-match calendar days, but no clock time. "
+            "ATP website automation is not used because ATP terms require prior written permission."
         ),
         "years": year_results,
     }
