@@ -295,6 +295,14 @@ def run(start_year, end_year, quarantine_days):
                     "targetDateGranularity": target_date_granularity,
                     "sourceDateGranularity": date_granularity,
                     "chronologyRule": chronology_rule,
+                    "legacyFallbackDays": quarantine_days,
+                    "legacyFallbackCutoff": cutoff.isoformat(),
+                    "legacyFallbackTrainingMatches": sum(
+                        1 for row in chronological_training
+                        if source_precision_by_event.get(
+                            compute_speed._source_event_key(row), "tournament_start",
+                        ) != "match_day"
+                    ),
                     "trainingMatchDateMax": (
                         max(filter(None, (row_date(row) for row in chronological_training))).isoformat()
                         if chronological_training else None
