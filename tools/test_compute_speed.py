@@ -1272,6 +1272,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
         self.assertEqual(1, diagnostics["sameDayExcludedMatches"])
         self.assertEqual(1, diagnostics["dateIntervalExcludedMatches"])
+        self.assertEqual(1, diagnostics["legacyFallbackBufferExcludedMatches"])
+        self.assertEqual(0, diagnostics["legacyFallbackTrainingMatches"])
 
         # The Paris profile fit can use Madrid's 25/28 September matches, even though
         # Madrid overlaps Paris, but never the 1/2 October matches played on/after Paris began.
