@@ -857,6 +857,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
             "targetStartDate": None,
             "targetStartAtUtc": None,
             "fallbackCutoffDate": None,
+            "priorSeasonFallbackMatches": 0,
             "fallbackMatches": 0,
             "matchDateMatches": 0,
             "matchTimeMatches": 0,
@@ -957,6 +958,7 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
         "targetStartDate": target_start_date.isoformat(),
         "targetStartAtUtc": target_start_at.isoformat().replace("+00:00", "Z") if target_start_at else None,
         "fallbackCutoffDate": fallback_cutoff.isoformat(),
+        "priorSeasonFallbackMatches": 0,
         **precision_counts,
     }
     return training, anchor, diagnostics
@@ -1681,7 +1683,7 @@ def season_ratings(year, rows, source=None):
             chronology = {
                 **chronology,
                 "mode": "prior-season-fallback",
-                "fallbackMatches": len(fitted_rows),
+                "priorSeasonFallbackMatches": len(fitted_rows),
             }
         profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
         clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
@@ -1756,23 +1758,27 @@ def season_ratings(year, rows, source=None):
                 "chronologyMode": chronology.get("mode"),
                 # Compatibility field for older diagnostics consumers. It is an explicit
                 # fallback boundary, not the selected chronology boundary in precise modes.
-                "chronologicalCutoff": chronology.get("fallbackCutoffDate"),
+                "chronologicalCutoff": (
+                    chronology.get("fallbackCutoffDate")
+                    if chronology.get("fallbackMatches", 0) > 0 else None
+                ),
                 "fallbackCutoffDate": chronology.get("fallbackCutoffDate"),
                 "targetFirstMatchDate": chronology.get("targetStartDate"),
                 "targetFirstMatchStartUtc": chronology.get("targetStartAtUtc"),
                 "chronologyTrainingMatches": chronology.get("matchTimeMatches", 0)
                     + chronology.get("matchDateMatches", 0)
                     + chronology.get("eventWindowMatches", 0)
-                    + chronology.get("fallbackMatches", 0),
+                    + chronology.get("fallbackMatches", 0)
+                    + chronology.get("priorSeasonFallbackMatches", 0),
                 "chronologyMatchTimeMatches": chronology.get("matchTimeMatches", 0),
                 "chronologyMatchDateMatches": chronology.get("matchDateMatches", 0),
                 "chronologyEventWindowMatches": chronology.get("eventWindowMatches", 0),
                 "chronologyFallbackMatches": chronology.get("fallbackMatches", 0),
+                "chronologyPriorSeasonFallbackMatches": chronology.get("priorSeasonFallbackMatches", 0),
                 "eventStartDate": item["event_start_date"],
                 "quarantineDays": (
                     CHRONOLOGICAL_QUARANTINE_DAYS
-                    if "fallback" in str(chronology.get("mode", "")) or chronology.get("mode") == "mixed-precision"
-                    else None
+                    if chronology.get("fallbackMatches", 0) > 0 else None
                 ),
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
