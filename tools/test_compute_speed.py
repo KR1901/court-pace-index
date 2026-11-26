@@ -1177,12 +1177,16 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual({"paris", "rome", "madrid"}, set(ratings))
         # Paris can use Rome (months earlier), but not Madrid, which began only six
         # days before Paris and may contain later rounds played after Paris began.
-        paris_training = [
+        rome_only_training = [
             call.args[0] for call in profiles.call_args_list
             if call.args[0] and {row["tourney_name"] for row in call.args[0]} == {"Rome Masters"}
         ]
-        self.assertEqual(1, len(paris_training))
-        self.assertTrue(all(len(training_rows) == 10 for training_rows in paris_training))
+        self.assertEqual(2, len(rome_only_training))
+        self.assertTrue(all(len(training_rows) == 10 for training_rows in rome_only_training))
+        self.assertTrue(all(
+            "Madrid Masters" not in {row["tourney_name"] for row in call.args[0]}
+            for call in profiles.call_args_list if call.args[0]
+        ))
         self.assertEqual(3, profiles.call_count)
         for call in profiles.call_args_list:
             self.assertEqual(150.0, call.kwargs["prior_points"])
