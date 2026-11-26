@@ -832,22 +832,18 @@ def _source_event_end_date(row):
         str(row.get("event_status") or "").casefold() in {"completed", "complete", "finished"}
         or str(row.get("event_completed") or "").casefold() in {"true", "1", "yes"}
     )
+    if not completed or str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
+        return None
+    parsed_utc = _parse_iso_date(row.get("event_end_date_utc"))
+    if parsed_utc is not None:
+        return parsed_utc
     is_utc = (
         str(row.get("event_end_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
         or str(row.get("event_end_date_is_utc") or "").casefold() in {"true", "1", "yes"}
     )
-    if not completed:
+    if not is_utc:
         return None
-    if str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
-        return None
-    if is_utc:
-        for key in ("event_end_date_utc", "event_end_date", "tournament_end_date", "end_date"):
-            parsed = _parse_iso_date(row.get(key))
-            if parsed is not None:
-                return parsed
-    if row.get("event_end_date_utc") and not str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
-        return _parse_iso_date(row.get("event_end_date_utc"))
-    for key in ():
+    for key in ("event_end_date", "tournament_end_date", "end_date"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
