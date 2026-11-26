@@ -44,7 +44,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-26T13:49:08.821452+00:00",
+   "fetchedAtUtc": "2026-11-26T14:13:20.496814+00:00",
    "latestMatchDate": "20261122",
    "matchRows": 2816,
    "bytes": 595598,
@@ -52,7 +52,7 @@
    "ongoingDavisCup": {
     "source": "TennisMyLife ATP Match Database ongoing tournament feed",
     "url": "https://stats.tennismylife.org/data/ongoing_tourneys.csv",
-    "fetchedAtUtc": "2026-11-26T13:49:09.773241+00:00",
+    "fetchedAtUtc": "2026-11-26T14:13:20.959618+00:00",
     "bytes": 1477,
     "sha256": "e61fc1c7f31bf44669701056dd932b8ba2ce72439c826136207435d65286a085",
     "matchRows": 4,
@@ -73,6 +73,32 @@
    "completedWithValidServeStats": 152,
    "completedMissingServeStats": 35,
    "completedMalformedStats": 0,
+   "phases": {
+    "restOfDavisCup": {
+     "sourceRowsAfterMerge": 183,
+     "excludedDoubles": 0,
+     "rowsWithoutPlayerIds": 0,
+     "identifiedSingles": 183,
+     "scorelessSingles": 0,
+     "walkoverOrNoPlaySingles": 0,
+     "completedPlayedSingles": 183,
+     "completedWithValidServeStats": 148,
+     "completedMissingServeStats": 35,
+     "completedMalformedStats": 0
+    },
+    "final8": {
+     "sourceRowsAfterMerge": 4,
+     "excludedDoubles": 0,
+     "rowsWithoutPlayerIds": 0,
+     "identifiedSingles": 4,
+     "scorelessSingles": 0,
+     "walkoverOrNoPlaySingles": 0,
+     "completedPlayedSingles": 4,
+     "completedWithValidServeStats": 4,
+     "completedMissingServeStats": 0,
+     "completedMalformedStats": 0
+    }
+   },
    "source": "TennisMyLife ATP Match Database + ongoing_tourneys.csv",
    "validatedSource": true
   }
