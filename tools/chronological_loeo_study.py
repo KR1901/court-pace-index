@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Research-only comparison of retrospective LOEO and chronological pre-event CALC.
 
-This script does not change production ratings. It compares the existing cross-fitted
-season method with a conservative as-of-event candidate using only match records from
-tournaments whose archive start date is at least 14 days before the target event. The
-14-day quarantine is necessary because the Sackmann/TML yearly CSV stores tournament
-start dates, not individual match dates; this deliberately sacrifices some recent history
-rather than risk training on matches played after the target event began.
+This script does not change production ratings. It compares the retrospective cross-fit
+with the production as-of-event chronology policy. Sources with verified per-match
+timestamps use strict UTC ordering; sources with per-match calendar days use strict
+day-before ordering (same-day matches are excluded when no clock is available). Legacy
+archives containing only tournament-start dates use conservative maximum event windows
+by source level (15 days for Grand Slams, 12 for Masters/ATP umbrella, 8 for Finals/500/250).
 
-The target event's own complete match sample is included in both methods. Only the
-reference player profiles and tour anchor are event-excluded.
+The target event's complete sample is included in its observed score. Only training
+profiles and the normalisation anchor are restricted to information available before it.
 """
 import argparse
 import json
@@ -17,7 +17,7 @@ import math
 import os
 import statistics
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 import compute_speed
@@ -40,6 +40,31 @@ def grouped_standard_events(rows):
         if not event_id or event_id in compute_speed.CALC_TARGET_ONLY_EVENT_IDS:
             continue
         if row.get("tourney_level") not in compute_speed.LEVELS:
+            continue
+        if row_date(row) is None:
+            continue
+        groups[event_id].append(row)
+    return groups
+
+
+def grouped_standard_chronology_rows(rows):
+    """
+    Return source-dated target rows regardless of serve-stat validity.
+
+    Production uses all identified target rows to establish its first match day,
+    while only valid-stat rows contribute to the event's score. The research study
+    must apply the same distinction to avoid shifting the target start when the first
+    match has missing/invalid serve statistics.
+    """
+    groups = defaultdict(list)
+    for row in rows:
+        event_id = compute_speed.tournament_id(row.get("tourney_name"))
+        if not event_id or event_id in compute_speed.CALC_TARGET_ONLY_EVENT_IDS:
+            continue
+        if row.get("tourney_level") not in compute_speed.LEVELS:
+            continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
             continue
         if row_date(row) is None:
             continue
@@ -127,7 +152,7 @@ def spearman_rank(left, right):
     return 1.0 - (6.0 * d2) / (n * (n * n - 1))
 
 
-def run(start_year, end_year, quarantine_days):
+def run(start_year, end_year):
     year_results = []
     all_event_pairs = []
     for year in range(start_year, end_year + 1):
@@ -136,21 +161,25 @@ def run(start_year, end_year, quarantine_days):
         source = compute_speed.SOURCE_BY_YEAR.get(year)
         standard_rows = compute_speed.calculation_eligible_rows(compute_speed.valid_rows(rows))
         groups = grouped_standard_events(rows)
+        chronology_groups = grouped_standard_chronology_rows(rows)
         if not groups:
             continue
 
+        source_precision_by_event = compute_speed._source_event_date_granularity(rows, source)
+        date_granularity = compute_speed._source_match_date_granularity(rows, source)
         prior_tour_rate, prior_anchor, prior_error = prior_year_reference(year)
         dated_events = []
         for event_id, event_rows in groups.items():
-            start_date = min(row_date(row) for row in event_rows)
-            dated_events.append((start_date, event_id, event_rows))
+            chronology_rows = chronology_groups.get(event_id) or event_rows
+            start_date = min(row_date(row) for row in chronology_rows)
+            dated_events.append((start_date, event_id, event_rows, chronology_rows))
         dated_events.sort(key=lambda item: (item[0], item[1]))
 
         # First fit the production retrospective LOEO profile independently for each target.
         # This reproduces season_ratings(): all same-season standard events except the target
         # may train profiles and the target-specific tour-average ace anchor.
         retrospective_by_event = {}
-        for start_date, event_id, event_rows in dated_events:
+        for start_date, event_id, event_rows, chronology_rows in dated_events:
             training = [
                 row for row in standard_rows
                 if compute_speed.tournament_id(row.get("tourney_name")) != event_id
@@ -195,41 +224,49 @@ def run(start_year, end_year, quarantine_days):
             # Only the earliest covered season should need this labelled neutral anchor.
             prior_anchor = retrospective_anchor
 
-        chronological_raws = []
         event_items = []
-        for start_date, event_id, event_rows in dated_events:
+        for start_date, event_id, event_rows, chronology_rows in dated_events:
             retro = retrospective_by_event.get(event_id)
             if retro is None:
                 continue
 
-            # The archive gives tournament start dates rather than individual match dates.
-            # Exclude the target's entire 14-day pre-start window so an overlapping or
-            # two-week event cannot leak matches played after this target began.
-            cutoff = start_date - timedelta(days=quarantine_days)
+            target_start_timestamp = compute_speed._event_first_match_timestamp(chronology_rows)
+            target_date_granularity = compute_speed._event_date_granularity(
+                chronology_rows, source_precision_by_event,
+            )
+            if target_start_timestamp is not None:
+                chronology_precision = "match_timestamp"
+                chronology_rule = "strictly_before_target_match_timestamp_utc"
+                event_quarantine_days = 0
+            elif target_date_granularity == "match_day":
+                chronology_precision = "match_day"
+                chronology_rule = "strictly_before_target_local_match_day"
+                event_quarantine_days = 0
+            else:
+                chronology_precision = "tournament_start"
+                chronology_rule = "legacy_max_event_window_by_source_level"
+                event_quarantine_days = 0
+
+            # Legacy start-date rows keep their own maximum event window; daily editions
+            # are ordered by verified per-match dates, independently of the target source.
             chronological_training = [
                 row for row in standard_rows
-                if row_date(row) is not None and row_date(row) <= cutoff
+                if compute_speed._row_precedes_target(
+                    row,
+                    start_date,
+                    source_precision_by_event.get(
+                        compute_speed._source_event_key(row), "tournament_start",
+                    ),
+                    target_start_timestamp,
+                )
             ]
             chrono_profiles = fit_profiles(year, chronological_training)
+            # Match production: use this pre-target sample's tour rate directly;
+            # use the completed prior-year rate only when no same-season sample exists.
             current_tour_rate = compute_speed.tour_average_ace_rate(chronological_training)
-
-            if current_tour_rate is None:
-                chrono_tour_rate = prior_tour_rate
-            elif prior_tour_rate is None:
-                chrono_tour_rate = current_tour_rate
-            else:
-                current_points = sum(
-                    compute_speed.num(row.get("w_svpt")) + compute_speed.num(row.get("l_svpt"))
-                    for row in chronological_training
-                )
-                current_aces = sum(
-                    compute_speed.num(row.get("w_ace")) + compute_speed.num(row.get("l_ace"))
-                    for row in chronological_training
-                )
-                prior_points = compute_speed.PROFILE_PRIOR_SERVICE_POINTS
-                chrono_tour_rate = (
-                    current_aces + prior_tour_rate * prior_points
-                ) / (current_points + prior_points)
+            chrono_tour_rate = (
+                current_tour_rate if current_tour_rate is not None else prior_tour_rate
+            )
 
             if chrono_tour_rate is None or not 0.0 < chrono_tour_rate < 1.0:
                 continue
@@ -237,19 +274,25 @@ def run(start_year, end_year, quarantine_days):
             if chronological is None:
                 continue
 
-            # Rolling anchor uses only earlier events outside the same quarantine window.
-            prior_event_metrics = [
-                item for event_date, item in chronological_raws
-                if event_date <= cutoff
-            ]
-            stable_prior = [
-                item["raw"] for item in prior_event_metrics
-                if item["adjustedServerSides"] >= compute_speed.MIN_NORMALISER_SERVER_SIDES
-            ]
-            if not stable_prior:
-                stable_prior = [item["raw"] for item in prior_event_metrics]
-            chrono_anchor = statistics.mean(stable_prior) if stable_prior else prior_anchor
-            chronological_raws.append((start_date, chronological))
+            # Profile training may contain earlier rounds of a concurrent event, but the
+            # normalisation anchor may contain completed event editions only.
+            anchor_rows, anchor_mode = compute_speed._chronological_normalisation_anchor_rows(
+                year, rows, event_id, start_date, chrono_profiles, chrono_tour_rate,
+                target_start_timestamp,
+            )
+            anchor_events, _, _, _ = compute_speed.event_raw_scores(
+                anchor_rows, chrono_profiles, tour_rate=chrono_tour_rate,
+            )
+            eligible_anchor = {
+                event_id: value for event_id, value in anchor_events.items()
+                if event_id not in compute_speed.CALC_TARGET_ONLY_EVENT_IDS
+            }
+            chrono_anchor = (
+                statistics.mean(eligible_anchor.values())
+                if eligible_anchor else chronological["raw"]
+            )
+            if not eligible_anchor:
+                anchor_mode = "target_self_fallback_no_prior_anchor"
 
             retro_rating = retro["raw"] / retrospective_anchor
             chrono_rating = chronological["raw"] / chrono_anchor if chrono_anchor else None
@@ -257,6 +300,10 @@ def run(start_year, end_year, quarantine_days):
                 "year": year,
                 "event": event_id,
                 "startDate": start_date.isoformat(),
+                "lastObservedMatchDate": (
+                    max(row_date(row) for row in chronology_rows).isoformat()
+                    if target_date_granularity == "match_day" else None
+                ),
                 "matches": len(event_rows),
                 "retrospective": {
                     "rating": retro_rating,
@@ -279,7 +326,26 @@ def run(start_year, end_year, quarantine_days):
                     "adjustedServerSides": chronological["adjustedServerSides"],
                     "profileTrainingMatches": len(chronological_training),
                     "tourAceRate": chrono_tour_rate,
-                    "quarantineDays": quarantine_days,
+                    "datePrecision": chronology_precision,
+                    "targetDateGranularity": target_date_granularity,
+                    "sourceDateGranularity": date_granularity,
+                    "chronologyRule": chronology_rule,
+                    "normalisationAnchorMode": anchor_mode,
+                    "normalisationAnchorEvents": len(eligible_anchor),
+                    "normalisationAnchorMatches": len(anchor_rows),
+                    "legacyMaxEventDaysByLevel": compute_speed.LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
+                    "legacyUnknownMaxEventDays": compute_speed.LEGACY_UNKNOWN_MAX_EVENT_DAYS,
+                    "legacyFallbackTrainingMatches": sum(
+                        1 for row in chronological_training
+                        if source_precision_by_event.get(
+                            compute_speed._source_event_key(row), "tournament_start",
+                        ) != "match_day"
+                    ),
+                    "trainingMatchDateMax": (
+                        max(filter(None, (row_date(row) for row in chronological_training))).isoformat()
+                        if chronological_training else None
+                    ),
+                    "quarantineDays": event_quarantine_days,
                 },
             }
             event["ratingDeltaChronologicalMinusRetrospective"] = (
@@ -308,6 +374,7 @@ def run(start_year, end_year, quarantine_days):
             "priorYearFallbackAnchor": prior_anchor,
             "priorYearTourAceRate": prior_tour_rate,
             "priorYearWarning": prior_error,
+            "sourceDateGranularity": date_granularity,
             "retrospectiveNormalisation": retrospective_anchor,
             "events": event_items,
         })
@@ -327,17 +394,20 @@ def run(start_year, end_year, quarantine_days):
     summary = {
         "startYear": start_year,
         "endYear": end_year,
-        "quarantineDays": quarantine_days,
+        "legacyMaxEventDaysByLevel": compute_speed.LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
+        "legacyUnknownMaxEventDays": compute_speed.LEGACY_UNKNOWN_MAX_EVENT_DAYS,
         "eventsCompared": len(all_event_pairs),
         "meanAbsoluteRatingDelta": statistics.mean(abs(value) for value in deltas) if deltas else None,
         "medianAbsoluteRatingDelta": statistics.median(abs(value) for value in deltas) if deltas else None,
         "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
         "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
         "warning": (
-            "Research only. The source CSV provides tournament start dates, not exact match "
-            "timestamps. The conservative quarantine avoids most overlapping-event leakage but "
-            "also discards recent evidence. The result is a model comparison, not an automatic "
-            "production-methodology change."
+            "Research only. Match-day and timestamp precision is source-dependent. The legacy "
+            "Sackmann/TML historical archive provides tournament-start dates only; those years use "
+            "conservative maximum event windows by source level (15 days for Grand Slams, 12 for "
+            "Masters/ATP umbrella, 8 for Finals/500/250). These are upper bounds, not actual end dates. "
+            "The current-season TML feed can provide per-match calendar days, but no clock time. "
+            "ATP website automation is not used because ATP terms require prior written permission."
         ),
         "years": year_results,
     }
@@ -347,8 +417,7 @@ def run(start_year, end_year, quarantine_days):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-year", type=int, default=2016)
-    parser.add_argument("--end-year", type=int, default=2025)
-    parser.add_argument("--quarantine-days", type=int, default=14)
+    parser.add_argument("--end-year", type=int, default=date.today().year)
     parser.add_argument("--output", default="build/chronological-loeo-study.json")
     args = parser.parse_args()
     if args.start_year < compute_speed.PROFILE_HISTORY_START_YEAR:
@@ -356,7 +425,7 @@ def main():
     if args.end_year < args.start_year:
         parser.error("end year must be >= start year")
 
-    report = run(args.start_year, args.end_year, args.quarantine_days)
+    report = run(args.start_year, args.end_year)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
