@@ -32,9 +32,8 @@ SOURCE_METADATA_BY_YEAR = {}
 MIN_MATCHES_PER_SURFACE = 3
 MIN_EVENT_RATING_SERVER_SIDES = 1
 MIN_NORMALISER_SERVER_SIDES = 20
-# Source archives expose tournament start dates, not per-match dates. A two-week
-# quarantine avoids using later rounds from an earlier-starting event that overlaps
-# the target tournament.
+# Legacy safety fallback only. Match-level timestamps/dates and explicit event windows
+# take precedence whenever their source metadata is available and complete.
 CHRONOLOGICAL_QUARANTINE_DAYS = 14
 MIN_EVENT_CI_MATCH_CLUSTERS = 5
 EVENT_CI_BOOTSTRAP_ITERATIONS = 1000
@@ -819,15 +818,22 @@ def _chronological_training_sets(year, rows, target_event_id, target_rows):
     The player profile may use completed matches from an event still in progress. The
     normalisation anchor may only use entire events that had finished before the target.
     """
-    target_start_dates = [_source_match_date(row) for row in target_rows]
-    target_start_dates = [value for value in target_start_dates if value is not None]
+    source_target_dates = [_source_match_date(row) for row in target_rows]
+    target_start_dates = (
+        source_target_dates
+        if source_target_dates and all(value is not None for value in source_target_dates)
+        else []
+    )
     target_start_date = min(target_start_dates) if target_start_dates else min(
         (_match_date(row) for row in target_rows if _match_date(row) is not None),
         default=None,
     )
     target_start_times = [_actual_match_start(row) for row in target_rows]
-    target_start_times = [value for value in target_start_times if value is not None]
-    target_start_at = min(target_start_times) if len(target_start_times) == len(target_rows) else None
+    target_start_at = (
+        min(target_start_times)
+        if target_start_times and all(value is not None for value in target_start_times)
+        else None
+    )
     if target_start_at is not None:
         target_start_date = target_start_at.date()
 
@@ -1641,8 +1647,13 @@ def season_ratings(year, rows, source=None):
         if not archive_dates:
             continue
         event_start = min(archive_dates)
+        # Use every source row to identify the event's first match, including matches
+        # missing serve statistics that are excluded from the speed-rating sample.
+        chronology_target_rows = [
+            row for row in rows if tournament_id(row.get("tourney_name")) == tid
+        ] or event_rows
         training_rows, anchor_rows, chronology = _chronological_training_sets(
-            year, rows, tid, event_rows,
+            year, rows, tid, chronology_target_rows,
         )
         profiles, tour_rate, fitted_rows, used_prior_fallback = (
             _chronological_profiles_and_anchor(year, training_rows)
