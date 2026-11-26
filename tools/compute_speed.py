@@ -1625,30 +1625,30 @@ def season_ratings(year, rows, source=None):
         training_dates = [value for value in training_dates if value is not None]
         same_day_excluded = 0
         date_interval_excluded = 0
-        if chronology_precision in {"match_day", "match_timestamp"}:
-            for row in calculation_eligible_rows(valid_rows(rows)):
-                if tournament_id(row.get("tourney_name")) == tid:
-                    continue
-                row_date = _match_date(row)
-                row_precision = training_precision_by_event.get(
-                    _source_event_key(row), "tournament_start",
-                )
-                if row_date == event_start and row_precision == "match_day":
-                    row_timestamp = _match_start_timestamp(row)
-                    if (
-                        target_start_timestamp is not None and row_timestamp is not None
-                        and row_timestamp < target_start_timestamp
-                    ):
-                        continue
-                    same_day_excluded += 1
-                elif (
-                    row_precision == "match_day" and row_date is not None
-                    and row_date < event_start
-                    and not _row_precedes_target(
-                        row, event_start, legacy_cutoff, row_precision, target_start_timestamp,
-                    )
+        for row in calculation_eligible_rows(valid_rows(rows)):
+            if tournament_id(row.get("tourney_name")) == tid:
+                continue
+            row_date = _match_date(row)
+            row_precision = training_precision_by_event.get(
+                _source_event_key(row), "tournament_start",
+            )
+            if row_precision != "match_day" or row_date is None:
+                continue
+            if row_date == event_start:
+                row_timestamp = _match_start_timestamp(row)
+                if (
+                    target_start_timestamp is not None and row_timestamp is not None
+                    and row_timestamp < target_start_timestamp
                 ):
-                    date_interval_excluded += 1
+                    continue
+                same_day_excluded += 1
+            elif (
+                row_date < event_start
+                and not _row_precedes_target(
+                    row, event_start, legacy_cutoff, row_precision, target_start_timestamp,
+                )
+            ):
+                date_interval_excluded += 1
 
         details[tid] = {
             "raw": event_raw,
@@ -1665,6 +1665,8 @@ def season_ratings(year, rows, source=None):
             ),
             "event_start_date": event_start.isoformat(),
             "chronology_precision": chronology_precision,
+            "target_date_granularity": target_date_granularity,
+            "source_date_granularity": source_precision_summary,
             "chronology_rule": chronology_rule,
             "quarantine_days": quarantine_days,
             "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
@@ -1720,6 +1722,8 @@ def season_ratings(year, rows, source=None):
                 "chronologicalCutoff": item["chronology_cutoff"],
                 "eventStartDate": item["event_start_date"],
                 "chronologyPrecision": item["chronology_precision"],
+                "targetDateGranularity": item["target_date_granularity"],
+                "sourceDateGranularity": item["source_date_granularity"],
                 "chronologyRule": item["chronology_rule"],
                 "trainingMatchDateMax": item["training_match_date_max"],
                 "sameDayExcludedMatches": item["same_day_excluded_matches"],
