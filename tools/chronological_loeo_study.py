@@ -47,6 +47,28 @@ def grouped_standard_events(rows):
     return groups
 
 
+def grouped_standard_chronology_rows(rows):
+    """
+    Return source-dated target rows regardless of serve-stat validity.
+
+    Production uses all identified target rows to establish its first match day,
+    while only valid-stat rows contribute to the event's score. The research study
+    must apply the same distinction to avoid shifting the target start when the first
+    match has missing/invalid serve statistics.
+    """
+    groups = defaultdict(list)
+    for row in rows:
+        event_id = compute_speed.tournament_id(row.get("tourney_name"))
+        if not event_id or event_id in compute_speed.CALC_TARGET_ONLY_EVENT_IDS:
+            continue
+        if row.get("tourney_level") not in compute_speed.LEVELS:
+            continue
+        if row_date(row) is None:
+            continue
+        groups[event_id].append(row)
+    return groups
+
+
 def event_metrics(event_rows, profiles, tour_rate):
     details = compute_speed.event_side_diagnostics(
         event_rows,
@@ -136,6 +158,7 @@ def run(start_year, end_year, quarantine_days):
         source = compute_speed.SOURCE_BY_YEAR.get(year)
         standard_rows = compute_speed.calculation_eligible_rows(compute_speed.valid_rows(rows))
         groups = grouped_standard_events(rows)
+        chronology_groups = grouped_standard_chronology_rows(rows)
         if not groups:
             continue
 
@@ -144,15 +167,16 @@ def run(start_year, end_year, quarantine_days):
         prior_tour_rate, prior_anchor, prior_error = prior_year_reference(year)
         dated_events = []
         for event_id, event_rows in groups.items():
-            start_date = min(row_date(row) for row in event_rows)
-            dated_events.append((start_date, event_id, event_rows))
+            chronology_rows = chronology_groups.get(event_id) or event_rows
+            start_date = min(row_date(row) for row in chronology_rows)
+            dated_events.append((start_date, event_id, event_rows, chronology_rows))
         dated_events.sort(key=lambda item: (item[0], item[1]))
 
         # First fit the production retrospective LOEO profile independently for each target.
         # This reproduces season_ratings(): all same-season standard events except the target
         # may train profiles and the target-specific tour-average ace anchor.
         retrospective_by_event = {}
-        for start_date, event_id, event_rows in dated_events:
+        for start_date, event_id, event_rows, chronology_rows in dated_events:
             training = [
                 row for row in standard_rows
                 if compute_speed.tournament_id(row.get("tourney_name")) != event_id
@@ -198,14 +222,14 @@ def run(start_year, end_year, quarantine_days):
             prior_anchor = retrospective_anchor
 
         event_items = []
-        for start_date, event_id, event_rows in dated_events:
+        for start_date, event_id, event_rows, chronology_rows in dated_events:
             retro = retrospective_by_event.get(event_id)
             if retro is None:
                 continue
 
-            target_start_timestamp = compute_speed._event_first_match_timestamp(event_rows)
+            target_start_timestamp = compute_speed._event_first_match_timestamp(chronology_rows)
             target_date_granularity = compute_speed._event_date_granularity(
-                event_rows, source_precision_by_event,
+                chronology_rows, source_precision_by_event,
             )
             if target_start_timestamp is not None:
                 chronology_precision = "match_timestamp"
