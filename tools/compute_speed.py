@@ -1594,8 +1594,11 @@ def season_ratings(year, rows, source=None):
         if not dates:
             continue
         event_start = min(dates)
+        event_last_observed_match_date = max(dates)
         target_start_timestamp = _event_first_match_timestamp(chronology_rows)
         target_date_granularity = _event_date_granularity(chronology_rows, source_precision_by_event)
+        if target_date_granularity != "match_day":
+            event_last_observed_match_date = None
         if target_start_timestamp is not None:
             chronology_precision = "match_timestamp"
             chronology_rule = "strictly_before_target_match_timestamp_utc"
@@ -1692,6 +1695,10 @@ def season_ratings(year, rows, source=None):
             ),
             "legacy_fallback_cutoff": legacy_cutoff.isoformat(),
             "event_start_date": event_start.isoformat(),
+            "event_last_observed_match_date": (
+                event_last_observed_match_date.isoformat()
+                if event_last_observed_match_date is not None else None
+            ),
             "chronology_precision": chronology_precision,
             "target_date_granularity": target_date_granularity,
             "source_date_granularity": source_precision_summary,
@@ -1750,6 +1757,7 @@ def season_ratings(year, rows, source=None):
             "calculationDiagnostics": {
                 "chronologicalCutoff": item["chronology_cutoff"],
                 "eventStartDate": item["event_start_date"],
+                "eventLastObservedMatchDate": item["event_last_observed_match_date"],
                 "chronologyPrecision": item["chronology_precision"],
                 "targetDateGranularity": item["target_date_granularity"],
                 "sourceDateGranularity": item["source_date_granularity"],
