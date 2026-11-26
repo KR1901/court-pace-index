@@ -1391,11 +1391,11 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             ratings = compute_speed.season_ratings(2026, rows)
 
         self.assertIn("paris", ratings)
-        self.assertEqual(1, len(anchor_calls))
-        self.assertEqual(
-            {"Prior Season Open"},
-            {row["tourney_name"] for row in anchor_calls[0]},
-        )
+        self.assertEqual(2, len(anchor_calls))  # Rome and Paris are both rated targets.
+        self.assertTrue(all(
+            {row["tourney_name"] for row in anchors} == {"Prior Season Open"}
+            for anchors in anchor_calls
+        ))
         diag = ratings["paris"]["calculationDiagnostics"]
         self.assertEqual("match-date", diag["chronologyMode"])
         self.assertEqual("prior-season-fallback", diag["normalisationAnchorMode"])
