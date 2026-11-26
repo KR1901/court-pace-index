@@ -777,6 +777,27 @@ def _event_first_match_timestamp(event_rows):
     return min(timestamps)
 
 
+def _match_day_definitely_precedes_target(source_day, target_day):
+    """
+    Compare local calendar days without guessing their time zones.
+
+    A local day may span UTC from 14 hours before its date (UTC+14) to 12 hours
+    after the following midnight (UTC-12). Include the source day only when its
+    latest possible UTC instant is no later than the target day's earliest possible
+    UTC instant. This protects overlapping events in different time zones without
+    inventing a local clock time.
+    """
+    source_latest_utc = (
+        datetime.combine(source_day + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc)
+        + timedelta(hours=12)
+    )
+    target_earliest_utc = (
+        datetime.combine(target_day, datetime.min.time(), tzinfo=timezone.utc)
+        - timedelta(hours=14)
+    )
+    return source_latest_utc <= target_earliest_utc
+
+
 def _row_precedes_target(
     row, target_start_date, legacy_cutoff, date_precision, target_start_timestamp=None,
 ):
@@ -789,9 +810,9 @@ def _row_precedes_target(
         row_timestamp = _match_start_timestamp(row)
         if target_start_timestamp is not None and row_timestamp is not None:
             return row_timestamp < target_start_timestamp
-        # Day-only feeds cannot order two matches on the same local calendar day.
-        # Exclude the whole target day rather than guess which match started first.
-        return match_date < target_start_date
+        # Without two real timestamps and their offsets, prove precedence across every
+        # possible tournament time zone. Adjacent local calendar days can overlap in UTC.
+        return _match_day_definitely_precedes_target(match_date, target_start_date)
 
     # Legacy event-start-only archives cannot distinguish earlier and later rounds
     # inside a tournament. Retain the explicitly-labelled historical fallback.
@@ -1562,19 +1583,27 @@ def season_ratings(year, rows, source=None):
         training_dates = [_match_date(row) for row in training_rows]
         training_dates = [value for value in training_dates if value is not None]
         same_day_excluded = 0
+        date_interval_excluded = 0
         if chronology_precision in {"match_day", "match_timestamp"}:
             for row in calculation_eligible_rows(valid_rows(rows)):
                 if tournament_id(row.get("tourney_name")) == tid:
                     continue
-                if _match_date(row) != event_start:
-                    continue
-                row_timestamp = _match_start_timestamp(row)
-                if (
-                    target_start_timestamp is not None and row_timestamp is not None
-                    and row_timestamp < target_start_timestamp
+                row_date = _match_date(row)
+                if row_date == event_start:
+                    row_timestamp = _match_start_timestamp(row)
+                    if (
+                        target_start_timestamp is not None and row_timestamp is not None
+                        and row_timestamp < target_start_timestamp
+                    ):
+                        continue
+                    same_day_excluded += 1
+                elif (
+                    row_date is not None and row_date < event_start
+                    and not _row_precedes_target(
+                        row, event_start, legacy_cutoff, chronology_precision, target_start_timestamp,
+                    )
                 ):
-                    continue
-                same_day_excluded += 1
+                    date_interval_excluded += 1
 
         details[tid] = {
             "raw": event_raw,
@@ -1595,6 +1624,7 @@ def season_ratings(year, rows, source=None):
             "quarantine_days": quarantine_days,
             "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
             "same_day_excluded_matches": same_day_excluded,
+            "date_interval_excluded_matches": date_interval_excluded,
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -1643,6 +1673,7 @@ def season_ratings(year, rows, source=None):
                 "chronologyRule": item["chronology_rule"],
                 "trainingMatchDateMax": item["training_match_date_max"],
                 "sameDayExcludedMatches": item["same_day_excluded_matches"],
+                "dateIntervalExcludedMatches": item["date_interval_excluded_matches"],
                 "quarantineDays": item["quarantine_days"],
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
