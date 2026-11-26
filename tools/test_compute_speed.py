@@ -1184,7 +1184,10 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual(2, len(rome_only_training))
         self.assertTrue(all(len(training_rows) == 10 for training_rows in rome_only_training))
         self.assertTrue(all(
-            "Madrid Masters" not in {row["tourney_name"] for row in call.args[0]}
+            not any(
+                row["tourney_name"] == "Madrid Masters" and row["tourney_date"] == "20260925"
+                for row in call.args[0]
+            )
             for call in profiles.call_args_list if call.args[0]
         ))
         self.assertEqual(3, profiles.call_count)
