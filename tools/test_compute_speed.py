@@ -1260,7 +1260,11 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             and {row["tourney_name"] for row in call.args[0]} == {"Madrid Masters"}
             and any(row["tourney_date"] == "20260928" for row in call.args[0])
         ]
-        self.assertTrue(paris_training)
+        observed_profile_inputs = [
+            [(row.get("tourney_name"), row.get("tourney_date")) for row in call.args[0]]
+            for call in profiles.call_args_list if call.args
+        ]
+        self.assertTrue(paris_training, repr(observed_profile_inputs))
         self.assertTrue(all(
             {row["tourney_date"] for row in rows} == {"20260925", "20260928"}
             for rows in paris_training
