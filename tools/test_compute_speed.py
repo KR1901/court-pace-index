@@ -1252,7 +1252,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual(1, diagnostics["sameDayExcludedMatches"])
         self.assertEqual(1, diagnostics["dateIntervalExcludedMatches"])
 
-        # The Paris profile fit can use Madrid's 25/28/30 September matches, even though
+        # The Paris profile fit can use Madrid's 25/28 September matches, even though
         # Madrid overlaps Paris, but never the 1/2 October matches played on/after Paris began.
         paris_training = [
             call.args[0] for call in profiles.call_args_list
