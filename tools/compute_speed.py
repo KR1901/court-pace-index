@@ -836,11 +836,18 @@ def _source_event_end_date(row):
         str(row.get("event_end_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
         or str(row.get("event_end_date_is_utc") or "").casefold() in {"true", "1", "yes"}
     )
-    if not completed or not is_utc:
+    if not completed:
         return None
     if str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
         return None
-    for key in ("event_end_date_utc", "event_end_date", "tournament_end_date", "end_date"):
+    if is_utc:
+        for key in ("event_end_date_utc", "event_end_date", "tournament_end_date", "end_date"):
+            parsed = _parse_iso_date(row.get(key))
+            if parsed is not None:
+                return parsed
+    if row.get("event_end_date_utc") and not str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
+        return _parse_iso_date(row.get("event_end_date_utc"))
+    for key in ():
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
