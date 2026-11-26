@@ -898,8 +898,7 @@ def _prior_year_rows(year):
 
 
 def _chronological_profiles_and_anchor(
-    year, rows, target_start_date, legacy_cutoff, training_precision_by_event,
-    target_start_timestamp=None,
+    year, rows, target_start_date, training_precision_by_event, target_start_timestamp=None,
 ):
     """Fit profiles using each source edition's own verified date precision."""
     before = [
@@ -907,7 +906,6 @@ def _chronological_profiles_and_anchor(
         if _row_precedes_target(
             row,
             target_start_date,
-            legacy_cutoff,
             training_precision_by_event.get(_source_event_key(row), "tournament_start"),
             target_start_timestamp,
         )
