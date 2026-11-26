@@ -1295,6 +1295,63 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ))
         compute_speed._PROFILE_YEAR_CACHE.clear()
 
+    def test_missing_stat_target_first_match_still_sets_chronology_start(self):
+        def match(event, match_date, *, valid=True, aces=8):
+            row = {
+                "tourney_name": event,
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": match_date,
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "winner_name": "Player One",
+                "loser_name": "Player Two",
+                "score": "6-3 6-4",
+                "w_svpt": 100 if valid else "",
+                "l_svpt": 100 if valid else "",
+                "w_ace": aces if valid else "",
+                "l_ace": aces if valid else "",
+            }
+            return row
+
+        rows = [
+            match("Madrid Masters", "20260925"),
+            match("Madrid Masters", "20260928"),
+            match("Madrid Masters", "20260930"),
+            # This first Paris match has a score/date but lacks serve statistics,
+            # so it is not rateable, but it must still establish the target start.
+            match("Paris Masters", "20261001", valid=False),
+        ]
+        rows += [match("Paris Masters", "20261003") for _ in range(5)]
+        rows += [match("Paris Masters", "20261004") for _ in range(5)]
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with (
+            patch.object(compute_speed, "_prior_year_rows", return_value=[]),
+            patch.object(compute_speed, "_profile_year_rates", return_value={}),
+            patch.object(compute_speed, "player_rates", wraps=compute_speed.player_rates) as profiles,
+        ):
+            ratings = compute_speed.season_ratings(
+                2026, rows, source="TennisMyLife ATP Match Database",
+            )
+
+        self.assertIn("paris", ratings)
+        diagnostics = ratings["paris"]["calculationDiagnostics"]
+        self.assertEqual("2026-10-01", diagnostics["eventStartDate"])
+        self.assertEqual("match_day", diagnostics["targetDateGranularity"])
+        self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
+        profile_inputs = [
+            call.args[0] for call in profiles.call_args_list
+            if call.args and call.args[0]
+            and {row["tourney_name"] for row in call.args[0]} == {"Madrid Masters"}
+        ]
+        self.assertTrue(profile_inputs)
+        self.assertTrue(all(
+            {row["tourney_date"] for row in training} == {"20260925", "20260928"}
+            for training in profile_inputs
+        ))
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
     def test_date_only_precedence_is_timezone_safe_at_adjacent_day_boundaries(self):
         target = date(2026, 10, 1)
         # A day only two calendar days earlier can still overlap in UTC when the
