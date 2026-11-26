@@ -840,18 +840,18 @@ def _row_precedes_target(
     if match_date is None:
         return False
 
+    row_timestamp = _match_start_timestamp(row)
+    if target_start_timestamp is not None and row_timestamp is not None:
+        return row_timestamp < target_start_timestamp
+
     if date_precision in {"match_day", "match_timestamp"}:
-        row_timestamp = _match_start_timestamp(row)
-        if target_start_timestamp is not None and row_timestamp is not None:
-            return row_timestamp < target_start_timestamp
         # Without two real timestamps and their offsets, prove precedence across every
-        # possible tournament time zone. Adjacent local calendar days can overlap in UTC.
+        # possible tournament time zone. Adjacent local calendar dates can overlap in UTC.
         return _match_day_definitely_precedes_target(match_date, target_start_date)
 
     # Legacy event-start-only archives cannot distinguish earlier and later rounds
     # inside a tournament. Retain the explicitly-labelled historical fallback.
     return match_date <= legacy_cutoff
-
 
 def _prior_year_rows(year):
     """Return eligible ATP training rows from a completed prior season."""
@@ -859,13 +859,18 @@ def _prior_year_rows(year):
 
 
 def _chronological_profiles_and_anchor(
-    year, rows, target_start_date, legacy_cutoff, date_precision, target_start_timestamp=None,
+    year, rows, target_start_date, legacy_cutoff, training_precision_by_event,
+    target_start_timestamp=None,
 ):
-    """Fit profiles only from matches provably available before the target event begins."""
+    """Fit profiles using each source edition's own verified date precision."""
     before = [
         row for row in calculation_eligible_rows(valid_rows(rows))
         if _row_precedes_target(
-            row, target_start_date, legacy_cutoff, date_precision, target_start_timestamp,
+            row,
+            target_start_date,
+            legacy_cutoff,
+            training_precision_by_event.get(_source_event_key(row), "tournament_start"),
+            target_start_timestamp,
         )
     ]
     if before:
@@ -888,7 +893,6 @@ def _chronological_profiles_and_anchor(
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
         return None, None, []
     return profiles, tour_rate, before
-
 
 def build_live_profiles(profile_year, current_profiles):
     """
@@ -1592,7 +1596,7 @@ def season_ratings(year, rows, source=None):
         legacy_cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
         training_precision_by_event = source_precision_by_event
         profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
-            year, rows, event_start, legacy_cutoff, chronology_precision, target_start_timestamp,
+            year, rows, event_start, legacy_cutoff, training_precision_by_event, target_start_timestamp,
         )
         if profiles is None or tour_rate is None:
             continue
