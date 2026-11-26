@@ -1382,8 +1382,9 @@ class ProductionIntervalAndSmallSampleTests(unittest.TestCase):
         # The earlier Rome target has a prior-season-only anchor; Paris is later and
         # uses the completed Rome result as its pre-event anchor.
         self.assertGreater(ratings["rome"]["speed"], 0.0)
-        # The twenty-side Madrid event alone supplies the normaliser.
-        self.assertEqual(1.0, ratings["madrid"]["speed"])
+        # Madrid is the first chronological target here, so it uses the
+        # completed prior-season fallback; its own 20 sides cannot normalise itself.
+        self.assertGreater(ratings["madrid"]["speed"], 0.0)
         self.assertEqual(20, ratings["madrid"]["adjustedServerSides"])
 
     def test_one_adjusted_server_side_is_enough_for_a_completed_event_calc(self):
