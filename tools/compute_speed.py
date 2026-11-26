@@ -211,7 +211,11 @@ def davis_cup_match_key(row):
     match_date = str(row.get("tourney_date") or "").strip()
     match_number = str(row.get("match_num") or "").strip()
     if tournament_id and match_date and match_number:
-        return ("rubber", tournament_id, match_date, match_number)
+        players = tuple(sorted((
+            str(row.get("winner_id") or "").strip(),
+            str(row.get("loser_id") or "").strip(),
+        )))
+        return ("rubber", tournament_id, match_date, match_number, *players)
     return (
         "fallback",
         tournament_id,
@@ -242,6 +246,84 @@ def merge_davis_cup_rows(annual_rows, supplement_rows):
         # missing or partial statistics. A match must appear exactly once in the target.
         merged[key] = dict(row)
     return [merged[key] for key in order], added
+
+
+def davis_cup_coverage_audit(rows, year):
+    """Classify the deduplicated current-year TML Davis Cup singles feed without retaining rows."""
+    davis_rows = [
+        row for row in rows
+        if row.get("tourney_level") == "D"
+        and _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
+        and str(row.get("tourney_date") or "").strip()[:4] == str(year)
+    ]
+    unique = {}
+    excluded_doubles = 0
+    rows_without_player_ids = 0
+    for row in davis_rows:
+        names = (str(row.get("winner_name") or ""), str(row.get("loser_name") or ""))
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            excluded_doubles += 1
+            continue
+        if not str(row.get("winner_id") or "").strip() or not str(row.get("loser_id") or "").strip():
+            rows_without_player_ids += 1
+            continue
+        unique[davis_cup_match_key(row)] = row
+
+    required = ("w_ace", "w_svpt", "l_ace", "l_svpt")
+    unplayed = [row for row in unique.values() if not str(row.get("score") or "").strip()]
+    no_play = [
+        row for row in unique.values()
+        if str(row.get("score") or "").strip() and _is_no_play_score(row.get("score"))
+    ]
+    completed = [
+        row for row in unique.values()
+        if str(row.get("score") or "").strip() and not _is_no_play_score(row.get("score"))
+    ]
+    valid_stats = 0
+    missing_stats = 0
+    malformed_stats = 0
+    for row in completed:
+        if any(not str(row.get(key) or "").strip() for key in required):
+            missing_stats += 1
+            continue
+        try:
+            winner_aces, winner_points, loser_aces, loser_points = (
+                int(str(row[key]).strip()) for key in required
+            )
+            valid = (
+                bool(str(row.get("winner_name") or "").strip())
+                and bool(str(row.get("loser_name") or "").strip())
+                and winner_aces >= 0 and loser_aces >= 0
+                and winner_points > 0 and loser_points > 0
+                and winner_aces <= winner_points and loser_aces <= loser_points
+            )
+        except (TypeError, ValueError):
+            valid = False
+        if valid:
+            valid_stats += 1
+        else:
+            malformed_stats += 1
+
+    return {
+        "sourceRowsAfterMerge": len(davis_rows),
+        "excludedDoubles": excluded_doubles,
+        "rowsWithoutPlayerIds": rows_without_player_ids,
+        "identifiedSingles": len(unique),
+        "scheduledUnplayedSingles": len(unplayed),
+        "walkoverOrNoPlaySingles": len(no_play),
+        "completedPlayedSingles": len(completed),
+        "completedWithValidServeStats": valid_stats,
+        "completedMissingServeStats": missing_stats,
+        "completedMalformedStats": malformed_stats,
+    }
+
+
+def _is_no_play_score(score):
+    normalized = "".join(str(score or "").upper().split())
+    return (
+        "W/O" in normalized or normalized == "WO"
+        or "WALKOVER" in normalized or "DEF" in normalized
+    )
 
 
 def load(year):
@@ -1494,6 +1576,7 @@ def main():
 
     history = {}
     season_sources = {}
+    davis_cup_coverage = {}
     for year in YEARS:
         try:
             rows = load(year)
@@ -1502,6 +1585,21 @@ def main():
                 print(f"{year}: archive not published yet; skipping current-year history")
                 continue
             raise
+        if year == date.today().year:
+            audit = davis_cup_coverage_audit(rows, year)
+            audit["source"] = SOURCE_BY_YEAR.get(year, "unknown")
+            audit["validatedSource"] = SOURCE_BY_YEAR.get(year) == TML_DAVIS_CUP_SOURCE
+            davis_cup_coverage[str(year)] = audit
+            print(
+                "Davis Cup source reconciliation: "
+                f"{audit['identifiedSingles']} identified singles · "
+                f"{audit['completedPlayedSingles']} played · "
+                f"{audit['scheduledUnplayedSingles']} unplayed · "
+                f"{audit['walkoverOrNoPlaySingles']} walkovers/no-play · "
+                f"{audit['completedWithValidServeStats']} valid stats · "
+                f"{audit['completedMissingServeStats']} missing stats · "
+                f"{audit['completedMalformedStats']} malformed stats"
+            )
         ratings = season_ratings(year, rows, source=SOURCE_BY_YEAR.get(year))
         history[year] = ratings
         season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
@@ -1672,6 +1770,7 @@ def main():
             "source_metadata": {
                 str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR
             },
+            "davis_cup_coverage": davis_cup_coverage,
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
                                      for k, v in d.items()} for t, d in ratings.items()}
                         for y, ratings in history.items()},
