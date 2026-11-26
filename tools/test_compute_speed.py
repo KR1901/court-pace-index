@@ -1194,6 +1194,133 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         for call in profiles.call_args_list:
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
+    def test_tml_match_days_use_pre_target_matches_from_overlapping_events(self):
+        def match(event, match_date, *, aces=8, timestamp=None):
+            row = {
+                "tourney_name": event,
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": match_date,
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "winner_name": "Player One",
+                "loser_name": "Player Two",
+                "score": "6-3 6-4",
+                "w_svpt": 100,
+                "l_svpt": 100,
+                "w_ace": aces,
+                "l_ace": aces,
+            }
+            if timestamp:
+                row["match_start_utc"] = timestamp
+            return row
+
+        earlier = [
+            match("Madrid Masters", "20260925"),
+            match("Madrid Masters", "20260928"),
+            match("Madrid Masters", "20260930"),
+        ]
+        same_day = match("Madrid Masters", "20261001", aces=35)
+        later = match("Madrid Masters", "20261002", aces=35)
+        target = [match("Paris Masters", "20261001") for _ in range(10)]
+
+        source = "TennisMyLife ATP Match Database"
+        self.assertEqual(
+            "match_day",
+            compute_speed._source_match_date_granularity(earlier + [same_day, later] + target, source),
+        )
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with (
+            patch.object(compute_speed, "_prior_year_rows", return_value=[]),
+            patch.object(compute_speed, "_profile_year_rates", return_value={}),
+            patch.object(compute_speed, "player_rates", wraps=compute_speed.player_rates) as profiles,
+        ):
+            baseline = compute_speed.season_ratings(2026, earlier + target, source=source)
+            with_future = compute_speed.season_ratings(
+                2026, earlier + [same_day, later] + target, source=source,
+            )
+
+        self.assertIn("paris", baseline)
+        self.assertIn("paris", with_future)
+        self.assertEqual(baseline["paris"]["speed"], with_future["paris"]["speed"])
+        diagnostics = with_future["paris"]["calculationDiagnostics"]
+        self.assertEqual("match_day", diagnostics["chronologyPrecision"])
+        self.assertEqual("strictly_before_target_local_match_day", diagnostics["chronologyRule"])
+        self.assertEqual(0, diagnostics["quarantineDays"])
+        self.assertEqual("2026-09-30", diagnostics["trainingMatchDateMax"])
+        self.assertEqual(1, diagnostics["sameDayExcludedMatches"])
+
+        # The Paris profile fit can use Madrid's 25/28/30 September matches, even though
+        # Madrid overlaps Paris, but never the 1/2 October matches played on/after Paris began.
+        paris_training = [
+            call.args[0] for call in profiles.call_args_list
+            if call.args[0]
+            and {row["tourney_name"] for row in call.args[0]} == {"Madrid Masters"}
+            and any(row["tourney_date"] == "20260930" for row in call.args[0])
+        ]
+        self.assertTrue(paris_training)
+        self.assertTrue(all(
+            {row["tourney_date"] for row in rows} == {"20260925", "20260928", "20260930"}
+            for rows in paris_training
+        ))
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
+    def test_match_timestamps_can_order_same_day_matches_when_offsets_are_present(self):
+        def match(event, match_date, timestamp=None, aces=8):
+            row = {
+                "tourney_name": event,
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": match_date,
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "winner_name": "Player One",
+                "loser_name": "Player Two",
+                "score": "6-3 6-4",
+                "w_svpt": 100,
+                "l_svpt": 100,
+                "w_ace": aces,
+                "l_ace": aces,
+            }
+            if timestamp:
+                row["match_start_utc"] = timestamp
+            return row
+
+        rows = [
+            match("Madrid Masters", "20260930"),
+            match("Madrid Masters", "20261001", "2026-10-01T13:00:00Z"),
+            match("Madrid Masters", "20261001", "2026-10-01T15:00:00Z", aces=35),
+        ]
+        target = [
+            match("Paris Masters", "20261001", "2026-10-01T14:00:00Z")
+            for _ in range(10)
+        ]
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with (
+            patch.object(compute_speed, "_prior_year_rows", return_value=[]),
+            patch.object(compute_speed, "_profile_year_rates", return_value={}),
+            patch.object(compute_speed, "player_rates", wraps=compute_speed.player_rates) as profiles,
+        ):
+            ratings = compute_speed.season_ratings(
+                2026, rows + target, source="TennisMyLife ATP Match Database",
+            )
+
+        self.assertIn("paris", ratings)
+        diagnostics = ratings["paris"]["calculationDiagnostics"]
+        self.assertEqual("match_timestamp", diagnostics["chronologyPrecision"])
+        self.assertEqual("strictly_before_target_match_timestamp_utc", diagnostics["chronologyRule"])
+        self.assertEqual(0, diagnostics["quarantineDays"])
+        same_day_training = [
+            row for call in profiles.call_args_list for row in call.args[0]
+            if row.get("tourney_name") == "Madrid Masters"
+            and row.get("tourney_date") == "20261001"
+        ]
+        self.assertEqual(1, len(same_day_training))
+        self.assertEqual("2026-10-01T13:00:00Z", same_day_training[0]["match_start_utc"])
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
         standard_rows = []
         all_rows = []
