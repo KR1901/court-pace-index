@@ -1033,7 +1033,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         rows = []
         for event, level, event_date, aces in (
             ("Rome Masters", "M", "20261102", 8),
-            ("Tour Finals", "F", "20261115", 10),
+            ("ATP Finals", "F", "20261115", 10),
         ):
             for _ in range(10):
                 rows.append({
@@ -1042,6 +1042,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
                     "winner_name": "Player One", "loser_name": "Player Two",
                     "w_svpt": 100, "l_svpt": 100, "w_ace": aces, "l_ace": aces,
                 })
+        self.assertEqual("atpfinals", compute_speed.tournament_id("ATP Finals"))
+        self.assertEqual("atpfinals", compute_speed.tournament_id("Nitto ATP Finals"))
         self.assertEqual("atpfinals", compute_speed.tournament_id("Tour Finals"))
         compute_speed._PROFILE_YEAR_CACHE.clear()
         prior_rows = [{
