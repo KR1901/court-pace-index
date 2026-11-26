@@ -1222,13 +1222,18 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ]
         same_day = match("Madrid Masters", "20261001", aces=35)
         later = match("Madrid Masters", "20261002", aces=35)
-        target = [match("Paris Masters", "20261001") for _ in range(10)]
+        target = [
+            match("Paris Masters", "20261001") for _ in range(5)
+        ] + [
+            match("Paris Masters", "20261002") for _ in range(5)
+        ]
 
         source = "TennisMyLife ATP Match Database"
-        self.assertEqual(
-            "match_day",
-            compute_speed._source_match_date_granularity(earlier + [same_day, later] + target, source),
+        precision_by_event = compute_speed._source_event_date_granularity(
+            earlier + [same_day, later] + target, source,
         )
+        self.assertEqual("match_day", precision_by_event["event:madrid"])
+        self.assertEqual("match_day", precision_by_event["event:paris"])
 
         compute_speed._PROFILE_YEAR_CACHE.clear()
         with (
@@ -1246,6 +1251,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual(baseline["paris"]["speed"], with_future["paris"]["speed"])
         diagnostics = with_future["paris"]["calculationDiagnostics"]
         self.assertEqual("match_day", diagnostics["chronologyPrecision"])
+        self.assertEqual("match_day", diagnostics["targetDateGranularity"])
+        self.assertEqual("mixed", diagnostics["sourceDateGranularity"])
         self.assertEqual("strictly_before_target_local_match_day", diagnostics["chronologyRule"])
         self.assertEqual(0, diagnostics["quarantineDays"])
         self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
