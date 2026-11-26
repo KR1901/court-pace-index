@@ -309,7 +309,7 @@ def davis_cup_coverage_audit(rows, year):
         "excludedDoubles": excluded_doubles,
         "rowsWithoutPlayerIds": rows_without_player_ids,
         "identifiedSingles": len(unique),
-        "scheduledUnplayedSingles": len(unplayed),
+        "scorelessSingles": len(unplayed),
         "walkoverOrNoPlaySingles": len(no_play),
         "completedPlayedSingles": len(completed),
         "completedWithValidServeStats": valid_stats,
