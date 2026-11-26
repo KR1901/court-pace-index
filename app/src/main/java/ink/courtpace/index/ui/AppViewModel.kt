@@ -412,7 +412,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 "daviscup" to buildString {
                                     append("TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} played singles have valid serve stats · ${batch.identifiedSingles} unique singles identified")
                                     if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
-                            if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
                                     if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
                                     if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing serve stats")
                                     if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid serve stats")
@@ -452,8 +451,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             )
                         }
                         status(buildString {
-                            append("Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} completed singles with serve statistics")
+                            append("Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} played singles with valid serve statistics · ${batch.identifiedSingles} unique singles identified")
                             if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
+                            if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
                             if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing statistics")
                             if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid statistics")
                         })
