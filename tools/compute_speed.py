@@ -781,10 +781,9 @@ def _source_event_date_granularity(rows, source=None):
     for row in rows:
         if row.get("tourney_level") not in TARGET_LEVELS:
             continue
-        if row.get("tourney_level") == "D":
-            names = (row.get("winner_name") or "", row.get("loser_name") or "")
-            if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
-                continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            continue
         event_key = _source_event_key(row)
         match_date = _match_date(row)
         if event_key and match_date is not None:
