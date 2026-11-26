@@ -1625,30 +1625,36 @@ def season_ratings(year, rows, source=None):
         training_dates = [value for value in training_dates if value is not None]
         same_day_excluded = 0
         date_interval_excluded = 0
-        for row in calculation_eligible_rows(valid_rows(rows)):
+        legacy_fallback_buffer_excluded = 0
+        eligible_training_population = calculation_eligible_rows(valid_rows(rows))
+        for row in eligible_training_population:
             if tournament_id(row.get("tourney_name")) == tid:
                 continue
             row_date = _match_date(row)
+            if row_date is None:
+                continue
             row_precision = training_precision_by_event.get(
                 _source_event_key(row), "tournament_start",
             )
-            if row_precision != "match_day" or row_date is None:
-                continue
+            row_timestamp = _match_start_timestamp(row)
+            timestamp_comparable = target_start_timestamp is not None and row_timestamp is not None
             if row_date == event_start:
-                row_timestamp = _match_start_timestamp(row)
-                if (
-                    target_start_timestamp is not None and row_timestamp is not None
-                    and row_timestamp < target_start_timestamp
-                ):
+                if timestamp_comparable and row_timestamp < target_start_timestamp:
                     continue
-                same_day_excluded += 1
+                if row_precision == "match_day" or timestamp_comparable:
+                    same_day_excluded += 1
             elif (
-                row_date < event_start
+                row_precision == "match_day" and row_date < event_start
                 and not _row_precedes_target(
                     row, event_start, legacy_cutoff, row_precision, target_start_timestamp,
                 )
             ):
                 date_interval_excluded += 1
+            elif (
+                row_precision != "match_day"
+                and legacy_cutoff < row_date <= event_start
+            ):
+                legacy_fallback_buffer_excluded += 1
 
         details[tid] = {
             "raw": event_raw,
@@ -1661,8 +1667,12 @@ def season_ratings(year, rows, source=None):
             "calculation_diagnostics": side_diagnostics,
             "chronology_cutoff": (
                 target_start_timestamp.isoformat().replace("+00:00", "Z")
-                if target_start_timestamp is not None else legacy_cutoff.isoformat()
+                if target_start_timestamp is not None else (
+                    event_start.isoformat()
+                    if chronology_precision == "match_day" else legacy_cutoff.isoformat()
+                )
             ),
+            "legacy_fallback_cutoff": legacy_cutoff.isoformat(),
             "event_start_date": event_start.isoformat(),
             "chronology_precision": chronology_precision,
             "target_date_granularity": target_date_granularity,
@@ -1672,6 +1682,7 @@ def season_ratings(year, rows, source=None):
             "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
             "same_day_excluded_matches": same_day_excluded,
             "date_interval_excluded_matches": date_interval_excluded,
+            "legacy_fallback_buffer_excluded_matches": legacy_fallback_buffer_excluded,
             "legacy_fallback_training_matches": sum(
                 1 for row in training_rows
                 if training_precision_by_event.get(_source_event_key(row), "tournament_start")
@@ -1728,7 +1739,10 @@ def season_ratings(year, rows, source=None):
                 "trainingMatchDateMax": item["training_match_date_max"],
                 "sameDayExcludedMatches": item["same_day_excluded_matches"],
                 "dateIntervalExcludedMatches": item["date_interval_excluded_matches"],
+                "legacyFallbackBufferExcludedMatches": item["legacy_fallback_buffer_excluded_matches"],
                 "legacyFallbackTrainingMatches": item["legacy_fallback_training_matches"],
+                "legacyFallbackDays": CHRONOLOGICAL_QUARANTINE_DAYS,
+                "legacyFallbackCutoff": item["legacy_fallback_cutoff"],
                 "quarantineDays": item["quarantine_days"],
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
