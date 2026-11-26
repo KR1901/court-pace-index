@@ -63,6 +63,9 @@ def grouped_standard_chronology_rows(rows):
             continue
         if row.get("tourney_level") not in compute_speed.LEVELS:
             continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            continue
         if row_date(row) is None:
             continue
         groups[event_id].append(row)
