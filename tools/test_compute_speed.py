@@ -1892,6 +1892,33 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         self.assertEqual([], anchor_rows)
         self.assertEqual("no_completed_event_anchor", mode)
 
+    def test_normalisation_anchor_rows_match_stable_cohort_when_available(self):
+        rows = []
+        for event, count in (("Small 250", 5), ("Large Masters", 10)):
+            for _ in range(count):
+                rows.append({
+                    "tourney_name": event,
+                    "tourney_level": "M" if event == "Large Masters" else "250",
+                    "surface": "Hard",
+                    "tourney_date": "20260901",
+                    "winner_id": f"{event}-winner",
+                    "loser_id": f"{event}-loser",
+                    "winner_name": f"{event} Winner",
+                    "loser_name": f"{event} Loser",
+                    "w_svpt": 100,
+                    "l_svpt": 100,
+                    "w_ace": 8,
+                    "l_ace": 8,
+                })
+        def fake_clusters(event_rows, profiles, tour_rate):
+            return [[0.8] * (len(event_rows) * 2)]
+        with patch.object(compute_speed, "event_match_ratio_clusters", side_effect=fake_clusters):
+            scores = compute_speed._normalisation_anchor_event_scores(rows, {}, 0.08)
+        self.assertEqual({"largemasters"}, set(scores))
+        used_rows = compute_speed._normalisation_rows_for_scored_events(rows, scores)
+        self.assertEqual(10, len(used_rows))
+        self.assertEqual({"Large Masters"}, {row["tourney_name"] for row in used_rows})
+
     def test_confirmed_event_end_date_proves_anchor_completion_but_provisional_end_does_not(self):
         event_rows = [
             {

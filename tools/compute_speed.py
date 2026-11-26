@@ -1052,6 +1052,15 @@ def _normalisation_anchor_event_scores(rows, profiles, tour_rate):
     return stable or scored
 
 
+def _normalisation_rows_for_scored_events(rows, event_scores):
+    """Return only rows belonging to the event cohort actually used by the anchor."""
+    event_ids = set(event_scores)
+    return [
+        row for row in rows
+        if tournament_id(row.get("tourney_name")) in event_ids
+    ]
+
+
 def _chronological_normalisation_anchor_rows(
     year, rows, target_event_id, target_start_date, profiles, tour_rate,
     target_start_timestamp=None,
@@ -1094,13 +1103,15 @@ def _chronological_normalisation_anchor_rows(
         completed_valid_rows, profiles, tour_rate,
     )
     if anchor_scores:
-        return completed_valid_rows, "completed_same_season_events", anchor_scores
+        used_rows = _normalisation_rows_for_scored_events(completed_valid_rows, anchor_scores)
+        return used_rows, "completed_same_season_events", anchor_scores
 
     if year > PROFILE_HISTORY_START_YEAR:
         prior = _prior_year_rows(year - 1)
         prior_scores = _normalisation_anchor_event_scores(prior, profiles, tour_rate)
         if prior_scores:
-            return prior, "prior_season_fallback", prior_scores
+            used_prior_rows = _normalisation_rows_for_scored_events(prior, prior_scores)
+            return used_prior_rows, "prior_season_fallback", prior_scores
 
     return [], "no_completed_event_anchor", {}
 
