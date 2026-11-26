@@ -1194,6 +1194,104 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         for call in profiles.call_args_list:
             self.assertEqual(150.0, call.kwargs["prior_points"])
 
+    def test_match_dates_replace_quarantine_and_exclude_same_day_overlap(self):
+        def row(event, event_date, match_date):
+            return {
+                "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "tourney_date": event_date, "match_date": match_date,
+                "winner_id": "p1", "loser_id": "p2",
+                "winner_name": "Player One", "loser_name": "Player Two",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+            }
+
+        rows = [
+            row("Shanghai Masters", "20261001", "2026-10-03"),
+            row("Shanghai Masters", "20261001", "2026-10-05"),
+            # Rome starts only six days before Paris. Its genuinely earlier matches
+            # may train player profiles; its match played on Paris' opening day may not.
+            row("Rome Masters", "20261104", "2026-11-05"),
+            row("Rome Masters", "20261104", "2026-11-08"),
+            row("Rome Masters", "20261104", "2026-11-10"),
+            row("Paris Masters", "20261109", "2026-11-10"),
+            row("Paris Masters", "20261109", "2026-11-11"),
+        ]
+        target_rows = [row for row in rows if row["tourney_name"] == "Paris Masters"]
+        training, anchor, diagnostics = compute_speed._chronological_training_sets(
+            2026, rows, "paris", target_rows,
+        )
+
+        self.assertEqual("match-date", diagnostics["mode"])
+        self.assertEqual(
+            ["2026-10-03", "2026-10-05", "2026-11-05", "2026-11-08"],
+            sorted(row["match_date"] for row in training),
+        )
+        # Rome was still in progress on the target's first day, so none of its
+        # partial event sample may define the normalisation anchor.
+        self.assertEqual({"shanghai"}, {
+            compute_speed.tournament_id(row["tourney_name"]) for row in anchor
+        })
+        self.assertEqual(4, diagnostics["matchDateMatches"])
+        self.assertEqual(0, diagnostics["fallbackMatches"])
+
+    def test_actual_match_times_allow_safe_same_day_training_but_not_partial_anchor(self):
+        def row(event, event_date, started_at, duration):
+            return {
+                "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "tourney_date": event_date, "start_time_kind": "actual",
+                "scheduled_at": started_at, "duration_minutes": duration,
+                "winner_id": "p1", "loser_id": "p2",
+                "winner_name": "Player One", "loser_name": "Player Two",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+            }
+
+        rows = [
+            row("Shanghai Masters", "20261101", "2026-11-08T08:00:00Z", 90),
+            row("Rome Masters", "20261104", "2026-11-10T09:00:00Z", 90),
+            row("Rome Masters", "20261104", "2026-11-10T11:30:00Z", 60),
+            row("Paris Masters", "20261110", "2026-11-10T12:00:00Z", 120),
+            row("Paris Masters", "20261110", "2026-11-10T15:00:00Z", 90),
+        ]
+        target_rows = [row for row in rows if row["tourney_name"] == "Paris Masters"]
+        training, anchor, diagnostics = compute_speed._chronological_training_sets(
+            2026, rows, "paris", target_rows,
+        )
+
+        self.assertEqual("match-time", diagnostics["mode"])
+        self.assertEqual(2, diagnostics["matchTimeMatches"])
+        self.assertEqual(
+            {"shanghai", "rome"},
+            {compute_speed.tournament_id(row["tourney_name"]) for row in training},
+        )
+        # Only the earlier Shanghai event had fully finished before Paris began.
+        self.assertEqual({"shanghai"}, {
+            compute_speed.tournament_id(row["tourney_name"]) for row in anchor
+        })
+
+    def test_explicit_event_end_dates_remove_fallback_for_completed_concurrent_events(self):
+        def row(event, event_date, end_date):
+            return {
+                "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "tourney_date": event_date, "event_end_date": end_date,
+                "winner_id": "p1", "loser_id": "p2",
+                "winner_name": "Player One", "loser_name": "Player Two",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+            }
+
+        rows = [
+            row("Rome Masters", "20261104", "2026-11-08"),
+            row("Rome Masters", "20261104", "2026-11-08"),
+            row("Paris Masters", "20261110", "2026-11-16"),
+        ]
+        target_rows = [row for row in rows if row["tourney_name"] == "Paris Masters"]
+        training, anchor, diagnostics = compute_speed._chronological_training_sets(
+            2026, rows, "paris", target_rows,
+        )
+
+        self.assertEqual("event-window", diagnostics["mode"])
+        self.assertEqual(2, len(training))
+        self.assertEqual(2, len(anchor))
+        self.assertEqual(0, diagnostics["fallbackMatches"])
+
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
         standard_rows = []
         all_rows = []
