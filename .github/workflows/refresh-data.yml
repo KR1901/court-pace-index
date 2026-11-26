@@ -66,13 +66,13 @@ jobs:
             --start-year 2016 \
             --end-year "$(date -u +%Y)" \
             --quarantine-days 14 \
-            --output "build/chronological-loeo-2016-$(date -u +%Y).json"
+            --output build/chronological-loeo-study.json
 
       - name: Upload LOEO methodology research
         uses: actions/upload-artifact@v4
         with:
-          name: chronological-loeo-study-2016-current
-          path: build/chronological-loeo-2016-$(date -u +%Y).json
+          name: chronological-loeo-study-current
+          path: build/chronological-loeo-study.json
           if-no-files-found: error
           retention-days: 90
 
