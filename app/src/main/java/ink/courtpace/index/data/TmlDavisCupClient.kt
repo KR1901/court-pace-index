@@ -149,7 +149,10 @@ internal class TmlDavisCupClient {
         val date = row["tourney_date"].orEmpty().trim()
         val match = row["match_num"].orEmpty().trim()
         if (tournament.isNotEmpty() && date.isNotEmpty() && match.isNotEmpty()) {
-            return listOf("rubber", tournament, date, match).joinToString("|")
+            return listOf(
+                "rubber", tournament, date, match,
+                row["winner_id"], row["loser_id"],
+            ).joinToString("|") { it.orEmpty().trim() }
         }
         return listOf(
             "fallback", tournament, date,
