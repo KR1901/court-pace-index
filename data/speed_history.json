@@ -44,7 +44,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-26T03:59:45.287417+00:00",
+   "fetchedAtUtc": "2026-11-26T04:15:27.688741+00:00",
    "latestMatchDate": "20261122",
    "matchRows": 2816,
    "bytes": 595598,
@@ -52,7 +52,7 @@
    "ongoingDavisCup": {
     "source": "TennisMyLife ATP Match Database ongoing tournament feed",
     "url": "https://stats.tennismylife.org/data/ongoing_tourneys.csv",
-    "fetchedAtUtc": "2026-11-26T03:59:45.929130+00:00",
+    "fetchedAtUtc": "2026-11-26T04:15:28.600488+00:00",
     "bytes": 1477,
     "sha256": "e61fc1c7f31bf44669701056dd932b8ba2ce72439c826136207435d65286a085",
     "matchRows": 4,
