@@ -410,8 +410,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         if (rating == null) {
                             liveProgressByEvent = liveProgressByEvent + (
                                 "daviscup" to buildString {
-                                    append("TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} completed singles have serve stats")
+                                    append("TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} played singles have valid serve stats · ${batch.identifiedSingles} unique singles identified")
                                     if (batch.unplayedRows > 0) append(" · ${batch.unplayedRows} scheduled/unplayed")
+                            if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
+                                    if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
                                     if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing serve stats")
                                     if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid serve stats")
                                     append(" · awaiting rateable sides")
