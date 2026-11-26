@@ -738,11 +738,15 @@ def _parse_iso_date(value):
 
 def _source_match_date(row):
     """Return an individual UTC played date, never a tournament-start or local-only date."""
-    if row.get("date_is_tournament_start") is True:
+    if str(row.get("date_is_tournament_start") or "").casefold() in {"true", "1", "yes"}:
         return None
     # A date without a time can order matches across venues only when the provider
     # defines it in a common timezone. Local calendar dates are not globally comparable.
-    if str(row.get("match_date_timezone") or "").upper() != "UTC" and row.get("match_date_is_utc") is not True:
+    is_utc = (
+        str(row.get("match_date_timezone") or "").upper() in {"UTC", "Z", "ETC/UTC"}
+        or str(row.get("match_date_is_utc") or "").casefold() in {"true", "1", "yes"}
+    )
+    if not is_utc:
         return _parse_iso_date(row.get("match_date_utc"))
     for key in ("match_date_utc", "match_date", "played_date"):
         parsed = _parse_iso_date(row.get(key))
@@ -796,11 +800,17 @@ def _actual_match_end(row):
 
 
 def _source_event_end_date(row):
-    """Return a source-provided event end date, not a guessed duration from its start."""
-    for key in ("event_end_date", "tournament_end_date", "end_date"):
+    """Return a verified event end date, not an unconfirmed planned end."""
+    for key in ("event_end_date", "tournament_end_date"):
         parsed = _parse_iso_date(row.get(key))
         if parsed is not None:
             return parsed
+    # Some providers expose only end_date plus a provisional flag. Never use a
+    # provisional/planned end to prove that the event had already finished.
+    if str(row.get("end_date_provisional") or "").casefold() in {"true", "1", "yes"}:
+        return None
+    if str(row.get("event_status") or "").casefold() in {"completed", "complete", "finished"}:
+        return _parse_iso_date(row.get("end_date"))
     return None
 
 
