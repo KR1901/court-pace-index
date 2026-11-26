@@ -1233,9 +1233,10 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         precision_by_event = compute_speed._source_event_date_granularity(
             earlier + [same_day, later, one_date_edition] + target, source,
         )
-        self.assertEqual("match_day", precision_by_event["event:madrid"])
-        self.assertEqual("match_day", precision_by_event["event:paris"])
-        self.assertEqual("tournament_start", precision_by_event["event:dallas"])
+        self.assertEqual("match_day", precision_by_event[compute_speed._source_event_key(earlier[0])])
+        self.assertEqual("match_day", precision_by_event[compute_speed._source_event_key(target[0])])
+        one_date_key = compute_speed._source_event_key(one_date_edition)
+        self.assertEqual("tournament_start", precision_by_event[one_date_key])
         self.assertEqual(
             "mixed",
             compute_speed._source_match_date_granularity(
@@ -1246,7 +1247,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         # it remains subject to the target's 14-day legacy fallback (cutoff 17 September).
         self.assertFalse(compute_speed._row_precedes_target(
             one_date_edition, date(2026, 10, 1), date(2026, 9, 17),
-            precision_by_event["event:dallas"],
+            precision_by_event[one_date_key],
         ))
 
         compute_speed._PROFILE_YEAR_CACHE.clear()
