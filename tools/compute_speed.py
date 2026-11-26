@@ -716,7 +716,7 @@ def _profile_year_rates(year):
 
 
 def _match_date(row):
-    """Parse a source YYYYMMDD match/tournament date, returning None for malformed dates."""
+    """Parse the archive's YYYYMMDD tournament-start date."""
     raw = str(row.get("tourney_date") or "").strip()
     if len(raw) != 8 or not raw.isdigit():
         return None
@@ -726,17 +726,224 @@ def _match_date(row):
         return None
 
 
+def _parse_iso_date(value):
+    """Parse a source-provided individual match/event date, never tourney_date."""
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(raw[:10])
+    except ValueError:
+        return None
+
+
+def _source_match_date(row):
+    """Return an individual played date only when the source does not mark it as an event date."""
+    if row.get("date_is_tournament_start") is True:
+        return None
+    for key in ("match_date", "played_date", "match_date_local"):
+        parsed = _parse_iso_date(row.get(key))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def _parse_utc_datetime(value):
+    """Parse an ISO-8601 timestamp only when it contains an explicit UTC offset."""
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _actual_match_start(row):
+    """Return a genuine actual start, not a scheduled/not-before order-of-play time."""
+    for key in ("match_started_at_utc", "actual_start_at_utc", "actual_started_at"):
+        parsed = _parse_utc_datetime(row.get(key))
+        if parsed is not None:
+            return parsed
+    if str(row.get("start_time_kind") or "").casefold() != "actual":
+        return None
+    for key in ("scheduled_at", "started_at", "start_time_utc"):
+        parsed = _parse_utc_datetime(row.get(key))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def _actual_match_end(row):
+    """Use a recorded finish, or actual start + recorded duration with a rounding safety minute."""
+    for key in ("match_finished_at_utc", "actual_end_at_utc", "completed_at_utc", "finished_at"):
+        parsed = _parse_utc_datetime(row.get(key))
+        if parsed is not None:
+            return parsed
+    started = _actual_match_start(row)
+    duration = num(row.get("duration_minutes", row.get("minutes")))
+    if started is not None and duration is not None and math.isfinite(duration) and duration > 0:
+        # Source durations are minute-granular. The extra minute prevents a rounded-down
+        # duration from admitting a match that may have finished after the target began.
+        return started + timedelta(minutes=duration + 1)
+    return None
+
+
+def _source_event_end_date(row):
+    """Return a source-provided event end date, not a guessed duration from its start."""
+    for key in ("event_end_date", "tournament_end_date", "end_date"):
+        parsed = _parse_iso_date(row.get(key))
+        if parsed is not None:
+            return parsed
+    return None
+
+
 def _prior_year_rows(year):
     """Return eligible ATP training rows from a completed prior season."""
     return calculation_eligible_rows(valid_rows(load(year)))
 
 
-def _chronological_profiles_and_anchor(year, rows, cutoff):
-    """Fit profiles using only tournaments whose start date clears the quarantine cutoff."""
-    before = [
+def _chronological_training_sets(year, rows, target_event_id, target_rows):
+    """Build as-of-target player-profile and complete-event normalisation samples.
+
+    Precision priority:
+      1. Actual UTC match end vs. actual UTC first target match start.
+      2. Individual played dates, with same-day matches excluded when clock order is unknown.
+      3. Explicit event end dates.
+      4. The legacy 14-day tournament-start fallback, used only for rows with no better
+         chronology metadata.
+
+    The player profile may use completed matches from an event still in progress. The
+    normalisation anchor may only use entire events that had finished before the target.
+    """
+    target_start_dates = [_source_match_date(row) for row in target_rows]
+    target_start_dates = [value for value in target_start_dates if value is not None]
+    target_start_date = min(target_start_dates) if target_start_dates else min(
+        (_match_date(row) for row in target_rows if _match_date(row) is not None),
+        default=None,
+    )
+    target_start_times = [_actual_match_start(row) for row in target_rows]
+    target_start_times = [value for value in target_start_times if value is not None]
+    target_start_at = min(target_start_times) if len(target_start_times) == len(target_rows) else None
+    if target_start_at is not None:
+        target_start_date = target_start_at.date()
+
+    if target_start_date is None:
+        return [], [], {
+            "mode": "undated-target",
+            "targetStartDate": None,
+            "targetStartAtUtc": None,
+            "fallbackMatches": 0,
+            "matchDateMatches": 0,
+            "matchTimeMatches": 0,
+            "eventWindowMatches": 0,
+        }
+
+    fallback_cutoff = target_start_date - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
+    eligible = [
         row for row in calculation_eligible_rows(valid_rows(rows))
-        if _match_date(row) is not None and _match_date(row) <= cutoff
+        if tournament_id(row.get("tourney_name")) != target_event_id
     ]
+    by_event = defaultdict(list)
+    for row in eligible:
+        event_id = tournament_id(row.get("tourney_name"))
+        if event_id:
+            by_event[event_id].append(row)
+
+    training = []
+    precision_counts = {
+        "matchTimeMatches": 0,
+        "matchDateMatches": 0,
+        "eventWindowMatches": 0,
+        "fallbackMatches": 0,
+    }
+    for row in eligible:
+        match_end = _actual_match_end(row)
+        match_day = _source_match_date(row)
+        event_end = _source_event_end_date(row)
+        archive_event_start = _match_date(row)
+        include = False
+        if target_start_at is not None and match_end is not None:
+            include = match_end < target_start_at
+            if include:
+                precision_counts["matchTimeMatches"] += 1
+        elif match_day is not None:
+            # Date precision is deliberately strict: do not infer the order of two
+            # matches on the same calendar day without trustworthy actual timestamps.
+            include = match_day < target_start_date
+            if include:
+                precision_counts["matchDateMatches"] += 1
+        elif event_end is not None:
+            include = event_end < target_start_date
+            if include:
+                precision_counts["eventWindowMatches"] += 1
+        elif archive_event_start is not None:
+            include = archive_event_start <= fallback_cutoff
+            if include:
+                precision_counts["fallbackMatches"] += 1
+        if include:
+            training.append(row)
+
+    # Build a separate anchor from fully completed event editions only. If a source has
+    # partial match dates for an event, it cannot define the normalisation reference.
+    anchor = []
+    for event_id, event_rows in by_event.items():
+        all_event_rows = [
+            row for row in rows
+            if tournament_id(row.get("tourney_name")) == event_id
+        ]
+        if not all_event_rows:
+            continue
+        end_times = [_actual_match_end(row) for row in all_event_rows]
+        match_days = [_source_match_date(row) for row in all_event_rows]
+        event_ends = [_source_event_end_date(row) for row in all_event_rows]
+        event_starts = [_match_date(row) for row in all_event_rows]
+
+        complete_before_target = False
+        if target_start_at is not None and all(value is not None for value in end_times):
+            complete_before_target = max(end_times) < target_start_at
+        elif target_start_date is not None and all(value is not None for value in match_days):
+            complete_before_target = max(match_days) < target_start_date
+        elif target_start_date is not None and all(value is not None for value in event_ends):
+            complete_before_target = max(event_ends) < target_start_date
+        elif all(value is not None for value in event_starts):
+            # Legacy fallback: preserve the previous anchor population for events where
+            # the source has no individual dates or event-end metadata.
+            complete_before_target = min(event_starts) <= fallback_cutoff
+
+        if complete_before_target:
+            anchor.extend(event_rows)
+
+    modes = [key for key, value in precision_counts.items() if value]
+    if not modes:
+        mode = "prior-season-fallback"
+    elif modes == ["fallbackMatches"]:
+        mode = "tournament-start-14-day-fallback"
+    elif len(modes) == 1:
+        mode = {
+            "matchTimeMatches": "match-time",
+            "matchDateMatches": "match-date",
+            "eventWindowMatches": "event-window",
+            "fallbackMatches": "tournament-start-14-day-fallback",
+        }[modes[0]]
+    else:
+        mode = "mixed-precision"
+    diagnostics = {
+        "mode": mode,
+        "targetStartDate": target_start_date.isoformat(),
+        "targetStartAtUtc": target_start_at.isoformat().replace("+00:00", "Z") if target_start_at else None,
+        **precision_counts,
+    }
+    return training, anchor, diagnostics
+
+
+def _chronological_profiles_and_anchor(year, training_rows):
+    """Fit player profiles and the tour-rate prior on the same as-of-target match sample."""
+    before = calculation_eligible_rows(valid_rows(training_rows))
+    used_prior_fallback = False
     if before:
         profiles_current = player_rates(before, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
         profiles = build_live_profiles(year, profiles_current)
@@ -746,17 +953,18 @@ def _chronological_profiles_and_anchor(year, rows, cutoff):
         # calibration sample. Its profiles are fitted on that prior season's ATP rows and
         # historical player history, never on any match from the target season.
         if year <= PROFILE_HISTORY_START_YEAR:
-            return None, None, []
+            return None, None, [], False
         prior = _prior_year_rows(year - 1)
         if not prior:
-            return None, None, []
+            return None, None, [], False
         profiles_current = player_rates(prior, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
         profiles = build_live_profiles(year - 1, profiles_current)
         tour_rate = tour_average_ace_rate(prior)
         before = prior
+        used_prior_fallback = True
     if tour_rate is None or not 0.0 < tour_rate < 1.0:
-        return None, None, []
-    return profiles, tour_rate, before
+        return None, None, [], used_prior_fallback
+    return profiles, tour_rate, before, used_prior_fallback
 
 
 def build_live_profiles(profile_year, current_profiles):
@@ -1418,7 +1626,7 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 def season_ratings(year, rows, source=None):
-    """Chronological LOEO ratings with a 14-day source-date quarantine against overlap leakage."""
+    """Chronological LOEO using match timestamps/dates, event windows, then a labelled fallback."""
     target_rows = valid_rows(rows)
     rows_by_event = defaultdict(list)
     for row in target_rows:
@@ -1428,20 +1636,26 @@ def season_ratings(year, rows, source=None):
 
     details = {}
     for tid, event_rows in rows_by_event.items():
-        # Source archives expose tourney_date (event start), not exact match dates.
-        # Apply a two-week quarantine so overlapping events cannot leak later-round
-        # results into the target's profiles or normalisation anchor.
-        dates = [_match_date(row) for row in event_rows]
-        dates = [value for value in dates if value is not None]
-        if not dates:
+        archive_dates = [_match_date(row) for row in event_rows]
+        archive_dates = [value for value in archive_dates if value is not None]
+        if not archive_dates:
             continue
-        event_start = min(dates)
-        cutoff = event_start - timedelta(days=CHRONOLOGICAL_QUARANTINE_DAYS)
-        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(year, rows, cutoff)
+        event_start = min(archive_dates)
+        training_rows, anchor_rows, chronology = _chronological_training_sets(
+            year, rows, tid, event_rows,
+        )
+        profiles, tour_rate, fitted_rows, used_prior_fallback = (
+            _chronological_profiles_and_anchor(year, training_rows)
+        )
         if profiles is None or tour_rate is None:
             continue
-        if tour_rate is None or not 0.0 < tour_rate < 1.0:
-            continue
+        if used_prior_fallback:
+            anchor_rows = fitted_rows
+            chronology = {
+                **chronology,
+                "mode": "prior-season-fallback",
+                "fallbackMatches": len(fitted_rows),
+            }
         profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
         clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
         side_diagnostics = event_side_diagnostics(event_rows, profiles, tour_rate)
@@ -1452,10 +1666,9 @@ def season_ratings(year, rows, source=None):
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
         event_raw = sum(ratios) / sides
-        # The chronological profiles and tour anchor are already fitted for this target.
-        # Score earlier standard ATP events once here, using that same pre-target snapshot,
-        # rather than refitting the profiles a second time during output serialisation.
-        anchor_events, _, _, _ = event_raw_scores(training_rows, profiles, tour_rate=tour_rate)
+        # Profiles can use already-played matches from a concurrent event. Its partial
+        # result is not an event-level normalisation reference until the whole event ended.
+        anchor_events, _, _, _ = event_raw_scores(anchor_rows, profiles, tour_rate=tour_rate)
         eligible_anchor = {
             event_id: value for event_id, value in anchor_events.items()
             if event_id not in CALC_TARGET_ONLY_EVENT_IDS
@@ -1470,14 +1683,13 @@ def season_ratings(year, rows, source=None):
             "ace": 100.0 * aces / points if points else None,
             "profile_coverage": profile_coverage,
             "calculation_diagnostics": side_diagnostics,
-            "chronology_cutoff": cutoff.isoformat(),
+            "chronology": chronology,
             "event_start_date": event_start.isoformat(),
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
-    # events with at least twenty adjusted sides for the normaliser. If an entire season has
-    # no such event, fall back to all rateable events rather than suppressing the season.
-    # Next Gen receives its own rating, but never defines the standard ATP season anchor.
+    # events with at least twenty adjusted sides for the normaliser; otherwise use all
+    # rateable standard events. Next Gen never defines the standard ATP season anchor.
     standard_format_details = {
         tid: item for tid, item in details.items()
         if tid not in CALC_TARGET_ONLY_EVENT_IDS
@@ -1486,7 +1698,6 @@ def season_ratings(year, rows, source=None):
     for tid, item in details.items():
         mean_raw = item["normalisation"]
         seed = int(hashlib.sha256(f"{year}:{tid}:match-cluster-ci-v1".encode()).hexdigest()[:8], 16)
-        # A match-cluster interval is not meaningful for fewer than five independent matches.
         interval = (
             bootstrap_event_interval(item["clusters"], mean_raw, seed=seed)
             if len(item["clusters"]) >= MIN_EVENT_CI_MATCH_CLUSTERS
@@ -1506,6 +1717,7 @@ def season_ratings(year, rows, source=None):
             "tourPriorServerSides": item["profile_coverage"]["tour_prior_server_profiles"],
             "tourPriorReturnerSides": item["profile_coverage"]["tour_prior_returner_profiles"],
         }
+        chronology = item["chronology"]
         output[tid] = {
             **common,
             "speed": item["raw"] / mean_raw,
@@ -1514,9 +1726,23 @@ def season_ratings(year, rows, source=None):
             "speedCiHigh": ci.get("high"),
             "speedCiMethod": ci.get("method"),
             "calculationDiagnostics": {
-                "chronologicalCutoff": item["chronology_cutoff"],
+                "chronologyMode": chronology.get("mode"),
+                "targetFirstMatchDate": chronology.get("targetStartDate"),
+                "targetFirstMatchStartUtc": chronology.get("targetStartAtUtc"),
+                "chronologyTrainingMatches": chronology.get("matchTimeMatches", 0)
+                    + chronology.get("matchDateMatches", 0)
+                    + chronology.get("eventWindowMatches", 0)
+                    + chronology.get("fallbackMatches", 0),
+                "chronologyMatchTimeMatches": chronology.get("matchTimeMatches", 0),
+                "chronologyMatchDateMatches": chronology.get("matchDateMatches", 0),
+                "chronologyEventWindowMatches": chronology.get("eventWindowMatches", 0),
+                "chronologyFallbackMatches": chronology.get("fallbackMatches", 0),
                 "eventStartDate": item["event_start_date"],
-                "quarantineDays": CHRONOLOGICAL_QUARANTINE_DAYS,
+                "quarantineDays": (
+                    CHRONOLOGICAL_QUARANTINE_DAYS
+                    if "fallback" in str(chronology.get("mode", "")) or chronology.get("mode") == "mixed-precision"
+                    else None
+                ),
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
                 "totalServerSides": item["calculation_diagnostics"]["totalServerSides"],
@@ -1533,7 +1759,6 @@ def season_ratings(year, rows, source=None):
             },
         }
     return output
-
 
 def live_event_exclusion(live_path=None, today=None, now=None):
     """Return active tournament IDs from current in-progress or date-active scheduled rows."""
