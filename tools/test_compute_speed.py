@@ -1334,6 +1334,69 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             }).isoformat(),
         )
 
+    def test_partial_concurrent_event_uses_prior_season_as_normalisation_anchor(self):
+        def row(event, event_start, match_day):
+            return {
+                "tourney_name": event, "tourney_level": "M", "surface": "Hard",
+                "tourney_date": event_start, "match_date_utc": match_day,
+                "winner_id": "p1", "loser_id": "p2",
+                "winner_name": "Player One", "loser_name": "Player Two",
+                "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+            }
+
+        rows = [
+            row("Rome Masters", "20261104", "2026-11-05"),
+            # Rome was still in progress when Paris opened; this same-day match
+            # cannot train Paris without an actual match completion timestamp.
+            row("Rome Masters", "20261104", "2026-11-10"),
+            row("Paris Masters", "20261110", "2026-11-10"),
+            row("Paris Masters", "20261110", "2026-11-11"),
+        ]
+        prior_rows = [row("Prior Season Open", "20251201", "2025-12-01")]
+        coverage = {
+            "tour_prior_sides": 0,
+            "career_history_server_sides": 0,
+            "career_history_returner_sides": 0,
+            "tour_prior_server_profiles": 0,
+            "tour_prior_returner_profiles": 0,
+        }
+        side_diagnostics = {
+            "totalServerSides": 2, "aces": 16, "totalServicePoints": 200,
+            "tourAverageAceRate": 0.08, "serverProfilesMatched": 0,
+            "returnerProfilesMatched": 0, "serverProfilesFallback": 0,
+            "returnerProfilesFallback": 0, "sideDiagnostics": [],
+        }
+        anchor_calls = []
+
+        def capture_anchor(anchor_rows, profiles, tour_rate):
+            anchor_calls.append(list(anchor_rows))
+            return {"prior-open": 0.8}, None, None, None
+
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+        with (
+            patch.object(compute_speed, "_profile_year_rates", return_value={}),
+            patch.object(compute_speed, "_prior_year_rows", return_value=prior_rows),
+            patch.object(compute_speed, "build_live_profiles", return_value={}),
+            patch.object(compute_speed, "ensure_event_profiles", return_value=coverage),
+            patch.object(compute_speed, "event_match_ratio_clusters", return_value=[[1.2]]),
+            patch.object(compute_speed, "event_side_diagnostics", return_value=side_diagnostics),
+            patch.object(compute_speed, "event_raw_scores", side_effect=capture_anchor),
+        ):
+            ratings = compute_speed.season_ratings(2026, rows)
+
+        self.assertIn("paris", ratings)
+        self.assertEqual(1, len(anchor_calls))
+        self.assertEqual(
+            {"Prior Season Open"},
+            {row["tourney_name"] for row in anchor_calls[0]},
+        )
+        diag = ratings["paris"]["calculationDiagnostics"]
+        self.assertEqual("match-date", diag["chronologyMode"])
+        self.assertEqual("prior-season-fallback", diag["normalisationAnchorMode"])
+        self.assertEqual(1, diag["normalisationPriorSeasonAnchorMatches"])
+        self.assertAlmostEqual(1.5, ratings["paris"]["speed"], places=12)
+        compute_speed._PROFILE_YEAR_CACHE.clear()
+
     def test_next_gen_is_rated_as_a_target_but_never_trains_or_normalises_standard_atp(self):
         standard_rows = []
         all_rows = []
