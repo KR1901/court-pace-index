@@ -1198,7 +1198,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         def row(event, event_date, match_date):
             return {
                 "tourney_name": event, "tourney_level": "M", "surface": "Hard",
-                "tourney_date": event_date, "match_date": match_date,
+                "tourney_date": event_date, "match_date_utc": match_date,
                 "winner_id": "p1", "loser_id": "p2",
                 "winner_name": "Player One", "loser_name": "Player Two",
                 "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
@@ -1232,6 +1232,29 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         })
         self.assertEqual(4, diagnostics["matchDateMatches"])
         self.assertEqual(0, diagnostics["fallbackMatches"])
+
+    def test_tournament_start_dates_and_scheduled_times_are_not_treated_as_match_chronology(self):
+        base = {
+            "tourney_name": "Rome Masters", "tourney_level": "M", "surface": "Hard",
+            "tourney_date": "20261104", "date_is_tournament_start": True,
+            "scheduled_at": "2026-11-08T08:00:00Z", "start_time_kind": "scheduled",
+            "duration_minutes": 90,
+            "winner_id": "p1", "loser_id": "p2",
+            "winner_name": "Player One", "loser_name": "Player Two",
+            "w_svpt": 100, "l_svpt": 100, "w_ace": 8, "l_ace": 8,
+        }
+        self.assertIsNone(compute_speed._source_match_date(base))
+        self.assertIsNone(compute_speed._actual_match_start(base))
+        self.assertIsNone(compute_speed._actual_match_end(base))
+
+        # An explicitly UTC calendar day is usable, but an unspecified/local day is not.
+        dated = {**base, "date_is_tournament_start": False, "match_date": "2026-11-08"}
+        self.assertIsNone(compute_speed._source_match_date(dated))
+        dated["match_date_timezone"] = "UTC"
+        self.assertEqual(
+            "2026-11-08",
+            compute_speed._source_match_date(dated).isoformat(),
+        )
 
     def test_actual_match_times_allow_safe_same_day_training_but_not_partial_anchor(self):
         def row(event, event_date, started_at, duration):
