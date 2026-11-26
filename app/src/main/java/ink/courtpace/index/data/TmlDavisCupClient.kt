@@ -18,12 +18,16 @@ internal class TmlDavisCupClient {
 
     data class MatchBatch(
         val matches: List<AtpMatchStats>,
-        /** Unique completed Davis Cup singles rubbers with a published result score. */
+        /** Unique identified singles rubbers, including scoreless fixtures and walkovers. */
+        val identifiedSingles: Int,
+        /** Completed, played singles rubbers with a published result score. */
         val discoveredMatches: Int,
         val matchesWithServeStats: Int,
         val missingStatsMatches: Int,
         /** Scoreless rows are scheduled/unplayed fixtures, not completed missing-stat matches. */
         val unplayedRows: Int,
+        /** Walkovers/defaults have a result marker but no played match statistics. */
+        val noPlayRows: Int,
         /** Completed score-bearing singles that fail the ace/service-point validation. */
         val malformedStatsMatches: Int,
     )
@@ -56,7 +60,7 @@ internal class TmlDavisCupClient {
         // Merge every identified singles rubber first, not only score-bearing rows. The
         // ongoing snapshot is newer and must replace an annual scoreless fixture when it
         // becomes a completed result, otherwise that rubber is counted as both unplayed
-        // and completed.
+        // and completed. The player pair disambiguates same-number rubbers in different ties.
         val uniqueByRubber = linkedMapOf<String, Map<String, String>>()
         listOf(annualCsv, ongoingCsv).forEach { snapshot ->
             parseCsv(snapshot).forEach { row ->
@@ -74,7 +78,11 @@ internal class TmlDavisCupClient {
         }
 
         val uniqueRows = uniqueByRubber.values.toList()
-        val completedRows = uniqueRows.filter { it["score"].orEmpty().isNotBlank() }
+        val unplayedRows = uniqueRows.filter { it["score"].orEmpty().isBlank() }
+        val noPlayRows = uniqueRows.filter { isNoPlayScore(it["score"]) }
+        val completedRows = uniqueRows.filter {
+            it["score"].orEmpty().isNotBlank() && !isNoPlayScore(it["score"])
+        }
         val matches = completedRows.mapNotNull(::toMatchStats)
         val requiredServeStats = listOf("w_ace", "w_svpt", "l_ace", "l_svpt")
         val missingStats = completedRows.count { row ->
@@ -83,14 +91,15 @@ internal class TmlDavisCupClient {
         val malformedStats = completedRows.count { row ->
             requiredServeStats.none { row[it].isNullOrBlank() } && toMatchStats(row) == null
         }
-        val unplayed = uniqueRows.count { it["score"].orEmpty().isBlank() }
 
         return MatchBatch(
             matches = matches,
+            identifiedSingles = uniqueRows.size,
             discoveredMatches = completedRows.size,
             matchesWithServeStats = matches.size,
             missingStatsMatches = missingStats,
-            unplayedRows = unplayed,
+            unplayedRows = unplayedRows.size,
+            noPlayRows = noPlayRows.size,
             malformedStatsMatches = malformedStats,
         )
     }
@@ -136,6 +145,14 @@ internal class TmlDavisCupClient {
     private fun isDavisCupName(name: String?): Boolean =
         name.orEmpty().lowercase().filter(Char::isLetterOrDigit).startsWith("daviscup")
 
+    private fun isNoPlayScore(score: String?): Boolean {
+        val normalized = score.orEmpty().uppercase().replace(Regex("\\s+"), "")
+        return normalized.contains("W/O") ||
+            normalized == "WO" ||
+            normalized.contains("WALKOVER") ||
+            normalized.contains("DEF")
+    }
+
     private fun isDoubles(row: Map<String, String>): Boolean {
         val names = listOf(row["winner_name"].orEmpty(), row["loser_name"].orEmpty())
         return names.any { name ->
@@ -149,10 +166,11 @@ internal class TmlDavisCupClient {
         val date = row["tourney_date"].orEmpty().trim()
         val match = row["match_num"].orEmpty().trim()
         if (tournament.isNotEmpty() && date.isNotEmpty() && match.isNotEmpty()) {
-            return listOf(
-                "rubber", tournament, date, match,
-                row["winner_id"], row["loser_id"],
-            ).joinToString("|") { it.orEmpty().trim() }
+            val players = listOf(
+                row["winner_id"].orEmpty().trim(),
+                row["loser_id"].orEmpty().trim(),
+            ).sorted()
+            return (listOf("rubber", tournament, date, match) + players).joinToString("|")
         }
         return listOf(
             "fallback", tournament, date,
