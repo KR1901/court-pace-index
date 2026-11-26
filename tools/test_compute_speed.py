@@ -1228,6 +1228,8 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         later = match("Madrid Masters", "20261002", aces=35)
         one_date_edition = match("Dallas Open", "20260920", aces=35)
         one_date_edition["tourney_level"] = "250"
+        one_date_same_day = match("Lyon Open", "20261001", aces=35)
+        one_date_same_day["tourney_level"] = "250"
         target = [
             match("Paris Masters", "20261001") for _ in range(5)
         ] + [
@@ -1236,7 +1238,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
 
         source = "TennisMyLife ATP Match Database"
         precision_by_event = compute_speed._source_event_date_granularity(
-            earlier + [same_day, later, one_date_edition] + target, source,
+            earlier + [same_day, later, one_date_edition, one_date_same_day] + target, source,
         )
         self.assertEqual("match_day", precision_by_event[compute_speed._source_event_key(earlier[0])])
         self.assertEqual("match_day", precision_by_event[compute_speed._source_event_key(target[0])])
@@ -1245,7 +1247,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual(
             "mixed",
             compute_speed._source_match_date_granularity(
-                earlier + [same_day, later, one_date_edition] + target, source,
+                earlier + [same_day, later, one_date_edition, one_date_same_day] + target, source,
             ),
         )
         # The one-date Dallas edition cannot claim 20 September is an exact match day,
@@ -1275,7 +1277,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         ):
             baseline = compute_speed.season_ratings(2026, earlier + target, source=source)
             with_future = compute_speed.season_ratings(
-                2026, earlier + [same_day, later, one_date_edition] + target, source=source,
+                2026, earlier + [same_day, later, one_date_edition, one_date_same_day] + target, source=source,
             )
 
         self.assertIn("paris", baseline)
@@ -1290,7 +1292,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
         self.assertEqual("2026-09-28", diagnostics["trainingMatchDateMax"])
         self.assertEqual(1, diagnostics["sameDayExcludedMatches"])
         self.assertEqual(1, diagnostics["dateIntervalExcludedMatches"])
-        self.assertEqual(0, diagnostics["legacyFallbackEventWindowExcludedMatches"])
+        self.assertEqual(1, diagnostics["legacyFallbackEventWindowExcludedMatches"])
         self.assertEqual(1, diagnostics["legacyFallbackTrainingMatches"])
 
         # The Paris profile fit can use Madrid's 25/28 September matches, even though
