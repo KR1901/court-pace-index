@@ -219,20 +219,61 @@ jobs:
           assert dc_audit.get("validatedSource") is True, (
               "2026 Davis Cup source has not passed TML annual + ongoing-feed validation"
           )
-          dc_values = history.get("seasons", {}).get(current_season, {}).get("daviscup")
-          assert dc_values and dc_values.get("speed") is not None, (
-              "validated 2026 Davis Cup feed did not produce a historical CALC rating"
+          phases = dc_audit.get("phases") or {}
+          rest_audit = phases.get("restOfDavisCup")
+          final8_audit = phases.get("final8")
+          assert isinstance(rest_audit, dict) and isinstance(final8_audit, dict), (
+              "2026 Davis Cup source reconciliation must report separate earlier-competition and Final 8 populations"
           )
-          assert dc_values.get("matches", 0) > 0, "2026 Davis Cup CALC contains no completed-stat matches"
+          phase_count_keys = (
+              "sourceRowsAfterMerge", "excludedDoubles", "rowsWithoutPlayerIds",
+              "identifiedSingles", "scorelessSingles", "walkoverOrNoPlaySingles",
+              "completedPlayedSingles", "completedWithValidServeStats",
+              "completedMissingServeStats", "completedMalformedStats",
+          )
+          for key in phase_count_keys:
+              assert dc_audit.get(key, 0) == (
+                  rest_audit.get(key, 0) + final8_audit.get(key, 0)
+              ), f"Davis Cup phase counts do not reconcile for {key}"
+              for phase_name, phase_audit in (
+                  ("earlier Davis Cup", rest_audit), ("Final 8", final8_audit)
+              ):
+                  assert phase_audit.get("identifiedSingles", 0) == (
+                      phase_audit.get("completedPlayedSingles", 0)
+                      + phase_audit.get("scorelessSingles", 0)
+                      + phase_audit.get("walkoverOrNoPlaySingles", 0)
+                  ), f"{phase_name} identified singles do not reconcile"
+                  assert phase_audit.get("completedPlayedSingles", 0) == (
+                      phase_audit.get("completedWithValidServeStats", 0)
+                      + phase_audit.get("completedMissingServeStats", 0)
+                      + phase_audit.get("completedMalformedStats", 0)
+                  ), f"{phase_name} played singles do not reconcile"
+          history_season = history.get("seasons", {}).get(current_season, {})
+          dc_values = history_season.get("daviscup")
+          final8_values = history_season.get("daviscupfinal8")
+          assert dc_values and dc_values.get("speed") is not None, (
+              "validated 2026 earlier Davis Cup feed did not produce a historical CALC rating"
+          )
+          assert final8_values and final8_values.get("speed") is not None, (
+              "validated 2026 Final 8 feed did not produce a separate historical CALC rating"
+          )
+          assert dc_values.get("matches", 0) == rest_audit.get("completedWithValidServeStats"), (
+              "Earlier Davis Cup CALC match count differs from its valid-stat source population"
+          )
+          assert final8_values.get("matches", 0) == final8_audit.get("completedWithValidServeStats"), (
+              "Final 8 CALC match count differs from its valid-stat source population"
+          )
+          assert final8_audit.get("identifiedSingles", 0) > 0, (
+              "No Final 8 singles have been identified in the validated TML source"
+          )
           print(
-              "Davis Cup audit: "
-              f"{dc_audit.get('identifiedSingles')} unique singles · "
-              f"{dc_audit.get('completedPlayedSingles')} played · "
-              f"{dc_audit.get('scorelessSingles')} scoreless/pending result · "
-              f"{dc_audit.get('walkoverOrNoPlaySingles')} no-play · "
-              f"{dc_audit.get('completedWithValidServeStats')} valid stats · "
-              f"{dc_audit.get('completedMissingServeStats')} missing · "
-              f"{dc_audit.get('completedMalformedStats')} malformed"
+              "Davis Cup phase audit · earlier: "
+              f"{rest_audit.get('identifiedSingles')} identified / "
+              f"{rest_audit.get('completedWithValidServeStats')} valid stats / "
+              f"{rest_audit.get('completedMissingServeStats')} missing · Final 8: "
+              f"{final8_audit.get('identifiedSingles')} identified / "
+              f"{final8_audit.get('completedWithValidServeStats')} valid stats / "
+              f"{final8_audit.get('completedMissingServeStats')} missing"
           )
           known = {item["id"] for item in initial["tournaments"]}
           dataset_bytes = Path("app/src/main/assets/pace_dataset.json").read_bytes()
@@ -377,8 +418,10 @@ jobs:
 
           current = str(baseline.get("season"))
           dc_audit = (history.get("davis_cup_coverage") or {}).get(current)
-          dc_calc = (history.get("seasons") or {}).get(current, {}).get("daviscup")
-          finals = (history.get("seasons") or {}).get(current, {}).get("atpfinals")
+          current_values = (history.get("seasons") or {}).get(current, {})
+          dc_calc = current_values.get("daviscup")
+          final8_calc = current_values.get("daviscupfinal8")
+          finals = current_values.get("atpfinals")
           ng24 = (history.get("seasons") or {}).get("2024", {}).get("nextgen")
           audit = {
               "dataset": {
@@ -405,6 +448,8 @@ jobs:
               "nextGen2024": ng24,
               "davisCupAudit2026": dc_audit,
               "davisCupCalc2026": dc_calc,
+              "davisCupRestCalc2026": dc_calc,
+              "davisCupFinal8Calc2026": final8_calc,
           }
           Path("build").mkdir(exist_ok=True)
           Path("build/dataset-policy-audit.json").write_text(json.dumps(audit, indent=2) + "\n")

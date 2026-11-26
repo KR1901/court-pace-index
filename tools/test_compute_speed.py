@@ -1021,20 +1021,26 @@ class DavisCupCoverageAuditTests(unittest.TestCase):
                 "score": "W/O", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
             },
             {
+                **base, "tourney_id": "2026-M-DC-2026-FLS-M-ITA-KOR-01",
+                "match_num": "7", "winner_id": "P13", "loser_id": "P14",
+                "winner_name": "Final 8 Winner", "loser_name": "Final 8 Opponent",
+                "score": "6-4 6-4", "w_ace": "7", "w_svpt": "65", "l_ace": "4", "l_svpt": "61",
+            },
+            {
                 **base, "match_num": "6", "winner_id": "P11", "loser_id": "P12",
                 "winner_name": "Doubles A / Doubles B",
                 "score": "6-4 6-4", "w_ace": "5", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
             },
         ]
         audit = compute_speed.davis_cup_coverage_audit(rows, 2026)
-        self.assertEqual(6, audit["sourceRowsAfterMerge"])
+        self.assertEqual(7, audit["sourceRowsAfterMerge"])
         self.assertEqual(
             audit["sourceRowsAfterMerge"],
             audit["excludedDoubles"] + audit["rowsWithoutPlayerIds"] + audit["identifiedSingles"],
         )
         self.assertEqual(1, audit["excludedDoubles"])
-        self.assertEqual(5, audit["identifiedSingles"])
-        self.assertEqual(1, audit["completedWithValidServeStats"])
+        self.assertEqual(6, audit["identifiedSingles"])
+        self.assertEqual(2, audit["completedWithValidServeStats"])
         self.assertEqual(1, audit["completedMissingServeStats"])
         self.assertEqual(1, audit["completedMalformedStats"])
         self.assertEqual(1, audit["scorelessSingles"])
@@ -1051,6 +1057,27 @@ class DavisCupCoverageAuditTests(unittest.TestCase):
             audit["completedMissingServeStats"] +
             audit["completedMalformedStats"],
         )
+        phases = audit["phases"]
+        rest = phases["restOfDavisCup"]
+        final8 = phases["final8"]
+        self.assertEqual(6, rest["sourceRowsAfterMerge"])
+        self.assertEqual(5, rest["identifiedSingles"])
+        self.assertEqual(1, rest["completedWithValidServeStats"])
+        self.assertEqual(1, rest["completedMissingServeStats"])
+        self.assertEqual(1, rest["completedMalformedStats"])
+        self.assertEqual(0, final8["excludedDoubles"])
+        self.assertEqual(1, final8["sourceRowsAfterMerge"])
+        self.assertEqual(1, final8["identifiedSingles"])
+        self.assertEqual(1, final8["completedWithValidServeStats"])
+        self.assertEqual(0, final8["completedMissingServeStats"])
+        self.assertEqual(0, final8["completedMalformedStats"])
+        for key in (
+            "sourceRowsAfterMerge", "excludedDoubles", "rowsWithoutPlayerIds",
+            "identifiedSingles", "scorelessSingles", "walkoverOrNoPlaySingles",
+            "completedPlayedSingles", "completedWithValidServeStats",
+            "completedMissingServeStats", "completedMalformedStats",
+        ):
+            self.assertEqual(audit[key], rest[key] + final8[key], key)
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):

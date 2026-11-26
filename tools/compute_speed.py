@@ -265,75 +265,93 @@ def merge_davis_cup_rows(annual_rows, supplement_rows):
     return [merged[key] for key in order], added
 
 
+def _davis_cup_phase(row):
+    """Return the separate 2026 Davis Cup phase encoded by the TML source event ID."""
+    tokens = re.split(r"[^A-Z0-9]+", str(row.get("tourney_id") or "").upper())
+    return "final8" if "FLS" in tokens else "restOfDavisCup"
+
+
 def davis_cup_coverage_audit(rows, year):
-    """Classify the deduplicated current-year TML Davis Cup singles feed without retaining rows."""
+    """Classify current-year TML singles and reconcile annual and Final 8 source populations."""
     davis_rows = [
         row for row in rows
         if row.get("tourney_level") == "D"
         and _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
         and str(row.get("tourney_date") or "").strip()[:4] == str(year)
     ]
-    unique = {}
-    excluded_doubles = 0
-    rows_without_player_ids = 0
-    for row in davis_rows:
-        names = (str(row.get("winner_name") or ""), str(row.get("loser_name") or ""))
-        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
-            excluded_doubles += 1
-            continue
-        if not str(row.get("winner_id") or "").strip() or not str(row.get("loser_id") or "").strip():
-            rows_without_player_ids += 1
-            continue
-        unique[davis_cup_match_key(row)] = row
 
-    required = ("w_ace", "w_svpt", "l_ace", "l_svpt")
-    unplayed = [row for row in unique.values() if not str(row.get("score") or "").strip()]
-    no_play = [
-        row for row in unique.values()
-        if str(row.get("score") or "").strip() and _is_no_play_score(row.get("score"))
-    ]
-    completed = [
-        row for row in unique.values()
-        if str(row.get("score") or "").strip() and not _is_no_play_score(row.get("score"))
-    ]
-    valid_stats = 0
-    missing_stats = 0
-    malformed_stats = 0
-    for row in completed:
-        if any(not str(row.get(key) or "").strip() for key in required):
-            missing_stats += 1
-            continue
-        try:
-            winner_aces, winner_points, loser_aces, loser_points = (
-                int(str(row[key]).strip()) for key in required
-            )
-            valid = (
-                bool(str(row.get("winner_name") or "").strip())
-                and bool(str(row.get("loser_name") or "").strip())
-                and winner_aces >= 0 and loser_aces >= 0
-                and winner_points > 0 and loser_points > 0
-                and winner_aces <= winner_points and loser_aces <= loser_points
-            )
-        except (TypeError, ValueError):
-            valid = False
-        if valid:
-            valid_stats += 1
-        else:
-            malformed_stats += 1
+    def summarize(phase_rows):
+        unique = {}
+        excluded_doubles = 0
+        rows_without_player_ids = 0
+        for row in phase_rows:
+            names = (str(row.get("winner_name") or ""), str(row.get("loser_name") or ""))
+            if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+                excluded_doubles += 1
+                continue
+            if not str(row.get("winner_id") or "").strip() or not str(row.get("loser_id") or "").strip():
+                rows_without_player_ids += 1
+                continue
+            unique[davis_cup_match_key(row)] = row
 
-    return {
-        "sourceRowsAfterMerge": len(davis_rows),
-        "excludedDoubles": excluded_doubles,
-        "rowsWithoutPlayerIds": rows_without_player_ids,
-        "identifiedSingles": len(unique),
-        "scorelessSingles": len(unplayed),
-        "walkoverOrNoPlaySingles": len(no_play),
-        "completedPlayedSingles": len(completed),
-        "completedWithValidServeStats": valid_stats,
-        "completedMissingServeStats": missing_stats,
-        "completedMalformedStats": malformed_stats,
+        required = ("w_ace", "w_svpt", "l_ace", "l_svpt")
+        unplayed = [row for row in unique.values() if not str(row.get("score") or "").strip()]
+        no_play = [
+            row for row in unique.values()
+            if str(row.get("score") or "").strip() and _is_no_play_score(row.get("score"))
+        ]
+        completed = [
+            row for row in unique.values()
+            if str(row.get("score") or "").strip() and not _is_no_play_score(row.get("score"))
+        ]
+        valid_stats = 0
+        missing_stats = 0
+        malformed_stats = 0
+        for row in completed:
+            if any(not str(row.get(key) or "").strip() for key in required):
+                missing_stats += 1
+                continue
+            try:
+                winner_aces, winner_points, loser_aces, loser_points = (
+                    int(str(row[key]).strip()) for key in required
+                )
+                valid = (
+                    bool(str(row.get("winner_name") or "").strip())
+                    and bool(str(row.get("loser_name") or "").strip())
+                    and winner_aces >= 0 and loser_aces >= 0
+                    and winner_points > 0 and loser_points > 0
+                    and winner_aces <= winner_points and loser_aces <= loser_points
+                )
+            except (TypeError, ValueError):
+                valid = False
+            if valid:
+                valid_stats += 1
+            else:
+                malformed_stats += 1
+
+        return {
+            "sourceRowsAfterMerge": len(phase_rows),
+            "excludedDoubles": excluded_doubles,
+            "rowsWithoutPlayerIds": rows_without_player_ids,
+            "identifiedSingles": len(unique),
+            "scorelessSingles": len(unplayed),
+            "walkoverOrNoPlaySingles": len(no_play),
+            "completedPlayedSingles": len(completed),
+            "completedWithValidServeStats": valid_stats,
+            "completedMissingServeStats": missing_stats,
+            "completedMalformedStats": malformed_stats,
+        }
+
+    overall = summarize(davis_rows)
+    overall["phases"] = {
+        "restOfDavisCup": summarize([
+            row for row in davis_rows if _davis_cup_phase(row) == "restOfDavisCup"
+        ]),
+        "final8": summarize([
+            row for row in davis_rows if _davis_cup_phase(row) == "final8"
+        ]),
     }
-
+    return overall
 
 def _is_no_play_score(score):
     normalized = "".join(str(score or "").upper().split())
