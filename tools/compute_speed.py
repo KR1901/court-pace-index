@@ -1690,13 +1690,30 @@ def season_ratings(year, rows, source=None):
         )
         if profiles is None or tour_rate is None:
             continue
+        prior_season_anchor = False
         if used_prior_fallback:
             anchor_rows = fitted_rows
+            prior_season_anchor = True
             chronology = {
                 **chronology,
                 "mode": "prior-season-fallback",
                 "priorSeasonFallbackMatches": len(fitted_rows),
             }
+        elif not anchor_rows and year > PROFILE_HISTORY_START_YEAR:
+            # A partially completed concurrent event can train player profiles but
+            # cannot normalise the target. When no complete pre-target event exists,
+            # use the preceding completed season as the anchor instead of using the
+            # target's own raw score (which would force a neutral 1.0 reading).
+            prior_anchor = _prior_year_rows(year - 1)
+            if prior_anchor:
+                anchor_rows = prior_anchor
+                prior_season_anchor = True
+        chronology = {
+            **chronology,
+            "anchorMode": "prior-season-fallback" if prior_season_anchor
+                else ("completed-pre-target-events" if anchor_rows else "target-neutral-fallback"),
+            "priorSeasonAnchorMatches": len(anchor_rows) if prior_season_anchor else 0,
+        }
         profile_coverage = ensure_event_profiles(event_rows, profiles, tour_rate)
         clusters = event_match_ratio_clusters(event_rows, profiles, tour_rate)
         side_diagnostics = event_side_diagnostics(event_rows, profiles, tour_rate)
@@ -1787,6 +1804,9 @@ def season_ratings(year, rows, source=None):
                 "chronologyEventWindowMatches": chronology.get("eventWindowMatches", 0),
                 "chronologyFallbackMatches": chronology.get("fallbackMatches", 0),
                 "chronologyPriorSeasonFallbackMatches": chronology.get("priorSeasonFallbackMatches", 0),
+                "normalisationAnchorMode": chronology.get("anchorMode"),
+                "normalisationAnchorMatches": len(anchor_rows),
+                "normalisationPriorSeasonAnchorMatches": chronology.get("priorSeasonAnchorMatches", 0),
                 "eventStartDate": item["event_start_date"],
                 "quarantineDays": (
                     CHRONOLOGICAL_QUARANTINE_DAYS
