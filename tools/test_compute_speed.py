@@ -1258,7 +1258,7 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             call.args[0] for call in profiles.call_args_list
             if call.args[0]
             and {row["tourney_name"] for row in call.args[0]} == {"Madrid Masters"}
-            and any(row["tourney_date"] == "20260930" for row in call.args[0])
+            and any(row["tourney_date"] == "20260928" for row in call.args[0])
         ]
         self.assertTrue(paris_training)
         self.assertTrue(all(
@@ -1266,6 +1266,15 @@ class LeaveOneEventOutProductionTests(unittest.TestCase):
             for rows in paris_training
         ))
         compute_speed._PROFILE_YEAR_CACHE.clear()
+
+    def test_date_only_precedence_is_timezone_safe_at_adjacent_day_boundaries(self):
+        target = date(2026, 10, 1)
+        # A day only two calendar days earlier can still overlap in UTC when the
+        # source venue is UTC-12 and target venue is UTC+14.
+        self.assertFalse(compute_speed._match_day_definitely_precedes_target(date(2026, 9, 29), target))
+        # Three days earlier is safely before the target under the full civil-time range.
+        self.assertTrue(compute_speed._match_day_definitely_precedes_target(date(2026, 9, 28), target))
+        self.assertFalse(compute_speed._match_day_definitely_precedes_target(target, target))
 
     def test_match_timestamps_can_order_same_day_matches_when_offsets_are_present(self):
         def match(event, match_date, timestamp=None, aces=8):
