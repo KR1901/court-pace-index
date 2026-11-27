@@ -3,7 +3,7 @@
 from __future__ import annotations
 import argparse, json, re, sys, unicodedata
 from collections import Counter, defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from difflib import SequenceMatcher
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -31,14 +31,14 @@ CITY_TZ={
  "singapore":"Asia/Singapore","madrid":"Europe/Madrid","munich":"Europe/Berlin","hamburg":"Europe/Berlin",
  "rome":"Europe/Rome","dusseldorf":"Europe/Berlin","paris":"Europe/Paris","london":"Europe/London",
  "florence":"Europe/Rome","rosmalen":"Europe/Amsterdam","genoa":"Europe/Rome","manchester":"Europe/London",
- "gstaad":"Europe/Zurich","bastad":"Europe/Stockholm","newport":"America/New_York",
+ "gstaad":"Europe/Zurich","bastad":"Europe/Stockholm","bstad":"Europe/Stockholm","newport":"America/New_York",
  "stuttgart":"Europe/Berlin","washington":"America/New_York","montreal":"America/Toronto",
  "toronto":"America/Toronto","hilversum":"Europe/Amsterdam","kitzbuhel":"Europe/Vienna",
  "losangeles":"America/Los_Angeles","sanmarino":"Europe/San_Marino","cincinnati":"America/New_York",
  "prague":"Europe/Prague","indianapolis":"America/Indiana/Indianapolis","newhaven":"America/New_York",
  "longisland":"America/New_York","schenectady":"America/New_York","newyork":"America/New_York",
  "bordeaux":"Europe/Paris","brasilia":"America/Sao_Paulo","geneva":"Europe/Zurich","basel":"Europe/Zurich",
- "palermo":"Europe/Rome","brisbane":"Australia/Brisbane","toulouse":"Europe/Paris","athens":"Europe/Athens",
+ "palermo":"Europe/Rome","brisbane":"Australia/Brisbane","delraybeach":"America/New_York","antalya":"Europe/Istanbul","nursultan":"Asia/Almaty","sardinia":"Europe/Rome","eastbourne":"Europe/London","nottingham":"Europe/London","newhaven":"America/New_York","longisland":"America/New_York","porto":"Europe/Lisbon","essen":"Europe/Berlin","pinehurst":"America/New_York","coralsprings":"America/New_York","toulouse":"Europe/Paris","athens":"Europe/Athens",
  "berlin":"Europe/Berlin","telaviv":"Asia/Jerusalem","lyon":"Europe/Paris","vienna":"Europe/Vienna",
  "stockholm":"Europe/Stockholm","guaruja":"America/Sao_Paulo","buzios":"America/Sao_Paulo",
  "antwerp":"Europe/Brussels","santiago":"America/Santiago","moscow":"Europe/Moscow",
@@ -48,7 +48,7 @@ CITY_TZ={
  "bucharest":"Europe/Bucharest","marrakech":"Africa/Casablanca","montevideo":"America/Montevideo",
  "valencia":"Europe/Madrid","umag":"Europe/Zagreb","loscabos":"America/Mazatlan",
  "winstonsalem":"America/New_York","chengdu":"Asia/Shanghai","hangzhou":"Asia/Shanghai",
- "almaty":"Asia/Almaty","brussels":"Europe/Brussels","metz":"Europe/Paris","turin":"Europe/Rome","torino":"Europe/Rome","bologna":"Europe/Rome",
+ "almaty":"Asia/Almaty","brussels":"Europe/Brussels","metz":"Europe/Paris","turin":"Europe/Rome","torino":"Europe/Rome","bologna":"Europe/Rome","frankfurt":"Europe/Berlin","hanover":"Europe/Berlin","lisbon":"Europe/Lisbon","houston":"America/Chicago",
  "halle":"Europe/Berlin","bologna":"Europe/Rome","torino":"Europe/Rome","turin":"Europe/Rome","stpolten":"Europe/Vienna","portschach":"Europe/Vienna",
  "meran":"Europe/Rome","mallorca":"Europe/Madrid","cologne":"Europe/Berlin",
  "suncity":"Africa/Johannesburg","bermuda":"Atlantic/Bermuda",
@@ -60,7 +60,7 @@ CITY_TZ={
  "oahu":"Pacific/Honolulu","honolulu":"Pacific/Honolulu","copenhagen":"Europe/Copenhagen",
  "oslo":"Europe/Oslo","helsinki":"Europe/Helsinki","budapest":"Europe/Budapest",
  "belgrade":"Europe/Belgrade","sofia":"Europe/Sofia","warsaw":"Europe/Warsaw","istanbul":"Europe/Istanbul",
- "riyadh":"Asia/Riyadh","beijing":"Asia/Shanghai","shanghai":"Asia/Shanghai","guangzhou":"Asia/Shanghai",
+ "riyadh":"Asia/Riyadh","beijing":"Asia/Shanghai","shanghai":"Asia/Shanghai","jeddah":"Asia/Riyadh","guangzhou":"Asia/Shanghai",
  "manila":"Asia/Manila","jaipur":"Asia/Kolkata","delhi":"Asia/Kolkata","sopot":"Europe/Warsaw"
 }
 ALIASES={
@@ -72,7 +72,11 @@ ALIASES={
  "queensclub":{"hsbcchampionships","london"},
  "tokyooutdoor":{"tokyo"},"tokyoindoor":{"tokyo"},
  "stuttgartoutdoor":{"stuttgart"},"stuttgartindoor":{"stuttgart"},
- "genova":{"genoa"},"tourfinals":{"atptourworldchampionship","tennismasterscup","atpfinals"},
+ "genova":{"genoa"},"stpoelten":{"stpolten"},"bstad":{"bastad"},
+ "greatoceanroadopen":{"melbourne1","melbourne"},"murrayriveropen":{"melbourne2","melbourne"},
+ "nextgenfinals":{"nextgenatpfinals","nextgen"},"nextgenatpfinals":{"nextgenfinals","nextgen"},
+ "nittoatpfinals":{"tourfinals","atpfinals"},"masterscup":{"tourfinals","atpfinals"},
+ "canadamasters":{"canada"},"parismasters":{"paris"},"tourfinals":{"atptourworldchampionship","tennismasterscup","atpfinals"},
  "atpfinals":{"tourfinals","atptourworldchampionship","tennismasterscup"},
  "tennismasterscup":{"tourfinals","atpfinals"},
  "atptourworldchampionship":{"tourfinals","atpfinals"},
@@ -80,6 +84,24 @@ ALIASES={
  "charlotte":{"houston"},"houston":{"charlotte"},
  "sanfrancisco":{"dallas"},"dallas":{"sanfrancisco"}
 }
+
+FINALS_ZONES = {
+    **{year: "Europe/Berlin" for year in range(1991, 2000)},
+    2000: "Europe/Lisbon",
+    2001: "Australia/Sydney",
+    2002: "Asia/Shanghai",
+    2003: "America/Chicago",
+    2004: "America/Chicago",
+    **{year: "Asia/Shanghai" for year in range(2005, 2009)},
+    **{year: "Europe/London" for year in range(2009, 2021)},
+    **{year: "Europe/Rome" for year in range(2021, 2027)},
+}
+
+def finals_zone(year):
+    zone = FINALS_ZONES.get(year)
+    if zone:
+        ZoneInfo(zone)
+    return zone
 
 def norm(s):
  s=unicodedata.normalize("NFKD",str(s or "")).casefold()
@@ -217,7 +239,9 @@ def main():
    is_final=bool(re.search(r"\bF\b|final",sname,re.I) or "FLS" in re.split(r"[^A-Z0-9]+",sid.upper()))
    scored=[]
    for c in cards.get(year,[]):
-    if not c["start"]<=e["_date"]<=c["end"] or not c["timeZone"]: continue
+    # Match using the legacy source's start-of-week date; store exact ATP dates.
+    tolerance_days = 7 if any(k in norm(c["cardText"]) for k in ("finals","worldchampionship","masterscup")) else 3
+    if not c["start"]-timedelta(days=tolerance_days)<=e["_date"]<=c["end"] or not c["timeZone"]: continue
     if is_d:
      if "davis" not in toks(c["cardText"]) or not is_final: continue
      score=1.0
