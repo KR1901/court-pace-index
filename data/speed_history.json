@@ -82,7 +82,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-27T04:52:18.195549+00:00",
+   "fetchedAtUtc": "2026-11-27T06:57:48.666557+00:00",
    "latestMatchDate": "20261122",
    "matchRows": 2816,
    "bytes": 595598,
@@ -90,7 +90,7 @@
    "ongoingDavisCup": {
     "source": "TennisMyLife ATP Match Database ongoing tournament feed",
     "url": "https://stats.tennismylife.org/data/ongoing_tourneys.csv",
-    "fetchedAtUtc": "2026-11-27T04:52:18.919567+00:00",
+    "fetchedAtUtc": "2026-11-27T06:57:49.402220+00:00",
     "bytes": 2448,
     "sha256": "db68b1980f7d420c97507e43001e01c01071fd3c5c61a27b2f73943c960c6440",
     "matchRows": 8,
@@ -491454,7 +491454,12 @@
        "serverProfileSource": "career-history-pooled-shrunk",
        "returnerProfileSource": "career-history-pooled-shrunk"
       }
-     ]
+     ],
+     "sourceIdentifiedSingles": 183,
+     "sourceCompletedSingles": 183,
+     "sourceMatchesWithValidServeStats": 148,
+     "sourceMatchesMissingServeStats": 35,
+     "sourceMatchesMalformedServeStats": 0
     }
    },
    "rotterdam": {
@@ -508649,7 +508654,12 @@
        "serverProfileSource": "current-season-qualified",
        "returnerProfileSource": "career-history-surface-shrunk"
       }
-     ]
+     ],
+     "sourceIdentifiedSingles": 8,
+     "sourceCompletedSingles": 8,
+     "sourceMatchesWithValidServeStats": 8,
+     "sourceMatchesMissingServeStats": 0,
+     "sourceMatchesMalformedServeStats": 0
     }
    }
   }
