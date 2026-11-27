@@ -81,7 +81,26 @@ The physical CPI audit contained 107 event-season pairs across a small, non-rand
 
 These are not independent measurements of the same construct. The ITF Court Pace Rating (CPR) tests ball-surface interaction through friction and vertical restitution under controlled ball impact. Tennis Abstract's ace-based index describes how matches played under a combination of court, players, balls, and conditions. CPI coverage is sparse and non-random. The observed divergence is a reason not to treat CALC, Tennis Abstract, and physical CPI as interchangeable scales.
 
-## 6. Literature and interpretation
+## 6. Held-out ace-probability calibration
+
+A separate probability-level audit now evaluates the production Log5 probability itself, rather than only the final tournament rating. For each target tournament, the player profiles and tour baseline are built from pre-event information only. Every scored target-event match is excluded from its own profile training. The probability comparison covers **564 tournament-seasons (2016–2026), 48,536 server sides, and 3,985,366 service points**. The 0.5 expected-ace floor is not applied because it stabilises the actual/expected ratio denominator, not the per-point probability.
+
+| Probability model | Log loss / service point | Brier / service point | Predicted ace rate | Observed ace rate |
+|---|---:|---:|---:|---:|
+| **Production calibrated Log5** | **0.269706** | **0.072021** | 8.0497% | 7.9668% |
+| Neutral pre-event tour-rate baseline | 0.278264 | 0.073367 | 8.0356% | 7.9668% |
+| Additive probability baseline | 0.272646 | 0.072038 | 8.0376% | 7.9668% |
+
+A paired, season-stratified tournament-season cluster bootstrap with 1,000 draws found the following differences (comparator minus production Log5):
+
+- Neutral baseline: log-loss difference **+0.008559** (95% CI +0.008019 to +0.009143); Brier difference **+0.001346** (+0.001245 to +0.001455).
+- Additive baseline: log-loss difference **+0.002914** (+0.001821 to +0.004511); Brier difference **+0.0000165** (+0.00000279 to +0.0000326).
+
+These results favour the production Log5 probabilities over the two simple baselines on this chronological held-out sample. They do not prove universal probability calibration or establish that Log5 is the best possible tennis point model. The post-hoc calibration intercept and slope were **-0.224 and 0.909** respectively (fit converged), rather than the ideal 0 and 1. Reliability bins indicate modest underprediction in the lowest probability bands and overprediction in the higher bands. The fitted coefficients are descriptive only and are not applied to production.
+
+The comparator set is intentionally limited: it does not include a fully specified hierarchical serve/return point model, and it does not model score state, first/second serve, ball type, weather, altitude or physical court measurements. Server-side outcomes are grouped binomial observations; the bootstrap clusters by tournament-season rather than player identity. The result supports retaining Log5 over these simple alternatives for now, while keeping its calibration uncertainty visible.
+
+## 7. Literature and interpretation
 
 - Gollub, **Forecasting serve performance in professional tennis matches**, *Journal of Sports Analytics* (2021): evaluates sample-size shrinkage (Efron–Morris), strength-of-schedule adjustment and Elo-informed serve estimates on 7,622 ATP matches. It supports evaluating shrinkage and opponent adjustment, but its target is serve-point performance rather than tournament ace-rate speed. [IOS Press paper](https://content.iospress.com/articles/journal-of-sports-analytics/jsa200345).
 - Ingram, **A point-based Bayesian hierarchical model to predict the outcome of tennis matches**, *Journal of Quantitative Analysis in Sports* (2019): models serve/return skill, surface, tournament and temporal variation using a Bayesian hierarchy. It is a more elaborate forward model, not a drop-in replacement for an ace-rate index. [DOI: 10.1515/jqas-2018-0008](https://doi.org/10.1515/jqas-2018-0008).
@@ -89,9 +108,9 @@ These are not independent measurements of the same construct. The ITF Court Pace
 - Tennis Abstract's surface-speed methodology explains why it adjusts for server and returner ability and why ace rate measures playing conditions rather than intrinsic court construction. [2016 methodology](https://www.tennisabstract.com/blog/2016/11/23/the-speed-of-every-surface-2016-edition/) and [2026 surface-speed table](https://www.tennisabstract.com/).
 - The ITF's 2025 technical booklet defines physical Court Pace Rating using controlled ball-surface testing, including friction and coefficient of restitution. [ITF 2025 technical booklet](https://www.world.tennis/media/14104/2025-technical-booklet.pdf).
 
-The current audit includes event-level log loss for the existing expected-ace probabilities, but it does not yet establish full probability calibration against held-out ace outcomes for a competing Log5/additive/hierarchical model. That is a distinct next research task. The historical rating comparison to Tennis Abstract is informative but cannot certify the ace probability formula or physical court pace.
+The probability-level audit strengthens the evidence for the current expected-ace probability against neutral and additive baselines. The historical tournament-rating comparison to Tennis Abstract remains a separate reference comparison and cannot certify physical court pace.
 
-## 7. Validation and production decision
+## 8. Validation and production decision
 
 The successful GitHub research run completed:
 1. 241 Python tooling tests.
