@@ -301,7 +301,7 @@ def main():
    tmp.write_text(json.dumps({"schemaVersion":1,"records":records},indent=2)+"\n",encoding="utf-8")
    try:
     reg=load_event_periods(tmp,require_non_empty=True)
-    coverage=audit_source_coverage(rows,year,reg)
+    coverage=audit_source_coverage(rows,year,reg,tournament_id_resolver=compute_speed._row_tournament_id)
    except Exception as e: coverage={"dateCoverageComplete":False,"error":f"{type(e).__name__}: {e}"}
    finally: tmp.unlink(missing_ok=True)
   coverage_rows.append({
