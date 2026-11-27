@@ -92,6 +92,26 @@ class OfficialEventPeriodRegistryTests(unittest.TestCase):
         self.assertEqual("2026-madrid", period_for_rows(rows, 2026, registry)["eventId"])
         self.assertIsNone(period_for_rows(rows + [{"tourney_id":"unmapped"}], 2026, registry))
 
+    def test_multi_venue_date_envelope_brackets_global_utc_offsets(self):
+        registry = self.registry([
+            record(
+                timeZone="UTC",
+                boundaryMode="global_date_envelope",
+            )
+        ])
+        period = registry["by_source_id"][(2026, "2026-1536")]
+        self.assertEqual(datetime(2026, 4, 21, 10, 0, tzinfo=timezone.utc), period["_start_utc"])
+        self.assertEqual(datetime(2026, 5, 4, 12, 0, tzinfo=timezone.utc), period["_end_utc_exclusive"])
+
+    def test_multi_venue_envelope_rejects_a_non_utc_zone(self):
+        with self.assertRaises(EventPeriodError):
+            self.registry([
+                record(
+                    boundaryMode="global_date_envelope",
+                    timeZone="Europe/Madrid",
+                )
+            ])
+
     def test_source_coverage_counts_all_singles_even_without_stats(self):
         registry = self.registry([record()])
         rows = [
