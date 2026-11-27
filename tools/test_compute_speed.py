@@ -124,6 +124,8 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         }
         freshly_recalculated = {
             "rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62},
+            "daviscup": {"speed": 1.11, "matches": 150, "adjustedServerSides": 300},
+            "daviscupfinal8": {"speed": 1.25, "matches": 8, "adjustedServerSides": 16},
         }
 
         merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
@@ -183,6 +185,7 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         }
         freshly_recalculated = {
             "rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62},
+            "daviscup": {"speed": 1.11, "matches": 200, "adjustedServerSides": 400},
         }
 
         merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
@@ -196,13 +199,17 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertEqual(["daviscup"], retained)
         self.assertEqual("Jeff Sackmann ATP archive", source)
         self.assertEqual(1.30, merged["rome"]["speed"])
-        self.assertEqual(1.087, merged["daviscup"]["speed"])
+        # The compact seed contains the last published 2024 target. Neither an old
+        # speed_history row nor a new archive reconstruction can replace it.
+        self.assertEqual(0.864, merged["daviscup"]["speed"])
+        self.assertEqual(160, merged["daviscup"]["matches"])
         self.assertNotIn("daviscupfinal8", merged)
         diagnostics = merged["daviscup"]["calculationDiagnostics"]
         self.assertEqual("legacy_frozen", diagnostics["chronologySnapshotStatus"])
+        self.assertNotIn("sideDiagnostics", diagnostics)
         self.assertIn("not recomputed under strict whole-event dates", diagnostics["chronologySnapshotNote"])
 
-    def test_strictly_recalculated_historical_davis_cup_rating_is_not_overwritten(self):
+    def test_new_archive_recalculation_cannot_replace_frozen_historical_davis_cup_seed(self):
         previous = {
             "season_sources": {"2024": "Jeff Sackmann ATP archive"},
             "seasons": {
@@ -221,8 +228,9 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
             previous,
             current_year=2026,
         )
-        self.assertEqual([], retained)
-        self.assertEqual(1.11, merged["daviscup"]["speed"])
+        self.assertEqual(["daviscup"], retained)
+        self.assertEqual(0.864, merged["daviscup"]["speed"])
+        self.assertEqual("legacy_frozen", merged["daviscup"]["calculationDiagnostics"]["chronologySnapshotStatus"])
 
     def test_davis_cup_phase_history_is_not_retained_without_a_validated_source_audit(self):
         tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
