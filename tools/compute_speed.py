@@ -2561,21 +2561,48 @@ def main():
                 previous_history,
             )
             if retained_ids:
-                source_note = (
-                    f"Standard ATP target rows recalculated from {current_source}; "
-                    f"validated Davis Cup phase CALC records retained from the prior "
-                    f"{TML_DAVIS_CUP_SOURCE} snapshot: {', '.join(retained_ids)}."
-                )
-                previous_coverage = previous_history.get("davis_cup_coverage", {}).get(str(year))
-                if isinstance(previous_coverage, dict):
-                    davis_cup_coverage[str(year)] = previous_coverage
-                previous_metadata = previous_source_metadata.get(str(year))
-                if isinstance(previous_metadata, dict):
-                    retained_source_metadata[str(year)] = previous_metadata
-                print(
-                    f"{year}: retained validated historical Davis Cup phases · "
-                    f"{', '.join(retained_ids)}"
-                )
+                frozen_legacy_ids = [
+                    event_id for event_id in retained_ids
+                    if (
+                        isinstance(ratings.get(event_id), dict)
+                        and (ratings[event_id].get("calculationDiagnostics") or {}).get(
+                            "chronologySnapshotStatus"
+                        ) == "legacy_frozen"
+                    )
+                ]
+                tml_validated_ids = [
+                    event_id for event_id in retained_ids
+                    if event_id not in frozen_legacy_ids
+                ]
+                if frozen_legacy_ids:
+                    source_note = (
+                        f"Standard ATP target rows strictly recalculated from {current_source}; "
+                        f"previously published Davis Cup values retained as frozen legacy "
+                        f"target snapshots because historic archive records lack tie-level "
+                        f"chronology: {', '.join(frozen_legacy_ids)}. These snapshots are not "
+                        f"strict-date recalculations and are excluded from ATP profile training "
+                        f"and season normalisation."
+                    )
+                    print(
+                        f"{year}: retained frozen legacy Davis Cup target snapshots · "
+                        f"{', '.join(frozen_legacy_ids)}"
+                    )
+                if tml_validated_ids:
+                    source_note = (
+                        f"Standard ATP target rows recalculated from {current_source}; "
+                        f"validated Davis Cup phase CALC records retained from the prior "
+                        f"{TML_DAVIS_CUP_SOURCE} snapshot: {', '.join(tml_validated_ids)}."
+                    )
+                    previous_coverage = previous_history.get("davis_cup_coverage", {}).get(str(year))
+                    if isinstance(previous_coverage, dict):
+                        davis_cup_coverage[str(year)] = previous_coverage
+                    previous_metadata = previous_source_metadata.get(str(year))
+                    if isinstance(previous_metadata, dict):
+                        retained_source_metadata[str(year)] = previous_metadata
+                    print(
+                        f"{year}: retained validated historical Davis Cup phases · "
+                        f"{', '.join(tml_validated_ids)}"
+                    )
         history[year] = ratings
         season_sources[year] = published_source
         season_source_notes[str(year)] = source_note
