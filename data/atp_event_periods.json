@@ -48,6 +48,21 @@
     },
     {
       "season": 1991,
+      "eventId": "atp-1991-1991-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1991-338"
+      ],
+      "startDate": "1991-01-07",
+      "endDate": "1991-01-13",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
       "eventId": "atp-1991-1991-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -146,6 +161,21 @@
       "startDate": "1991-02-18",
       "endDate": "1991-02-24",
       "timeZone": "America/Chicago",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
+      "eventId": "atp-1991-1991-357",
+      "tournamentId": "unmapped-stuttgartindoor",
+      "sourceEventIds": [
+        "1991-357"
+      ],
+      "startDate": "1991-02-18",
+      "endDate": "1991-02-24",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -281,6 +311,21 @@
       "startDate": "1991-04-08",
       "endDate": "1991-04-14",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
+      "eventId": "atp-1991-1991-329",
+      "tournamentId": "unmapped-tokyooutdoor",
+      "sourceEventIds": [
+        "1991-329"
+      ],
+      "startDate": "1991-04-08",
+      "endDate": "1991-04-14",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -618,6 +663,21 @@
     },
     {
       "season": 1991,
+      "eventId": "atp-1991-1991-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1991-321"
+      ],
+      "startDate": "1991-07-15",
+      "endDate": "1991-07-21",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
       "eventId": "atp-1991-1991-418",
       "tournamentId": "washington",
       "sourceEventIds": [
@@ -918,6 +978,21 @@
     },
     {
       "season": 1991,
+      "eventId": "atp-1991-1991-427",
+      "tournamentId": "unmapped-sydneyindoor",
+      "sourceEventIds": [
+        "1991-427"
+      ],
+      "startDate": "1991-09-30",
+      "endDate": "1991-10-06",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
       "eventId": "atp-1991-1991-327",
       "tournamentId": "unmapped-toulouse",
       "sourceEventIds": [
@@ -956,6 +1031,21 @@
       "startDate": "1991-10-07",
       "endDate": "1991-10-13",
       "timeZone": "Asia/Jerusalem",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
+      "eventId": "atp-1991-1991-428",
+      "tournamentId": "unmapped-tokyoindoor",
+      "sourceEventIds": [
+        "1991-428"
+      ],
+      "startDate": "1991-10-07",
+      "endDate": "1991-10-13",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -1158,6 +1248,21 @@
     },
     {
       "season": 1992,
+      "eventId": "atp-1992-1992-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1992-338"
+      ],
+      "startDate": "1992-01-06",
+      "endDate": "1992-01-12",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
       "eventId": "atp-1992-1992-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -1256,6 +1361,21 @@
       "startDate": "1992-02-17",
       "endDate": "1992-02-23",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
+      "eventId": "atp-1992-1992-357",
+      "tournamentId": "unmapped-stuttgartindoor",
+      "sourceEventIds": [
+        "1992-357"
+      ],
+      "startDate": "1992-02-17",
+      "endDate": "1992-02-23",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -1406,6 +1526,21 @@
       "startDate": "1992-04-06",
       "endDate": "1992-04-12",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
+      "eventId": "atp-1992-1992-329",
+      "tournamentId": "unmapped-tokyooutdoor",
+      "sourceEventIds": [
+        "1992-329"
+      ],
+      "startDate": "1992-04-06",
+      "endDate": "1992-04-12",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -1743,6 +1878,21 @@
     },
     {
       "season": 1992,
+      "eventId": "atp-1992-1992-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1992-321"
+      ],
+      "startDate": "1992-07-13",
+      "endDate": "1992-07-19",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
       "eventId": "atp-1992-1992-418",
       "tournamentId": "washington",
       "sourceEventIds": [
@@ -1968,6 +2118,21 @@
     },
     {
       "season": 1992,
+      "eventId": "atp-1992-1992-322",
+      "tournamentId": "unmapped-cologne",
+      "sourceEventIds": [
+        "1992-322"
+      ],
+      "startDate": "1992-09-14",
+      "endDate": "1992-09-20",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
       "eventId": "atp-1992-1992-328",
       "tournamentId": "basel",
       "sourceEventIds": [
@@ -2028,6 +2193,21 @@
     },
     {
       "season": 1992,
+      "eventId": "atp-1992-1992-427",
+      "tournamentId": "unmapped-sydneyindoor",
+      "sourceEventIds": [
+        "1992-427"
+      ],
+      "startDate": "1992-10-05",
+      "endDate": "1992-10-11",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
       "eventId": "atp-1992-1992-327",
       "tournamentId": "unmapped-toulouse",
       "sourceEventIds": [
@@ -2066,6 +2246,21 @@
       "startDate": "1992-10-12",
       "endDate": "1992-10-18",
       "timeZone": "Asia/Jerusalem",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
+      "eventId": "atp-1992-1992-428",
+      "tournamentId": "unmapped-tokyoindoor",
+      "sourceEventIds": [
+        "1992-428"
+      ],
+      "startDate": "1992-10-12",
+      "endDate": "1992-10-18",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -2313,6 +2508,21 @@
     },
     {
       "season": 1993,
+      "eventId": "atp-1993-1993-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1993-338"
+      ],
+      "startDate": "1993-01-11",
+      "endDate": "1993-01-17",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
       "eventId": "atp-1993-1993-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -2411,6 +2621,21 @@
       "startDate": "1993-02-15",
       "endDate": "1993-02-21",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
+      "eventId": "atp-1993-1993-357",
+      "tournamentId": "unmapped-stuttgartindoor",
+      "sourceEventIds": [
+        "1993-357"
+      ],
+      "startDate": "1993-02-15",
+      "endDate": "1993-02-21",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -2591,6 +2816,21 @@
       "startDate": "1993-04-05",
       "endDate": "1993-04-11",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
+      "eventId": "atp-1993-1993-329",
+      "tournamentId": "unmapped-tokyooutdoor",
+      "sourceEventIds": [
+        "1993-329"
+      ],
+      "startDate": "1993-04-05",
+      "endDate": "1993-04-11",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -2868,6 +3108,21 @@
     },
     {
       "season": 1993,
+      "eventId": "atp-1993-1993-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1993-500"
+      ],
+      "startDate": "1993-06-14",
+      "endDate": "1993-06-20",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
       "eventId": "atp-1993-1993-741",
       "tournamentId": "unmapped-manchester",
       "sourceEventIds": [
@@ -2921,6 +3176,21 @@
       "startDate": "1993-07-05",
       "endDate": "1993-07-11",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
+      "eventId": "atp-1993-1993-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1993-321"
+      ],
+      "startDate": "1993-07-19",
+      "endDate": "1993-07-25",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -3228,6 +3498,21 @@
     },
     {
       "season": 1993,
+      "eventId": "atp-1993-1993-427",
+      "tournamentId": "unmapped-sydneyindoor",
+      "sourceEventIds": [
+        "1993-427"
+      ],
+      "startDate": "1993-10-04",
+      "endDate": "1993-10-10",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
       "eventId": "atp-1993-1993-327",
       "tournamentId": "unmapped-toulouse",
       "sourceEventIds": [
@@ -3266,6 +3551,21 @@
       "startDate": "1993-10-11",
       "endDate": "1993-10-17",
       "timeZone": "Asia/Jerusalem",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
+      "eventId": "atp-1993-1993-428",
+      "tournamentId": "unmapped-tokyoindoor",
+      "sourceEventIds": [
+        "1993-428"
+      ],
+      "startDate": "1993-10-11",
+      "endDate": "1993-10-17",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -3513,6 +3813,21 @@
     },
     {
       "season": 1994,
+      "eventId": "atp-1994-1994-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1994-338"
+      ],
+      "startDate": "1994-01-10",
+      "endDate": "1994-01-16",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
       "eventId": "atp-1994-1994-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -3611,6 +3926,21 @@
       "startDate": "1994-02-14",
       "endDate": "1994-02-20",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
+      "eventId": "atp-1994-1994-357",
+      "tournamentId": "unmapped-stuttgartindoor",
+      "sourceEventIds": [
+        "1994-357"
+      ],
+      "startDate": "1994-02-14",
+      "endDate": "1994-02-20",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -3768,6 +4098,21 @@
     },
     {
       "season": 1994,
+      "eventId": "atp-1994-1994-426",
+      "tournamentId": "unmapped-suncity",
+      "sourceEventIds": [
+        "1994-426"
+      ],
+      "startDate": "1994-03-28",
+      "endDate": "1994-04-03",
+      "timeZone": "Africa/Johannesburg",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
       "eventId": "atp-1994-1994-425",
       "tournamentId": "barcelona",
       "sourceEventIds": [
@@ -3776,6 +4121,21 @@
       "startDate": "1994-04-04",
       "endDate": "1994-04-10",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
+      "eventId": "atp-1994-1994-329",
+      "tournamentId": "unmapped-tokyooutdoor",
+      "sourceEventIds": [
+        "1994-329"
+      ],
+      "startDate": "1994-04-04",
+      "endDate": "1994-04-10",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -4053,6 +4413,21 @@
     },
     {
       "season": 1994,
+      "eventId": "atp-1994-1994-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1994-500"
+      ],
+      "startDate": "1994-06-13",
+      "endDate": "1994-06-19",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
       "eventId": "atp-1994-1994-741",
       "tournamentId": "unmapped-manchester",
       "sourceEventIds": [
@@ -4106,6 +4481,21 @@
       "startDate": "1994-07-04",
       "endDate": "1994-07-10",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
+      "eventId": "atp-1994-1994-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1994-321"
+      ],
+      "startDate": "1994-07-18",
+      "endDate": "1994-07-24",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -4428,6 +4818,21 @@
     },
     {
       "season": 1994,
+      "eventId": "atp-1994-1994-427",
+      "tournamentId": "unmapped-sydneyindoor",
+      "sourceEventIds": [
+        "1994-427"
+      ],
+      "startDate": "1994-10-03",
+      "endDate": "1994-10-09",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
       "eventId": "atp-1994-1994-327",
       "tournamentId": "unmapped-toulouse",
       "sourceEventIds": [
@@ -4466,6 +4871,21 @@
       "startDate": "1994-10-10",
       "endDate": "1994-10-16",
       "timeZone": "Asia/Jerusalem",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
+      "eventId": "atp-1994-1994-428",
+      "tournamentId": "unmapped-tokyoindoor",
+      "sourceEventIds": [
+        "1994-428"
+      ],
+      "startDate": "1994-10-10",
+      "endDate": "1994-10-16",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -4698,6 +5118,21 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1995-338"
+      ],
+      "startDate": "1995-01-09",
+      "endDate": "1995-01-15",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -4796,6 +5231,21 @@
       "startDate": "1995-02-20",
       "endDate": "1995-02-26",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-357",
+      "tournamentId": "unmapped-stuttgartindoor",
+      "sourceEventIds": [
+        "1995-357"
+      ],
+      "startDate": "1995-02-20",
+      "endDate": "1995-02-26",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -4961,6 +5411,36 @@
       "startDate": "1995-04-10",
       "endDate": "1995-04-16",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-329",
+      "tournamentId": "unmapped-tokyooutdoor",
+      "sourceEventIds": [
+        "1995-329"
+      ],
+      "startDate": "1995-04-10",
+      "endDate": "1995-04-16",
+      "timeZone": "Asia/Tokyo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-436",
+      "tournamentId": "unmapped-bermuda",
+      "sourceEventIds": [
+        "1995-436"
+      ],
+      "startDate": "1995-04-17",
+      "endDate": "1995-04-23",
+      "timeZone": "Atlantic/Bermuda",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -5208,6 +5688,21 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1995-500"
+      ],
+      "startDate": "1995-06-19",
+      "endDate": "1995-06-25",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-741",
       "tournamentId": "unmapped-nottingham",
       "sourceEventIds": [
@@ -5276,6 +5771,21 @@
       "startDate": "1995-07-10",
       "endDate": "1995-07-16",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1995-321"
+      ],
+      "startDate": "1995-07-17",
+      "endDate": "1995-07-23",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -5441,6 +5951,21 @@
       "startDate": "1995-10-09",
       "endDate": "1995-10-15",
       "timeZone": "Asia/Jerusalem",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-428",
+      "tournamentId": "unmapped-tokyoindoor",
+      "sourceEventIds": [
+        "1995-428"
+      ],
+      "startDate": "1995-10-09",
+      "endDate": "1995-10-15",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -5636,6 +6161,21 @@
       "startDate": "1996-01-08",
       "endDate": "1996-01-14",
       "timeZone": "Asia/Jakarta",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
+      "eventId": "atp-1996-1996-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1996-338"
+      ],
+      "startDate": "1996-01-08",
+      "endDate": "1996-01-14",
+      "timeZone": "Australia/Sydney",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -5973,6 +6513,21 @@
     },
     {
       "season": 1996,
+      "eventId": "atp-1996-1996-436",
+      "tournamentId": "unmapped-bermuda",
+      "sourceEventIds": [
+        "1996-436"
+      ],
+      "startDate": "1996-04-15",
+      "endDate": "1996-04-21",
+      "timeZone": "Atlantic/Bermuda",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
       "eventId": "atp-1996-1996-329",
       "tournamentId": "tokyo",
       "sourceEventIds": [
@@ -6213,6 +6768,21 @@
     },
     {
       "season": 1996,
+      "eventId": "atp-1996-1996-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1996-500"
+      ],
+      "startDate": "1996-06-17",
+      "endDate": "1996-06-23",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
       "eventId": "atp-1996-1996-741",
       "tournamentId": "unmapped-nottingham",
       "sourceEventIds": [
@@ -6281,6 +6851,21 @@
       "startDate": "1996-07-08",
       "endDate": "1996-07-14",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
+      "eventId": "atp-1996-1996-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1996-321"
+      ],
+      "startDate": "1996-07-15",
+      "endDate": "1996-07-21",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -6813,6 +7398,21 @@
     },
     {
       "season": 1997,
+      "eventId": "atp-1997-1997-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1997-338"
+      ],
+      "startDate": "1997-01-06",
+      "endDate": "1997-01-12",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1997,
       "eventId": "atp-1997-1997-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -7308,6 +7908,21 @@
     },
     {
       "season": 1997,
+      "eventId": "atp-1997-1997-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1997-500"
+      ],
+      "startDate": "1997-06-09",
+      "endDate": "1997-06-15",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1997,
       "eventId": "atp-1997-1997-311",
       "tournamentId": "queens",
       "sourceEventIds": [
@@ -7406,6 +8021,21 @@
       "startDate": "1997-07-07",
       "endDate": "1997-07-13",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1997,
+      "eventId": "atp-1997-1997-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1997-321"
+      ],
+      "startDate": "1997-07-14",
+      "endDate": "1997-07-20",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -7953,6 +8583,21 @@
     },
     {
       "season": 1998,
+      "eventId": "atp-1998-1998-338",
+      "tournamentId": "unmapped-sydneyoutdoor",
+      "sourceEventIds": [
+        "1998-338"
+      ],
+      "startDate": "1998-01-12",
+      "endDate": "1998-01-18",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1998,
       "eventId": "atp-1998-1998-580",
       "tournamentId": "ausopen",
       "sourceEventIds": [
@@ -8433,6 +9078,21 @@
     },
     {
       "season": 1998,
+      "eventId": "atp-1998-1998-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1998-500"
+      ],
+      "startDate": "1998-06-08",
+      "endDate": "1998-06-14",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1998,
       "eventId": "atp-1998-1998-311",
       "tournamentId": "queens",
       "sourceEventIds": [
@@ -8531,6 +9191,21 @@
       "startDate": "1998-07-06",
       "endDate": "1998-07-12",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1998,
+      "eventId": "atp-1998-1998-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1998-321"
+      ],
+      "startDate": "1998-07-20",
+      "endDate": "1998-07-26",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -8786,6 +9461,21 @@
       "startDate": "1998-09-28",
       "endDate": "1998-10-04",
       "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1998,
+      "eventId": "atp-1998-1998-573",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "1998-573"
+      ],
+      "startDate": "1998-09-28",
+      "endDate": "1998-10-04",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -9483,6 +10173,21 @@
     },
     {
       "season": 1999,
+      "eventId": "atp-1999-1999-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "1999-500"
+      ],
+      "startDate": "1999-06-07",
+      "endDate": "1999-06-13",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
       "eventId": "atp-1999-1999-311",
       "tournamentId": "queens",
       "sourceEventIds": [
@@ -9581,6 +10286,21 @@
       "startDate": "1999-07-05",
       "endDate": "1999-07-11",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
+      "eventId": "atp-1999-1999-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "1999-321"
+      ],
+      "startDate": "1999-07-19",
+      "endDate": "1999-07-25",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -9761,6 +10481,21 @@
       "startDate": "1999-09-13",
       "endDate": "1999-09-19",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
+      "eventId": "atp-1999-1999-573",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "1999-573"
+      ],
+      "startDate": "1999-09-13",
+      "endDate": "1999-09-19",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -10091,6 +10826,21 @@
       "startDate": "2000-07-24",
       "endDate": "2000-07-30",
       "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
+      "eventId": "atp-2000-2000-321",
+      "tournamentId": "unmapped-stuttgartoutdoor",
+      "sourceEventIds": [
+        "2000-321"
+      ],
+      "startDate": "2000-07-17",
+      "endDate": "2000-07-23",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -10713,6 +11463,21 @@
     },
     {
       "season": 2000,
+      "eventId": "atp-2000-2000-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2000-500"
+      ],
+      "startDate": "2000-06-12",
+      "endDate": "2000-06-18",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
       "eventId": "atp-2000-2000-505",
       "tournamentId": "santiago",
       "sourceEventIds": [
@@ -10781,6 +11546,21 @@
       "startDate": "2000-11-06",
       "endDate": "2000-11-12",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
+      "eventId": "atp-2000-2000-573",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2000-573"
+      ],
+      "startDate": "2000-05-01",
+      "endDate": "2000-05-07",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -11703,6 +12483,21 @@
     },
     {
       "season": 2001,
+      "eventId": "atp-2001-2001-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2001-500"
+      ],
+      "startDate": "2001-06-11",
+      "endDate": "2001-06-17",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2001,
       "eventId": "atp-2001-2001-505",
       "tournamentId": "unmapped-vinadelmar",
       "sourceEventIds": [
@@ -11801,6 +12596,21 @@
       "startDate": "2001-10-22",
       "endDate": "2001-10-28",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2001,
+      "eventId": "atp-2001-2001-573",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2001-573"
+      ],
+      "startDate": "2001-04-30",
+      "endDate": "2001-05-06",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -12648,6 +13458,21 @@
     },
     {
       "season": 2002,
+      "eventId": "atp-2002-2002-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2002-500"
+      ],
+      "startDate": "2002-06-10",
+      "endDate": "2002-06-16",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2002,
       "eventId": "atp-2002-2002-505",
       "tournamentId": "unmapped-vinadelmar",
       "sourceEventIds": [
@@ -12746,6 +13571,21 @@
       "startDate": "2002-10-21",
       "endDate": "2002-10-27",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2002,
+      "eventId": "atp-2002-2002-573",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2002-573"
+      ],
+      "startDate": "2002-04-29",
+      "endDate": "2002-05-05",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -13586,6 +14426,21 @@
       "startDate": "2003-03-03",
       "endDate": "2003-03-09",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2003,
+      "eventId": "atp-2003-2003-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2003-500"
+      ],
+      "startDate": "2003-06-09",
+      "endDate": "2003-06-15",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -14531,6 +15386,21 @@
       "startDate": "2004-09-13",
       "endDate": "2004-09-19",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2004,
+      "eventId": "atp-2004-2004-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2004-500"
+      ],
+      "startDate": "2004-06-07",
+      "endDate": "2004-06-13",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -15513,6 +16383,21 @@
     },
     {
       "season": 2005,
+      "eventId": "atp-2005-2005-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2005-500"
+      ],
+      "startDate": "2005-06-06",
+      "endDate": "2005-06-12",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2005",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2005,
       "eventId": "atp-2005-2005-505",
       "tournamentId": "unmapped-vinadelmar",
       "sourceEventIds": [
@@ -16473,6 +17358,21 @@
     },
     {
       "season": 2006,
+      "eventId": "atp-2006-2006-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2006-500"
+      ],
+      "startDate": "2006-06-12",
+      "endDate": "2006-06-18",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2006,
       "eventId": "atp-2006-2006-505",
       "tournamentId": "unmapped-vinadelmar",
       "sourceEventIds": [
@@ -17396,6 +18296,21 @@
       "startDate": "2007-01-28",
       "endDate": "2007-02-04",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2007,
+      "eventId": "atp-2007-2007-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2007-500"
+      ],
+      "startDate": "2007-06-11",
+      "endDate": "2007-06-17",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -18333,6 +19248,21 @@
     },
     {
       "season": 2008,
+      "eventId": "atp-2008-2008-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2008-500"
+      ],
+      "startDate": "2008-06-09",
+      "endDate": "2008-06-15",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2008,
       "eventId": "atp-2008-2008-505",
       "tournamentId": "unmapped-vinadelmar",
       "sourceEventIds": [
@@ -19226,6 +20156,21 @@
       "startDate": "2009-02-23",
       "endDate": "2009-03-01",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2009,
+      "eventId": "atp-2009-2009-500",
+      "tournamentId": "halle",
+      "sourceEventIds": [
+        "2009-500"
+      ],
+      "startDate": "2009-06-08",
+      "endDate": "2009-06-14",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -29313,6 +30258,21 @@
     },
     {
       "season": 2020,
+      "eventId": "atp-2020-2020-9404",
+      "tournamentId": "unmapped-cologne1",
+      "sourceEventIds": [
+        "2020-9404"
+      ],
+      "startDate": "2020-10-12",
+      "endDate": "2020-10-18",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2020,
       "eventId": "atp-2020-2020-0568",
       "tournamentId": "unmapped-stpetersburg",
       "sourceEventIds": [
@@ -29321,6 +30281,21 @@
       "startDate": "2020-10-12",
       "endDate": "2020-10-18",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2020,
+      "eventId": "atp-2020-2020-9406",
+      "tournamentId": "unmapped-cologne2",
+      "sourceEventIds": [
+        "2020-9406"
+      ],
+      "startDate": "2020-10-19",
+      "endDate": "2020-10-25",
+      "timeZone": "Europe/Berlin",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -30063,6 +31038,21 @@
     },
     {
       "season": 2021,
+      "eventId": "atp-2021-2021-8994",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2021-8994"
+      ],
+      "startDate": "2021-06-20",
+      "endDate": "2021-06-26",
+      "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
       "eventId": "atp-2021-2021-8996",
       "tournamentId": "santiago",
       "sourceEventIds": [
@@ -30701,6 +31691,21 @@
       "startDate": "2022-06-13",
       "endDate": "2022-06-19",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
+      "eventId": "atp-2022-2022-8994",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2022-8994"
+      ],
+      "startDate": "2022-06-19",
+      "endDate": "2022-06-25",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -31623,6 +32628,21 @@
     },
     {
       "season": 2023,
+      "eventId": "atp-2023-2023-8994",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2023-8994"
+      ],
+      "startDate": "2023-06-24",
+      "endDate": "2023-07-01",
+      "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
       "eventId": "atp-2023-2023-0741",
       "tournamentId": "eastbourne",
       "sourceEventIds": [
@@ -32471,6 +33491,21 @@
       "startDate": "2024-06-17",
       "endDate": "2024-06-23",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-8994",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2024-8994"
+      ],
+      "startDate": "2024-06-23",
+      "endDate": "2024-06-29",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -33363,6 +34398,21 @@
     },
     {
       "season": 2025,
+      "eventId": "atp-2025-2025-8994",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2025-8994"
+      ],
+      "startDate": "2025-06-22",
+      "endDate": "2025-06-28",
+      "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2025",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2025,
       "eventId": "atp-2025-2025-0741",
       "tournamentId": "eastbourne",
       "sourceEventIds": [
@@ -34181,6 +35231,21 @@
       "startDate": "2026-06-15",
       "endDate": "2026-06-21",
       "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-8994",
+      "tournamentId": "mallorca",
+      "sourceEventIds": [
+        "2026-8994"
+      ],
+      "startDate": "2026-06-21",
+      "endDate": "2026-06-27",
+      "timeZone": "Europe/Madrid",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
