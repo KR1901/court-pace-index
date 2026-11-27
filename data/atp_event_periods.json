@@ -35058,6 +35058,21 @@
     },
     {
       "season": 2026,
+      "eventId": "atp-2026-2026-403",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2026-403"
+      ],
+      "startDate": "2026-03-18",
+      "endDate": "2026-03-29",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
       "eventId": "atp-2026-2026-360",
       "tournamentId": "marrakech",
       "sourceEventIds": [
@@ -35141,6 +35156,36 @@
       "startDate": "2026-04-13",
       "endDate": "2026-04-19",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-1536",
+      "tournamentId": "madrid",
+      "sourceEventIds": [
+        "2026-1536"
+      ],
+      "startDate": "2026-04-22",
+      "endDate": "2026-05-03",
+      "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-416",
+      "tournamentId": "rome",
+      "sourceEventIds": [
+        "2026-416"
+      ],
+      "startDate": "2026-05-06",
+      "endDate": "2026-05-17",
+      "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -35238,6 +35283,21 @@
     },
     {
       "season": 2026,
+      "eventId": "atp-2026-2026-311",
+      "tournamentId": "queens",
+      "sourceEventIds": [
+        "2026-311"
+      ],
+      "startDate": "2026-06-15",
+      "endDate": "2026-06-21",
+      "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
       "eventId": "atp-2026-2026-8994",
       "tournamentId": "mallorca",
       "sourceEventIds": [
@@ -35328,6 +35388,51 @@
     },
     {
       "season": 2026,
+      "eventId": "atp-2026-2026-319",
+      "tournamentId": "kitzbuhel",
+      "sourceEventIds": [
+        "2026-319"
+      ],
+      "startDate": "2026-07-20",
+      "endDate": "2026-07-25",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-7290",
+      "tournamentId": "estoril",
+      "sourceEventIds": [
+        "2026-7290"
+      ],
+      "startDate": "2026-07-20",
+      "endDate": "2026-07-26",
+      "timeZone": "Europe/Lisbon",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-418",
+      "tournamentId": "washington",
+      "sourceEventIds": [
+        "2026-418"
+      ],
+      "startDate": "2026-07-27",
+      "endDate": "2026-08-02",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
       "eventId": "atp-2026-2026-7480",
       "tournamentId": "losCabos",
       "sourceEventIds": [
@@ -35336,6 +35441,36 @@
       "startDate": "2026-07-27",
       "endDate": "2026-08-01",
       "timeZone": "America/Mazatlan",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "2026-421"
+      ],
+      "startDate": "2026-08-02",
+      "endDate": "2026-08-13",
+      "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "2026-422"
+      ],
+      "startDate": "2026-08-13",
+      "endDate": "2026-08-23",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -35388,21 +35523,6 @@
     },
     {
       "season": 2026,
-      "eventId": "atp-2026-2026-4713",
-      "tournamentId": "hangzhou",
-      "sourceEventIds": [
-        "2026-4713"
-      ],
-      "startDate": "2026-09-23",
-      "endDate": "2026-09-29",
-      "timeZone": "Asia/Shanghai",
-      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
-      "sourceKind": "results_archive",
-      "dateStatus": "actual",
-      "verifiedAt": "2026-11-27"
-    },
-    {
-      "season": 2026,
       "eventId": "atp-2026-2026-9210",
       "tournamentId": "lavercup",
       "sourceEventIds": [
@@ -35411,6 +35531,21 @@
       "startDate": "2026-09-25",
       "endDate": "2026-09-27",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-329",
+      "tournamentId": "tokyo",
+      "sourceEventIds": [
+        "2026-329"
+      ],
+      "startDate": "2026-09-30",
+      "endDate": "2026-10-06",
+      "timeZone": "Asia/Tokyo",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -35456,6 +35591,36 @@
       "startDate": "2026-10-19",
       "endDate": "2026-10-25",
       "timeZone": "Asia/Almaty",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-7485",
+      "tournamentId": "brussels",
+      "sourceEventIds": [
+        "2026-7485"
+      ],
+      "startDate": "2026-10-19",
+      "endDate": "2026-10-25",
+      "timeZone": "Europe/Brussels",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-496",
+      "tournamentId": "lyon",
+      "sourceEventIds": [
+        "2026-496"
+      ],
+      "startDate": "2026-10-19",
+      "endDate": "2026-10-25",
+      "timeZone": "Europe/Paris",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -35516,6 +35681,81 @@
       "startDate": "2026-11-08",
       "endDate": "2026-11-14",
       "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2026-605"
+      ],
+      "startDate": "2026-11-15",
+      "endDate": "2026-11-22",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-FLS-M-CZE-CAN-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2026-M-DC-2026-FLS-M-CZE-CAN-01"
+      ],
+      "startDate": "2026-11-23",
+      "endDate": "2026-11-29",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-FLS-M-ITA-KOR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2026-M-DC-2026-FLS-M-ITA-KOR-01"
+      ],
+      "startDate": "2026-11-23",
+      "endDate": "2026-11-29",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-FLS-M-GBR-GER-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2026-M-DC-2026-FLS-M-GBR-GER-01"
+      ],
+      "startDate": "2026-11-23",
+      "endDate": "2026-11-29",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-FLS-M-AUT-ESP-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2026-M-DC-2026-FLS-M-AUT-ESP-01"
+      ],
+      "startDate": "2026-11-23",
+      "endDate": "2026-11-29",
+      "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
