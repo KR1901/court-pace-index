@@ -3,6 +3,8 @@ name: Refresh dataset
 
 # Regenerates the bundled dataset from the public match archive and source year tables,
 # then publishes the validated payload consumed by the app. Runs every six hours and on demand.
+# A successful push-triggered refresh hands off to the signed APK release workflow;
+# a scheduled refresh updates the dataset but does not publish a new APK.
 # If main advances during a refresh and the generated commit cannot be rebased safely,
 # start a fresh run from the latest main tip; never force-push over concurrent app/data changes.
 
