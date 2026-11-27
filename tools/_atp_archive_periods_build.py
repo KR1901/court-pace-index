@@ -49,6 +49,9 @@ CITY_TZ={
  "valencia":"Europe/Madrid","umag":"Europe/Zagreb","loscabos":"America/Mazatlan",
  "winstonsalem":"America/New_York","chengdu":"Asia/Shanghai","hangzhou":"Asia/Shanghai",
  "almaty":"Asia/Almaty","brussels":"Europe/Brussels","metz":"Europe/Paris","turin":"Europe/Rome",
+ "halle":"Europe/Berlin","stpolten":"Europe/Vienna","portschach":"Europe/Vienna",
+ "meran":"Europe/Rome","mallorca":"Europe/Madrid","cologne":"Europe/Berlin",
+ "suncity":"Africa/Johannesburg","bermuda":"Atlantic/Bermuda",
  "bogota":"America/Bogota","guadalajara":"America/Mexico_City","monterrey":"America/Monterrey",
  "acapulco":"America/Mexico_City","mexicocity":"America/Mexico_City","puebla":"America/Mexico_City",
  "houston":"America/Chicago","dallas":"America/Chicago","charlotte":"America/New_York",
@@ -62,7 +65,10 @@ CITY_TZ={
 }
 ALIASES={
  "frenchopen":{"rolandgarros"},"rolandgarros":{"frenchopen"},
- "tourfinals":{"atptourworldchampionship","tennismasterscup","atpfinals"},
+ "sydneyoutdoor":{"sydney"},"sydneyindoor":{"sydney"},
+ "tokyooutdoor":{"tokyo"},"tokyoindoor":{"tokyo"},
+ "stuttgartoutdoor":{"stuttgart"},"stuttgartindoor":{"stuttgart"},
+ "genova":{"genoa"},"tourfinals":{"atptourworldchampionship","tennismasterscup","atpfinals"},
  "atpfinals":{"tourfinals","atptourworldchampionship","tennismasterscup"},
  "tennismasterscup":{"tourfinals","atpfinals"},
  "atptourworldchampionship":{"tourfinals","atpfinals"},
@@ -201,7 +207,7 @@ def main():
    except ValueError: continue
    events.append(e)
 
-  mapped=set(); unmatched=[]
+  mapped=set(); unmatched=[]; unmatched_events=[]; mapped_levels=Counter()
   for e in events:
    is_d=e["tourney_level"]=="D"; sname=e["tourney_name"]; sid=e["tourney_id"]
    is_final=bool(re.search(r"\bF\b|final",sname,re.I) or "FLS" in re.split(r"[^A-Z0-9]+",sid.upper()))
@@ -218,12 +224,18 @@ def main():
     scored.append((score,c))
    scored.sort(key=lambda x:x[0],reverse=True)
    if not scored:
-    unmatched.append(sid); continue
+    unmatched.append(sid)
+    unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"]})
+    continue
    best,card=scored[0]
    if len(scored)>1 and best-scored[1][0]<0.08:
-    unmatched.append(sid); continue
+    unmatched.append(sid)
+    unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"],"reason":"ambiguous ATP card"})
+    continue
    if sid in mapped:
-    unmatched.append(sid); continue
+    unmatched.append(sid)
+    unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"],"reason":"duplicate source mapping"})
+    continue
    tid=compute_speed._row_tournament_id(e) or ("unmapped-"+norm(sname)[:48])
    records.append({
     "season":year,"eventId":f"atp-{year}-{sid}","tournamentId":tid,
@@ -232,7 +244,7 @@ def main():
     "sourceUrl":card["sourceUrl"],"sourceKind":"results_archive",
     "dateStatus":"actual","verifiedAt":"2026-11-27"
    })
-   mapped.add(sid)
+   mapped.add(sid); mapped_levels[e["tourney_level"]]+=1
    details.append({"season":year,"sourceEventId":sid,"sourceEventName":sname,
     "sourceDate":e["_date"].isoformat(),"atpCard":card["cardText"],
     "officialStart":card["start"].isoformat(),"officialEnd":card["end"].isoformat(),
@@ -249,7 +261,11 @@ def main():
    finally: tmp.unlink(missing_ok=True)
   coverage_rows.append({
    "season":year,"sourceEventCount":len(events),"mappedCount":len(mapped),
+   "sourceEventsByLevel":dict(Counter(e["tourney_level"] for e in events)),
+   "mappedEventsByLevel":dict(mapped_levels),
+   "unmatchedEventsByLevel":dict(Counter(e.get("level","?") for e in unmatched_events)),
    "unmatchedCount":len(unmatched),"unmatchedSourceEventIds":unmatched[:100],
+   "unmatchedEvents":unmatched_events[:250],
    "dateCoverageComplete":coverage.get("dateCoverageComplete",False),
    "identifiedSourceEvents":coverage.get("identifiedSourceEvents"),
    "coveredSourceEvents":coverage.get("coveredSourceEvents"),
