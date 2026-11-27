@@ -20,6 +20,9 @@ jobs:
       max-parallel: 25
       matrix:
         sha:
+          - "38d3088033ed1852ef16b8d8b296925cd8f0f1b2"
+          - "99e13002da61819d7fe3779f2aaf47ad533ba0ab"
+          - "036986c737bbe7de9595541d88dfd0a18b7b5146"
           - "27adfba42f9ac18db83a56ec587a365fa9822ea5"
           - "5632ccb255d866b8e17812bcb4a046afc1b8ae46"
           - "2aa2ceca76ce6d22bfc4a081a469009586b7a3bd"
