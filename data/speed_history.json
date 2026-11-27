@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-26",
+ "generated": "2026-11-27",
  "method": "chronological leave-one-tournament-out calibrated server/returner expected-aces odds ratio using actual match timestamps/days where available and conservative level-based event-window bounds for legacy tournament-start-only archives; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3\u20132/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
  "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
  "season_sources": {
@@ -44,7 +44,7 @@
   "2026": {
    "source": "TennisMyLife ATP Match Database",
    "url": "https://stats.tennismylife.org/data/2026.csv",
-   "fetchedAtUtc": "2026-11-26T15:28:23.940168+00:00",
+   "fetchedAtUtc": "2026-11-27T02:20:44.672474+00:00",
    "latestMatchDate": "20261122",
    "matchRows": 2816,
    "bytes": 595598,
@@ -52,25 +52,25 @@
    "ongoingDavisCup": {
     "source": "TennisMyLife ATP Match Database ongoing tournament feed",
     "url": "https://stats.tennismylife.org/data/ongoing_tourneys.csv",
-    "fetchedAtUtc": "2026-11-26T15:28:24.815133+00:00",
-    "bytes": 1963,
-    "sha256": "0c91086fceb9e7f92fdf65b4b637a5f54d8943d62e5f5bd05f08193ef3152a3c",
-    "matchRows": 6,
-    "davisCupRows": 6,
-    "rowsAdded": 6
+    "fetchedAtUtc": "2026-11-27T02:20:45.407895+00:00",
+    "bytes": 2448,
+    "sha256": "db68b1980f7d420c97507e43001e01c01071fd3c5c61a27b2f73943c960c6440",
+    "matchRows": 8,
+    "davisCupRows": 8,
+    "rowsAdded": 8
    }
   }
  },
  "davis_cup_coverage": {
   "2026": {
-   "sourceRowsAfterMerge": 189,
+   "sourceRowsAfterMerge": 191,
    "excludedDoubles": 0,
    "rowsWithoutPlayerIds": 0,
-   "identifiedSingles": 189,
+   "identifiedSingles": 191,
    "scorelessSingles": 0,
    "walkoverOrNoPlaySingles": 0,
-   "completedPlayedSingles": 189,
-   "completedWithValidServeStats": 154,
+   "completedPlayedSingles": 191,
+   "completedWithValidServeStats": 156,
    "completedMissingServeStats": 35,
    "completedMalformedStats": 0,
    "phases": {
@@ -87,14 +87,14 @@
      "completedMalformedStats": 0
     },
     "final8": {
-     "sourceRowsAfterMerge": 6,
+     "sourceRowsAfterMerge": 8,
      "excludedDoubles": 0,
      "rowsWithoutPlayerIds": 0,
-     "identifiedSingles": 6,
+     "identifiedSingles": 8,
      "scorelessSingles": 0,
      "walkoverOrNoPlaySingles": 0,
-     "completedPlayedSingles": 6,
-     "completedWithValidServeStats": 6,
+     "completedPlayedSingles": 8,
+     "completedWithValidServeStats": 8,
      "completedMissingServeStats": 0,
      "completedMalformedStats": 0
     }
@@ -508352,17 +508352,17 @@
     }
    },
    "daviscupfinal8": {
-    "ace": 9.0,
-    "matches": 6,
+    "ace": 9.1,
+    "matches": 8,
     "tourPriorSides": 0,
-    "careerHistoryServerSides": 1,
-    "careerHistoryReturnerSides": 1,
+    "careerHistoryServerSides": 2,
+    "careerHistoryReturnerSides": 2,
     "tourPriorServerSides": 0,
     "tourPriorReturnerSides": 0,
-    "speed": 1.203,
-    "adjustedServerSides": 12,
-    "speedCiLow": 0.977,
-    "speedCiHigh": 1.437,
+    "speed": 1.389,
+    "adjustedServerSides": 16,
+    "speedCiLow": 1.078,
+    "speedCiHigh": 1.789,
     "speedCiMethod": "match-cluster-conditional-v1",
     "calculationDiagnostics": {
      "chronologicalCutoff": "2026-11-24",
@@ -508390,19 +508390,45 @@
      },
      "legacyUnknownMaxEventDays": 15,
      "quarantineDays": 0,
-     "completedMatches": 6,
-     "adjustedServerSides": 12,
-     "totalServerSides": 12,
-     "aces": 85,
-     "totalServicePoints": 941,
+     "completedMatches": 8,
+     "adjustedServerSides": 16,
+     "totalServerSides": 16,
+     "aces": 108,
+     "totalServicePoints": 1186,
      "tourAverageAceRate": 0.08625096104787723,
-     "rawAdjustedEventScore": 1.2054805905655515,
+     "rawAdjustedEventScore": 1.3914181643040235,
      "seasonNormalisation": 1.001852904342871,
-     "serverProfilesMatched": 12,
-     "returnerProfilesMatched": 12,
+     "serverProfilesMatched": 16,
+     "returnerProfilesMatched": 16,
      "serverProfilesFallback": 0,
      "returnerProfilesFallback": 0,
      "sideDiagnostics": [
+      {
+       "matchId": "dc007",
+       "server": "Daniel Merida",
+       "returner": "Joel Schwaerzler",
+       "actualAces": 8,
+       "servicePoints": 62,
+       "serveRate": 0.05164671200570187,
+       "returnerConcedeRate": 0.07288605331209358,
+       "expectedAces": 2.6901331921698075,
+       "actualExpectedRatio": 2.9738304494683256,
+       "serverProfileSource": "current-season-qualified",
+       "returnerProfileSource": "career-history-surface-shrunk"
+      },
+      {
+       "matchId": "dc007",
+       "server": "Joel Schwaerzler",
+       "returner": "Daniel Merida",
+       "actualAces": 5,
+       "servicePoints": 55,
+       "serveRate": 0.06467898797596223,
+       "returnerConcedeRate": 0.050893939217791756,
+       "expectedAces": 2.0789557271327594,
+       "actualExpectedRatio": 2.405053621269688,
+       "serverProfileSource": "career-history-surface-shrunk",
+       "returnerProfileSource": "surface-qualified"
+      },
       {
        "matchId": "dc001",
        "server": "Tomas Machac",
@@ -508413,6 +508439,19 @@
        "returnerConcedeRate": 0.07846542872468136,
        "expectedAces": 3.9266439042764003,
        "actualExpectedRatio": 2.2920336601438054,
+       "serverProfileSource": "current-season-qualified",
+       "returnerProfileSource": "surface-qualified"
+      },
+      {
+       "matchId": "dc008",
+       "server": "Rafael Jodar",
+       "returner": "Jurij Rodionov",
+       "actualAces": 7,
+       "servicePoints": 65,
+       "serveRate": 0.05837811906394712,
+       "returnerConcedeRate": 0.09428563000155384,
+       "expectedAces": 4.159880490204082,
+       "actualExpectedRatio": 1.6827406499979962,
        "serverProfileSource": "current-season-qualified",
        "returnerProfileSource": "surface-qualified"
       },
@@ -508495,41 +508534,15 @@
        "returnerProfileSource": "surface-qualified"
       },
       {
-       "matchId": "dc003",
-       "server": "Lorenzo Musetti",
-       "returner": "Seongchan Hong",
-       "actualAces": 4,
-       "servicePoints": 65,
-       "serveRate": 0.05634569360244583,
-       "returnerConcedeRate": 0.09723823680109864,
-       "expectedAces": 4.14630876046736,
-       "actualExpectedRatio": 0.9647134912232469,
-       "serverProfileSource": "current-season-qualified",
-       "returnerProfileSource": "career-history-surface-shrunk"
-      },
-      {
-       "matchId": "dc003",
-       "server": "Seongchan Hong",
-       "returner": "Lorenzo Musetti",
+       "matchId": "dc008",
+       "server": "Jurij Rodionov",
+       "returner": "Rafael Jodar",
        "actualAces": 3,
-       "servicePoints": 59,
-       "serveRate": 0.07951236789258441,
-       "returnerConcedeRate": 0.05849493552398207,
-       "expectedAces": 3.174033986368335,
-       "actualExpectedRatio": 0.9451694634916429,
-       "serverProfileSource": "career-history-surface-shrunk",
-       "returnerProfileSource": "surface-qualified"
-      },
-      {
-       "matchId": "dc006",
-       "server": "Arthur Fery",
-       "returner": "Alexander Zverev",
-       "actualAces": 2,
-       "servicePoints": 50,
-       "serveRate": 0.05194535827390883,
-       "returnerConcedeRate": 0.07479318007298777,
-       "expectedAces": 2.241063628359593,
-       "actualExpectedRatio": 0.8924333850636602,
+       "servicePoints": 63,
+       "serveRate": 0.09043611947996522,
+       "returnerConcedeRate": 0.061683912622390355,
+       "expectedAces": 4.079973900305856,
+       "actualExpectedRatio": 0.7352988213417503,
        "serverProfileSource": "current-season-qualified",
        "returnerProfileSource": "surface-qualified"
       },
@@ -508558,6 +508571,45 @@
        "actualExpectedRatio": 0.8388658291987132,
        "serverProfileSource": "current-season-qualified",
        "returnerProfileSource": "surface-qualified"
+      },
+      {
+       "matchId": "dc006",
+       "server": "Arthur Fery",
+       "returner": "Alexander Zverev",
+       "actualAces": 2,
+       "servicePoints": 50,
+       "serveRate": 0.05194535827390883,
+       "returnerConcedeRate": 0.07479318007298777,
+       "expectedAces": 2.241063628359593,
+       "actualExpectedRatio": 0.8924333850636602,
+       "serverProfileSource": "current-season-qualified",
+       "returnerProfileSource": "surface-qualified"
+      },
+      {
+       "matchId": "dc003",
+       "server": "Seongchan Hong",
+       "returner": "Lorenzo Musetti",
+       "actualAces": 3,
+       "servicePoints": 59,
+       "serveRate": 0.07951236789258441,
+       "returnerConcedeRate": 0.05849493552398207,
+       "expectedAces": 3.174033986368335,
+       "actualExpectedRatio": 0.9451694634916429,
+       "serverProfileSource": "career-history-surface-shrunk",
+       "returnerProfileSource": "surface-qualified"
+      },
+      {
+       "matchId": "dc003",
+       "server": "Lorenzo Musetti",
+       "returner": "Seongchan Hong",
+       "actualAces": 4,
+       "servicePoints": 65,
+       "serveRate": 0.05634569360244583,
+       "returnerConcedeRate": 0.09723823680109864,
+       "expectedAces": 4.14630876046736,
+       "actualExpectedRatio": 0.9647134912232469,
+       "serverProfileSource": "current-season-qualified",
+       "returnerProfileSource": "career-history-surface-shrunk"
       }
      ]
     }
