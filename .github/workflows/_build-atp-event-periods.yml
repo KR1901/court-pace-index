@@ -26,11 +26,6 @@ jobs:
           python-version: "3.12"
       - name: Install location-to-IANA timezone helpers
         run: python -m pip install geonamescache timezonefinder
-      - name: Probe the ATP official 1999 Düsseldorf results page once
-        run: |
-          python -m pip install playwright
-          python -m playwright install --with-deps chromium
-          python tools/_atp_dusseldorf_1999_probe.py
       - name: Build candidate registry from ATP official archive date cards
         run: |
           set -o pipefail
@@ -43,6 +38,7 @@ jobs:
           path: |
             atp_event_periods_build_audit.json
             atp_event_periods_build.log
+            data/atp_event_periods.json
             atp_dusseldorf_1999_probe.json
             atp-dusseldorf-1999.png
           if-no-files-found: warn
