@@ -353,6 +353,33 @@ def davis_cup_coverage_audit(rows, year):
     }
     return overall
 
+
+def attach_davis_cup_source_coverage(ratings, audit):
+    """Expose validated TML phase coverage alongside derived Davis Cup CALC diagnostics."""
+    if not isinstance(audit, dict) or audit.get("validatedSource") is not True:
+        return ratings
+    phases = audit.get("phases", {})
+    targets = (
+        ("daviscup", "restOfDavisCup"),
+        ("daviscupfinal8", "final8"),
+    )
+    for event_id, phase_id in targets:
+        values = ratings.get(event_id)
+        phase = phases.get(phase_id)
+        if not isinstance(values, dict) or not isinstance(phase, dict):
+            continue
+        diagnostics = values.get("calculationDiagnostics")
+        if not isinstance(diagnostics, dict):
+            continue
+        diagnostics.update({
+            "sourceIdentifiedSingles": phase.get("identifiedSingles"),
+            "sourceCompletedSingles": phase.get("completedPlayedSingles"),
+            "sourceMatchesWithValidServeStats": phase.get("completedWithValidServeStats"),
+            "sourceMatchesMissingServeStats": phase.get("completedMissingServeStats"),
+            "sourceMatchesMalformedServeStats": phase.get("completedMalformedStats"),
+        })
+    return ratings
+
 def _is_no_play_score(score):
     normalized = "".join(str(score or "").upper().split())
     return (
@@ -2261,6 +2288,10 @@ def main():
             )
         current_source = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
         ratings = season_ratings(year, rows, source=current_source)
+        if year == date.today().year:
+            ratings = attach_davis_cup_source_coverage(
+                ratings, davis_cup_coverage.get(str(year), {})
+            )
         published_source = current_source
         source_note = current_source
         if year < date.today().year:
