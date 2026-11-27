@@ -286,7 +286,12 @@ def main():
     scored = exact_named
    if not scored:
     unmatched.append(sid)
-    unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"]})
+    source_event_rows = grouped.get(sid, [])
+    unmatched_events.append({
+     "sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"],
+     "sourceMatchRows":len(source_event_rows),
+     "validServeStatsRows":len(compute_speed.valid_rows(source_event_rows)),
+    })
     continue
    best,card=scored[0]
    if len(scored)>1 and best-scored[1][0]<0.08:
