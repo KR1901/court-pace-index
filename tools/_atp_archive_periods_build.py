@@ -215,13 +215,9 @@ def main():
   title_norm=norm(raw["cardText"])
   if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals")):
    zone=finals_zone(int(raw["season"]))
-  boundary_mode="venue_local"
-  if not zone and ("davis" in toks(raw["cardText"]) or "multiplelocations" in title_norm):
-   zone="UTC"
-   boundary_mode="global_date_envelope"
   if not zone:
    unresolved_zones.append({"season":raw["season"],"cardText":raw["cardText"],"dateText":raw["officialDateText"],"cityGuess":city})
-  cards[int(raw["season"])].append({**raw,"start":start,"end":end,"city":city,"timeZone":zone,"boundaryMode":boundary_mode})
+  cards[int(raw["season"])].append({**raw,"start":start,"end":end,"city":city,"timeZone":zone})
 
  records=[]; coverage_rows=[]; details=[]
  for year in range(1991,datetime.utcnow().year+1):
@@ -249,19 +245,11 @@ def main():
    scored=[]
    for c in cards.get(year,[]):
     # Match using the legacy source's start-of-week date; store exact ATP dates.
-    tolerance_days = 7
+    tolerance_days = 7 if any(k in norm(c["cardText"]) for k in ("finals","worldchampionship","masterscup")) else 3
     if not c["start"]-timedelta(days=tolerance_days)<=e["_date"]<=c["end"] or not c["timeZone"]: continue
     if is_d:
-     if "davis" not in toks(c["cardText"]): continue
-     source_label=norm(sname)
-     card_label=norm(c["cardText"])
-     score=1.0-min(abs((e["_date"]-c["start"]).days),14)*0.01
-     if "qual" in source_label and "qual" in card_label: score+=0.18
-     if "group" in source_label and "group" in card_label: score+=0.18
-     if "finals" in card_label and ("finals" in source_label or is_final): score+=0.18
-     if "qf" in source_label and "quarter" in card_label: score+=0.18
-     if "sf" in source_label and "semi" in card_label: score+=0.18
-     if "r1" in source_label and "first" in card_label: score+=0.18
+     if "davis" not in toks(c["cardText"]) or not is_final: continue
+     score=1.0
     else:
      if "davis" in toks(c["cardText"]): continue
      score=score_name(sname,c["cardText"])
@@ -273,8 +261,7 @@ def main():
     unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"]})
     continue
    best,card=scored[0]
-   ambiguity_gap = 0.02 if is_d else 0.08
-   if len(scored)>1 and best-scored[1][0]<ambiguity_gap:
+   if len(scored)>1 and best-scored[1][0]<0.08:
     unmatched.append(sid)
     unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"],"reason":"ambiguous ATP card"})
     continue
@@ -287,11 +274,8 @@ def main():
     "season":year,"eventId":f"atp-{year}-{sid}","tournamentId":tid,
     "sourceEventIds":[sid],"startDate":card["start"].isoformat(),
     "endDate":card["end"].isoformat(),"timeZone":card["timeZone"],
-    **({"boundaryMode":"global_date_envelope"} if card.get("boundaryMode")=="global_date_envelope" else {}),
-    "sourceUrl":card["sourceUrl"],
-    "sourceKind":"calendar" if card["end"]>=date(2026,11,27) else "results_archive",
-    "dateStatus":"scheduled" if card["end"]>=date(2026,11,27) else "actual",
-    "verifiedAt":"2026-11-27"
+    "sourceUrl":card["sourceUrl"],"sourceKind":"results_archive",
+    "dateStatus":"actual","verifiedAt":"2026-11-27"
    })
    mapped.add(sid); mapped_levels[e["tourney_level"]]+=1
    details.append({"season":year,"sourceEventId":sid,"sourceEventName":sname,
@@ -305,7 +289,7 @@ def main():
    tmp.write_text(json.dumps({"schemaVersion":1,"records":records},indent=2)+"\n",encoding="utf-8")
    try:
     reg=load_event_periods(tmp,require_non_empty=True)
-    coverage=audit_source_coverage(rows,year,reg,tournament_id_resolver=compute_speed._row_tournament_id)
+    coverage=audit_source_coverage(rows,year,reg)
    except Exception as e: coverage={"dateCoverageComplete":False,"error":f"{type(e).__name__}: {e}"}
    finally: tmp.unlink(missing_ok=True)
   coverage_rows.append({

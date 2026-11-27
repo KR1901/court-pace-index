@@ -10,23 +10,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   collect:
     name: ATP archive ${{ matrix.year }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 2
       matrix:
-        year: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-               2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
-               2021, 2022, 2023, 2024, 2025, 2026]
+        year: [2020, 2021, 2022, 2023, 2024, 2025, 2026]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -42,4 +41,121 @@ jobs:
           name: atp-archive-${{ matrix.year }}
           path: atp_archive_${{ matrix.year }}.json
           if-no-files-found: error
+          retention-days: 3
+
+  build_registry:
+    name: Build and validate historical ATP chronology registry
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download official ATP archive cards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: atp-archive-*
+          path: .atp-archive-download
+          merge-multiple: true
+      - name: Merge new official archive cards with the existing 1991–2019 archive
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          cards_path = Path("tools/_atp_archive_cards.json")
+          payload = json.loads(cards_path.read_text(encoding="utf-8"))
+          records = list(payload.get("records", []))
+          by_key = {
+              (int(item["season"]), str(item["sourceUrl"]), str(item["officialDateText"]))
+              for item in records
+          }
+          for year in range(2020, 2027):
+              path = Path(".atp-archive-download") / f"atp_archive_{year}.json"
+              if not path.is_file():
+                  raise SystemExit(f"missing ATP archive artifact for {year}")
+              season = json.loads(path.read_text(encoding="utf-8"))
+              if season.get("status") != "success" or int(season.get("season", -1)) != year:
+                  raise SystemExit(f"ATP archive collection was not successful for {year}: {season.get('status')}")
+              events = season.get("events") or []
+              if not events:
+                  raise SystemExit(f"ATP archive returned zero dated cards for {year}")
+              for event in events:
+                  required = ("sourceUrl", "cardText", "officialDateText")
+                  if any(not str(event.get(field, "")).strip() for field in required):
+                      raise SystemExit(f"incomplete ATP archive card in {year}: {event}")
+                  if not str(event["sourceUrl"]).startswith("https://www.atptour.com/"):
+                      raise SystemExit(f"non-ATP provenance URL in {year}: {event['sourceUrl']}")
+                  key = (year, str(event["sourceUrl"]), str(event["officialDateText"]))
+                  if key not in by_key:
+                      records.append({
+                          "season": year,
+                          "cardText": event["cardText"],
+                          "officialDateText": event["officialDateText"],
+                          "sourceUrl": event["sourceUrl"],
+                      })
+                      by_key.add(key)
+              print(f"{year}: merged {len(events)} ATP official archive cards")
+          payload["records"] = records
+          payload["retrievedAtUtc"] = "2026-11-27"
+          cards_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(f"Total ATP official date cards: {len(records)}")
+          PY
+      - name: Install official-date timezone resolver
+        run: python -m pip install geonamescache timezonefinder
+      - name: Build source-ID registry and full coverage audit
+        run: |
+          set -o pipefail
+          python tools/_atp_archive_periods_build.py --write --report atp_event_periods_build_audit.json | tee atp_event_periods_build.log
+      - name: Upload one-time collection and date-build audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atp-official-date-registry-audit
+          path: |
+            atp_event_periods_build_audit.json
+            atp_event_periods_build.log
+          if-no-files-found: warn
           retention-days: 7
+      - name: Require complete actual-date coverage for every season
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("atp_event_periods_build_audit.json").read_text(encoding="utf-8"))
+          by_year = {int(row["season"]): row for row in report.get("mappedBySeason", []) if "season" in row}
+          missing_years = [year for year in range(1991, 2027) if year not in by_year]
+          incomplete = [
+              (year, row.get("identifiedSourceEvents"), row.get("coveredSourceEvents"),
+               row.get("coverageMissingSourceEventIds", [])[:8], row.get("error"))
+              for year, row in sorted(by_year.items())
+              if row.get("dateCoverageComplete") is not True
+          ]
+          if missing_years or incomplete:
+              print("Missing seasons:", missing_years)
+              print("Incomplete seasons:", json.dumps(incomplete, indent=2))
+              raise SystemExit("ATP official event-date coverage is not 100%; leaving registry uncommitted")
+          print("PASS: every source-event ID from 1991 through 2026 has an official ATP date period")
+          PY
+      - name: Remove one-time collection tooling and raw archive-card cache
+        run: |
+          git rm -f --ignore-unmatch \
+            tools/_atp_archive_collect.py \
+            tools/_atp_archive_periods_build.py \
+            tools/_atp_archive_probe.py \
+            tools/_atp_archive_cards.json \
+            .github/workflows/atp-archive-collect.yml \
+            .github/workflows/atp-archive-one-time-probe.yml \
+            .github/workflows/_build-atp-event-periods.yml
+      - name: Commit only the validated official date registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/atp_event_periods.json
+          git diff --cached --check
+          git commit -m "data: add verified ATP event periods 1991-2026"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

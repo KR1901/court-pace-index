@@ -13,10 +13,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: atp-official-date-registry-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
