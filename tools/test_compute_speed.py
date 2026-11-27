@@ -1081,6 +1081,66 @@ class DavisCupSourceWindowTests(unittest.TestCase):
         self.assertEqual("72", merged[0]["w_svpt"])
 
 
+class DavisCupSourceCoverageAttachmentTests(unittest.TestCase):
+    def test_validated_phase_coverage_is_attached_to_matching_calc_targets(self):
+        ratings = {
+            "daviscup": {"calculationDiagnostics": {}},
+            "daviscupfinal8": {"calculationDiagnostics": {}},
+            "paris": {"calculationDiagnostics": {}},
+        }
+        audit = {
+            "validatedSource": True,
+            "phases": {
+                "restOfDavisCup": {
+                    "identifiedSingles": 183,
+                    "completedPlayedSingles": 183,
+                    "completedWithValidServeStats": 148,
+                    "completedMissingServeStats": 35,
+                    "completedMalformedStats": 0,
+                },
+                "final8": {
+                    "identifiedSingles": 8,
+                    "completedPlayedSingles": 8,
+                    "completedWithValidServeStats": 8,
+                    "completedMissingServeStats": 0,
+                    "completedMalformedStats": 0,
+                },
+            },
+        }
+
+        result = compute_speed.attach_davis_cup_source_coverage(ratings, audit)
+
+        self.assertIs(result, ratings)
+        self.assertEqual({
+            "sourceIdentifiedSingles": 183,
+            "sourceCompletedSingles": 183,
+            "sourceMatchesWithValidServeStats": 148,
+            "sourceMatchesMissingServeStats": 35,
+            "sourceMatchesMalformedServeStats": 0,
+        }, ratings["daviscup"]["calculationDiagnostics"])
+        self.assertEqual({
+            "sourceIdentifiedSingles": 8,
+            "sourceCompletedSingles": 8,
+            "sourceMatchesWithValidServeStats": 8,
+            "sourceMatchesMissingServeStats": 0,
+            "sourceMatchesMalformedServeStats": 0,
+        }, ratings["daviscupfinal8"]["calculationDiagnostics"])
+        self.assertEqual({}, ratings["paris"]["calculationDiagnostics"])
+
+    def test_unvalidated_source_coverage_is_never_published(self):
+        ratings = {"daviscup": {"calculationDiagnostics": {}}}
+        result = compute_speed.attach_davis_cup_source_coverage(
+            ratings,
+            {"validatedSource": False, "phases": {"restOfDavisCup": {
+                "completedPlayedSingles": 183,
+                "completedWithValidServeStats": 148,
+                "completedMissingServeStats": 35,
+            }}},
+        )
+        self.assertIs(result, ratings)
+        self.assertEqual({}, ratings["daviscup"]["calculationDiagnostics"])
+
+
 class DavisCupCoverageAuditTests(unittest.TestCase):
     def test_audit_disjointly_classifies_played_missing_invalid_unplayed_and_walkover(self):
         base = {

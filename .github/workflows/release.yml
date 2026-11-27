@@ -301,6 +301,15 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.1.9":
+              lines += [
+                  "### Davis Cup source-coverage diagnostics",
+                  "- Shows the phase-specific source denominator alongside the archived Davis Cup CALC sample, including the number of completed rubbers with valid, missing or malformed serve statistics.",
+                  "- Clarifies that the 35 September 2026 World Group II rubbers are present as completed results in the TML annual feed but lack the ace/service-point fields required for rating; they are transparently excluded rather than imputed or treated as zero.",
+                  "- Preserves the separate Davis Cup Final 8 target (8/8 valid statistics), the existing CALC methodology, player profiles, normalisation and ATP/Infosys live calculation.",
+                  "- Keeps the TML data use within the documented free non-commercial analytical boundary; raw match rows remain unbundled.",
+                  "",
+              ]
           elif version == "4.1.7":
               lines += [
                   "### Chronological CALC and Davis Cup coverage corrections",

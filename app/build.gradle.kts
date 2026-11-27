@@ -21,14 +21,14 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Public app identity remains unchanged; 4.1.8 uses source-aware match chronology for chronological CALC.
+// Public app identity and signing certificate remain unchanged; 4.1.9 adds Davis Cup source-coverage diagnostics.
 // Keep the existing public-release signing certificate for in-place updates.
     defaultConfig {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
         targetSdk = 37
-        versionCode = 60
-        versionName = "4.1.8"
+        versionCode = 61
+        versionName = "4.1.9"
     }
 
     signingConfigs {
