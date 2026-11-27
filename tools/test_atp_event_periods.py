@@ -141,7 +141,7 @@ class OfficialEventPeriodRegistryTests(unittest.TestCase):
 
     def test_davis_cup_is_outside_standard_atp_coverage_unless_explicitly_requested(self):
         rows = [
-            {"tourney_id": "atp", "tourney_level": "250", "winner_name": "A", "loser_name": "B"},
+            {"tourney_id": "2026-1536", "tourney_level": "250", "winner_name": "A", "loser_name": "B"},
             {"tourney_id": "dc", "tourney_level": "D", "winner_name": "C", "loser_name": "D"},
         ]
         registry = self.registry([record()])

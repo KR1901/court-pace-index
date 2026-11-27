@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -71,11 +73,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          registry_copy="$(mktemp)"
+          cp data/atp_event_periods.json "$registry_copy"
+          git fetch origin "$GITHUB_REF_NAME"
+          git checkout -B "$GITHUB_REF_NAME" "origin/$GITHUB_REF_NAME"
+          cp "$registry_copy" data/atp_event_periods.json
           git add data/atp_event_periods.json
           if git diff --cached --quiet; then
             echo "Registry unchanged; no commit needed."
           else
             git diff --cached --check
             git commit -m "data: populate verified ATP official event-period registry"
-            git push origin "HEAD:$(git branch --show-current)"
+            git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
           fi
