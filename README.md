@@ -1,114 +1,133 @@
 # Court Pace
 
-Court Pace is an independent Android app and research toolkit for comparing how tennis courts play. It brings together **physical Court Pace Index (CPI) readings** and **behavioural, ace-based ATP Surface Speed ratings**, with historical comparisons, tournament detail and a live-tournament view.
+Court Pace is an independent Android app and research toolkit for comparing how tennis courts play. It brings together physical Court Pace Index (CPI) readings and behavioural, ace-based ATP Surface Speed ratings, with historical comparisons, player statistics, head-to-head records and live-tournament coverage.
 
-The app is a reader and analysis tool, not a court-measuring instrument. It does not use the microphone or phone sensors to estimate court pace. Bundled readings are available offline; internet access is used for optional dataset refreshes and live ATP match statistics.
+The app is an analysis tool, not a court-measuring instrument. It does not use the microphone or phone sensors to estimate court pace. Bundled readings work offline; internet access is used for dataset refreshes and live match statistics.
 
-**App identity note:** Court Pace 4.0.0 uses the separate application ID `ink.courtpace.index.public` and a new independent signing certificate. It installs alongside the legacy `ink.courtpace.index` app rather than updating it. Android keeps each installation's private settings and cached data separate; those are not automatically migrated.
+<details>
+<summary>Current production release</summary>
 
-| | |
+**Court Pace 4.1.9** · versionCode 61 · published 27 November 2026
+
+- [Download the signed production APK](https://github.com/KR1901/court-pace-index/releases/download/v4.1.9/court-pace-4.1.9.apk)
+- [Release notes and build verification](https://github.com/KR1901/court-pace-index/releases/tag/v4.1.9)
+- APK SHA-256: 68d07d4bc885a51122292cfbaebc3d91b4a68afd94b8ce41d22a6ce1dda92ae8
+- Package: ink.courtpace.index.public
+
+</details>
+
+## App identity and platform
+
+| Item | Current state |
 |---|---|
 | Platform | Android |
-| New public app ID (4.0.0+) | `ink.courtpace.index.public` |
-| Legacy app ID | `ink.courtpace.index` |
+| Public app ID (4.0.0+) | ink.courtpace.index.public |
+| Legacy app ID | ink.courtpace.index |
 | Language and UI | Kotlin, Jetpack Compose |
-| Build | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21 |
-| SDK | compileSdk 37, targetSdk 37, minSdk 26 |
-| Data | Bundled CPI and CALC/TA Surface Speed readings; exact coverage is in the generated dataset |
-| Network | HTTPS for manual dataset updates and live ATP results/statistics |
+| Build tools | AGP 9.5.0, Gradle 9.8.2, Kotlin 2.4.21 |
+| Android SDK | compileSdk 37, targetSdk 37, minSdk 26 |
+| Data | Bundled CPI, CALC and Tennis Abstract reference readings, player-statistics data and event metadata |
 
-## Measurements
+The public app uses its own release signing certificate and installs alongside the legacy app; it does not update or replace the legacy package. Android keeps the two installations' private settings and cached data separate.
+
+## App features
+
+- **Pace board:** season rankings, surface filters and like-for-like comparisons.
+- **Tournament detail:** CPI and Surface Speed history, CALC diagnostics, source labels and uncertainty intervals where available.
+- **Compare:** tournament-to-tournament comparisons and CPI/Surface Speed percentile divergence.
+- **Surfaces:** surface-level distributions and trends.
+- **Method:** formulas, rating bands, source provenance and limitations.
+- **Players:** calendar-year Hold%, Break% and combined H+B leaderboards, all-player search, surface splits and height groups. Cohort analysis supports Top 100, Top 500 and Top 1000; Top 100 is the default.
+- **Head to head:** searchable player selection, career meeting history and player context including ranking, age and height.
+- **Live now:** active ATP 1000/500/250 events and the Davis Cup Final 8 are shown as live targets. Earlier Davis Cup ties remain a separate completed target; once the Final 8 finishes, the two Davis Cup phases remain distinct in Completed.
+
+Live ratings exclude walkovers, confirmed no-play records, doubles and in-progress matches. Played retirements remain eligible when valid statistics exist. Missing serve statistics are never filled with zero or invented to complete a rating.
+
+## Measurements and rating method
 
 ### Court Pace Index (CPI)
 
-CPI is a physical measurement derived from ball-surface interaction on instrumented show courts. The published composite is:
+CPI is a physical measurement derived from ball-surface interaction on instrumented courts. The published composite is:
 
-```
+~~~text
 CPI = 100(1 − μ) + 150(0.81 − e)
-```
+~~~
 
-where `μ` is the coefficient of friction and `e` is the coefficient of restitution. Higher CPI indicates a faster measured court under this scale. Coverage is limited to the courts and dates for which measurements have been published; it is not a tournament-wide census.
+Here μ is the coefficient of friction and e is the coefficient of restitution. Higher CPI indicates a faster measured court under this scale. Coverage is limited to courts and dates for which measurements have been published; it is not a tournament-wide census.
 
-### Surface Speed
+### Behavioural Surface Speed
 
-Surface Speed is a behavioural estimate based on aces. It adjusts each server's ace rate for the server's serving tendency and the returner's ace-concession tendency, estimates expected aces on a tour-average surface, averages valid server-side ratios and season-normalises the result. A value of 1.00 represents the season baseline.
+Surface Speed estimates how a court played through ace outcomes. Each valid server-side observation adjusts the server's ace rate for the server's serving tendency and the returner's ace-concession tendency, compares actual aces with expected aces, then season-normalises the tournament result. A value of 1.00 represents the season baseline.
 
-The calibrated expected-aces odds ratio is:
-
-```
+~~~text
 O = (serverOdds × returnerConcessionOdds) / tourAverageAceOdds
 expectedAceRate = O / (1 + O)
 expectedAces = servicePoints × expectedAceRate
 sideRatio = actualAces / max(expectedAces, 0.5)
-```
+~~~
 
-The 0.5 expected-aces floor protects the denominator from very small expectations; it does not remove an otherwise valid server side from coverage.
+The 0.5 expected-aces floor protects the denominator from very small expectations; it does not remove an otherwise valid server side from the sample.
 
-Historical and live ratings use leave-one-tournament-out training, but player tendencies are now built from up to 35 prior ATP seasons (1991 onward), plus the current eligible season. Historical samples receive a 0.90 per-year recency weight and a 150-service-point shrinkage prior; qualified surface rates retain the neutral clay/hard-grass blend, with pooled career estimates as the next fallback. TML alphanumeric IDs are joined to historical Sackmann IDs only through a unique normalised full-name match; ambiguous identities are not merged. If a genuinely unseen player still has no defensible personal rate, the season tour-average rate is used as an explicit neutral prior and separately counted. Because this is a behavioural metric, it also responds to balls, weather, altitude and player tactics. It is not a pure measurement of the physical surface.
+Production player profiles use up to 35 prior ATP seasons (from 1991 onward), with a 0.90 per-year recency weight and a 150-service-point shrinkage prior. A surface-specific rate is used after at least three matches on that surface; qualified clay and hard/grass rates use the neutral 1/3–2/3 blend. Pooled serve/return profiles provide fallbacks. Historical Sackmann IDs are joined to current TML player IDs only through a unique normalised full-name match; ambiguous identities are not merged. Where no defensible player rate exists, a tour-average prior is used explicitly and counted.
 
-## App features
+### Chronology and normalisation
 
-- **Pace board:** season rankings with surface filters and like-for-like changes.
-- **Tournament detail:** CPI and Surface Speed histories, source labels and comparisons.
-- **Compare:** event comparisons and CPI/Speed percentile divergence.
-- **Surfaces:** surface-level distributions and trends.
-- **Method:** formulas, bands, source provenance and known limitations.
-- **Players:** calendar-year Hold%, Break% and H+B leaderboards, all-player search, surface splits and height-group analysis of the current Top 100 cohort.
-- **Live now:** discovers active ATP 1000/500/250 events, reads completed singles results and computes opponent-adjusted Surface Speed from ATP/Infosys statistics on the device. Diagnostics expose the raw score, normalisation, tour ace rate, service-point totals, matched profiles and influential server-side ratios.
+The calculation uses actual match timestamps and event start/end information where the sources provide them. Where a source provides only a match calendar day, the code applies a date-level completion rule. Legacy archives that publish only a tournament start/week date use conservative maximum event windows by level: Grand Slam 15 days, Masters/ATP umbrella 12 days, and Finals/500/250 8 days (unknown levels 15 days). The old fixed 14-day quarantine is not used; the current chronology diagnostics report zero arbitrary quarantine days.
 
-The live pipeline excludes walkovers, confirmed no-play records, doubles and in-progress matches. Played retirements remain eligible when valid statistics exist. Missing data remains visible; the app must not invent statistics to complete a rating. ATP/Infosys access can be device-sensitive, so a green CI build is not a substitute for live handset acceptance.
+Only completed earlier events can train a same-season normalisation anchor. Player profile training is also cut off at the latest date that can be shown to precede the target. See [CHRONOLOGY.md](docs/CHRONOLOGY.md) for the precedence rules and edge cases.
 
-### Live data path and published snapshot
+Surface Speed is behavioural, not a pure physical measurement. Balls, weather, altitude, player tactics and sample size can affect it. CPI and Surface Speed should not be treated as interchangeable measurements.
 
-The checked-in `data/live.json` is an **event-window metadata file**, not the production live-rating output. `tools/build_dataset.py` retains all known event windows in the dataset's `liveSchedule` array so the app can reject stale ATP score-hub routes. It separately publishes only non-expired, non-terminal rows in the visible `live` fallback list. An ended event may therefore remain in `liveSchedule` as a tombstone without appearing in Live now. Do not delete an ended schedule row merely because the source's old status label says `in_progress`: its tournament ID and end date help prevent a stale route from reviving it.
+## Davis Cup 2026: source coverage and phase split
 
-The scheduled `refresh-live.yml` workflow rebuilds and publishes the dataset snapshot as `data/latest.json`; it does **not** fetch match statistics or calculate live Surface Speed. The `probe_sofascore.py` script is a reachability diagnostic only. The old `tools/live_update.py` script is a retired experiment and is not called by the app or scheduled workflows.
+Davis Cup is handled as two separate targets:
 
-ATP live ratings are calculated at runtime by the Android app: `AtpLiveClient` discovers completed singles links on ATP results pages, reads ATP/Infosys match statistics and passes them to the opponent-adjusted `AceRating` method with the published season baseline. Davis Cup uses two separate target IDs: `daviscup` for qualifiers/group ties and `daviscupfinal8` for the Final 8 (identified by the TML tournament-ID `FLS` token). `TmlDavisCupClient` combines TML's annual ATP CSV with `ongoing_tourneys.csv`, validates/deduplicates singles match rows and rates the Final 8 alone in Live now; the earlier competition remains a distinct archived CALC row. Neither Davis Cup phase enters standard ATP profile training or the ATP normaliser. Only aggregate ratings and coverage diagnostics are cached; raw TML match rows are not persisted or bundled. This TML feature is non-commercial and is not an official ATP/ITF feed.
+| 2026 phase | Identified/completed singles | Valid serve-stat matches | Missing serve stats | CALC matches | CALC speed |
+|---|---:|---:|---:|---:|---:|
+| Earlier ties (qualifiers/group ties) | 183 | 148 | 35 | 148 | 1.138 |
+| Final 8 | 8 | 8 | 0 | 8 | 1.389 |
+| **Total** | **191** | **156** | **35** | **156** | — |
 
-## Calculation evidence
+The 35 are completed earlier-phase results in the TennisMyLife (TML) source, but the source does not record one or more of the required winner/loser ace and service-point fields. They are counted in the source-coverage denominator and deliberately excluded from the rating. They are not parser failures, scoreless matches, walkovers or malformed-stat rows. The current audit reports zero malformed rows.
 
-The latest completed formula comparison covered 1,289 common event-seasons across 36 seasons (1991–2026), with 5,000 season-stratified paired bootstrap resamples. The calibrated surface-returner variant had the strongest overall rank agreement and mean absolute error among the tested candidates (Pearson 0.925, Spearman 0.926, MAE 0.052) against the Tennis Abstract reference series.
+The earlier-phase rating of 1.138 uses 148 matches (296 adjusted server sides; conditional match-cluster 95% interval 1.013–1.269). The Final 8 rating of 1.389 uses 8 matches (16 sides; interval 1.078–1.789). The Final 8 interval is wide because its sample is small. These phase-specific source counts are surfaced with the tournament CALC diagnostics and checked by the production-release gate.
 
-That result measures agreement with a published behavioural reference, **not physical accuracy**. The corrected 1991–2026 profile audit covered 1,533 mapped event-seasons, 71,150 matches and 142,300 eligible server sides; all were rateable. A neutral tour-average prior was used on 1,930 sides (1.356%), comprising 980 server-role and 980 returner-role uses; 30 sides needed both roles. There were 1,610 unique missing player-role assignments, zero ambiguous normalized-name collisions and zero existing profiles with unusable role rates.
+The missing World Group II point statistics are an upstream coverage limitation: public match records for the relevant ties explicitly state that point statistics were not recorded. A scoreline alone cannot reconstruct aces or service points. Court Pace does not impute these values or treat them as zero. If TML later publishes the missing fields, the next validated dataset refresh can incorporate them automatically.
 
-The current 2026 production full-history ratings are Montpellier **1.664** (54/54 sides; rank 1/57; conditional match-cluster 95% interval [1.465, 1.862]) and Marrakech **0.999** (52/52 sides; rank 34/57; interval [0.828, 1.182]). The separate same-season sensitivity audit produces different figures and must not be confused with the production long-history calculation. Montpellier's 54-side source/profile gap is resolved, but its TML ace rate (14.2%) still differs from Tennis Abstract's published 19.8%; TA's exact population/statistic definition remains unresolved. The deep audit tested shrinkage, surface weighting, uncertainty and a limited CPI cross-check. Physical validation remains limited and does not justify a clay-specific correction.
+The TML client merges the annual ATP CSV with the ongoing-tournament feed, validates and deduplicates singles rows, and keeps the Final 8 separate by its source event identifier. The earlier Davis Cup phase is shown in Completed; only the Final 8 is eligible for Live now. Neither phase enters standard ATP player-profile training or the ATP normalisation pool.
 
-The bundled asset and downloadable `data/latest.json` are generated from the full-history calculation. The dataset-refresh workflow checks computed readings, match/side counts and confidence intervals against `data/speed_history.json` before publication. The dataset snapshot also carries the current season baseline and event-window metadata required by the on-device Live now path; it is not a server-computed live-rating feed.
+## Latest calculation validation
 
-- [PR #1 — live ATP discovery, parsing and coverage](docs/PR1.md)
-- [PR #2 — formulation, statistical audit and diagnostics](docs/PR2.md)
-- [Data provenance and calculation details](docs/DATA.md)
-- [Physical validation protocol](docs/PHYSICAL_VALIDATION.md)
-- [Global Challenger / qualifying backfill audit](docs/LOWER_TIER_BACKFILL_AUDIT.md)
-- [Surface-specific lower-tier weights and 2026 forward test](docs/SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md)
-- [Recommended GitHub About description and Topics](docs/ABOUT.md)
+PR #46 (merged 27 November 2026) added research-only chronology, cross-fitting, shrinkage, surface-weighting and ace-probability audits. It did not change the production CALC formula or the production profile policy.
 
+- **Production chronology parity:** 564 event-seasons from 2016–2026 were compared. Raw scores, normalisers and final ratings matched the production implementation exactly for all 564.
+- **Archive-wide LOEO study:** 2,205 common event-seasons across 36 seasons (1991–2026). The production 150-point prior / three-match surface qualification policy achieved Pearson r = 0.923, Spearman ρ = 0.928 and MAE = 0.066 against the no-shrink control (r = 0.884, ρ = 0.894, MAE = 0.080).
+- **Tennis Abstract reference comparison:** 1,240 common event-seasons across 35 completed seasons (1991–2025). The production surface-returner variant achieved Pearson r = 0.925, Spearman ρ = 0.926 and MAE = 0.052. This is agreement with a behavioural reference, not proof of physical court speed.
+- **Ace-probability calibration:** 564 tournament-seasons, 48,536 server sides and 3,985,366 service points. The production Log5 model achieved log loss 0.269706 and Brier score 0.072021; the tested alternatives were worse. No post-hoc correction was adopted.
+- **Physical cross-check:** the available CPI comparison is small and non-random, especially within clay events. It does not support a clay-specific correction.
 
-Lower-tier profile backfill is research-only and is not used in production. The first 2019–2025 holdout and the new partial-2026 forward test both showed coverage gains but inconclusive overall predictive-loss improvements, worsening calibration, and mixed surface effects. ATP-only profiles remain the production policy pending a stronger independent validation set and data-rights review.
-## Data and provenance
+The research supports keeping the existing 150-point prior, three-match surface threshold, 1/3–2/3 surface blend and Log5 probability model. No new production normaliser or expected-aces formula was approved. The complete results are in [CALC_RESEARCH_AUDIT.md](docs/CALC_RESEARCH_AUDIT.md).
+
+## Data flow and provenance
 
 | Purpose | Source | Role |
 |---|---|---|
-| Physical CPI | [courtspeed.com](https://courtspeed.com/) | Published physical measurements |
+| Physical CPI | [Court Speed](https://courtspeed.com/) | Published physical measurements |
 | Behavioural reference | [Tennis Abstract](https://tennisabstract.com/reports/atp_surface_speed.html) | Published reference values and labelled fallbacks |
 | Historical match statistics | [Jeff Sackmann ATP archive](https://github.com/JeffSackmann/tennis_atp) via [archive mirror](https://github.com/Aneeshers/tennis-sackmann-archive) | Historical CALC inputs |
-| Current-season ATP match statistics | [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database) | Current-season CALC inputs when available |\n| Davis Cup 2026 target/live statistics | TML annual ATP CSV + ongoing tournament feed | Separate non-commercial target; no raw match rows bundled |
-| Live match statistics | [ATP/Infosys Stats Plus](https://www.atptour.com/) | Read-only runtime statistics retrieval |
-| Player Stats annual matches, player heights and current cohort | [TennisMyLife ATP Match Database](https://stats.tennismylife.org/tennis-match-database) and its dated ranking API | Separate non-commercial player-statistics asset |
+| Current-season ATP and Davis Cup statistics | [TennisMyLife ATP database](https://github.com/Tennismylife/TML-Database) and ongoing tournament feed | Current-season CALC and Davis Cup source coverage |
+| Live ATP match statistics | [ATP Tour / Infosys Stats Plus](https://www.atptour.com/) | Read-only runtime statistics retrieval |
+| Player statistics, heights and ranking snapshots | [TennisMyLife Match Database](https://stats.tennismylife.org/tennis-match-database) | Separate Player Stats dataset |
 
-The current-season loader records source URL, fetch time, latest match date, row count, byte count and SHA-256 in a local sidecar manifest. A cached TML snapshot is reused only after refresh failure and only when its manifest/hash match and it is no older than seven days. Source selection is recorded; a fallback must not be mistaken for a fresh TML snapshot.
+The tournament pace dataset, live event metadata and Player Stats dataset are generated independently. The bundled pace dataset contains CPI, TA reference and CALC readings plus the current-season baseline and event metadata. The app calculates ATP live ratings on-device from ATP/Infosys match statistics; a CI build alone is not a substitute for live handset acceptance. Player Stats is built into its own asset and does not feed the live ace-rating engine.
 
-Player Stats is generated and refreshed independently into `player_stats.json`; it does not touch the tournament pace dataset or the live ace-rating engine. It contains all eligible ATP tour-level archive players and uses each calendar year's own final ATP Top 100 ranking snapshot for that season's height-group analysis. The live current season uses the latest available ranking snapshot for that year. Its TML-derived data is subject to source-specific personal/non-commercial terms; do not redistribute the derived asset or distribute an APK containing it without appropriate permissions.
-The screen shows both the bundled data date and the exact Top 100 snapshot date for the selected year. The weekly GitHub Actions archive workflow refreshes the historical baseline and year-specific cohorts; an installed APK receives that newer baseline with the next APK build. Current-season completed-match results and game statistics are synchronized separately at runtime, approximately every 15 seconds while the app is foregrounded and through automatic WorkManager background checks, so new match data does not require a new APK.
+The current-season loader records source URL, fetch time, latest match date, row count, byte count and SHA-256 in a local sidecar manifest. A cached TML snapshot is reused only after refresh failure and only if the manifest/hash match and it is no older than seven days. The source selected for each year is recorded; a fallback must not be mistaken for a fresh TML snapshot.
 
-Tennis Abstract is a reference series, not physical ground truth. The source-required 2026 TML audit reconciled 27/27 source-stat-eligible Montpellier matches (54 statistically complete server sides); expanded multi-season leave-one-event-out profiles now rate all 54 sides without a neutral-prior assignment. This resolves the earlier 54-versus-47 profile-coverage gap. The TML source ace rate remains 14.1964% (545 aces / 3,839 service points), versus TA's published 19.8%; this does not establish TA's match population or explain the remaining rate difference. The corrected 1991–2026 profile sweep covered 1,533 mapped event-seasons, 71,150 matches and 142,300 sides; 1,930 sides (1.356%) used at least one neutral tour-average prior, comprising 980 server-role and 980 returner-role uses. Thirty sides required both roles. See the [consolidated all-event audit](https://github.com/KR1901/court-pace-index/actions/runs/42483108359). Separately, the current TML public terms do not clearly grant redistribution of TML-derived ratings in a public app; the 2026 bundled TML-derived output should be treated as not cleared for onward distribution until the source confirms this use in writing.
-
-See [DATA.md](docs/DATA.md) for provenance and [DATA-LICENSES.md](DATA-LICENSES.md) for the separate terms that apply to code and third-party data. **The MIT code licence is not a blanket licence for the bundled datasets or third-party content.**
+TML's public terms describe personal, educational and non-commercial research use and do not clearly grant redistribution of TML-derived ratings in a public app. This project does not claim a written redistribution licence. Only aggregate ratings and coverage diagnostics are bundled; raw TML match rows are not. Keep use free and non-commercial, do not resell or redistribute raw source data, and obtain written permission from the source before monetising or expanding redistribution. The MIT code licence does not grant rights to third-party datasets.
 
 ## Build and test
 
-```bash
+~~~bash
 ./gradlew :app:testDebugUnitTest
 ./gradlew :app:assembleDebug
 ./gradlew :app:assembleRelease
@@ -116,24 +135,34 @@ python3 -m unittest discover -s tools -p "test_*.py" -v
 python3 tools/compute_speed.py --write
 python3 tools/build_dataset.py
 python3 tools/build_player_stats.py
-python3 tools/audit_event_population.py --event Montpellier --season 2026 --require-source "TennisMyLife ATP Match Database"
-python3 tools/audit_event_population.py --all-events --season 2026 --require-source "TennisMyLife ATP Match Database"
-```
+python3 tools/audit_event_population.py --all-events --season 2026
+~~~
 
-The event-population audit writes local CSV and JSON reports under `build/event-population-audit/`. Use `--require-source` to fail rather than silently use a fallback source. `--all-events` audits each mapped tournament in the selected season and reports profile coverage, neutral-prior use and any remaining unrateable sides. The raw TML source CSV and player-level report are not copied into the repository.
+The event-population audit writes local CSV and JSON reports under build/event-population-audit/. Use the source-selection options to fail rather than silently accept an unintended fallback. Raw TML source CSV files and player-level source reports are not copied into the repository.
 
-## Limitations
+## Documentation and audits
 
-CPI covers a limited set of instrumented courts. Surface Speed is behavioural and can be noisy in small draws. The present CPI cross-check is sparse and non-random, particularly on clay. Strong physical validation requires a larger independently measured CPR/CPI dataset with court identity, measurement date, source and relevant environmental metadata.
+- [Data provenance and calculation details](docs/DATA.md)
+- [Source-specific data terms](DATA-LICENSES.md)
+- [Chronology rules](docs/CHRONOLOGY.md)
+- [Consolidated CALC research audit](docs/CALC_RESEARCH_AUDIT.md)
+- [Player Stats methodology](docs/PLAYER_STATS.md)
+- [Physical validation protocol](docs/PHYSICAL_VALIDATION.md)
+- [Global Challenger / qualifying backfill audit](docs/LOWER_TIER_BACKFILL_AUDIT.md)
+- [Surface-specific lower-tier weight experiment](docs/SURFACE_SPECIFIC_TIER_WEIGHT_EXPERIMENT.md)
+- [PR #1 — live ATP discovery, parsing and coverage](docs/PR1.md)
+- [PR #2 — formulation, statistical audit and diagnostics](docs/PR2.md)
 
-Court Pace is an independent project. It is not affiliated with, endorsed by or connected to the ATP or ITF.
+## Limitations and licensing
 
-## Licensing
+CPI covers a limited set of instrumented courts. Surface Speed can be noisy in small samples and is not a direct measure of physical friction or restitution. Strong physical validation requires a larger independent CPI dataset with court identity, measurement date, source and environmental metadata.
+
+Court Pace is independent and is not affiliated with, endorsed by or connected to the ATP or ITF.
 
 - Original project code: MIT; see [LICENSE](LICENSE).
 - Jeff Sackmann historical match data: CC BY-NC-SA 4.0, including attribution, non-commercial and share-alike conditions.
-- TennisMyLife current-season data: its published terms limit use to personal, educational and non-commercial research; raw-database redistribution/resale is not authorised by those terms.
-- Tennis Abstract reference values and Court Speed CPI readings: no blanket open-data licence is asserted by this project.
-- ATP/Infosys content: ATP's terms restrict systematic retrieval of scores, statistics and rankings without prior express written permission.
+- TennisMyLife data: source-specific personal/non-commercial terms; no raw database redistribution/resale permission is asserted.
+- Tennis Abstract reference values and Court Speed CPI readings: no blanket open-data licence is asserted.
+- ATP/Infosys content: ATP terms restrict systematic retrieval without prior written permission.
 
-See [DATA-LICENSES.md](DATA-LICENSES.md) for source-specific details. The MIT licence covers only original project code; public repository visibility does not expand any third-party data rights.
+See [DATA-LICENSES.md](DATA-LICENSES.md) for source-specific details. Public repository visibility does not expand third-party data rights.
