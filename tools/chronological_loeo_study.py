@@ -81,35 +81,52 @@ def event_metrics(event_rows, profiles, tour_rate):
     if not ratios:
         return None
 
-    # Keep the production side diagnostics for auditability, but use the same
-    # match-cluster ratio function as season_ratings() for the event raw score.
-    details = compute_speed.event_side_diagnostics(
-        event_rows,
-        profiles,
-        tour_rate,
-        retain_per_tail=max(1, len(event_rows) * 2),
-    )
-    sides = details["sideDiagnostics"]
-    if len(sides) != len(ratios):
-        raise RuntimeError(
-            "Research event-side diagnostics do not match production ratio coverage: "
-            f"{len(sides)} diagnostic sides vs {len(ratios)} score sides"
-        )
+    # Side diagnostics are retained for profile coverage, but their highest/lowest
+    # detail list can collapse repeated display keys when source aliases share match_num.
+    # Compute proper binomial log loss directly from every match-side instead.
+    details = compute_speed.event_side_diagnostics(event_rows, profiles, tour_rate)
 
     nll = 0.0
-    points = 0
-    for side in sides:
-        service_points = side["servicePoints"]
-        aces = side["actualAces"]
-        # The 0.5 expected-ace floor protects the ratio denominator only. It is
-        # not a probability floor and must not be substituted into binomial log loss.
-        expected = compute_speed.expected_calibrated_aces(
-            side["serveRate"], side["returnerConcedeRate"], tour_rate, service_points
+    points = 0.0
+    log_loss_sides = 0
+    for row in event_rows:
+        for server_key, returner_key, points_key, aces_key in (
+            ("winner_id", "loser_id", "w_svpt", "w_ace"),
+            ("loser_id", "winner_id", "l_svpt", "l_ace"),
+        ):
+            service_points = compute_speed.num(row.get(points_key))
+            aces = compute_speed.num(row.get(aces_key))
+            serve_rate = profiles.get(row.get(server_key), {}).get("serve_rate")
+            concede_rate = profiles.get(row.get(returner_key), {}).get("concede_rate")
+            if (
+                service_points <= 0 or aces < 0 or aces > service_points
+                or serve_rate is None or concede_rate is None
+                or not 0.0 < serve_rate < 1.0
+                or not 0.0 < concede_rate < 1.0
+                or not 0.0 < tour_rate < 1.0
+            ):
+                continue
+            expected = compute_speed.expected_calibrated_aces(
+                serve_rate, concede_rate, tour_rate, service_points
+            )
+            if not math.isfinite(expected) or expected <= compute_speed.MIN_EXPECTED_ACES:
+                continue
+            # The 0.5 expected-ace floor protects the ratio denominator only. It is
+            # not a probability floor and must not be substituted into binomial log loss.
+            probability = expected / service_points
+            probability = min(max(probability, 1e-9), 1.0 - 1e-9)
+            nll -= (
+                aces * math.log(probability)
+                + (service_points - aces) * math.log(1.0 - probability)
+            )
+            points += service_points
+            log_loss_sides += 1
+
+    if log_loss_sides != len(ratios):
+        raise RuntimeError(
+            "Research binomial log-loss coverage differs from production ratio coverage: "
+            f"{log_loss_sides} log-loss sides vs {len(ratios)} score sides"
         )
-        probability = expected / service_points
-        probability = min(max(probability, 1e-9), 1.0 - 1e-9)
-        nll -= aces * math.log(probability) + (service_points - aces) * math.log(1.0 - probability)
-        points += service_points
     return {
         "raw": statistics.fmean(ratios),
         "adjustedServerSides": len(ratios),

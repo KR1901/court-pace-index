@@ -105,6 +105,41 @@ class ProductionEquivalentResearchTests(unittest.TestCase):
 
         self.assertAlmostEqual(expected_nll, result["logLoss"], places=10)
 
+
+    def test_repeated_match_numbers_do_not_collapse_log_loss_sides(self):
+        base = {
+            "tourney_level": "250",
+            "tourney_name": "Example Open",
+            "surface": "Hard",
+            "match_num": "1",
+            "winner_id": "p1",
+            "loser_id": "p2",
+            "winner_name": "Player One",
+            "loser_name": "Player Two",
+            "w_svpt": "65",
+            "l_svpt": "68",
+            "w_ace": "7",
+            "l_ace": "2",
+        }
+        rows = [dict(base), dict(base)]
+        profiles = {
+            "p1": {
+                "id": "p1", "name": "Player One",
+                "serve_rate": 0.12, "serve_rate_source": "current-season-qualified",
+                "concede_rate": 0.09, "concede_rate_source": "surface-qualified",
+            },
+            "p2": {
+                "id": "p2", "name": "Player Two",
+                "serve_rate": 0.08, "serve_rate_source": "current-season-qualified",
+                "concede_rate": 0.14, "concede_rate_source": "surface-qualified",
+            },
+        }
+        result = event_metrics(rows, profiles, 0.08)
+        self.assertIsNotNone(result)
+        self.assertEqual(4, result["adjustedServerSides"])
+        self.assertEqual(266, result["totalServicePoints"])
+        self.assertGreater(result["logLoss"], 0)
+
     def test_cross_fitted_anchor_uses_independent_scores_and_stable_cohort(self):
         ratings = {
             "event-a": {"matches": 12, "calculationDiagnostics": {
