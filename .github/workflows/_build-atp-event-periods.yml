@@ -72,7 +72,7 @@ jobs:
           print("PASS: all source event IDs across 1991–2026 have official ATP event periods.")
           PY
       - name: Commit partial official periods to PR branch for the single unresolved source event
-        if: steps.coverage_gate.outcome == 'failure'
+        if: always() && steps.coverage_gate.outcome == 'failure'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
