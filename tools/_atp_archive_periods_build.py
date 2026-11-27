@@ -275,6 +275,12 @@ def main():
      if score < (0.60 if len(toks(sname))>1 else 0.99): continue
     scored.append((score,c))
    scored.sort(key=lambda x:x[0],reverse=True)
+   # Prefer the explicitly named ATP archive card over venue-only duplicates.
+   # United Cup appears twice in some annual pages: once with its official title
+   # and once as a venue-only card. The source event identity is the titled card.
+   exact_named = [(score, card) for score, card in scored if norm(sname) in norm(card["cardText"])]
+   if exact_named:
+    scored = exact_named
    if not scored:
     unmatched.append(sid)
     unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"]})
