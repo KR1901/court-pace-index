@@ -24,6 +24,14 @@ def match(event, winner_aces, loser_aces, surface="Clay"):
     }
 
 
+class EventKeyNormalisationTests(unittest.TestCase):
+    def test_rio_detail_aliases_resolve_to_the_same_tennis_abstract_key(self):
+        for label in ("Rio", "Rio de Janeiro", "Rio Open", "ATP Rio de Janeiro", "rio open"):
+            with self.subTest(label=label):
+                self.assertEqual("riodejaneiro", audit.event_id(label))
+                self.assertEqual("riodejaneiro", audit.canonical_detail_id(label))
+
+
 class PhysicalCpiDiagnosticsTests(unittest.TestCase):
     def test_event_centered_clay_analysis_and_cluster_bootstrap_are_reproducible(self):
         readings = []
@@ -489,7 +497,7 @@ class UncertaintyTests(unittest.TestCase):
             [match("Paris Masters", 8, 8, surface="Hard") for _ in range(10)]
             + [match("Rome Masters", 8, 8, surface="Hard") for _ in range(10)]
         )
-        config = audit.config_grid()["shrink_150_min3"]
+        config = audit.config_grid()["loeo_production_150_min3"]
         one = audit.full_pipeline_bootstrap_interval(
             "parismasters", rows, config, iterations=12, seed=91
         )
@@ -505,13 +513,32 @@ class UncertaintyTests(unittest.TestCase):
 
     def test_configuration_grid_contains_weights_shrinkage_and_carpet_test(self):
         configs = audit.config_grid()
-        self.assertIn("loeo_current_1_3", configs)
-        self.assertIn("loeo_carpet_pooled", configs)
+        self.assertIn("loeo_unshrunk_1_3", configs)
+        self.assertIn("loeo_production_150_min3", configs)
+        self.assertEqual(0.0, configs["loeo_unshrunk_1_3"]["prior_points"])
+        self.assertEqual(
+            audit.compute_speed.PROFILE_PRIOR_SERVICE_POINTS,
+            configs["loeo_production_150_min3"]["prior_points"],
+        )
+        self.assertEqual(
+            audit.compute_speed.MIN_MATCHES_PER_SURFACE,
+            configs["loeo_production_150_min3"]["min_matches"],
+        )
+        self.assertIn("weight_050_shrink_150_min3", configs)
+        self.assertEqual(0.5, configs["weight_050_shrink_150_min3"]["clay_weight"])
+        self.assertEqual(
+            audit.compute_speed.PROFILE_PRIOR_SERVICE_POINTS,
+            configs["weight_050_shrink_150_min3"]["prior_points"],
+        )
+        self.assertEqual(
+            configs["loeo_production_150_min3"]["min_matches"],
+            configs["weight_050_shrink_150_min3"]["min_matches"],
+        )
         self.assertIn("loeo_carpet_specific", configs)
         self.assertIn("loeo_grass_specific_shrink_150", configs)
         self.assertIn("loeo_empirical_bayes_1_3", configs)
         self.assertIn("shrink_100_min3", configs)
-        self.assertIn("shrink_150_min3", configs)
+        self.assertIn("shrink_300_min3", configs)
         self.assertIn("loeo_empirical_bayes_1_3_min3", configs)
         self.assertIn("shrink_150", configs)
         self.assertIn("shrink_300", configs)
@@ -528,7 +555,7 @@ class UncertaintyTests(unittest.TestCase):
         (_usable, event_rows, surfaces, _players, _event_players,
          _global_stats, _event_stats) = audit.aggregate_season(rows)
         target = audit.event_id("Paris Masters")
-        config = audit.config_grid()["shrink_150_min3"]
+        config = audit.config_grid()["loeo_production_150_min3"]
         one = audit.profile_and_match_bootstrap_interval(
             target, event_rows[target], surfaces[target], event_rows,
             config, normaliser=1.0, iterations=12, seed=91,
@@ -550,7 +577,7 @@ class UncertaintyTests(unittest.TestCase):
         target = audit.event_id("Paris Masters")
         profiles, _ = audit.build_event_profiles(
             target, "Hard", players, event_players, global_stats, event_stats,
-            audit.config_grid()["shrink_150_min3"],
+            audit.config_grid()["loeo_production_150_min3"],
             target_player_ids={"target-one", "target-two"},
         )
         self.assertIn("target-one", profiles)
