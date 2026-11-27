@@ -2361,22 +2361,17 @@ def preserve_validated_davis_cup_history(
     previous_history,
     current_year=None,
 ):
-    """Preserve only eligible prior Davis Cup target snapshots during a strict rebuild.
+    """Preserve only source-validated historical Davis Cup target snapshots.
 
-    The current-season TML feed identifies the separate Davis Cup Final 8 phase (FLS).
-    When a season later becomes historical, its already-validated TML overall/Final 8
-    derived readings may be carried forward if the old feed audit confirms provenance.
+    The current-season TML feed identifies the separate Davis Cup Final 8 phase.
+    When a season later becomes historical, its validated TML overall/Final 8
+    readings take precedence over any reconstruction from the ATP archive.
 
-    The 2016–2024 overall Davis Cup readings predate that TML phase-audit metadata and
-    were published from the Jeff Sackmann archive as target-only historical readings.
-    Older archive identifiers do not preserve tie-level dates, so those existing values
-    cannot honestly be described as recomputed under the new strict event-period rules.
-    Preserve those supported overall readings as explicitly marked frozen legacy
-    snapshots only. They remain target-only and are never used for standard ATP player
-    profile training or season normalisation.
-
-    Never preserve an unsupported year/phase, invalid numeric record, current-season
-    snapshot after a feed failure, or overwrite a newly recalculated rating.
+    The 2016–2024 overall Davis Cup series is different: historical archive IDs
+    do not preserve tie-level chronology. Those seasons must therefore use the
+    compact, previously published legacy snapshots, marked legacy_frozen, rather
+    than accepting a fresh-looking but chronologically unsupported archive rebuild.
+    These target-only values never train standard ATP profiles or the normaliser.
     """
     current_year = date.today().year if current_year is None else int(current_year)
     year = int(year)
@@ -2407,9 +2402,8 @@ def preserve_validated_davis_cup_history(
             and adjusted_sides > 0
         )
 
-    # Preferred preservation path: a season previously calculated from the validated
-    # TML annual + ongoing feeds, with a matching source-coverage audit. This also keeps
-    # the distinct Final 8 for 2026 when that season becomes historical.
+    # A validated TML season is authoritative for its two Davis Cup phases.
+    # Replace archive-derived rows so they cannot silently supersede that source.
     coverage = previous_history.get("davis_cup_coverage", {}).get(season_key)
     tml_snapshot_valid = (
         previous_source == TML_DAVIS_CUP_SOURCE
@@ -2424,44 +2418,39 @@ def preserve_validated_davis_cup_history(
             ):
                 continue
             archived = previous_events.get(event_id) if isinstance(previous_events, dict) else None
-            if not valid_archived_rating(archived):
-                continue
-            if event_id not in merged:
+            if valid_archived_rating(archived):
                 merged[event_id] = archived
                 retained_ids.append(event_id)
-        if not retained_ids:
-            return merged, current_source, retained_ids
-        return merged, previous_source, retained_ids
+        if retained_ids:
+            return merged, previous_source, retained_ids
 
-    # Compatibility path for the established historical overall Davis Cup series.
-    # These are frozen prior publications, not newly strict-recomputed ratings. The
-    # source archive's historical tie IDs do not carry enough chronology to rebuild
-    # them safely, and no Final 8 phase is inferred for these years.
+    # The 2016–2024 Davis Cup target IDs in the old archive do not encode
+    # tie-level dates. Always restore the known published snapshot, even when a
+    # new archive pass emits a daviscup row. The seed is authoritative; current
+    # speed_history.json may already contain an unsupported reconstruction.
     if (
-        previous_source == "Jeff Sackmann ATP archive"
+        current_source == "Jeff Sackmann ATP archive"
         and is_supported_davis_cup_calculation_year("daviscup", year)
-        and "daviscup" not in merged
     ):
-        archived = previous_events.get("daviscup") if isinstance(previous_events, dict) else None
-        if not valid_archived_rating(archived):
-            # The first strict-chronology refresh can overwrite speed_history.json
-            # before the old overall Davis Cup readings have been carried forward.
-            # Recover only those already-published target snapshots from the compact
-            # frozen seed file; they remain excluded from ATP training/normalisation.
-            snapshot_path = os.path.normpath(os.path.join(
-                os.path.dirname(__file__), "..", "data", "legacy_davis_cup_snapshots.json"
-            ))
-            try:
-                with open(snapshot_path, encoding="utf-8") as snapshot_file:
-                    snapshot_registry = json.load(snapshot_file)
-                snapshot = snapshot_registry.get("years", {}).get(season_key, {})
-                if snapshot.get("source") == previous_source:
-                    archived = snapshot.get("rating")
-            except (OSError, json.JSONDecodeError, AttributeError):
-                archived = None
+        snapshot_path = os.path.normpath(os.path.join(
+            os.path.dirname(__file__), "..", "data", "legacy_davis_cup_snapshots.json"
+        ))
+        try:
+            with open(snapshot_path, encoding="utf-8") as snapshot_file:
+                snapshot_registry = json.load(snapshot_file)
+            snapshot = snapshot_registry.get("years", {}).get(season_key, {})
+            archived = (
+                snapshot.get("rating")
+                if snapshot.get("source") == current_source
+                else None
+            )
+        except (OSError, json.JSONDecodeError, AttributeError):
+            archived = None
+
         if valid_archived_rating(archived):
             frozen = dict(archived)
             diagnostics = dict(frozen.get("calculationDiagnostics") or {})
+            diagnostics.pop("sideDiagnostics", None)
             diagnostics["chronologySnapshotStatus"] = "legacy_frozen"
             diagnostics["chronologySnapshotNote"] = (
                 "Retained from the previously published historical Davis Cup series. "
