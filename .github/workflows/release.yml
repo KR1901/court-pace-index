@@ -7,6 +7,12 @@ on:
     workflows: ["Refresh dataset"]
     types: [completed]
     branches: [main]
+  # Allow a deliberate release-workflow-only push to run the verified main dataset
+  # without waiting for another full archive refresh. The release gate still checks the bundle.
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/release.yml"
   workflow_dispatch:
 
 permissions:
@@ -18,7 +24,7 @@ concurrency:
 
 jobs:
   release:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out latest main
@@ -94,7 +100,11 @@ jobs:
               # refresh publish a new app version with stale diagnostics. The current
               # TML refresh must publish aggregate-only phase coverage alongside each CALC.
               def require_phase_coverage(readings, event_id, expected_name):
-                  row = next((item for item in readings if item.get("t") == event_id), None)
+                  # Multiple historical seasons share an event ID; coverage belongs to 2026 only.
+        row = next((
+            item for item in readings
+            if item.get("t") == event_id and item.get("s") == 2026
+        ), None)
                   if row is None:
                       raise SystemExit(f"Missing {expected_name} Davis Cup reading.")
                   diagnostics = row.get("calculationDiagnostics")
