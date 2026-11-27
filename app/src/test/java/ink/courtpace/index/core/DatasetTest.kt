@@ -367,13 +367,13 @@ class DatasetTest {
             // historical archive refresh publishes its 2016–2024 CALC readings. The
             // production release workflow separately requires those historical readings,
             // so this exception cannot allow an incomplete release to be published.
-            val scheduledDavisCup =
-                tournament.id == "daviscup" &&
-                    data.dataset.live.any { it.t == "daviscup" && it.s == 2026 } &&
-                    data.dataset.liveSchedule.any { it.t == "daviscup" && it.s == 2026 }
+            val scheduledDavisCupFinal8 =
+                tournament.id == "daviscupfinal8" &&
+                    data.dataset.live.any { it.t == "daviscupfinal8" && it.s == 2026 } &&
+                    data.dataset.liveSchedule.any { it.t == "daviscupfinal8" && it.s == 2026 }
             assertTrue(
                 "${tournament.id} has no readings and is not an explicitly schedule-only event",
-                readings.isNotEmpty() || scheduledDavisCup,
+                readings.isNotEmpty() || scheduledDavisCupFinal8,
             )
         }
     }

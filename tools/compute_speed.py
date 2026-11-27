@@ -12,7 +12,7 @@ current season. Only tour-level main-draw matches with serve stats are used.
 Run:  python3 tools/compute_speed.py            # compute and validate against 2026
       python3 tools/compute_speed.py --write    # write speed history + live player baseline
 """
-import csv, hashlib, io, json, math, os, random, sys, urllib.request, unicodedata
+import csv, hashlib, io, json, math, os, random, re, sys, urllib.request, unicodedata
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
@@ -104,14 +104,19 @@ for _event_label, _event_id in NAMES.items():
     _NORMALISED_EVENT_NAMES[_event_key] = _event_id
 
 
-def tournament_id(event_name):
-    """Resolve exact event labels and punctuation/case variants to a known ID."""
+def tournament_id(event_name, source_event_id=None):
+    """Resolve event labels, preserving the separately identified Davis Cup Final 8."""
     label = str(event_name or "").strip()
     normalised = _normalise_event_name(label)
-    # The archive stores separate Davis Cup tie labels. Group them into one annual target.
     if normalised.startswith("daviscup"):
-        return "daviscup"
+        source_tokens = re.split(r"[^A-Z0-9]+", str(source_event_id or "").upper())
+        return "daviscupfinal8" if "FLS" in source_tokens else "daviscup"
     return NAMES.get(label) or _NORMALISED_EVENT_NAMES.get(normalised)
+
+
+def _row_tournament_id(row):
+    """Resolve a source row without collapsing the TML Final 8 into the annual Davis Cup target."""
+    return tournament_id(row.get("tourney_name"), row.get("tourney_id"))
 
 
 def tml_cache_is_fresh(metadata_path, now=None, max_age_days=TML_CACHE_MAX_AGE_DAYS):
@@ -260,75 +265,93 @@ def merge_davis_cup_rows(annual_rows, supplement_rows):
     return [merged[key] for key in order], added
 
 
+def _davis_cup_phase(row):
+    """Return the separate 2026 Davis Cup phase encoded by the TML source event ID."""
+    tokens = re.split(r"[^A-Z0-9]+", str(row.get("tourney_id") or "").upper())
+    return "final8" if "FLS" in tokens else "restOfDavisCup"
+
+
 def davis_cup_coverage_audit(rows, year):
-    """Classify the deduplicated current-year TML Davis Cup singles feed without retaining rows."""
+    """Classify current-year TML singles and reconcile annual and Final 8 source populations."""
     davis_rows = [
         row for row in rows
         if row.get("tourney_level") == "D"
         and _normalise_event_name(row.get("tourney_name")).startswith("daviscup")
         and str(row.get("tourney_date") or "").strip()[:4] == str(year)
     ]
-    unique = {}
-    excluded_doubles = 0
-    rows_without_player_ids = 0
-    for row in davis_rows:
-        names = (str(row.get("winner_name") or ""), str(row.get("loser_name") or ""))
-        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
-            excluded_doubles += 1
-            continue
-        if not str(row.get("winner_id") or "").strip() or not str(row.get("loser_id") or "").strip():
-            rows_without_player_ids += 1
-            continue
-        unique[davis_cup_match_key(row)] = row
 
-    required = ("w_ace", "w_svpt", "l_ace", "l_svpt")
-    unplayed = [row for row in unique.values() if not str(row.get("score") or "").strip()]
-    no_play = [
-        row for row in unique.values()
-        if str(row.get("score") or "").strip() and _is_no_play_score(row.get("score"))
-    ]
-    completed = [
-        row for row in unique.values()
-        if str(row.get("score") or "").strip() and not _is_no_play_score(row.get("score"))
-    ]
-    valid_stats = 0
-    missing_stats = 0
-    malformed_stats = 0
-    for row in completed:
-        if any(not str(row.get(key) or "").strip() for key in required):
-            missing_stats += 1
-            continue
-        try:
-            winner_aces, winner_points, loser_aces, loser_points = (
-                int(str(row[key]).strip()) for key in required
-            )
-            valid = (
-                bool(str(row.get("winner_name") or "").strip())
-                and bool(str(row.get("loser_name") or "").strip())
-                and winner_aces >= 0 and loser_aces >= 0
-                and winner_points > 0 and loser_points > 0
-                and winner_aces <= winner_points and loser_aces <= loser_points
-            )
-        except (TypeError, ValueError):
-            valid = False
-        if valid:
-            valid_stats += 1
-        else:
-            malformed_stats += 1
+    def summarize(phase_rows):
+        unique = {}
+        excluded_doubles = 0
+        rows_without_player_ids = 0
+        for row in phase_rows:
+            names = (str(row.get("winner_name") or ""), str(row.get("loser_name") or ""))
+            if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+                excluded_doubles += 1
+                continue
+            if not str(row.get("winner_id") or "").strip() or not str(row.get("loser_id") or "").strip():
+                rows_without_player_ids += 1
+                continue
+            unique[davis_cup_match_key(row)] = row
 
-    return {
-        "sourceRowsAfterMerge": len(davis_rows),
-        "excludedDoubles": excluded_doubles,
-        "rowsWithoutPlayerIds": rows_without_player_ids,
-        "identifiedSingles": len(unique),
-        "scorelessSingles": len(unplayed),
-        "walkoverOrNoPlaySingles": len(no_play),
-        "completedPlayedSingles": len(completed),
-        "completedWithValidServeStats": valid_stats,
-        "completedMissingServeStats": missing_stats,
-        "completedMalformedStats": malformed_stats,
+        required = ("w_ace", "w_svpt", "l_ace", "l_svpt")
+        unplayed = [row for row in unique.values() if not str(row.get("score") or "").strip()]
+        no_play = [
+            row for row in unique.values()
+            if str(row.get("score") or "").strip() and _is_no_play_score(row.get("score"))
+        ]
+        completed = [
+            row for row in unique.values()
+            if str(row.get("score") or "").strip() and not _is_no_play_score(row.get("score"))
+        ]
+        valid_stats = 0
+        missing_stats = 0
+        malformed_stats = 0
+        for row in completed:
+            if any(not str(row.get(key) or "").strip() for key in required):
+                missing_stats += 1
+                continue
+            try:
+                winner_aces, winner_points, loser_aces, loser_points = (
+                    int(str(row[key]).strip()) for key in required
+                )
+                valid = (
+                    bool(str(row.get("winner_name") or "").strip())
+                    and bool(str(row.get("loser_name") or "").strip())
+                    and winner_aces >= 0 and loser_aces >= 0
+                    and winner_points > 0 and loser_points > 0
+                    and winner_aces <= winner_points and loser_aces <= loser_points
+                )
+            except (TypeError, ValueError):
+                valid = False
+            if valid:
+                valid_stats += 1
+            else:
+                malformed_stats += 1
+
+        return {
+            "sourceRowsAfterMerge": len(phase_rows),
+            "excludedDoubles": excluded_doubles,
+            "rowsWithoutPlayerIds": rows_without_player_ids,
+            "identifiedSingles": len(unique),
+            "scorelessSingles": len(unplayed),
+            "walkoverOrNoPlaySingles": len(no_play),
+            "completedPlayedSingles": len(completed),
+            "completedWithValidServeStats": valid_stats,
+            "completedMissingServeStats": missing_stats,
+            "completedMalformedStats": malformed_stats,
+        }
+
+    overall = summarize(davis_rows)
+    overall["phases"] = {
+        "restOfDavisCup": summarize([
+            row for row in davis_rows if _davis_cup_phase(row) == "restOfDavisCup"
+        ]),
+        "final8": summarize([
+            row for row in davis_rows if _davis_cup_phase(row) == "final8"
+        ]),
     }
-
+    return overall
 
 def _is_no_play_score(score):
     normalized = "".join(str(score or "").upper().split())
@@ -487,7 +510,7 @@ PROFILE_TRAINING_EXCLUDED_EVENT_KEYS = frozenset({
     "nextgenerationatpfinals",
 })
 CALC_EXCLUDED_EVENT_KEYS = PROFILE_TRAINING_EXCLUDED_EVENT_KEYS  # Backwards-compatible name.
-CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen", "daviscup"})
+CALC_TARGET_ONLY_EVENT_IDS = frozenset({"nextgen", "daviscup", "daviscupfinal8"})
 
 
 def calculation_eligible_rows(rows):
@@ -833,7 +856,7 @@ def _source_event_key(row):
     raw_id = str(row.get("tourney_id") or "").strip()
     if raw_id:
         return f"id:{raw_id}"
-    resolved = tournament_id(row.get("tourney_name"))
+    resolved = _row_tournament_id(row)
     if resolved:
         return f"event:{resolved}"
     return f"name:{_normalise_event_name(row.get('tourney_name'))}"
@@ -1059,7 +1082,7 @@ def _normalisation_anchor_event_scores(rows, profiles, tour_rate):
     """
     by_event = defaultdict(list)
     for row in calculation_eligible_rows(valid_rows(rows)):
-        event_id = tournament_id(row.get("tourney_name"))
+        event_id = _row_tournament_id(row)
         if event_id is None or event_id in CALC_TARGET_ONLY_EVENT_IDS:
             continue
         by_event[event_id].append(row)
@@ -1086,7 +1109,7 @@ def _normalisation_rows_for_scored_events(rows, event_scores):
     event_ids = set(event_scores)
     return [
         row for row in rows
-        if tournament_id(row.get("tourney_name")) in event_ids
+        if _row_tournament_id(row) in event_ids
     ]
 
 
@@ -1107,7 +1130,7 @@ def _chronological_normalisation_anchor_rows(
         names = (row.get("winner_name") or "", row.get("loser_name") or "")
         if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
             continue
-        event_id = tournament_id(row.get("tourney_name"))
+        event_id = _row_tournament_id(row)
         if event_id is None or event_id == target_event_id:
             continue
         if _match_date(row) is None:
@@ -1116,7 +1139,7 @@ def _chronological_normalisation_anchor_rows(
 
     valid_by_source_event = defaultdict(list)
     for row in calculation_eligible_rows(valid_rows(rows)):
-        event_id = tournament_id(row.get("tourney_name"))
+        event_id = _row_tournament_id(row)
         if event_id is None or event_id == target_event_id:
             continue
         valid_by_source_event[_source_event_key(row)].append(row)
@@ -1669,7 +1692,7 @@ def event_raw_scores(usable, profiles, exclude_event_ids=None, tour_rate=None):
     event_matches = defaultdict(int)
 
     for r in usable:
-        tid = tournament_id(r.get("tourney_name"))
+        tid = _row_tournament_id(r)
         if tid is None or tid in excluded:
             continue
         w_sv, l_sv = num(r["w_svpt"]), num(r["l_svpt"])
@@ -1864,11 +1887,11 @@ def season_ratings(year, rows, source=None):
             names = (row.get("winner_name") or "", row.get("loser_name") or "")
             if any("/" in name or " & " in name or " and " in name.lower() for name in names):
                 continue
-        tid = tournament_id(row.get("tourney_name"))
+        tid = _row_tournament_id(row)
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
             chronology_rows_by_event[tid].append(row)
     for row in target_rows:
-        tid = tournament_id(row.get("tourney_name"))
+        tid = _row_tournament_id(row)
         if tid is not None and is_supported_davis_cup_calculation_year(tid, year, source=source):
             rows_by_event[tid].append(row)
 
@@ -1940,7 +1963,7 @@ def season_ratings(year, rows, source=None):
         legacy_fallback_buffer_excluded = 0
         eligible_training_population = calculation_eligible_rows(valid_rows(rows))
         for row in eligible_training_population:
-            if tournament_id(row.get("tourney_name")) == tid:
+            if _row_tournament_id(row) == tid:
                 continue
             row_date = _match_date(row)
             if row_date is None:
@@ -2118,7 +2141,79 @@ def exclude_live_event_rows(rows, event_ids):
     excluded = set(event_ids or ())
     if not excluded:
         return list(rows)
-    return [row for row in rows if tournament_id(row.get("tourney_name")) not in excluded]
+    return [row for row in rows if _row_tournament_id(row) not in excluded]
+
+
+def preserve_validated_davis_cup_history(
+    year,
+    ratings,
+    current_source,
+    previous_history,
+    current_year=None,
+):
+    """Keep already validated TML Davis Cup phase ratings after their season becomes historical.
+
+    The current-season TML feed supplies exact source phase IDs (including the Final 8
+    FLS token). The open Sackmann archive does not preserve that phase identifier. When
+    a later-year full rebuild recalculates an older season from Sackmann, silently
+    replacing the previously validated Davis Cup targets with an aggregate or no row
+    would erase the distinct Final 8 history.
+
+    Retain only the archived derived CALC records from a prior TML snapshot whose
+    season-level source and coverage audit both explicitly attest to the validated
+    TML annual + ongoing feed. Never retain current-season data after a feed failure,
+    never manufacture a missing phase, and never overwrite a newly recalculated row.
+    """
+    current_year = date.today().year if current_year is None else int(current_year)
+    year = int(year)
+    retained_ids = []
+
+    if year >= current_year or current_source == TML_DAVIS_CUP_SOURCE:
+        return dict(ratings), current_source, retained_ids
+
+    previous_history = previous_history if isinstance(previous_history, dict) else {}
+    season_key = str(year)
+    previous_source = previous_history.get("season_sources", {}).get(season_key)
+    coverage = previous_history.get("davis_cup_coverage", {}).get(season_key)
+
+    if (
+        previous_source != TML_DAVIS_CUP_SOURCE
+        or not isinstance(coverage, dict)
+        or coverage.get("validatedSource") is not True
+        or coverage.get("source") != TML_DAVIS_CUP_SOURCE
+    ):
+        return dict(ratings), current_source, retained_ids
+
+    previous_events = previous_history.get("seasons", {}).get(season_key, {})
+    merged = dict(ratings)
+    for event_id in ("daviscup", "daviscupfinal8"):
+        if not is_supported_davis_cup_calculation_year(
+            event_id, year, source=previous_source,
+        ):
+            continue
+        archived = previous_events.get(event_id) if isinstance(previous_events, dict) else None
+        if not isinstance(archived, dict):
+            continue
+        speed = archived.get("speed")
+        matches = archived.get("matches")
+        adjusted_sides = archived.get("adjustedServerSides")
+        if (
+            not isinstance(speed, (int, float))
+            or not math.isfinite(float(speed))
+            or speed < 0
+            or not isinstance(matches, int)
+            or matches <= 0
+            or not isinstance(adjusted_sides, int)
+            or adjusted_sides <= 0
+        ):
+            continue
+        if event_id not in merged:
+            merged[event_id] = archived
+            retained_ids.append(event_id)
+
+    if not retained_ids:
+        return merged, current_source, retained_ids
+    return merged, previous_source, retained_ids
 
 
 def main():
@@ -2130,7 +2225,17 @@ def main():
 
     history = {}
     season_sources = {}
+    season_source_notes = {}
     davis_cup_coverage = {}
+    prior_history_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "speed_history.json",
+    )
+    try:
+        previous_history = json.load(open(prior_history_path, encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, TypeError):
+        previous_history = {}
+    previous_source_metadata = previous_history.get("source_metadata", {})
+    retained_source_metadata = {}
     for year in YEARS:
         try:
             rows = load(year)
@@ -2154,9 +2259,36 @@ def main():
                 f"{audit['completedMissingServeStats']} missing stats · "
                 f"{audit['completedMalformedStats']} malformed stats"
             )
-        ratings = season_ratings(year, rows, source=SOURCE_BY_YEAR.get(year))
+        current_source = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
+        ratings = season_ratings(year, rows, source=current_source)
+        published_source = current_source
+        source_note = current_source
+        if year < date.today().year:
+            ratings, published_source, retained_ids = preserve_validated_davis_cup_history(
+                year,
+                ratings,
+                current_source,
+                previous_history,
+            )
+            if retained_ids:
+                source_note = (
+                    f"Standard ATP target rows recalculated from {current_source}; "
+                    f"validated Davis Cup phase CALC records retained from the prior "
+                    f"{TML_DAVIS_CUP_SOURCE} snapshot: {', '.join(retained_ids)}."
+                )
+                previous_coverage = previous_history.get("davis_cup_coverage", {}).get(str(year))
+                if isinstance(previous_coverage, dict):
+                    davis_cup_coverage[str(year)] = previous_coverage
+                previous_metadata = previous_source_metadata.get(str(year))
+                if isinstance(previous_metadata, dict):
+                    retained_source_metadata[str(year)] = previous_metadata
+                print(
+                    f"{year}: retained validated historical Davis Cup phases · "
+                    f"{', '.join(retained_ids)}"
+                )
         history[year] = ratings
-        season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
+        season_sources[year] = published_source
+        season_source_notes[str(year)] = source_note
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
 
     ours = history.get(2026, {})
@@ -2321,8 +2453,10 @@ def main():
             "method": "chronological leave-one-tournament-out calibrated server/returner expected-aces odds ratio using actual match timestamps/days where available and conservative level-based event-window bounds for legacy tournament-start-only archives; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
+            "season_source_notes": season_source_notes,
             "source_metadata": {
-                str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR
+                **{str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR},
+                **retained_source_metadata,
             },
             "davis_cup_coverage": davis_cup_coverage,
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v

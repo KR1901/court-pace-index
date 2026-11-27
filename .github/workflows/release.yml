@@ -38,13 +38,21 @@ jobs:
           if not path.is_file() or path.stat().st_size == 0:
               raise SystemExit("Bundled pace dataset is missing or empty.")
           dataset = json.loads(path.read_text(encoding="utf-8"))
-          assert any(row.get("id") == "daviscup" for row in dataset.get("tournaments", [])), (
-              "Bundled tournament metadata is missing Davis Cup."
+          tournament_ids = {row.get("id") for row in dataset.get("tournaments", [])}
+          assert "daviscup" in tournament_ids, (
+              "Bundled tournament metadata is missing the annual Davis Cup target."
+          )
+          assert "daviscupfinal8" in tournament_ids, (
+              "Bundled tournament metadata is missing the separate Davis Cup Final 8 target."
           )
           assert any(
-              row.get("t") == "daviscup" and row.get("s") == 2026
+              row.get("t") == "daviscupfinal8" and row.get("s") == 2026
               for row in dataset.get("live", [])
           ), "Bundled Live now data is missing the 2026 Davis Cup Final 8 schedule row."
+          assert not any(
+              row.get("t") == "daviscup" and row.get("s") == 2026
+              for row in dataset.get("live", [])
+          ), "Earlier Davis Cup ties must not be presented as Live now."
           davis_historical = [
               row for row in dataset.get("readings", [])
               if row.get("t") == "daviscup" and row.get("src") == "computed"
@@ -53,7 +61,7 @@ jobs:
           assert davis_historical, "Bundled dataset has no historical Davis Cup CALC reading."
           historical_years = sorted({row["s"] for row in davis_historical})
           assert not any(
-              row.get("t") == "daviscup" and row.get("src") == "tennisabstract"
+              row.get("t") in {"daviscup", "daviscupfinal8"} and row.get("src") == "tennisabstract"
               for row in dataset.get("readings", [])
           ), "Tennis Abstract Davis Cup fallback values must never be published."
           computed_source = next(
@@ -69,30 +77,39 @@ jobs:
               if row.get("t") == "daviscup" and row.get("s") == 2026
               and row.get("src") == "computed" and row.get("speed") is not None
           ]
+          final8_2026 = [
+              row for row in dataset.get("readings", [])
+              if row.get("t") == "daviscupfinal8" and row.get("s") == 2026
+              and row.get("src") == "computed" and row.get("speed") is not None
+          ]
           if tml_davis_source in computed_source.get("detail", ""):
               assert davis_2026, (
-                  "The validated TML 2026 source is declared, but the 2026 Davis Cup CALC is missing."
+                  "The validated TML 2026 source is declared, but the earlier Davis Cup CALC is missing."
+              )
+              assert final8_2026, (
+                  "The validated TML 2026 source is declared, but the separate Davis Cup Final 8 CALC is missing."
               )
           else:
-              assert not davis_2026, (
-                  "A 2026 Davis Cup CALC cannot be packaged without validated TML annual + ongoing source provenance."
+              assert not davis_2026 and not final8_2026, (
+                  "2026 Davis Cup phase CALC values cannot be packaged without validated TML annual + ongoing source provenance."
               )
           assert not any(
-              row.get("t") == "daviscup" and row.get("s") == 2026
+              row.get("t") in {"daviscup", "daviscupfinal8"} and row.get("s") == 2026
               and row.get("src") == "live" and row.get("speed") is not None
               for row in dataset.get("readings", [])
-          ), "A provisional Davis Cup live rating must not be packaged."
+          ), "Provisional Davis Cup phase ratings must not be packaged."
           assert not any(
-              row.get("t") == "daviscup" and row.get("speed") is not None
+              row.get("t") in {"daviscup", "daviscupfinal8"} and row.get("speed") is not None
               and row.get("s") not in range(2016, 2025)
               and not (row.get("s") == 2026 and row.get("src") == "computed"
                        and tml_davis_source in computed_source.get("detail", ""))
               for row in dataset.get("readings", [])
-          ), "Davis Cup CALC outside 2016–2024 requires the validated TML 2026 source."
+          ), "Davis Cup phase CALC outside 2016–2024 requires the validated TML 2026 source."
           print(
               "Bundled Davis Cup historical CALC years=" + ",".join(map(str, historical_years))
-              + "; TML 2026 CALC=" + ("present" if davis_2026 else "withheld")
-              + "; Final 8 schedule is present; no provisional live rating is packaged."
+              + "; TML 2026 annual/Final 8 CALC="
+              + ("present" if davis_2026 and final8_2026 else "withheld")
+              + "; only Final 8 is live; no provisional rating is packaged."
           )
           PY
 

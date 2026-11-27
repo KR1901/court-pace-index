@@ -30,6 +30,35 @@ class LiveFeedTest {
     private fun withParisLive() = data.dataset.copy(live = listOf(activeParis))
 
     @Test
+    fun `only the Davis Cup Final 8 is live while the earlier competition remains a separate completed CALC entry`() {
+        val liveFinal8 = LiveEvent(
+            t = "daviscupfinal8",
+            s = 2026,
+            status = "in_progress",
+            start = LocalDate.now().minusDays(1).toString(),
+            end = LocalDate.now().plusDays(2).toString(),
+            round = "Final 8",
+            slug = "davis-cup-final-8-2026",
+        )
+        val phaseData = PaceData(data.dataset.copy(
+            live = listOf(liveFinal8),
+            liveSchedule = listOf(liveFinal8),
+        ))
+
+        val liveDavisIds = phaseData.liveEvents(2026, Metric.SPEED)
+            .map { it.first.id }
+            .filter { it == "daviscup" || it == "daviscupfinal8" }
+        assertEquals(listOf("daviscupfinal8"), liveDavisIds)
+        assertTrue(phaseData.isLive("daviscupfinal8", 2026))
+        assertFalse(phaseData.isLive("daviscup", 2026))
+        assertTrue(phaseData.liveWithoutRating(2026, Metric.SPEED).any {
+            it.first.id == "daviscupfinal8"
+        })
+        assertTrue(phaseData.entries(2026, Metric.SPEED).any { it.first.id == "daviscup" })
+        assertTrue(phaseData.entries(2026, Metric.SPEED).any { it.first.id == "daviscupfinal8" })
+    }
+
+    @Test
     fun `the bundled feed does not retain an event after its end date`() {
         assertNull("Paris ended on 8-Nov-2026 and must not remain live", data.liveEvent("paris"))
         assertFalse(data.isLive("paris"))
@@ -162,6 +191,52 @@ class LiveFeedTest {
         assertEquals(1.04, merged.value("paris", 2026, Metric.SPEED)!!, 1e-9)
         assertEquals("computed", merged.reading("paris", 2026, Metric.SPEED)!!.src)
         assertEquals("computed", merged.seasonRows("paris").single().speedSource)
+    }
+
+    @Test
+    fun `a completed Davis Cup Final 8 uses its separate archived CALC row`() {
+        val final8Tournament = data.dataset.tournaments.firstOrNull {
+            it.id == "daviscupfinal8"
+        }
+        assertNotNull("The Final 8 must have its own tournament identity", final8Tournament)
+
+        val ended = LiveEvent(
+            t = "daviscupfinal8",
+            s = 2026,
+            status = "completed",
+            start = LocalDate.now().minusDays(6).toString(),
+            end = LocalDate.now().minusDays(1).toString(),
+            slug = "davis-cup-final-8-2026",
+        )
+        val liveBackfill = ink.courtpace.index.core.model.PaceReading(
+            t = "daviscupfinal8", s = 2026, speed = 1.18, src = "live",
+            live = true, matches = 7,
+        )
+        val finalCalc = ink.courtpace.index.core.model.PaceReading(
+            t = "daviscupfinal8", s = 2026, speed = 1.03, src = "computed",
+            matches = 7,
+        )
+        val finished = data.dataset.copy(
+            live = data.dataset.live.filterNot { it.t == "daviscupfinal8" } + ended,
+            liveSchedule = data.dataset.liveSchedule.filterNot { it.t == "daviscupfinal8" } + ended,
+            readings = data.dataset.readings.filterNot {
+                it.t == "daviscupfinal8" && it.s == 2026
+            } + listOf(liveBackfill, finalCalc),
+        )
+
+        val merged = PaceData(finished)
+
+        assertFalse("The completed Final 8 must leave Live now", merged.isLive("daviscupfinal8", 2026))
+        assertTrue(merged.liveEvents(2026, Metric.SPEED).none {
+            it.first.id == "daviscupfinal8"
+        })
+        assertNull("A stale live estimate must not override the archived CALC row",
+            merged.liveReading("daviscupfinal8", 2026))
+        assertEquals(1.03, merged.value("daviscupfinal8", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals("computed", merged.speedSource("daviscupfinal8", 2026))
+        assertTrue(merged.entries(2026, Metric.SPEED).any {
+            it.first.id == "daviscupfinal8" && kotlin.math.abs(it.second - 1.03) < 1e-9
+        })
     }
 
     @Test

@@ -88,9 +88,120 @@ def profile(
 
 
 class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
+    def test_davis_cup_and_final8_publication_policies_are_separate(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", 2024))
+        self.assertTrue(is_supported_davis_cup_calculation_year("daviscup", 2026, source=tml))
+        self.assertTrue(is_supported_davis_cup_calculation_year("daviscupfinal8", 2026, source=tml))
+        self.assertFalse(is_supported_davis_cup_calculation_year("daviscupfinal8", 2025, source=tml))
+        self.assertFalse(is_supported_davis_cup_calculation_year("daviscupfinal8", 2026))
+        self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", 2026))
+
+
+
+    def test_validated_davis_cup_phase_ratings_survive_when_their_season_becomes_historical(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        previous = {
+            "season_sources": {"2026": tml},
+            "davis_cup_coverage": {
+                "2026": {"source": tml, "validatedSource": True, "identifiedSingles": 187},
+            },
+            "source_metadata": {"2026": {"sha256": "validated-tml-snapshot"}},
+            "seasons": {
+                "2026": {
+                    "rome": {"speed": 1.22, "matches": 31, "adjustedServerSides": 62},
+                    "daviscup": {
+                        "speed": 1.138, "matches": 148, "adjustedServerSides": 296,
+                        "calculationDiagnostics": {"chronologyRule": "strictly_before_target_local_match_day"},
+                    },
+                    "daviscupfinal8": {
+                        "speed": 1.203, "matches": 6, "adjustedServerSides": 12,
+                        "calculationDiagnostics": {"chronologyRule": "strictly_before_target_local_match_day"},
+                    },
+                },
+            },
+        }
+        freshly_recalculated = {
+            "rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62},
+        }
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2026,
+            freshly_recalculated,
+            "Jeff Sackmann ATP archive",
+            previous,
+            current_year=2027,
+        )
+
+        self.assertEqual({"daviscup", "daviscupfinal8"}, set(retained))
+        self.assertEqual(tml, source)
+        self.assertEqual(1.138, merged["daviscup"]["speed"])
+        self.assertEqual(1.203, merged["daviscupfinal8"]["speed"])
+        self.assertEqual(1.30, merged["rome"]["speed"])
+
+    def test_davis_cup_phase_history_is_not_retained_without_a_validated_source_audit(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        previous = {
+            "season_sources": {"2026": tml},
+            "davis_cup_coverage": {
+                "2026": {"source": tml, "validatedSource": False},
+            },
+            "seasons": {
+                "2026": {
+                    "daviscup": {"speed": 1.10, "matches": 20, "adjustedServerSides": 40},
+                    "daviscupfinal8": {"speed": 1.20, "matches": 6, "adjustedServerSides": 12},
+                },
+            },
+        }
+        current = {"rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62}}
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2026, current, "Jeff Sackmann ATP archive", previous, current_year=2027,
+        )
+
+        self.assertEqual([], retained)
+        self.assertNotIn("daviscup", merged)
+        self.assertNotIn("daviscupfinal8", merged)
+        self.assertEqual("Jeff Sackmann ATP archive", source)
+
+    def test_current_year_tml_refresh_always_supersedes_old_davis_cup_snapshot(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        previous = {
+            "season_sources": {"2026": tml},
+            "davis_cup_coverage": {
+                "2026": {"source": tml, "validatedSource": True},
+            },
+            "seasons": {
+                "2026": {
+                    "daviscup": {"speed": 1.10, "matches": 20, "adjustedServerSides": 40},
+                    "daviscupfinal8": {"speed": 1.20, "matches": 6, "adjustedServerSides": 12},
+                },
+            },
+        }
+        current = {"daviscup": {"speed": 1.17, "matches": 150, "adjustedServerSides": 300}}
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2026, current, tml, previous, current_year=2026,
+        )
+
+        self.assertEqual([], retained)
+        self.assertEqual(tml, source)
+        self.assertNotIn("daviscupfinal8", merged)
+        self.assertEqual(1.17, merged["daviscup"]["speed"])
+
     def test_davis_cup_tie_labels_are_grouped_into_one_target_event(self):
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup Finals RR: FRA vs JPN"))
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup WG1 PO: CHN vs POR"))
+        self.assertEqual("daviscupfinal8", compute_speed._row_tournament_id({
+            "tourney_name": "Davis Cup Finals QF: CZE vs CAN",
+            "tourney_id": "2026-M-DC-2026-FLS-M-CZE-CAN-01",
+        }))
+        self.assertEqual("daviscup", compute_speed._row_tournament_id({
+            "tourney_name": "Davis Cup WG2: TIE A",
+            "tourney_id": "2026-M-DC-WG2-M-TIE-A-01",
+        }))
+        self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
+        self.assertIn("daviscupfinal8", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
     def test_davis_cup_rows_are_valid_targets_but_never_profile_training(self):
         davis = {
@@ -103,10 +214,16 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
             "winner_id": "3", "loser_id": "4",
             "w_svpt": "70", "l_svpt": "65", "w_ace": "8", "l_ace": "4",
         }
-        valid = compute_speed.valid_rows([davis, atp])
-        self.assertEqual(2, len(valid))
+        final8 = {
+            **davis,
+            "tourney_name": "Davis Cup Finals QF: CZE vs CAN",
+            "tourney_id": "2026-M-DC-2026-FLS-M-CZE-CAN-01",
+        }
+        valid = compute_speed.valid_rows([davis, final8, atp])
+        self.assertEqual(3, len(valid))
         self.assertEqual([atp], compute_speed.calculation_eligible_rows(valid))
         self.assertIn("daviscup", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
+        self.assertIn("daviscupfinal8", compute_speed.CALC_TARGET_ONLY_EVENT_IDS)
 
     def test_davis_cup_diagnostic_ids_do_not_collide_when_tie_match_numbers_repeat(self):
         rows = [
@@ -996,20 +1113,26 @@ class DavisCupCoverageAuditTests(unittest.TestCase):
                 "score": "W/O", "w_ace": "", "w_svpt": "", "l_ace": "", "l_svpt": "",
             },
             {
+                **base, "tourney_id": "2026-M-DC-2026-FLS-M-ITA-KOR-01",
+                "match_num": "7", "winner_id": "P13", "loser_id": "P14",
+                "winner_name": "Final 8 Winner", "loser_name": "Final 8 Opponent",
+                "score": "6-4 6-4", "w_ace": "7", "w_svpt": "65", "l_ace": "4", "l_svpt": "61",
+            },
+            {
                 **base, "match_num": "6", "winner_id": "P11", "loser_id": "P12",
                 "winner_name": "Doubles A / Doubles B",
                 "score": "6-4 6-4", "w_ace": "5", "w_svpt": "60", "l_ace": "3", "l_svpt": "55",
             },
         ]
         audit = compute_speed.davis_cup_coverage_audit(rows, 2026)
-        self.assertEqual(6, audit["sourceRowsAfterMerge"])
+        self.assertEqual(7, audit["sourceRowsAfterMerge"])
         self.assertEqual(
             audit["sourceRowsAfterMerge"],
             audit["excludedDoubles"] + audit["rowsWithoutPlayerIds"] + audit["identifiedSingles"],
         )
         self.assertEqual(1, audit["excludedDoubles"])
-        self.assertEqual(5, audit["identifiedSingles"])
-        self.assertEqual(1, audit["completedWithValidServeStats"])
+        self.assertEqual(6, audit["identifiedSingles"])
+        self.assertEqual(2, audit["completedWithValidServeStats"])
         self.assertEqual(1, audit["completedMissingServeStats"])
         self.assertEqual(1, audit["completedMalformedStats"])
         self.assertEqual(1, audit["scorelessSingles"])
@@ -1026,6 +1149,27 @@ class DavisCupCoverageAuditTests(unittest.TestCase):
             audit["completedMissingServeStats"] +
             audit["completedMalformedStats"],
         )
+        phases = audit["phases"]
+        rest = phases["restOfDavisCup"]
+        final8 = phases["final8"]
+        self.assertEqual(6, rest["sourceRowsAfterMerge"])
+        self.assertEqual(5, rest["identifiedSingles"])
+        self.assertEqual(1, rest["completedWithValidServeStats"])
+        self.assertEqual(1, rest["completedMissingServeStats"])
+        self.assertEqual(1, rest["completedMalformedStats"])
+        self.assertEqual(0, final8["excludedDoubles"])
+        self.assertEqual(1, final8["sourceRowsAfterMerge"])
+        self.assertEqual(1, final8["identifiedSingles"])
+        self.assertEqual(1, final8["completedWithValidServeStats"])
+        self.assertEqual(0, final8["completedMissingServeStats"])
+        self.assertEqual(0, final8["completedMalformedStats"])
+        for key in (
+            "sourceRowsAfterMerge", "excludedDoubles", "rowsWithoutPlayerIds",
+            "identifiedSingles", "scorelessSingles", "walkoverOrNoPlaySingles",
+            "completedPlayedSingles", "completedWithValidServeStats",
+            "completedMissingServeStats", "completedMalformedStats",
+        ):
+            self.assertEqual(audit[key], rest[key] + final8[key], key)
 
 
 class LeaveOneEventOutProductionTests(unittest.TestCase):

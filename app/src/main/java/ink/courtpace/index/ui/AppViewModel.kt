@@ -197,10 +197,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Restore cached ratings only when their adjusted-side coverage is also available. */
     private fun restoreCachedLiveRating(cached: ink.courtpace.index.core.live.CachedLiveRating) {
-        // Never restore legacy TennisRace/ATP-prototype Davis Cup values. Only the TML
-        // match-stat adapter may populate this separate annual target.
+        // The pre-split aggregate Davis Cup cache is obsolete and must never reappear
+        // as Live now after upgrade. The earlier phases now have archived CALC readings.
+        if (cached.tournamentId == "daviscup") return
+        // Only the separately identified Final 8 may be restored from TML live cache.
         if (
-            cached.tournamentId == "daviscup" &&
+            cached.tournamentId == "daviscupfinal8" &&
             cached.source != ink.courtpace.index.core.live.CachedLiveRating.TML_DAVIS_CUP_SOURCE
         ) return
         val result = cached.toAceRatingResultOrNull() ?: return
@@ -256,10 +258,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val existing = _data.value?.dataset?.live.orEmpty()
             // Davis Cup is read through its separately validated TML annual + ongoing match-stat
             // feeds. Keep the official schedule row visible while those requests are in flight.
-            val davisCupEvent = existing.firstOrNull { it.t == "daviscup" && it.s == year }
-            val davisCupPending = "TML · checking annual and ongoing singles statistics"
+            val davisCupFinal8Event = existing.firstOrNull {
+                it.t == "daviscupfinal8" && it.s == year
+            }
+            val davisCupFinal8Pending = "TML · checking Final 8 singles statistics"
             liveProgressByEvent = refs.associate { it.tournamentId to "Checking ATP results" } +
-                if (davisCupEvent != null) mapOf("daviscup" to davisCupPending) else emptyMap()
+                if (davisCupFinal8Event != null) {
+                    mapOf("daviscupfinal8" to davisCupFinal8Pending)
+                } else emptyMap()
             val refreshedEvents = refs.map { ref ->
                 val previous = existing.firstOrNull { it.t == ref.tournamentId && it.s == ref.year }
                 previous?.copy(
@@ -278,13 +284,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // A live rating is a season observation, not an ephemeral event card. Retain it
             // after the event leaves the active ATP slate; only metadata stays active-only.
             publish(
-                PaceData(latest.dataset.copy(live = refreshedEvents + listOfNotNull(davisCupEvent))),
+                PaceData(latest.dataset.copy(live = refreshedEvents + listOfNotNull(davisCupFinal8Event))),
                 keepSeason = true,
             )
             liveAceByEvent = emptyMap()
             if (refs.isEmpty()) {
-                liveProgressByEvent = if (davisCupEvent != null) {
-                    mapOf("daviscup" to davisCupPending)
+                liveProgressByEvent = if (davisCupFinal8Event != null) {
+                    mapOf("daviscupfinal8" to davisCupFinal8Pending)
                 } else emptyMap()
                 val note = if (discovery.hubReadable) {
                     "current ATP hub has no active events"
@@ -298,7 +304,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val activeBaseline = _data.value?.dataset?.speedBaseline
             if (activeBaseline != null) {
                 val activeKeys = refs.map { it.tournamentId to it.year }.toSet() +
-                    if (davisCupEvent != null) setOf("daviscup" to year) else emptySet()
+                    if (davisCupFinal8Event != null) setOf("daviscupfinal8" to year) else emptySet()
                 ratingStore.readAll()
                     .filter {
                         it.season == activeBaseline.season &&
@@ -387,41 +393,42 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
 
-            // Davis Cup is a separate target and never enters the ATP training profiles or
-            // ATP normaliser. TML's current-season archive supplies earlier completed rubbers;
-            // ongoing_tourneys.csv adds newly completed Final 8 rubbers. The source is aggregate-
-            // only and is not saved as raw match data.
-            if (davisCupEvent != null) {
+            // The live row is only the Final 8. Earlier qualifying/group ties remain a
+            // separate archived Davis Cup target and never enter ATP profiles or normalisation.
+            // Both phase samples use the same existing AceRating calculation; no formula or
+            // calibration change is made here.
+            if (davisCupFinal8Event != null) {
                 val baseline = _data.value?.dataset?.speedBaseline
                     ?.takeIf { it.season == year }
                 if (baseline == null) {
                     liveProgressByEvent = liveProgressByEvent +
-                        ("daviscup" to "TML · 2026 player baseline unavailable")
+                        ("daviscupfinal8" to "TML · $year player baseline unavailable")
                 } else {
                     liveProgressByEvent = liveProgressByEvent +
-                        ("daviscup" to "TML · reading annual and ongoing match statistics")
+                        ("daviscupfinal8" to "TML · reading Final 8 singles statistics")
                     runCatching {
                         val batch = tmlDavisCupClient.fetch(year)
+                        val phase = batch.final8
                         val rating = ink.courtpace.index.core.live.AceRating.rate(
-                            matches = batch.matches,
+                            matches = phase.matches,
                             baseline = baseline,
-                            discoveredMatches = batch.discoveredMatches,
+                            discoveredMatches = phase.discoveredMatches,
                         )
                         if (rating == null) {
                             liveProgressByEvent = liveProgressByEvent + (
-                                "daviscup" to buildString {
-                                    append("TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} played singles have valid serve stats · ${batch.identifiedSingles} unique singles identified")
-                                    if (batch.scorelessRows > 0) append(" · ${batch.scorelessRows} scoreless/pending result")
-                                    if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
-                                    if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing serve stats")
-                                    if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid serve stats")
+                                "daviscupfinal8" to buildString {
+                                    append("TML · ${phase.matchesWithServeStats}/${phase.discoveredMatches} Final 8 singles have valid serve stats · ${phase.identifiedSingles} identified")
+                                    if (phase.scorelessRows > 0) append(" · ${phase.scorelessRows} scoreless/pending")
+                                    if (phase.noPlayRows > 0) append(" · ${phase.noPlayRows} walkover/no-play")
+                                    if (phase.missingStatsMatches > 0) append(" · ${phase.missingStatsMatches} missing serve stats")
+                                    if (phase.malformedStatsMatches > 0) append(" · ${phase.malformedStatsMatches} invalid-stat matches")
                                     append(" · awaiting rateable sides")
                                 }
                             )
                         } else {
-                            liveAceByEvent = liveAceByEvent + ("daviscup" to rating)
+                            liveAceByEvent = liveAceByEvent + ("daviscupfinal8" to rating)
                             applyLiveRating(
-                                "daviscup",
+                                "daviscupfinal8",
                                 year,
                                 rating.rating,
                                 rating.matches,
@@ -429,14 +436,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             )
                             ratingStore.write(
                                 ink.courtpace.index.core.live.CachedLiveRating(
-                                    tournamentId = "daviscup",
+                                    tournamentId = "daviscupfinal8",
                                     season = year,
                                     speed = rating.rating,
                                     matches = rating.matches,
                                     aceRate = rating.aceRate,
                                     asOf = java.time.Instant.now().toString(),
                                     baselineGenerated = baseline.generated,
-                                    discoveredMatches = batch.discoveredMatches,
+                                    discoveredMatches = phase.discoveredMatches,
                                     adjustedServerSides = rating.adjustedServerSides,
                                     totalServerSides = rating.totalServerSides,
                                     aces = rating.aces,
@@ -445,24 +452,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 ),
                             )
                             liveProgressByEvent = liveProgressByEvent + (
-                                "daviscup" to
-                                    "TML · ${rating.matches} matches rated · " +
+                                "daviscupfinal8" to
+                                    "TML · ${rating.matches} Final 8 matches rated · " +
                                         "${rating.adjustedServerSides}/${rating.totalServerSides} sides adjusted"
                             )
                         }
                         status(buildString {
-                            append("Davis Cup · TML · ${batch.matchesWithServeStats}/${batch.discoveredMatches} played singles with valid serve statistics · ${batch.identifiedSingles} unique singles identified")
-                            if (batch.scorelessRows > 0) append(" · ${batch.scorelessRows} scoreless/pending result")
-                            if (batch.noPlayRows > 0) append(" · ${batch.noPlayRows} walkover/no-play")
-                            if (batch.missingStatsMatches > 0) append(" · ${batch.missingStatsMatches} completed singles missing statistics")
-                            if (batch.malformedStatsMatches > 0) append(" · ${batch.malformedStatsMatches} completed singles with invalid statistics")
+                            append("Davis Cup Final 8 · TML · ${phase.matchesWithServeStats}/${phase.discoveredMatches} played singles with valid serve statistics · ${phase.identifiedSingles} unique singles identified")
+                            if (phase.scorelessRows > 0) append(" · ${phase.scorelessRows} scoreless/pending result")
+                            if (phase.noPlayRows > 0) append(" · ${phase.noPlayRows} walkover/no-play")
+                            if (phase.missingStatsMatches > 0) append(" · ${phase.missingStatsMatches} completed singles missing statistics")
+                            if (phase.malformedStatsMatches > 0) append(" · ${phase.malformedStatsMatches} completed singles with invalid statistics")
                         })
                     }.onFailure { error ->
                         if (error is CancellationException) throw error
                         val detail = error.message ?: "TML match statistics unavailable"
                         liveProgressByEvent = liveProgressByEvent +
-                            ("daviscup" to "TML · $detail")
-                        status("Davis Cup · TML · $detail")
+                            ("daviscupfinal8" to "TML · $detail")
+                        status("Davis Cup Final 8 · TML · $detail")
                     }
                 }
             }
