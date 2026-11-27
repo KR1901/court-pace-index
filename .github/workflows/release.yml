@@ -238,6 +238,12 @@ jobs:
 
       - name: Run unit tests
         if: ${{ steps.tag.outputs.skip != 'true' }}
+        env:
+          # Robolectric fetches Android SDK runtime JARs directly, outside Gradle's
+          # dependency repository resolution. Avoid repo1's observed HTTP 429 rate limit.
+          JAVA_TOOL_OPTIONS: >-
+            -Drobolectric.dependency.repo.url=https://repo.maven.apache.org/maven2
+            -Drobolectric.dependency.repo.id=mavenCentral
         run: |
           set -euo pipefail
           ./gradlew :app:testDebugUnitTest --no-daemon --max-workers=1 --stacktrace
