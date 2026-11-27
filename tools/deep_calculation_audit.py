@@ -464,7 +464,7 @@ def score_event(tid, event_rows, event_surface, profiles, global_stats,
 
 def config_grid():
     configs = {
-        "loeo_current_1_3": {
+        "loeo_unshrunk_1_3": {
             "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
             "pooled_return_fallback": True, "pooled_return_min_matches": 1,
         },
@@ -503,10 +503,22 @@ def config_grid():
     # Isolate shrinkage from profile-coverage changes: same three-match qualification,
     # with only the prior strength changed.
     for prior in (100.0, 150.0, 300.0):
-        configs[f"shrink_{int(prior)}_min3"] = {
+        config_name = (
+            "loeo_production_150_min3"
+            if prior == compute_speed.PROFILE_PRIOR_SERVICE_POINTS
+            else f"shrink_{int(prior)}_min3"
+        )
+        configs[config_name] = {
             "clay_weight": 1.0 / 3.0, "prior_points": prior, "min_matches": 3,
             "pooled_return_fallback": True, "pooled_return_min_matches": 1,
         }
+    # Isolate a 0.5 clay weight against the exact production profile policy:
+    # same 150-point prior, three-match surface qualification, and pooled-return fallback.
+    configs["weight_050_shrink_150_min3"] = {
+        "clay_weight": 0.5, "prior_points": compute_speed.PROFILE_PRIOR_SERVICE_POINTS,
+        "min_matches": compute_speed.MIN_MATCHES_PER_SURFACE,
+        "pooled_return_fallback": True, "pooled_return_min_matches": 1,
+    }
     configs["loeo_empirical_bayes_1_3_min3"] = {
         "clay_weight": 1.0 / 3.0, "prior_points": 0.0, "min_matches": 3,
         "pooled_return_fallback": True, "pooled_return_min_matches": 1,
@@ -1063,9 +1075,10 @@ def run_audit(seasons, boot, detail_ids):
 
     print("\nPAIRED BOOTSTRAP DIFFERENCES (candidate minus baseline; same resamples)")
     comparison_pairs = (
-        ("shrink_150_min3", "loeo_current_1_3"),
-        ("loeo_empirical_bayes_1_3_min3", "loeo_current_1_3"),
-        ("loeo_empirical_bayes_1_3_min3", "shrink_150_min3"),
+        ("loeo_production_150_min3", "loeo_unshrunk_1_3"),
+        ("loeo_empirical_bayes_1_3_min3", "loeo_unshrunk_1_3"),
+        ("loeo_empirical_bayes_1_3_min3", "loeo_production_150_min3"),
+        ("weight_050_shrink_150_min3", "loeo_production_150_min3"),
     )
     for candidate, baseline in comparison_pairs:
         deltas = paired_bootstrap_differences(bootstrap[candidate], bootstrap[baseline])
@@ -1084,8 +1097,9 @@ def run_audit(seasons, boot, detail_ids):
     print("variant                         train MAE   holdout MAE   heldout rho")
     sensitivity_names = [
         name for name in configs
-        if name == "loeo_current_1_3" or name.startswith("weight_clay_")
-        or name.startswith("shrink_") or name.startswith("weight_050_shrink_")
+        if name in {"loeo_unshrunk_1_3", "loeo_production_150_min3"}
+        or name.startswith("weight_clay_") or name.startswith("shrink_")
+        or name.startswith("weight_050_shrink_")
         or name.startswith("loeo_empirical_bayes")
     ]
     for name in sensitivity_names:
@@ -1135,7 +1149,7 @@ def run_audit(seasons, boot, detail_ids):
     latest_year = max(event_rows_by_season)
     latest_events = event_rows_by_season[latest_year]
     latest_details, latest_normalisers = detail_by_season[latest_year]
-    profile_bootstrap_variants = ("loeo_current_1_3", "shrink_150_min3",
+    profile_bootstrap_variants = ("loeo_unshrunk_1_3", "loeo_production_150_min3",
                                   "loeo_empirical_bayes_1_3_min3")
     for variant in profile_bootstrap_variants:
         if variant not in configs:
@@ -1161,11 +1175,11 @@ def run_audit(seasons, boot, detail_ids):
     # Recompute the season normaliser on every resample for the two most recent seasons.
     # This is the full uncertainty propagation requested by the audit council.
     print("\nFULL-PIPELINE EVENT BOOTSTRAP (profile + target matches + LOEO normaliser refit)")
-    production_config = configs["shrink_150_min3"]
+    production_config = configs["loeo_production_150_min3"]
     for year in detail_years:
         year_details, year_normalisers = detail_by_season[year]
         for tid in sorted(detail_ids):
-            item = year_details.get("shrink_150_min3", {}).get(tid)
+            item = year_details.get("loeo_production_150_min3", {}).get(tid)
             if not item:
                 continue
             interval = full_pipeline_bootstrap_interval(
@@ -1174,7 +1188,7 @@ def run_audit(seasons, boot, detail_ids):
                 seed=30000 + year + sum(ord(char) for char in tid),
             )
             if interval:
-                normaliser = year_normalisers["shrink_150_min3"]
+                normaliser = year_normalisers["loeo_production_150_min3"]
                 status = "standard" if item["ordinaryRatingEligible"] else "provisional (below 20 sides)"
                 print(f"  {year} {tid}: {status}, LOEO={item['raw'] / normaliser:.3f}, "
                       f"95% CI [{interval['low']:.3f},{interval['high']:.3f}], "
