@@ -43,6 +43,13 @@ jobs:
             calc-methodology-research-${{ runner.os }}-
             tennis-history-${{ runner.os }}-
 
+      - name: Probe ATP official Results Archive DOM (one-time)
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+          python tools/_atp_archive_probe.py | tee atp-archive-probe.log
+          cat atp-archive-probe.log >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run all Python tooling tests
         run: python3 -m unittest discover -s tools -p "test_*.py" -v
 
