@@ -57,8 +57,16 @@ TA_KEY_BY_ID = {
 
 
 def canonical_detail_id(value):
-    """Normalize CLI detail selectors through the same aliases as TA event keys."""
-    key = reference.tournament_key(str(value or "").strip())
+    """Normalize CLI detail selectors through production names and TA event aliases."""
+    raw = str(value or "").strip()
+    tournament_id = compute_speed.NAMES.get(raw)
+    if tournament_id is None:
+        tournament_id = next(
+            (value for name, value in compute_speed.NAMES.items()
+             if name.casefold() == raw.casefold()),
+            None,
+        )
+    key = str(tournament_id).casefold() if tournament_id else reference.tournament_key(raw)
     return TA_KEY_BY_ID.get(key, key.casefold())
 
 

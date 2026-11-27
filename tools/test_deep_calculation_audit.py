@@ -26,7 +26,7 @@ def match(event, winner_aces, loser_aces, surface="Clay"):
 
 class EventKeyNormalisationTests(unittest.TestCase):
     def test_rio_detail_aliases_resolve_to_the_same_tennis_abstract_key(self):
-        for label in ("Rio", "Rio de Janeiro", "Rio Open", "ATP Rio de Janeiro"):
+        for label in ("Rio", "Rio de Janeiro", "Rio Open", "ATP Rio de Janeiro", "rio open"):
             with self.subTest(label=label):
                 self.assertEqual("riodejaneiro", audit.event_id(label))
                 self.assertEqual("riodejaneiro", audit.canonical_detail_id(label))
