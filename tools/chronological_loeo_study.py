@@ -445,25 +445,18 @@ def run(start_year, end_year, crossfit_enabled=False, bootstrap_iterations=0, de
                 chronology_rule = "legacy_max_event_window_by_source_level"
                 event_quarantine_days = 0
 
-            # Legacy start-date rows keep their own maximum event window; daily editions
-            # are ordered by verified per-match dates, independently of the target source.
-            chronological_training = [
-                row for row in standard_rows
-                if compute_speed._row_precedes_target(
-                    row,
+            # Use the exact production chronology/profile helper, including its special
+            # opening-event fallback to the completed previous season. Reimplementing this
+            # selection in the study previously missed that fallback and created false
+            # production-parity failures in the first event of a season.
+            chrono_profiles, chrono_tour_rate, chronological_training = (
+                compute_speed._chronological_profiles_and_anchor(
+                    year,
+                    rows,
                     start_date,
-                    source_precision_by_event.get(
-                        compute_speed._source_event_key(row), "tournament_start",
-                    ),
+                    source_precision_by_event,
                     target_start_timestamp,
                 )
-            ]
-            chrono_profiles = fit_profiles(year, chronological_training)
-            # Match production: use this pre-target sample's tour rate directly;
-            # use the completed prior-year rate only when no same-season sample exists.
-            current_tour_rate = compute_speed.tour_average_ace_rate(chronological_training)
-            chrono_tour_rate = (
-                current_tour_rate if current_tour_rate is not None else prior_tour_rate
             )
 
             if chrono_tour_rate is None or not 0.0 < chrono_tour_rate < 1.0:
