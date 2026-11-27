@@ -159,7 +159,7 @@ def venue_zone(card,cindex):
 def representative(rows):
  counts=Counter((str(r.get("tourney_name") or "").strip(),
   str(r.get("tourney_date") or "").strip(),str(r.get("tourney_level") or "").strip()) for r in rows)
- n,d,l=counts.most_common(1)[0]
+ n,d,l=counts.most_common(1)[0][0]
  return {"tourney_id":str(rows[0].get("tourney_id") or "").strip(),
   "tourney_name":n,"tourney_date":d,"tourney_level":l}
 
