@@ -35,9 +35,11 @@ permissions:
   contents: write
 
 # Never let two dataset refreshes race to publish generated files to the same branch.
+# A newer main revision supersedes an older archive rebuild; keep the published dataset
+# aligned with the latest calculator and metadata code instead of queueing stale work.
 concurrency:
   group: court-pace-dataset-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   refresh:
