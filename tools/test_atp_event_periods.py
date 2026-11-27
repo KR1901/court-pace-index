@@ -153,6 +153,26 @@ class OfficialEventPeriodRegistryTests(unittest.TestCase):
         self.assertFalse(strict_davis["dateCoverageComplete"])
         self.assertEqual(["dc"], strict_davis["missingSourceEventIds"])
 
+    def test_official_supporting_source_is_preserved_and_host_checked(self):
+        supporting_url = (
+            "https://www.itftennis.com/en/tournament/world-team-cup/ger/1999/"
+            "m-tc-1999/draws-and-results/"
+        )
+        registry = self.registry([record(
+            supportingSourceUrl=supporting_url,
+            dateEvidenceNote="ATP end-date field is malformed; ITF confirms the event window.",
+        )])
+        period = registry["by_source_id"][(2026, "2026-1536")]
+        self.assertEqual(supporting_url, period["supportingSourceUrl"])
+
+        with self.assertRaises(EventPeriodError):
+            self.registry([record(
+                supportingSourceUrl="https://example.com/not-an-official-source",
+                dateEvidenceNote="not trusted",
+            )])
+        with self.assertRaises(EventPeriodError):
+            self.registry([record(supportingSourceUrl=supporting_url)])
+
     def test_duplicate_source_ids_and_unknown_timezones_are_rejected(self):
         with self.assertRaises(EventPeriodError):
             self.registry([

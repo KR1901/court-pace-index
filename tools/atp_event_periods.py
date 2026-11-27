@@ -88,6 +88,17 @@ def validate_record(raw: object) -> dict:
     if parsed_url.scheme != "https" or parsed_url.hostname not in {"atptour.com", "www.atptour.com"}:
         raise EventPeriodError("sourceUrl must be an HTTPS ATP Tour URL")
 
+    supporting_source_url = str(raw.get("supportingSourceUrl") or "").strip()
+    if supporting_source_url:
+        supporting_parsed = urlparse(supporting_source_url)
+        if (
+            supporting_parsed.scheme != "https"
+            or supporting_parsed.hostname not in {"itftennis.com", "www.itftennis.com"}
+        ):
+            raise EventPeriodError("supportingSourceUrl must be an HTTPS official ITF URL")
+        if not str(raw.get("dateEvidenceNote") or "").strip():
+            raise EventPeriodError("dateEvidenceNote is required when supportingSourceUrl is supplied")
+
     source_kind = str(raw.get("sourceKind") or "").strip()
     date_status = str(raw.get("dateStatus") or "").strip()
     if (source_kind, date_status) not in {

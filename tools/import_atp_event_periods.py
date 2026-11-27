@@ -47,6 +47,10 @@ def read_csv(path: Path) -> list[dict]:
                     "dateStatus": row["dateStatus"].strip(),
                     "verifiedAt": row["verifiedAt"].strip(),
                 }
+                for optional_field in ("supportingSourceUrl", "dateEvidenceNote"):
+                    optional_value = (row.get(optional_field) or "").strip()
+                    if optional_value:
+                        record[optional_field] = optional_value
                 validate_record(record)
             except (ValueError, TypeError, KeyError, json.JSONDecodeError, EventPeriodError) as exc:
                 raise EventPeriodError(f"CSV line {line_number}: {exc}") from exc
