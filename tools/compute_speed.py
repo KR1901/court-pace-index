@@ -18,6 +18,10 @@ from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError
 
 from davis_cup_policy import TML_DAVIS_CUP_SOURCE, is_supported_davis_cup_calculation_year
+from atp_event_periods import (
+    EventPeriodError, audit_source_coverage, completed_before,
+    load_event_periods, period_for_rows,
+)
 
 CACHE = os.path.join(os.path.dirname(__file__), "..", ".cache", "atp")
 MIRROR = "https://raw.githubusercontent.com/Aneeshers/tennis-sackmann-archive/main/atp/atp_matches_{}.csv"
@@ -685,6 +689,8 @@ LIVE_PROFILE_PRIOR_SERVICE_POINTS = 150.0
 MIN_EXPECTED_ACES = 0.0
 EXPECTED_ACES_FLOOR = 0.5
 _PROFILE_YEAR_CACHE = {}
+_STRICT_SEASON_ROWS_CACHE = {}
+_STRICT_PROFILE_MATCH_COUNTS = {}
 
 
 def _surface_priors(profiles):
@@ -1232,7 +1238,98 @@ def _chronological_profiles_and_anchor(
         return None, None, []
     return profiles, tour_rate, before
 
-def build_live_profiles(profile_year, current_profiles):
+def _strict_season_rows(year):
+    """Load and cache raw season rows for repeated event-by-event strict chronology fits."""
+    year = int(year)
+    if year not in _STRICT_SEASON_ROWS_CACHE:
+        _STRICT_SEASON_ROWS_CACHE[year] = load(year)
+    return _STRICT_SEASON_ROWS_CACHE[year]
+
+
+def _official_period_for_event_rows(year, event_rows, event_period_registry):
+    """Resolve the target to one or more mapped source editions of the same app event."""
+    tournament_ids = {_row_tournament_id(row) for row in event_rows}
+    if len(tournament_ids) != 1 or None in tournament_ids:
+        return None
+    return period_for_rows(
+        event_rows, year, event_period_registry,
+        expected_tournament_id=next(iter(tournament_ids)),
+    )
+
+
+def _strict_completed_event_rows(year, rows, target_period, event_period_registry):
+    """Use whole source editions only when an actual ATP Results Archive period has ended."""
+    by_source_id = defaultdict(list)
+    for row in rows:
+        if row.get("tourney_level") not in LEVELS:
+            continue
+        names = (row.get("winner_name") or "", row.get("loser_name") or "")
+        if any("/" in name or " & " in name or " and " in name.casefold() for name in names):
+            continue
+        source_id = str(row.get("tourney_id") or "").strip()
+        if source_id:
+            by_source_id[source_id].append(row)
+
+    selected = []
+    by_period = event_period_registry.get("by_source_id", {})
+    for source_id, source_rows in by_source_id.items():
+        period = by_period.get((int(year), source_id))
+        if completed_before(period, target_period):
+            selected.extend(source_rows)
+    # Only complete, valid ATP singles enter player profiles or normalisation scores.
+    return calculation_eligible_rows(valid_rows(selected))
+
+
+def _strict_chronological_profiles_and_anchor(year, rows, target_period, event_period_registry):
+    """Fit player profiles only from source editions fully completed before the target period."""
+    training_rows = _strict_completed_event_rows(year, rows, target_period, event_period_registry)
+    profile_year = int(year)
+    if not training_rows:
+        if int(year) <= PROFILE_HISTORY_START_YEAR:
+            return None, None, []
+        profile_year = int(year) - 1
+        prior_rows = _strict_completed_event_rows(
+            profile_year, _strict_season_rows(profile_year), target_period, event_period_registry,
+        )
+        if not prior_rows:
+            return None, None, []
+        training_rows = prior_rows
+
+    current_profiles = player_rates(training_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
+    profiles = build_live_profiles(
+        profile_year,
+        current_profiles,
+        strict_target_period=target_period,
+        event_period_registry=event_period_registry,
+    )
+    tour_rate = tour_average_ace_rate(training_rows)
+    if tour_rate is None or not 0.0 < tour_rate < 1.0:
+        return None, None, []
+    return profiles, tour_rate, training_rows
+
+
+def _strict_normalisation_anchor_rows(year, rows, target_period, profiles, tour_rate, event_period_registry):
+    """Normalise only against complete official ATP event periods earlier than the target."""
+    completed_rows = _strict_completed_event_rows(year, rows, target_period, event_period_registry)
+    anchor_scores = _normalisation_anchor_event_scores(completed_rows, profiles, tour_rate)
+    if anchor_scores:
+        used_rows = _normalisation_rows_for_scored_events(completed_rows, anchor_scores)
+        return used_rows, "completed_same_season_official_events", anchor_scores
+
+    if int(year) > PROFILE_HISTORY_START_YEAR:
+        prior_year = int(year) - 1
+        prior_rows = _strict_completed_event_rows(
+            prior_year, _strict_season_rows(prior_year), target_period, event_period_registry,
+        )
+        prior_scores = _normalisation_anchor_event_scores(prior_rows, profiles, tour_rate)
+        if prior_scores:
+            used_prior_rows = _normalisation_rows_for_scored_events(prior_rows, prior_scores)
+            return used_prior_rows, "prior_season_official_events", prior_scores
+
+    return [], "no_completed_official_event_anchor", {}
+
+
+def build_live_profiles(profile_year, current_profiles, strict_target_period=None, event_period_registry=None):
     """
     Build a broad live profile database from current-season plus prior ATP seasons.
 
@@ -1302,7 +1399,19 @@ def build_live_profiles(profile_year, current_profiles):
     lower_year = max(PROFILE_HISTORY_START_YEAR, profile_year - LIVE_PROFILE_FALLBACK_SEASONS)
     historical_profiles_by_name = defaultdict(list)
     for historical_year in range(profile_year - 1, lower_year - 1, -1):
-        historical = _profile_year_rates(historical_year)
+        if strict_target_period is None:
+            historical = _profile_year_rates(historical_year)
+        else:
+            if event_period_registry is None:
+                raise RuntimeError("strict profile history requires the official ATP event-period registry")
+            historical_rows = _strict_completed_event_rows(
+                historical_year,
+                _strict_season_rows(historical_year),
+                strict_target_period,
+                event_period_registry,
+            )
+            _STRICT_PROFILE_MATCH_COUNTS[historical_year] = len(historical_rows)
+            historical = player_rates(historical_rows)
         by_name = defaultdict(list)
         for player_id, previous in historical.items():
             key = name_key(previous)
@@ -1890,7 +1999,7 @@ def event_side_diagnostics(event_rows, profiles, tour_rate, retain_per_tail=10):
 
 
 
-def season_ratings(year, rows, source=None):
+def season_ratings(year, rows, source=None, event_period_registry=None, require_official_periods=False):
     """
     Chronological LOEO ratings using the finest trustworthy source chronology available.
 
@@ -1899,6 +2008,8 @@ def season_ratings(year, rows, source=None):
     archives use a conservative maximum event-window bound by source level, not a fixed
     quarantine shared by Grand Slams, Masters, ATP 500s and ATP 250s.
     """
+    if require_official_periods and event_period_registry is None:
+        raise EventPeriodError("strict CALC requires the official ATP event-period registry")
     source_precision_by_event = _source_event_date_granularity(rows, source)
     source_precision_summary = _source_match_date_granularity(rows, source)
     target_rows = valid_rows(rows)
@@ -1932,31 +2043,61 @@ def season_ratings(year, rows, source=None):
         dates = [value for value in dates if value is not None]
         if not dates:
             continue
-        event_start = min(dates)
         event_last_observed_match_date = max(dates)
-        target_start_timestamp = _event_first_match_timestamp(chronology_rows)
-        target_date_granularity = _event_date_granularity(chronology_rows, source_precision_by_event)
-        if target_date_granularity != "match_day":
+        target_period = None
+        if require_official_periods:
+            target_period = _official_period_for_event_rows(year, chronology_rows, event_period_registry)
+            if target_period is None:
+                # Coverage is audited independently in main(); fail closed here too.
+                continue
+            if int(year) < date.today().year and (
+                target_period["sourceKind"] != "results_archive"
+                or target_period["dateStatus"] != "actual"
+            ):
+                continue
+            if (
+                int(year) == date.today().year
+                and target_period["dateStatus"] == "scheduled"
+                and date.fromisoformat(target_period["endDate"]) < date.today()
+            ):
+                # A stale calendar-only period cannot substitute for the completed archive.
+                continue
+            event_start = date.fromisoformat(target_period["startDate"])
+            event_end = date.fromisoformat(target_period["endDate"])
             event_last_observed_match_date = None
-        if target_start_timestamp is not None:
-            chronology_precision = "match_timestamp"
-            chronology_rule = "strictly_before_target_match_timestamp_utc"
+            target_start_timestamp = target_period["_start_utc"]
+            target_date_granularity = "official_event_period"
+            chronology_precision = "official_atp_event_period"
+            chronology_rule = "strictly_before_target_full_official_event_period"
             quarantine_days = 0
-        elif target_date_granularity == "match_day":
-            chronology_precision = "match_day"
-            chronology_rule = "strictly_before_target_local_match_day"
-            quarantine_days = 0
+            profiles, tour_rate, training_rows = _strict_chronological_profiles_and_anchor(
+                year, rows, target_period, event_period_registry,
+            )
         else:
-            chronology_precision = "tournament_start"
-            chronology_rule = "legacy_max_event_window_by_source_level"
-            quarantine_days = 0
+            event_start = min(dates)
+            event_end = None
+            target_start_timestamp = _event_first_match_timestamp(chronology_rows)
+            target_date_granularity = _event_date_granularity(chronology_rows, source_precision_by_event)
+            if target_date_granularity != "match_day":
+                event_last_observed_match_date = None
+            if target_start_timestamp is not None:
+                chronology_precision = "match_timestamp"
+                chronology_rule = "strictly_before_target_match_timestamp_utc"
+                quarantine_days = 0
+            elif target_date_granularity == "match_day":
+                chronology_precision = "match_day"
+                chronology_rule = "strictly_before_target_local_match_day"
+                quarantine_days = 0
+            else:
+                chronology_precision = "tournament_start"
+                chronology_rule = "legacy_max_event_window_by_source_level"
+                quarantine_days = 0
 
-        # Legacy rows use their own level's maximum possible event window. A source row
-        # enters training only after that entire window is safely before the target.
-        training_precision_by_event = source_precision_by_event
-        profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
-            year, rows, event_start, training_precision_by_event, target_start_timestamp,
-        )
+            # Legacy rows remain available only to non-production research/test calls.
+            training_precision_by_event = source_precision_by_event
+            profiles, tour_rate, training_rows = _chronological_profiles_and_anchor(
+                year, rows, event_start, training_precision_by_event, target_start_timestamp,
+            )
         if profiles is None or tour_rate is None:
             continue
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
@@ -1971,15 +2112,23 @@ def season_ratings(year, rows, source=None):
         aces = sum(num(row["w_ace"]) + num(row["l_ace"]) for row in event_rows)
         points = sum(num(row["w_svpt"]) + num(row["l_svpt"]) for row in event_rows)
         event_raw = sum(ratios) / sides
-        # Profile training may use earlier matches from an event still in progress.
-        # The normalisation anchor is stricter: only fully completed earlier event editions
-        # qualify, with the prior completed season as fallback when no stable cohort exists.
-        anchor_rows, normalisation_anchor_mode, eligible_anchor = _chronological_normalisation_anchor_rows(
-            year, rows, tid, event_start, profiles, tour_rate, target_start_timestamp,
-            source_precision_by_event=training_precision_by_event,
-        )
+        if require_official_periods:
+            # In strict mode, profile fitting and normalisation share the same whole-event
+            # completed-before-target rule. The target never supplies its own baseline.
+            anchor_rows, normalisation_anchor_mode, eligible_anchor = _strict_normalisation_anchor_rows(
+                year, rows, target_period, profiles, tour_rate, event_period_registry,
+            )
+        else:
+            # Research/test compatibility path for comparing the legacy date heuristics.
+            anchor_rows, normalisation_anchor_mode, eligible_anchor = _chronological_normalisation_anchor_rows(
+                year, rows, tid, event_start, profiles, tour_rate, target_start_timestamp,
+                source_precision_by_event=source_precision_by_event,
+            )
         if eligible_anchor:
             mean_raw = sum(value["raw"] for value in eligible_anchor.values()) / len(eligible_anchor)
+        elif require_official_periods:
+            # No preceding official-event baseline means no defensible CALC rating.
+            continue
         else:
             mean_raw = event_raw
             normalisation_anchor_mode = "target_self_fallback_no_prior_anchor"
@@ -1988,34 +2137,44 @@ def season_ratings(year, rows, source=None):
         same_day_excluded = 0
         date_interval_excluded = 0
         legacy_fallback_buffer_excluded = 0
-        eligible_training_population = calculation_eligible_rows(valid_rows(rows))
-        for row in eligible_training_population:
-            if _row_tournament_id(row) == tid:
-                continue
-            row_date = _match_date(row)
-            if row_date is None:
-                continue
-            row_precision = training_precision_by_event.get(
-                _source_event_key(row), "tournament_start",
-            )
-            row_end_timestamp = _match_end_timestamp(row)
-            timestamp_comparable = target_start_timestamp is not None and row_end_timestamp is not None
-            if timestamp_comparable and row_end_timestamp < target_start_timestamp:
-                continue
-            if row_precision == "match_day":
-                if row_date == event_start:
-                    same_day_excluded += 1
-                elif (
-                    row_date < event_start
-                    and not _row_precedes_target(
-                        row, event_start, row_precision, target_start_timestamp,
-                    )
+        if require_official_periods:
+            # The strict sample is event-level: no individual early-round matches from a
+            # concurrent tournament enter training, and no level-duration fallback exists.
+            legacy_fallback_training_matches = 0
+        else:
+            eligible_training_population = calculation_eligible_rows(valid_rows(rows))
+            for row in eligible_training_population:
+                if _row_tournament_id(row) == tid:
+                    continue
+                row_date = _match_date(row)
+                if row_date is None:
+                    continue
+                row_precision = training_precision_by_event.get(
+                    _source_event_key(row), "tournament_start",
+                )
+                row_end_timestamp = _match_end_timestamp(row)
+                timestamp_comparable = target_start_timestamp is not None and row_end_timestamp is not None
+                if timestamp_comparable and row_end_timestamp < target_start_timestamp:
+                    continue
+                if row_precision == "match_day":
+                    if row_date == event_start:
+                        same_day_excluded += 1
+                    elif (
+                        row_date < event_start
+                        and not _row_precedes_target(
+                            row, event_start, row_precision, target_start_timestamp,
+                        )
+                    ):
+                        date_interval_excluded += 1
+                elif not _legacy_event_window_precedes_target(
+                    row, event_start, target_start_timestamp,
                 ):
-                    date_interval_excluded += 1
-            elif not _legacy_event_window_precedes_target(
-                row, event_start, target_start_timestamp,
-            ):
-                legacy_fallback_buffer_excluded += 1
+                    legacy_fallback_buffer_excluded += 1
+            legacy_fallback_training_matches = sum(
+                1 for row in training_rows
+                if training_precision_by_event.get(_source_event_key(row), "tournament_start")
+                != "match_day"
+            )
 
         details[tid] = {
             "raw": event_raw,
@@ -2034,24 +2193,36 @@ def season_ratings(year, rows, source=None):
                 if target_start_timestamp is not None else event_start.isoformat()
             ),
             "event_start_date": event_start.isoformat(),
+            "event_end_date": event_end.isoformat() if event_end is not None else None,
+            "event_period_timezone": target_period.get("timeZone") if target_period else None,
+            "event_period_source_url": target_period.get("sourceUrl") if target_period else None,
+            "event_period_source_kind": target_period.get("sourceKind") if target_period else None,
+            "event_period_date_status": target_period.get("dateStatus") if target_period else None,
             "event_last_observed_match_date": (
                 event_last_observed_match_date.isoformat()
                 if event_last_observed_match_date is not None else None
             ),
             "chronology_precision": chronology_precision,
             "target_date_granularity": target_date_granularity,
-            "source_date_granularity": source_precision_summary,
+            "source_date_granularity": (
+                "official_event_period_registry" if require_official_periods
+                else source_precision_summary
+            ),
             "chronology_rule": chronology_rule,
             "quarantine_days": quarantine_days,
-            "training_match_date_max": max(training_dates).isoformat() if training_dates else None,
+            "training_match_date_max": (
+                None if require_official_periods
+                else (max(training_dates).isoformat() if training_dates else None)
+            ),
+            "training_source_event_count": len({
+                str(row.get("tourney_id") or "").strip()
+                for row in training_rows
+                if str(row.get("tourney_id") or "").strip()
+            }),
             "same_day_excluded_matches": same_day_excluded,
             "date_interval_excluded_matches": date_interval_excluded,
             "legacy_fallback_buffer_excluded_matches": legacy_fallback_buffer_excluded,
-            "legacy_fallback_training_matches": sum(
-                1 for row in training_rows
-                if training_precision_by_event.get(_source_event_key(row), "tournament_start")
-                != "match_day"
-            ),
+            "legacy_fallback_training_matches": legacy_fallback_training_matches,
         }
 
     # Small events receive a CALC rating too, but do not move the season anchor. Prefer
@@ -2096,6 +2267,11 @@ def season_ratings(year, rows, source=None):
             "calculationDiagnostics": {
                 "chronologicalCutoff": item["chronology_cutoff"],
                 "eventStartDate": item["event_start_date"],
+                "eventEndDate": item["event_end_date"],
+                "eventTimeZone": item["event_period_timezone"],
+                "eventPeriodSourceUrl": item["event_period_source_url"],
+                "eventPeriodSourceKind": item["event_period_source_kind"],
+                "eventPeriodDateStatus": item["event_period_date_status"],
                 "eventLastObservedMatchDate": item["event_last_observed_match_date"],
                 "chronologyPrecision": item["chronology_precision"],
                 "targetDateGranularity": item["target_date_granularity"],
@@ -2105,12 +2281,19 @@ def season_ratings(year, rows, source=None):
                 "normalisationAnchorEvents": item["normalisation_anchor_event_count"],
                 "normalisationAnchorMatches": item["normalisation_anchor_matches"],
                 "trainingMatchDateMax": item["training_match_date_max"],
+                "trainingSourceEvents": item["training_source_event_count"],
                 "sameDayExcludedMatches": item["same_day_excluded_matches"],
                 "dateIntervalExcludedMatches": item["date_interval_excluded_matches"],
                 "legacyFallbackEventWindowExcludedMatches": item["legacy_fallback_buffer_excluded_matches"],
                 "legacyFallbackTrainingMatches": item["legacy_fallback_training_matches"],
-                "legacyMaxEventDaysByLevel": LEGACY_MAX_EVENT_DAYS_BY_LEVEL,
-                "legacyUnknownMaxEventDays": LEGACY_UNKNOWN_MAX_EVENT_DAYS,
+                "legacyMaxEventDaysByLevel": (
+                    None if item["chronology_precision"] == "official_atp_event_period"
+                    else LEGACY_MAX_EVENT_DAYS_BY_LEVEL
+                ),
+                "legacyUnknownMaxEventDays": (
+                    None if item["chronology_precision"] == "official_atp_event_period"
+                    else LEGACY_UNKNOWN_MAX_EVENT_DAYS
+                ),
                 "quarantineDays": 0,
                 "completedMatches": item["matches"],
                 "adjustedServerSides": item["sides"],
@@ -2244,6 +2427,17 @@ def preserve_validated_davis_cup_history(
 
 
 def main():
+    write_mode = "--write" in sys.argv
+    event_period_registry = None
+    if write_mode:
+        # A production history write is blocked until the complete permissioned official
+        # event-period registry is supplied. Research/test calls remain available separately.
+        event_period_registry = load_event_periods(require_non_empty=True)
+        print(
+            f"strict official ATP event periods loaded · "
+            f"{len(event_period_registry['records'])} unique editions"
+        )
+
     published_path = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main",
                                   "assets", "pace_dataset.json")
     published = json.load(open(published_path))
@@ -2254,6 +2448,7 @@ def main():
     season_sources = {}
     season_source_notes = {}
     davis_cup_coverage = {}
+    event_period_coverage = {}
     prior_history_path = os.path.join(
         os.path.dirname(__file__), "..", "data", "speed_history.json",
     )
@@ -2271,6 +2466,27 @@ def main():
                 print(f"{year}: archive not published yet; skipping current-year history")
                 continue
             raise
+        if write_mode:
+            _STRICT_SEASON_ROWS_CACHE[year] = rows
+            coverage = audit_source_coverage(
+                rows, year, event_period_registry,
+                tournament_id_resolver=_row_tournament_id,
+                require_actual=(year < date.today().year),
+            )
+            event_period_coverage[str(year)] = coverage
+            print(
+                f"{year}: official event-period coverage "
+                f"{coverage['coveredSourceEvents']}/{coverage['identifiedSourceEvents']} · "
+                f"{coverage['actualResultsArchivePeriods']} actual · "
+                f"{coverage['scheduledCalendarPeriods']} scheduled"
+            )
+            if not coverage["dateCoverageComplete"]:
+                missing_preview = ", ".join(coverage["missingSourceEventIds"][:12])
+                raise EventPeriodError(
+                    f"{year}: official ATP date coverage is not 100%; "
+                    f"{len(coverage['missingSourceEventIds'])} missing/mismapped source event IDs"
+                    + (f" ({missing_preview})" if missing_preview else "")
+                )
         if year == date.today().year:
             audit = davis_cup_coverage_audit(rows, year)
             audit["source"] = SOURCE_BY_YEAR.get(year, "unknown")
@@ -2287,14 +2503,18 @@ def main():
                 f"{audit['completedMalformedStats']} malformed stats"
             )
         current_source = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
-        ratings = season_ratings(year, rows, source=current_source)
+        ratings = season_ratings(
+            year, rows, source=current_source,
+            event_period_registry=event_period_registry,
+            require_official_periods=write_mode,
+        )
         if year == date.today().year:
             ratings = attach_davis_cup_source_coverage(
                 ratings, davis_cup_coverage.get(str(year), {})
             )
         published_source = current_source
         source_note = current_source
-        if year < date.today().year:
+        if year < date.today().year and not write_mode:
             ratings, published_source, retained_ids = preserve_validated_davis_cup_history(
                 year,
                 ratings,
@@ -2342,9 +2562,18 @@ def main():
         profile_year = current_year
         excluded_live_event_ids = []
         excluded_live_event_matches = 0
+        live_cutoff = {
+            "season": current_year,
+            "eventId": "__live_as_of__",
+            "_start_utc": datetime.now(timezone.utc),
+            "_event_keys": set(),
+        }
         if live_manifest["fresh"]:
             try:
-                all_profile_rows = calculation_eligible_rows(valid_rows(load(profile_year)))
+                live_rows = _strict_season_rows(profile_year)
+                all_profile_rows = _strict_completed_event_rows(
+                    profile_year, live_rows, live_cutoff, event_period_registry,
+                )
             except HTTPError:
                 all_profile_rows = []
             excluded_live_event_ids = live_manifest["eventIds"]
@@ -2353,9 +2582,16 @@ def main():
         else:
             profile_year = current_year - 1
             print(f"live manifest stale; using completed season {profile_year}: {live_manifest['reason']}")
-            profile_rows = calculation_eligible_rows(valid_rows(load(profile_year)))
+            prior_rows = _strict_season_rows(profile_year)
+            profile_rows = _strict_completed_event_rows(
+                profile_year, prior_rows, live_cutoff, event_period_registry,
+            )
         current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
-        profiles = build_live_profiles(profile_year, current_profiles)
+        profiles = build_live_profiles(
+            profile_year, current_profiles,
+            strict_target_period=live_cutoff,
+            event_period_registry=event_period_registry,
+        )
         tour_rate = tour_average_ace_rate(profile_rows)
         profile_fit_coverage = ensure_event_profiles(profile_rows, profiles, tour_rate)
         raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
@@ -2363,9 +2599,16 @@ def main():
             profile_year = current_year - 1
             excluded_live_event_ids = []
             excluded_live_event_matches = 0
-            profile_rows = calculation_eligible_rows(valid_rows(load(profile_year)))
+            prior_rows = _strict_season_rows(profile_year)
+            profile_rows = _strict_completed_event_rows(
+                profile_year, prior_rows, live_cutoff, event_period_registry,
+            )
             current_profiles = player_rates(profile_rows, prior_points=PROFILE_PRIOR_SERVICE_POINTS)
-            profiles = build_live_profiles(profile_year, current_profiles)
+            profiles = build_live_profiles(
+                profile_year, current_profiles,
+                strict_target_period=live_cutoff,
+                event_period_registry=event_period_registry,
+            )
             tour_rate = tour_average_ace_rate(profile_rows)
             profile_fit_coverage = ensure_event_profiles(profile_rows, profiles, tour_rate)
             raw_events, _, _, _ = event_raw_scores(profile_rows, profiles, tour_rate=tour_rate)
@@ -2421,14 +2664,12 @@ def main():
         if tour_rate is None or not 0.0 < tour_rate < 1.0:
             raise RuntimeError(f"cannot build calibrated live baseline for {current_year}: invalid tour-average ace rate")
         history_years_loaded = sorted(
-            year for year in _PROFILE_YEAR_CACHE
+            year for year in _STRICT_PROFILE_MATCH_COUNTS
             if PROFILE_HISTORY_START_YEAR <= year < profile_year
         )
         history_player_matches = sum(
-            int(profile.get("pooled_serve_matches", 0))
-            for year in history_years_loaded
-            for profile in _PROFILE_YEAR_CACHE[year].values()
-        ) // 2
+            _STRICT_PROFILE_MATCH_COUNTS[year] for year in history_years_loaded
+        )
         baseline = {
             "season": current_year,
             "profileSeason": profile_year,
@@ -2441,6 +2682,8 @@ def main():
             "normalisation": normalisation,
             "generated": datetime.now(timezone.utc).isoformat(),
             "sourceMetadata": SOURCE_METADATA_BY_YEAR.get(profile_year),
+            "eventPeriodRegistryRecords": len(event_period_registry["records"]),
+            "eventPeriodStrict": True,
             "liveFeedGenerated": live_manifest.get("generated"),
             "liveFeedFresh": bool(live_manifest.get("fresh")),
             "excludedEventIds": excluded_live_event_ids,
@@ -2481,10 +2724,15 @@ def main():
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         payload = {
             "generated": date.today().isoformat(),
-            "method": "chronological leave-one-tournament-out calibrated server/returner expected-aces odds ratio using actual match timestamps/days where available and conservative level-based event-window bounds for legacy tournament-start-only archives; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
-            "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
+            "method": "strict chronological leave-one-tournament-out calibrated server/returner expected-aces odds ratio using permissioned official ATP event start/end periods; only complete source event periods ending before the target period start may train player profiles or define normalisation; same-week, overlapping, scheduled-only source periods, missing dates and incomparable periods are excluded; no level-duration estimate or target-self normalisation fallback; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
+            "source": "Jeff Sackmann ATP and TennisMyLife match-stat archives; official ATP Results Archive/calendar event-period registry imported only from an ATP-authorised export or other authorised delivery.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
             "season_source_notes": season_source_notes,
+            "event_period_coverage": event_period_coverage,
+            "event_period_registry": {
+                "recordCount": len(event_period_registry["records"]) if event_period_registry else 0,
+                "strictProductionMode": bool(write_mode),
+            },
             "source_metadata": {
                 **{str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR},
                 **retained_source_metadata,

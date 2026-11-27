@@ -10,6 +10,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import compute_speed
 from davis_cup_policy import is_supported_davis_cup_calculation_year
+from atp_event_periods import load_event_periods, period_for_rows
 
 
 def profile(
@@ -2226,6 +2227,138 @@ class HistoricalEventAliasRegressionTests(unittest.TestCase):
         self.assertFalse(
             compute_speed._event_completion_precedes_target(provisional, date(2026, 10, 3), None)
         )
+
+
+class StrictOfficialChronologyTests(unittest.TestCase):
+    def test_only_whole_actual_event_periods_completed_before_target_train_profiles(self):
+        def record(event_id, tournament_id, source_id, start, end, zone, kind="results_archive", status="actual"):
+            return {
+                "season": 2026,
+                "eventId": event_id,
+                "tournamentId": tournament_id,
+                "sourceEventIds": [source_id],
+                "startDate": start,
+                "endDate": end,
+                "timeZone": zone,
+                "sourceUrl": f"https://www.atptour.com/en/scores/archive/{tournament_id}/1/2026/results",
+                "sourceKind": kind,
+                "dateStatus": status,
+                "verifiedAt": "2026-11-27",
+            }
+
+        records = [
+            record("2026-madrid", "madrid", "2026-1536", "2026-04-22", "2026-05-03", "Europe/Madrid"),
+            record("2026-hongkong", "hongkong", "2026-1537", "2026-04-30", "2026-05-06", "Asia/Hong_Kong"),
+            record("2026-rome", "rome", "2026-1538", "2026-05-06", "2026-05-17", "Europe/Rome"),
+            record("2026-dallas", "dallas", "2026-1539", "2026-05-01", "2026-05-07",
+                   "America/Chicago", "calendar", "scheduled"),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "periods.json"
+            path.write_text(json.dumps({"schemaVersion": 1, "records": records}), encoding="utf-8")
+            registry = load_event_periods(path)
+
+        def match(name, source_id):
+            return {
+                "tourney_id": source_id,
+                "tourney_name": name,
+                "tourney_level": "M",
+                "surface": "Hard",
+                "tourney_date": "20260501",
+                "winner_id": "p1",
+                "loser_id": "p2",
+                "winner_name": "Player One",
+                "loser_name": "Player Two",
+                "score": "6-3 6-4",
+                "w_svpt": 100,
+                "l_svpt": 100,
+                "w_ace": 8,
+                "l_ace": 8,
+            }
+
+        rows = [
+            match("Madrid Masters", "2026-1536"),
+            match("Hong Kong", "2026-1537"),
+            match("Rome Masters", "2026-1538"),
+            match("Dallas Open", "2026-1539"),
+        ]
+        target_rows = [rows[2]]
+        target_period = period_for_rows(target_rows, 2026, registry, expected_tournament_id="rome")
+        self.assertIsNotNone(target_period)
+
+        training = compute_speed._strict_completed_event_rows(2026, rows, target_period, registry)
+        self.assertEqual({"Madrid Masters"}, {row["tourney_name"] for row in training})
+        self.assertNotIn("Hong Kong", {row["tourney_name"] for row in training})
+        self.assertNotIn("Rome Masters", {row["tourney_name"] for row in training})
+        self.assertNotIn("Dallas Open", {row["tourney_name"] for row in training})
+
+    def test_official_period_mapping_must_match_app_tournament_identity(self):
+        record = {
+            "season": 2026,
+            "eventId": "2026-madrid",
+            "tournamentId": "madrid",
+            "sourceEventIds": ["2026-1536"],
+            "startDate": "2026-04-22",
+            "endDate": "2026-05-03",
+            "timeZone": "Europe/Madrid",
+            "sourceUrl": "https://www.atptour.com/en/scores/archive/madrid/1/2026/results",
+            "sourceKind": "results_archive",
+            "dateStatus": "actual",
+            "verifiedAt": "2026-11-27",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "periods.json"
+            path.write_text(json.dumps({"schemaVersion": 1, "records": [record]}), encoding="utf-8")
+            registry = load_event_periods(path)
+        row = {
+            "tourney_id": "2026-1536",
+            "tourney_name": "Rome Masters",
+        }
+        self.assertIsNone(compute_speed._official_period_for_event_rows(2026, [row], registry))
+
+    def test_strict_normalisation_has_no_target_self_fallback(self):
+        target = {
+            "season": 1991,
+            "eventId": "1991-target",
+            "startDate": "1991-02-01",
+            "endDate": "1991-02-07",
+            "_start_utc": datetime(1991, 2, 1, tzinfo=timezone.utc),
+        }
+        with patch.object(compute_speed, "_strict_completed_event_rows", return_value=[]), \
+             patch.object(compute_speed, "_normalisation_anchor_event_scores", return_value={}):
+            rows, mode, scores = compute_speed._strict_normalisation_anchor_rows(
+                1991, [], target, {}, 0.08, {"by_source_id": {}},
+            )
+        self.assertEqual([], rows)
+        self.assertEqual("no_completed_official_event_anchor", mode)
+        self.assertEqual({}, scores)
+
+
+    def test_strict_profile_history_diagnostics_use_the_strict_source_cache(self):
+        compute_speed._STRICT_PROFILE_MATCH_COUNTS.clear()
+        source_rows = [
+            {"tourney_id":"1991-1", "tourney_name":"A", "tourney_level":"M"},
+            {"tourney_id":"1991-2", "tourney_name":"B", "tourney_level":"250"},
+        ]
+        with (
+            patch.object(compute_speed, "_strict_season_rows", return_value=[{"source":"1991"}]),
+            patch.object(compute_speed, "_strict_completed_event_rows", return_value=source_rows),
+            patch.object(compute_speed, "player_rates", return_value={}),
+        ):
+            compute_speed.build_live_profiles(
+                1992,
+                {},
+                strict_target_period={
+                    "season":1992,
+                    "eventId":"1992-target",
+                    "_start_utc":datetime(1992, 1, 1, tzinfo=timezone.utc),
+                    "_event_keys":set(),
+                },
+                event_period_registry={"by_source_id":{}},
+            )
+        self.assertEqual(2, compute_speed._STRICT_PROFILE_MATCH_COUNTS[1991])
+        compute_speed._STRICT_PROFILE_MATCH_COUNTS.clear()
+
 
 
 

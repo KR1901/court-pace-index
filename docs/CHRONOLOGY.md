@@ -1,33 +1,63 @@
 # Chronological tournament ratings
 
-## Why the 14-day quarantine was removed
+## Production chronology contract
 
-The previous rule used a fixed 14-day gap from the source tournament start date. It was a defensive workaround for archives that record only a tournament start/week date, but it treated every tournament alike and could discard genuinely earlier matches. It also did not prove that a long event had finished.
+The production `python3 tools/compute_speed.py --write` path now uses a strict official-event-period calculation. It no longer uses match-day inference, actual match clocks, the legacy tournament-start date or level-based maximum-duration estimates as a fallback for CALC production history.
 
-The revised calculation uses the most precise trustworthy chronology available for each source tournament edition.
+Every ATP source tournament edition must resolve by its exact source `tourney_id` to one official date-period record. The record contains the tournament's inclusive venue-local start/end dates, IANA timezone, first-party ATP source URL, source kind and verification date.
 
-## Chronology precedence
+The engine converts both local calendar boundaries to UTC:
+- event start: local midnight on the official start date;
+- event completion: local midnight after the inclusive official end date.
 
-1. **Actual UTC match times.** A training match is eligible only when its confirmed finish precedes the target event's first confirmed actual match start. A recorded UTC finish is preferred. Where the source supplies an actual UTC start and a minute-rounded duration, the finish estimate adds a one-minute safety margin. Scheduled/not-before order-of-play times are not actual starts and are never used as such.
-2. **Match calendar days and final-round result.** The current-season TennisMyLife feed contains multiple distinct `tourney_date` values and a `round` field within many tournament editions. Daily precision is enabled independently per source tournament ID only when the edition itself has multiple match days. A scored `F`/`FINAL` row identifies the final singles match day and can prove that a multi-day event has finished. Because the source dates are venue-local days without a time-zone field, the final match day is compared across the full civil-time range UTC-12 to UTC+14. Same-day and timezone-ambiguous matches are excluded.
-3. **Confirmed UTC event-end dates.** A completed event's confirmed UTC end date can prove that all its results precede the target. Provisional or local-only end dates are ignored.
-4. **Legacy maximum event window.** The historical Sackmann annual archive exposes tournament start/week dates, not match days or event-end dates. These rows use conservative maximum duration bounds by source level (Grand Slam 15 days; Masters/ATP umbrella 12; Finals/ATP 500/250 8; unknown 15). These are safety bounds, not claimed actual event end dates.
+A source tournament can enter **either** player-profile training or the season normalisation cohort only when:
+- it has a verified `results_archive` / `actual` period;
+- its complete UTC end boundary is no later than the target event's UTC start boundary;
+- it is not one of the source editions being rated as the target.
 
-## Concurrent tournaments and two separate samples
+Therefore a tournament that overlaps, shares any part of the target week, has an incomparable period, or has only a scheduled calendar period cannot train that rating. The whole source edition is excluded; an early round from a still-running event is not used. The target event never contributes to its own profile or normalisation baseline. If no completed official event can supply a normalisation anchor, the target is not rated; the old target-self normalisation fallback is disabled.
 
-Player-profile training and the season normalisation anchor are separate.
+Some app tournament IDs aggregate multiple ATP source editions (for example, separately named editions in a shared week). Each source edition still requires its own ATP registry record. The app target uses the union of those verified periods, and all of those source editions are excluded from training for that aggregate target.
 
-- **Profiles** may use an earlier result from a tournament that is still in progress, but only when that individual match is provably complete before the target begins. Earlier rounds of a concurrent event can therefore contribute without leaking later rounds.
-- **Normalisation** may use only fully completed earlier event editions. Partial concurrent events cannot set the 1.00 reference. If no stable completed same-season anchor exists, the prior completed season is used. The target event never contributes its own raw score to the anchor.
+## Date coverage is independent of match/stat eligibility
 
-## ATP Tour validation and limits
+Before a production write, the full annual source population is audited from 1991 onward, including identified singles with missing or malformed serve statistics. Every source edition must map to one official period. Historical years require an actual Results Archive record; the current season may use an official calendar record marked scheduled until its completed Results Archive period is available.
 
-The official ATP 2026 calendar publishes event date ranges and illustrates concurrent weeks (for example, Brisbane 4–11 January and Hong Kong 5–11 January). The official Brisbane 2026 results archive groups results under individual daily headings. These first-party pages are used as manual validation references for calendar/match-day semantics; they are not ingested into the app as a database.
+A missing source ID, missing event period, duplicate mapping, wrong app tournament mapping, invalid IANA timezone, or unresolved source identity fails the refresh before any production dataset is written. The gate reports source-event date coverage independently of valid aces/service points and match-count eligibility.
 
-An ATP order-of-play "start" or "not before" time is a scheduled time, not proof of when a match actually started or finished. Exact same-day ordering is enabled only when a source supplies a timezone-aware actual start plus a reliable finish or duration.
+Once date coverage passes, the existing match-stat and sample rules still apply. A tournament can have a valid official period and still be omitted because it has no eligible serve-stat sample, no usable prior player profiles, or no completed earlier normalisation cohort. These are sample/calculation exclusions, not date-coverage failures.
 
-No ATP website scraper or bulk extraction is included. ATP's terms prohibit systematic retrieval and compiling of its website content without prior express written permission. The official calendar/results pages are cited as manual validation references only. See [ATP Terms and Conditions](https://www.atptour.com/en/terms-and-conditions), the [official 2026 ATP Tour calendar](https://www.atptour.com/en/news/what-is-the-2026-atp-tour-calendar), the [ATP tournament calendar](https://www.atptour.com/en/tournaments/), and the [Brisbane 2026 results archive](https://www.atptour.com/en/scores/archive/brisbane/339/2026/results).
+## Official ATP source and collection permission
 
-## Diagnostics
+The ATP Results Archive publishes historical event date spans, including 1991. The official season calendar publishes scheduled date spans. Results Archive periods are the preferred source for completed editions because schedules can change.
 
-Each CALC event records its target start and last observed match day where available, chronology precision/rule, latest training match day, exclusions due to same-day/time-zone ambiguity/legacy event window, source-level duration bounds, and normalisation anchor mode and counts. A zero-day quarantine means the blanket 14-day rule is not applied; it does not mean every historical row has exact match timestamps.
+ATP's published terms expressly prohibit systematic retrieval of website content to create or compile a collection, compilation, database or directory without ATP's prior express written permission. The same terms reserve rights over website scores, statistics and other content. A public page being viewable does not grant permission for bulk extraction. This repository therefore **does not include an ATP website scraper** and does not bulk-transcribe archive pages.
+
+Official references:
+- [ATP Terms and Conditions, section 7 — Prohibited Uses](https://www.atptour.com/en/terms-and-conditions-app)
+- [ATP Results Archive — 1991](https://www.atptour.com/en/scores/results-archive?year=1991)
+- [ATP Results Archive](https://www.atptour.com/en/scores/results-archive)
+- [Official 2026 ATP Tour calendar](https://www.atptour.com/en/news/what-is-the-2026-atp-tour-calendar)
+
+## Importing an authorised event-period export
+
+The registry contract is in `tools/atp_event_periods.schema.json`; the empty starter registry is `data/atp_event_periods.json`.
+
+When an ATP-authorised export or another expressly authorised delivery is available, convert it to CSV with these columns:
+
+`season,eventId,tournamentId,sourceEventIds,startDate,endDate,timeZone,sourceUrl,sourceKind,dateStatus,verifiedAt`
+
+`sourceEventIds` accepts a semicolon-separated list or a JSON string array. Example command:
+
+```bash
+python3 tools/import_atp_event_periods.py --input authorised-atp-event-periods.csv
+```
+
+The importer validates every record, source URL, date, timezone and global source-ID uniqueness before atomically updating the JSON registry. It performs no network requests. Use `--replace` only when the input is a complete replacement registry.
+
+## Current repository status
+
+The strict registry loader, authorised-export importer, source-coverage audit and strict CALC code path are implemented and unit-tested. The checked-in registry is intentionally empty because ATP bulk collection is not authorised under the currently published terms and no permissioned export has been provided.
+
+Consequently, production `--write` is expected to fail closed until a complete authorised registry for the source editions from 1991 onward is imported. Do not remove that gate or republish old estimated chronology as though it were official.
+

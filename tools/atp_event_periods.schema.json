@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://courtpace.invalid/schemas/atp-event-periods.schema.json",
+  "title": "ATP official event periods",
+  "description": "Permissioned first-party ATP event-period records. This schema does not grant permission to retrieve or compile ATP content.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "records"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "season",
+          "eventId",
+          "tournamentId",
+          "sourceEventIds",
+          "startDate",
+          "endDate",
+          "timeZone",
+          "sourceUrl",
+          "sourceKind",
+          "dateStatus",
+          "verifiedAt"
+        ],
+        "properties": {
+          "season": {
+            "type": "integer",
+            "minimum": 1991
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tournamentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceEventIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "timeZone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://(www\\.)?atptour\\.com/"
+          },
+          "sourceKind": {
+            "enum": [
+              "results_archive",
+              "calendar"
+            ]
+          },
+          "dateStatus": {
+            "enum": [
+              "actual",
+              "scheduled"
+            ]
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    }
+  }
+}
