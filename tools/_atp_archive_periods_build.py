@@ -286,8 +286,11 @@ def main():
     "season":year,"eventId":f"atp-{year}-{sid}","tournamentId":tid,
     "sourceEventIds":[sid],"startDate":card["start"].isoformat(),
     "endDate":card["end"].isoformat(),"timeZone":card["timeZone"],
-    "sourceUrl":card["sourceUrl"],"sourceKind":"results_archive",
-    "dateStatus":"actual","verifiedAt":"2026-11-27"
+    **({"boundaryMode":"global_date_envelope"} if card.get("boundaryMode")=="global_date_envelope" else {}),
+    "sourceUrl":card["sourceUrl"],
+    "sourceKind":"calendar" if card["end"]>=date(2026,11,27) else "results_archive",
+    "dateStatus":"scheduled" if card["end"]>=date(2026,11,27) else "actual",
+    "verifiedAt":"2026-11-27"
    })
    mapped.add(sid); mapped_levels[e["tourney_level"]]+=1
    details.append({"season":year,"sourceEventId":sid,"sourceEventName":sname,
