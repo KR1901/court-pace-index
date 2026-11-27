@@ -263,7 +263,16 @@ def full_pipeline_crossfit_interval(
         sampled_rows = list(chronology_skeleton)
         for matches in by_event.values():
             sampled_rows.extend(rng.choices(matches, k=len(matches)))
-        ratings = compute_speed.season_ratings(year, sampled_rows, source=source)
+        # The outer bootstrap is the full-pipeline interval. Disable the production
+        # per-event conditional 1,000-draw CI nested inside each refit; it is neither
+        # used in the target raw score nor the cross-fitted normaliser and would turn
+        # 100 outer draws into millions of redundant inner resamples.
+        original_interval = compute_speed.bootstrap_event_interval
+        try:
+            compute_speed.bootstrap_event_interval = lambda *args, **kwargs: None
+            ratings = compute_speed.season_ratings(year, sampled_rows, source=source)
+        finally:
+            compute_speed.bootstrap_event_interval = original_interval
         target = ratings.get(target_event_id)
         if not target:
             continue

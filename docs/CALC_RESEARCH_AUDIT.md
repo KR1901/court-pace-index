@@ -54,7 +54,7 @@ The seven independently scored earlier standard-event anchors in that snapshot a
 
 Dividing the Rio raw score by this independent mean gives approximately **1.064**. This is a sensitivity comparison on the recorded eligible cohort, not a recommendation to overwrite 1.532: the cross-fitted implementation, cohort membership, and full-pipeline uncertainty must first be reproduced by the research workflow across the complete archive.
 
-The Rio interval currently bundled in the production payload is conditional on fixed profiles and a fixed normaliser. The optional `--bootstrap` mode resamples match records, refits production chronological ratings for the target and completed anchors, and recomputes the independent anchor on every draw. It preserves the original chronology skeleton so bootstrap sampling cannot erase the source evidence for an event's start or final-round completion.
+The Rio interval currently bundled in the production payload is conditional on fixed profiles and a fixed normaliser. The optional `--bootstrap` mode resamples match records, refits production chronological ratings for the target and completed anchors, and recomputes the independent anchor on every draw. It preserves the original chronology skeleton so bootstrap sampling cannot erase the source evidence for an event's start or final-round completion. Within each outer draw, the research harness temporarily suppresses the separate 1,000-draw conditional event intervals (restoring the original function in a `finally` block); those nested intervals do not enter the target raw score or cross-fitted normaliser, while the outer bootstrap captures the full refit uncertainty.
 
 ## Profile estimator and expected-aces research
 
