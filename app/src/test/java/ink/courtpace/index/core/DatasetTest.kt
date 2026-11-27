@@ -232,12 +232,27 @@ class DatasetTest {
             assertEquals(reading.matches, diagnostics.completedMatches)
             assertEquals(reading.adjustedServerSides, diagnostics.adjustedServerSides)
             assertEquals(diagnostics.completedMatches * 2, diagnostics.totalServerSides)
-            assertTrue(diagnostics.sideDiagnostics.isNotEmpty())
+            val frozenLegacyDavisCup = reading.t == "daviscup" &&
+                diagnostics.chronologySnapshotStatus == "legacy_frozen"
+            if (frozenLegacyDavisCup) {
+                // The 2016–2024 Davis Cup values are explicitly retained legacy
+                // snapshots: the historical source no longer preserves tie-level IDs
+                // needed to reconstruct per-side diagnostics under strict chronology.
+                assertTrue(reading.s in 2016..2024)
+                assertTrue(!diagnostics.chronologySnapshotNote.isNullOrBlank())
+                assertTrue(diagnostics.sideDiagnostics.isEmpty())
+            } else {
+                assertTrue(
+                    "only frozen historical Davis Cup targets may omit side diagnostics",
+                    diagnostics.chronologySnapshotStatus == null,
+                )
+                assertTrue(diagnostics.sideDiagnostics.isNotEmpty())
+                assertTrue(diagnostics.sideDiagnostics.all {
+                    it.server.isNotBlank() && it.returner.isNotBlank() &&
+                        it.expectedAces > 0.0 && it.actualExpectedRatio.isFinite()
+                })
+            }
             assertTrue(diagnostics.sideDiagnostics.size <= 20)
-            assertTrue(diagnostics.sideDiagnostics.all {
-                it.server.isNotBlank() && it.returner.isNotBlank() &&
-                    it.expectedAces > 0.0 && it.actualExpectedRatio.isFinite()
-            })
         }
         val comparisons = computed.filter { it.publishedSpeed != null }
         assertTrue("too few published/calculated comparisons: ${comparisons.size}", comparisons.size >= 31)
