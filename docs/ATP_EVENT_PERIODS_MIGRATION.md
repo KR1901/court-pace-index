@@ -66,3 +66,8 @@ After the registry reaches 100% coverage:
 ATP's [1999 Results Archive](https://www.atptour.com/en/scores/results-archive?year=1999) identifies the World Team Cup in Düsseldorf and confirms its start on **16 May**, but the displayed end-date field is malformed (`1 January, 1`). The official [ITF World Team Cup 1999 event record](https://www.itftennis.com/en/tournament/world-team-cup/ger/1999/m-tc-1999/draws-and-results/) confirms the edition dates as **16–22 May 1999**. The registry records `1999-05-16` through `1999-05-22` in `Europe/Berlin`, retains ATP's archive URL as the primary event/source reference, and stores the ITF page as explicit official-organiser corroboration for the malformed end-date field. The end date is not silently represented as a value displayed by ATP.
 
 The event has 26 match rows, including 21 with valid serve statistics, and is now included in source-event date coverage. The one-time ATP collector/cache/builder/probe/workflow remain removed; the application retains only the derived registry and offline validator.
+
+## Frozen historical Davis Cup continuity
+
+Historical Davis Cup continuity is handled separately: `data/legacy_davis_cup_snapshots.json` holds the last published 2016–2024 overall target readings as explicitly frozen legacy snapshots. They are not strict-date recalculations and are never used for standard ATP training or normalisation. The strict refresh restores these target-only values with `chronologySnapshotStatus=legacy_frozen`; the separately identified 2026 phases use the validated TML source audit.
+

@@ -2443,6 +2443,22 @@ def preserve_validated_davis_cup_history(
         and "daviscup" not in merged
     ):
         archived = previous_events.get("daviscup") if isinstance(previous_events, dict) else None
+        if not valid_archived_rating(archived):
+            # The first strict-chronology refresh can overwrite speed_history.json
+            # before the old overall Davis Cup readings have been carried forward.
+            # Recover only those already-published target snapshots from the compact
+            # frozen seed file; they remain excluded from ATP training/normalisation.
+            snapshot_path = os.path.normpath(os.path.join(
+                os.path.dirname(__file__), "..", "data", "legacy_davis_cup_snapshots.json"
+            ))
+            try:
+                with open(snapshot_path, encoding="utf-8") as snapshot_file:
+                    snapshot_registry = json.load(snapshot_file)
+                snapshot = snapshot_registry.get("years", {}).get(season_key, {})
+                if snapshot.get("source") == previous_source:
+                    archived = snapshot.get("rating")
+            except (OSError, json.JSONDecodeError, AttributeError):
+                archived = None
         if valid_archived_rating(archived):
             frozen = dict(archived)
             diagnostics = dict(frozen.get("calculationDiagnostics") or {})

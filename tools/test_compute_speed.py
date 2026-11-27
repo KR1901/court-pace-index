@@ -140,6 +140,26 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertEqual(1.203, merged["daviscupfinal8"]["speed"])
         self.assertEqual(1.30, merged["rome"]["speed"])
 
+    def test_frozen_snapshot_seed_recovers_legacy_davis_cup_after_history_was_overwritten(self):
+        for year in range(2016, 2025):
+            previous = {
+                "season_sources": {str(year): "Jeff Sackmann ATP archive"},
+                "seasons": {str(year): {}},
+            }
+            merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+                year,
+                {},
+                "Jeff Sackmann ATP archive",
+                previous,
+                current_year=2026,
+            )
+            self.assertEqual(["daviscup"], retained, f"legacy Davis Cup {year} was not restored")
+            self.assertEqual("Jeff Sackmann ATP archive", source)
+            self.assertGreater(merged["daviscup"]["matches"], 0)
+            diagnostics = merged["daviscup"]["calculationDiagnostics"]
+            self.assertEqual("legacy_frozen", diagnostics["chronologySnapshotStatus"])
+            self.assertIn("not recomputed under strict whole-event dates", diagnostics["chronologySnapshotNote"])
+
     def test_published_historical_davis_cup_reading_is_preserved_as_frozen_legacy_snapshot(self):
         previous = {
             "season_sources": {"2024": "Jeff Sackmann ATP archive"},
