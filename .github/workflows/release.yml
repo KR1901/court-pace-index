@@ -105,6 +105,7 @@ jobs:
                       item for item in readings
                       if item.get("t") == event_id and item.get("s") == 2026
                   ), None)
+                  if row is None:
                       raise SystemExit(f"Missing {expected_name} Davis Cup reading.")
                   diagnostics = row.get("calculationDiagnostics")
                   fields = (
