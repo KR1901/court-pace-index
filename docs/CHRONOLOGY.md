@@ -23,7 +23,7 @@ Some app tournament IDs aggregate multiple ATP source editions (for example, sep
 
 Before a production write, every standard ATP tour-level singles source edition (Grand Slams, Masters, ATP 500/250 and ATP Finals levels) is audited from 1991 onward, including identified singles with missing or malformed serve statistics. Every source edition must map to one official period. Historical years require an actual Results Archive record; the current season may use an official calendar record marked scheduled until its completed Results Archive period is available. Davis Cup is a separate target-only population, never ATP profile training: its current-season source IDs receive a separate all-ID date audit, while previously validated historical TML Davis Cup snapshots are preserved rather than reconstructed from source archives that collapse tie identities.
 
-A missing source ID, missing event period, duplicate mapping, wrong app tournament mapping, invalid IANA timezone, or unresolved source identity fails the refresh before any production dataset is written. The gate reports source-event date coverage independently of valid aces/service points and match-count eligibility.
+A missing source ID, missing event period, duplicate mapping, wrong app tournament mapping, invalid IANA timezone, or unresolved source identity fails the refresh before any production dataset is written. The gate reports source-event date coverage independently of valid aces/service points and match-count eligibility. Standard ATP events are audited for every historical season; the current supported Davis Cup source population is audited separately. Previously validated historical Davis Cup TML readings are preserved rather than guessed from older annual ATP archive cards that do not identify each tie.
 
 Once date coverage passes, the existing match-stat and sample rules still apply. A tournament can have a valid official period and still be omitted because it has no eligible serve-stat sample, no usable prior player profiles, or no completed earlier normalisation cohort. These are sample/calculation exclusions, not date-coverage failures.
 
@@ -43,7 +43,7 @@ Official references:
 
 The registry contract is in `tools/atp_event_periods.schema.json`; the empty starter registry is `data/atp_event_periods.json`.
 
-When an ATP-authorised export or another expressly authorised delivery is available, convert it to CSV with these columns:
+For future corrections or additions, use an ATP-authorised export or another expressly authorised delivery and convert it to CSV with these columns:
 
 `season,eventId,tournamentId,sourceEventIds,startDate,endDate,timeZone,sourceUrl,sourceKind,dateStatus,verifiedAt`
 
@@ -57,7 +57,7 @@ The importer validates every record, source URL, date, timezone and global sourc
 
 ## Current repository status
 
-The strict registry loader, authorised-export importer, source-coverage audit and strict CALC code path are implemented and unit-tested. The checked-in registry is intentionally empty because ATP bulk collection is not authorised under the currently published terms and no permissioned export has been provided.
+The strict registry loader, one-time ATP archive date-card capture, source-coverage audit and strict CALC code path are implemented. The temporary collection helper has been removed; the temporary card cache and builder remain only until the official period registry is generated and passes the full coverage gate.
 
 Consequently, production `--write` remains fail-closed until every standard ATP tour-level event and every current-season supported Davis Cup target source ID has a valid official date period. Match/stat sample eligibility remains a separate calculation gate.
 
