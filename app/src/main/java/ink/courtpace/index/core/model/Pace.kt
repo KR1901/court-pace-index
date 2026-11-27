@@ -131,6 +131,10 @@ data class CalculationDiagnostics(
     val returnerProfilesMatched: Int,
     val serverProfilesFallback: Int,
     val returnerProfilesFallback: Int,
+    /** Marks a deliberately frozen historical snapshot whose source cannot support strict event chronology. */
+    val chronologySnapshotStatus: String? = null,
+    /** Explains why a frozen historical snapshot is retained instead of being recalculated. */
+    val chronologySnapshotNote: String? = null,
     /** Aggregate source reconciliation; present only for validated TML Davis Cup phases. */
     val sourceIdentifiedSingles: Int? = null,
     val sourceCompletedSingles: Int? = null,
