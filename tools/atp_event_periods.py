@@ -89,8 +89,23 @@ def validate_record(raw: object) -> dict:
             "sourceKind/dateStatus must be results_archive/actual or calendar/scheduled"
         )
 
-    start_utc = _utc_boundary(start_day, zone)
-    end_utc_exclusive = _utc_boundary(end_day + timedelta(days=1), zone)
+    boundary_mode = str(raw.get("boundaryMode") or "venue_local")
+    if boundary_mode == "global_date_envelope":
+        if zone_name != "UTC":
+            raise EventPeriodError("global_date_envelope records must use timeZone=UTC")
+        # ATP publishes one date range for an event played in multiple host time zones.
+        # A UTC envelope spanning the world's maximum civil offsets safely brackets
+        # every local-midnight boundary without inventing a single host city.
+        start_utc = datetime.combine(start_day, time.min, tzinfo=timezone.utc) - timedelta(hours=14)
+        end_utc_exclusive = (
+            datetime.combine(end_day + timedelta(days=1), time.min, tzinfo=timezone.utc)
+            + timedelta(hours=12)
+        )
+    elif boundary_mode == "venue_local":
+        start_utc = _utc_boundary(start_day, zone)
+        end_utc_exclusive = _utc_boundary(end_day + timedelta(days=1), zone)
+    else:
+        raise EventPeriodError(f"unsupported boundaryMode: {boundary_mode!r}")
     if end_utc_exclusive <= start_utc:
         raise EventPeriodError("event period must have positive duration")
 
@@ -104,6 +119,7 @@ def validate_record(raw: object) -> dict:
         "endDate": end_day.isoformat(),
         "verifiedAt": verified_day.isoformat(),
         "timeZone": zone_name,
+        "boundaryMode": boundary_mode,
         "sourceKind": source_kind,
         "dateStatus": date_status,
         "sourceUrl": source_url,
