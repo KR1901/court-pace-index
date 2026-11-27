@@ -4458,6 +4458,21 @@
     },
     {
       "season": 1994,
+      "eventId": "atp-1994-1994-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "1994-306"
+      ],
+      "startDate": "1994-06-13",
+      "endDate": "1994-06-19",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
       "eventId": "atp-1994-1994-540",
       "tournamentId": "wimbledon",
       "sourceEventIds": [
@@ -5733,6 +5748,21 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "1995-306"
+      ],
+      "startDate": "1995-06-19",
+      "endDate": "1995-06-25",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-540",
       "tournamentId": "wimbledon",
       "sourceEventIds": [
@@ -6911,6 +6941,21 @@
       "startDate": "1996-05-20",
       "endDate": "1996-05-26",
       "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
+      "eventId": "atp-1996-1996-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "1996-306"
+      ],
+      "startDate": "1996-05-20",
+      "endDate": "1996-05-26",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -8103,6 +8148,21 @@
     },
     {
       "season": 1997,
+      "eventId": "atp-1997-1997-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "1997-306"
+      ],
+      "startDate": "1997-05-19",
+      "endDate": "1997-05-25",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1997,
       "eventId": "atp-1997-1997-520",
       "tournamentId": "rolandgarros",
       "sourceEventIds": [
@@ -9273,6 +9333,21 @@
     },
     {
       "season": 1998,
+      "eventId": "atp-1998-1998-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "1998-306"
+      ],
+      "startDate": "1998-05-18",
+      "endDate": "1998-05-24",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1998,
       "eventId": "atp-1998-1998-520",
       "tournamentId": "rolandgarros",
       "sourceEventIds": [
@@ -10383,6 +10458,21 @@
     },
     {
       "season": 1999,
+      "eventId": "atp-1999-1999-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "1999-306"
+      ],
+      "startDate": "1999-05-17",
+      "endDate": "1999-05-23",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
       "eventId": "atp-1999-1999-520",
       "tournamentId": "rolandgarros",
       "sourceEventIds": [
@@ -10946,6 +11036,21 @@
       "startDate": "2000-01-10",
       "endDate": "2000-01-16",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
+      "eventId": "atp-2000-2000-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "2000-306"
+      ],
+      "startDate": "2000-05-22",
+      "endDate": "2000-05-28",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -11966,6 +12071,21 @@
       "startDate": "2001-01-08",
       "endDate": "2001-01-14",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2001,
+      "eventId": "atp-2001-2001-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "2001-306"
+      ],
+      "startDate": "2001-05-21",
+      "endDate": "2001-05-27",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -13008,6 +13128,21 @@
     },
     {
       "season": 2002,
+      "eventId": "atp-2002-2002-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "2002-306"
+      ],
+      "startDate": "2002-05-20",
+      "endDate": "2002-05-26",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2002,
       "eventId": "atp-2002-2002-308",
       "tournamentId": "munich",
       "sourceEventIds": [
@@ -13983,6 +14118,21 @@
     },
     {
       "season": 2003,
+      "eventId": "atp-2003-2003-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "2003-306"
+      ],
+      "startDate": "2003-05-19",
+      "endDate": "2003-05-25",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2003,
       "eventId": "atp-2003-2003-308",
       "tournamentId": "munich",
       "sourceEventIds": [
@@ -14951,6 +15101,21 @@
       "startDate": "2004-01-12",
       "endDate": "2004-01-18",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2004,
+      "eventId": "atp-2004-2004-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "2004-306"
+      ],
+      "startDate": "2004-05-17",
+      "endDate": "2004-05-23",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -15941,6 +16106,21 @@
       "startDate": "2005-01-10",
       "endDate": "2005-01-16",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2005",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2005,
+      "eventId": "atp-2005-2005-306",
+      "tournamentId": "unmapped-stpoelten",
+      "sourceEventIds": [
+        "2005-306"
+      ],
+      "startDate": "2005-05-16",
+      "endDate": "2005-05-22",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2005",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -23208,6 +23388,21 @@
     },
     {
       "season": 2012,
+      "eventId": "atp-2012-2012-316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2012-316"
+      ],
+      "startDate": "2012-07-09",
+      "endDate": "2012-07-15",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2012",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2012,
       "eventId": "atp-2012-2012-315",
       "tournamentId": "unmapped-newport",
       "sourceEventIds": [
@@ -26643,6 +26838,36 @@
     },
     {
       "season": 2016,
+      "eventId": "atp-2016-2016-M006",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2016-M006"
+      ],
+      "startDate": "2016-03-10",
+      "endDate": "2016-03-20",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2016",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2016,
+      "eventId": "atp-2016-2016-M007",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2016-M007"
+      ],
+      "startDate": "2016-03-23",
+      "endDate": "2016-04-03",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2016",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2016,
       "eventId": "atp-2016-2016-0717",
       "tournamentId": "houston",
       "sourceEventIds": [
@@ -27603,6 +27828,36 @@
     },
     {
       "season": 2017,
+      "eventId": "atp-2017-2017-M006",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2017-M006"
+      ],
+      "startDate": "2017-03-09",
+      "endDate": "2017-03-19",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2017,
+      "eventId": "atp-2017-2017-M007",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2017-M007"
+      ],
+      "startDate": "2017-03-22",
+      "endDate": "2017-04-02",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2017,
       "eventId": "atp-2017-2017-0717",
       "tournamentId": "houston",
       "sourceEventIds": [
@@ -28263,6 +28518,21 @@
     },
     {
       "season": 2017,
+      "eventId": "atp-2017-2017-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2017-7696"
+      ],
+      "startDate": "2017-11-07",
+      "endDate": "2017-11-11",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2017,
       "eventId": "atp-2017-2017-9210",
       "tournamentId": "lavercup",
       "sourceEventIds": [
@@ -28541,6 +28811,36 @@
       "startDate": "2018-02-26",
       "endDate": "2018-03-04",
       "timeZone": "America/Sao_Paulo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2018,
+      "eventId": "atp-2018-2018-M006",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2018-M006"
+      ],
+      "startDate": "2018-03-08",
+      "endDate": "2018-03-18",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2018,
+      "eventId": "atp-2018-2018-M007",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2018-M007"
+      ],
+      "startDate": "2018-03-21",
+      "endDate": "2018-04-01",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -29208,6 +29508,21 @@
     },
     {
       "season": 2018,
+      "eventId": "atp-2018-2018-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2018-7696"
+      ],
+      "startDate": "2018-11-06",
+      "endDate": "2018-11-10",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2018,
       "eventId": "atp-2018-2018-0605",
       "tournamentId": "atpfinals",
       "sourceEventIds": [
@@ -29501,6 +29816,36 @@
       "startDate": "2019-02-25",
       "endDate": "2019-03-03",
       "timeZone": "America/Sao_Paulo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2019,
+      "eventId": "atp-2019-2019-M006",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2019-M006"
+      ],
+      "startDate": "2019-03-07",
+      "endDate": "2019-03-17",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2019,
+      "eventId": "atp-2019-2019-M007",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2019-M007"
+      ],
+      "startDate": "2019-03-20",
+      "endDate": "2019-03-31",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -30153,6 +30498,21 @@
     },
     {
       "season": 2019,
+      "eventId": "atp-2019-2019-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2019-7696"
+      ],
+      "startDate": "2019-11-05",
+      "endDate": "2019-11-09",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2019,
       "eventId": "atp-2019-2019-9210",
       "tournamentId": "lavercup",
       "sourceEventIds": [
@@ -30453,6 +30813,21 @@
     },
     {
       "season": 2020,
+      "eventId": "atp-2020-2020-0319",
+      "tournamentId": "kitzbuhel",
+      "sourceEventIds": [
+        "2020-0319"
+      ],
+      "startDate": "2020-09-08",
+      "endDate": "2020-09-13",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2020,
       "eventId": "atp-2020-2020-M009",
       "tournamentId": "rome",
       "sourceEventIds": [
@@ -30513,6 +30888,21 @@
     },
     {
       "season": 2020,
+      "eventId": "atp-2020-2020-9408",
+      "tournamentId": "unmapped-sardinia",
+      "sourceEventIds": [
+        "2020-9408"
+      ],
+      "startDate": "2020-10-12",
+      "endDate": "2020-10-18",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2020,
       "eventId": "atp-2020-2020-0568",
       "tournamentId": "unmapped-stpetersburg",
       "sourceEventIds": [
@@ -30536,6 +30926,21 @@
       "startDate": "2020-10-19",
       "endDate": "2020-10-25",
       "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2020,
+      "eventId": "atp-2020-2020-9410",
+      "tournamentId": "unmapped-nursultan",
+      "sourceEventIds": [
+        "2020-9410"
+      ],
+      "startDate": "2020-10-26",
+      "endDate": "2020-11-01",
+      "timeZone": "Asia/Almaty",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2020",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -30723,6 +31128,21 @@
     },
     {
       "season": 2021,
+      "eventId": "atp-2021-2021-0321",
+      "tournamentId": "stuttgart",
+      "sourceEventIds": [
+        "2021-0321"
+      ],
+      "startDate": "2021-06-08",
+      "endDate": "2021-06-13",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
       "eventId": "atp-2021-2021-0322",
       "tournamentId": "geneva",
       "sourceEventIds": [
@@ -30791,6 +31211,36 @@
       "startDate": "2021-02-22",
       "endDate": "2021-02-28",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-0403",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2021-0403"
+      ],
+      "startDate": "2021-03-24",
+      "endDate": "2021-04-04",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-0404",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2021-0404"
+      ],
+      "startDate": "2021-10-07",
+      "endDate": "2021-10-17",
+      "timeZone": "America/Los_Angeles",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -31001,6 +31451,21 @@
       "startDate": "2021-03-08",
       "endDate": "2021-03-14",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-0499",
+      "tournamentId": "delraybeach",
+      "sourceEventIds": [
+        "2021-0499"
+      ],
+      "startDate": "2021-01-07",
+      "endDate": "2021-01-13",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -31293,6 +31758,21 @@
     },
     {
       "season": 2021,
+      "eventId": "atp-2021-2021-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2021-7696"
+      ],
+      "startDate": "2021-11-09",
+      "endDate": "2021-11-13",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
       "eventId": "atp-2021-2021-8888",
       "tournamentId": "unmapped-atpcup",
       "sourceEventIds": [
@@ -31346,6 +31826,36 @@
       "startDate": "2021-02-22",
       "endDate": "2021-02-28",
       "timeZone": "America/Argentina/Cordoba",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-9410",
+      "tournamentId": "unmapped-nursultan",
+      "sourceEventIds": [
+        "2021-9410"
+      ],
+      "startDate": "2021-09-20",
+      "endDate": "2021-09-26",
+      "timeZone": "Asia/Almaty",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-9426",
+      "tournamentId": "unmapped-antalya",
+      "sourceEventIds": [
+        "2021-9426"
+      ],
+      "startDate": "2021-01-07",
+      "endDate": "2021-01-13",
+      "timeZone": "Europe/Istanbul",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -31481,6 +31991,21 @@
       "startDate": "2022-01-03",
       "endDate": "2022-01-09",
       "timeZone": "Australia/Adelaide",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
+      "eventId": "atp-2022-2022-9665",
+      "tournamentId": "unmapped-melbourne",
+      "sourceEventIds": [
+        "2022-9665"
+      ],
+      "startDate": "2022-01-04",
+      "endDate": "2022-01-09",
+      "timeZone": "Australia/Melbourne",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -31721,6 +32246,36 @@
       "startDate": "2022-02-21",
       "endDate": "2022-02-27",
       "timeZone": "America/Santiago",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
+      "eventId": "atp-2022-2022-0404",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2022-0404"
+      ],
+      "startDate": "2022-03-10",
+      "endDate": "2022-03-20",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
+      "eventId": "atp-2022-2022-0403",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2022-0403"
+      ],
+      "startDate": "2022-03-23",
+      "endDate": "2022-04-03",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -32433,6 +32988,21 @@
     },
     {
       "season": 2022,
+      "eventId": "atp-2022-2022-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2022-7696"
+      ],
+      "startDate": "2022-11-08",
+      "endDate": "2022-11-12",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
       "eventId": "atp-2022-2022-0605",
       "tournamentId": "atpfinals",
       "sourceEventIds": [
@@ -32703,6 +33273,36 @@
     },
     {
       "season": 2023,
+      "eventId": "atp-2023-2023-0404",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2023-0404"
+      ],
+      "startDate": "2023-03-08",
+      "endDate": "2023-03-19",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-0403",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2023-0403"
+      ],
+      "startDate": "2023-03-22",
+      "endDate": "2023-04-02",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
       "eventId": "atp-2023-2023-7290",
       "tournamentId": "estoril",
       "sourceEventIds": [
@@ -32801,6 +33401,36 @@
       "startDate": "2023-04-17",
       "endDate": "2023-04-23",
       "timeZone": "Europe/Sarajevo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-1536",
+      "tournamentId": "madrid",
+      "sourceEventIds": [
+        "2023-1536"
+      ],
+      "startDate": "2023-04-26",
+      "endDate": "2023-05-07",
+      "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-0416",
+      "tournamentId": "rome",
+      "sourceEventIds": [
+        "2023-0416"
+      ],
+      "startDate": "2023-05-10",
+      "endDate": "2023-05-21",
+      "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -33168,6 +33798,51 @@
     },
     {
       "season": 2023,
+      "eventId": "atp-2023-2023-9410",
+      "tournamentId": "unmapped-astana",
+      "sourceEventIds": [
+        "2023-9410"
+      ],
+      "startDate": "2023-09-27",
+      "endDate": "2023-10-03",
+      "timeZone": "Asia/Almaty",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-0747",
+      "tournamentId": "beijing",
+      "sourceEventIds": [
+        "2023-0747"
+      ],
+      "startDate": "2023-09-28",
+      "endDate": "2023-10-04",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-5014",
+      "tournamentId": "shanghai",
+      "sourceEventIds": [
+        "2023-5014"
+      ],
+      "startDate": "2023-10-04",
+      "endDate": "2023-10-15",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
       "eventId": "atp-2023-2023-0429",
       "tournamentId": "stockholm",
       "sourceEventIds": [
@@ -33296,6 +33971,21 @@
       "startDate": "2023-11-12",
       "endDate": "2023-11-19",
       "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2023-7696"
+      ],
+      "startDate": "2023-11-28",
+      "endDate": "2023-12-02",
+      "timeZone": "Asia/Riyadh",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -33573,6 +34263,36 @@
     },
     {
       "season": 2024,
+      "eventId": "atp-2024-2024-0404",
+      "tournamentId": "indianwells",
+      "sourceEventIds": [
+        "2024-0404"
+      ],
+      "startDate": "2024-03-06",
+      "endDate": "2024-03-17",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-0403",
+      "tournamentId": "miami",
+      "sourceEventIds": [
+        "2024-0403"
+      ],
+      "startDate": "2024-03-20",
+      "endDate": "2024-03-31",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
       "eventId": "atp-2024-2024-7290",
       "tournamentId": "estoril",
       "sourceEventIds": [
@@ -33671,6 +34391,36 @@
       "startDate": "2024-04-15",
       "endDate": "2024-04-21",
       "timeZone": "Europe/Bucharest",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-1536",
+      "tournamentId": "madrid",
+      "sourceEventIds": [
+        "2024-1536"
+      ],
+      "startDate": "2024-04-24",
+      "endDate": "2024-05-05",
+      "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-0416",
+      "tournamentId": "rome",
+      "sourceEventIds": [
+        "2024-0416"
+      ],
+      "startDate": "2024-05-08",
+      "endDate": "2024-05-19",
+      "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -33911,6 +34661,21 @@
       "startDate": "2024-07-29",
       "endDate": "2024-08-04",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-0421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "2024-0421"
+      ],
+      "startDate": "2024-08-06",
+      "endDate": "2024-08-12",
+      "timeZone": "America/Toronto",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
