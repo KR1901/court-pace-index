@@ -101,11 +101,10 @@ jobs:
               # TML refresh must publish aggregate-only phase coverage alongside each CALC.
               def require_phase_coverage(readings, event_id, expected_name):
                   # Multiple historical seasons share an event ID; coverage belongs to 2026 only.
-        row = next((
-            item for item in readings
-            if item.get("t") == event_id and item.get("s") == 2026
-        ), None)
-                  if row is None:
+                  row = next((
+                      item for item in readings
+                      if item.get("t") == event_id and item.get("s") == 2026
+                  ), None)
                       raise SystemExit(f"Missing {expected_name} Davis Cup reading.")
                   diagnostics = row.get("calculationDiagnostics")
                   fields = (
