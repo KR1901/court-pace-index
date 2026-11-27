@@ -165,6 +165,52 @@ class LiveFeedTest {
     }
 
     @Test
+    fun `a completed Davis Cup Final 8 uses its separate archived CALC row`() {
+        val final8Tournament = data.dataset.tournaments.firstOrNull {
+            it.id == "daviscupfinal8"
+        }
+        assertNotNull("The Final 8 must have its own tournament identity", final8Tournament)
+
+        val ended = LiveEvent(
+            t = "daviscupfinal8",
+            s = 2026,
+            status = "completed",
+            start = LocalDate.now().minusDays(6).toString(),
+            end = LocalDate.now().minusDays(1).toString(),
+            slug = "davis-cup-final-8-2026",
+        )
+        val liveBackfill = ink.courtpace.index.core.model.PaceReading(
+            t = "daviscupfinal8", s = 2026, speed = 1.18, src = "live",
+            live = true, matches = 7,
+        )
+        val finalCalc = ink.courtpace.index.core.model.PaceReading(
+            t = "daviscupfinal8", s = 2026, speed = 1.03, src = "computed",
+            matches = 7,
+        )
+        val finished = data.dataset.copy(
+            live = data.dataset.live.filterNot { it.t == "daviscupfinal8" } + ended,
+            liveSchedule = data.dataset.liveSchedule.filterNot { it.t == "daviscupfinal8" } + ended,
+            readings = data.dataset.readings.filterNot {
+                it.t == "daviscupfinal8" && it.s == 2026
+            } + listOf(liveBackfill, finalCalc),
+        )
+
+        val merged = PaceData(finished)
+
+        assertFalse("The completed Final 8 must leave Live now", merged.isLive("daviscupfinal8", 2026))
+        assertTrue(merged.liveEvents(2026, Metric.SPEED).none {
+            it.first.id == "daviscupfinal8"
+        })
+        assertNull("A stale live estimate must not override the archived CALC row",
+            merged.liveReading("daviscupfinal8", 2026))
+        assertEquals(1.03, merged.value("daviscupfinal8", 2026, Metric.SPEED)!!, 1e-9)
+        assertEquals("computed", merged.speedSource("daviscupfinal8", 2026))
+        assertTrue(merged.entries(2026, Metric.SPEED).any {
+            it.first.id == "daviscupfinal8" && kotlin.math.abs(it.second - 1.03) < 1e-9
+        })
+    }
+
+    @Test
     fun `a completed event without final CALC does not expose its stale live backfill`() {
         val ended = activeParis.copy(
             status = "completed",
