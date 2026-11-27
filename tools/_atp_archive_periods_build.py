@@ -216,7 +216,7 @@ def main():
   if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals")):
    zone=finals_zone(int(raw["season"]))
   # ATP multi-location Davis Cup stages have official dates but no single venue zone.
-  if not zone and "davis" in title_norm:
+  if not zone and ("davis" in title_norm or "unitedcup" in title_norm or "perthsydney" in title_norm or "atpcup" in title_norm):
    zone = "MULTI_LOCATION"
   if not zone:
    unresolved_zones.append({"season":raw["season"],"cardText":raw["cardText"],"dateText":raw["officialDateText"],"cityGuess":city})
