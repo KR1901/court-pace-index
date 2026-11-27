@@ -628,7 +628,7 @@ def run(start_year, end_year, crossfit_enabled=False, bootstrap_iterations=0, de
                     "normalisationAnchorEventIds": crossfit["eventIds"],
                     "normalisationCandidateEventIds": crossfit["candidateEventIds"],
                 }
-                if bootstrap_iterations > 0 and event_id in detail_ids:
+                if bootstrap_iterations > 0 and event_id in detail_ids and year == end_year:
                     event["crossFitted"]["fullPipelineBootstrap95"] = (
                         full_pipeline_crossfit_interval(
                             year,
