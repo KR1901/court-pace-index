@@ -491,7 +491,44 @@ private fun CalculationDiagnosticsContent(
     Spacer(Modifier.height(14.dp))
     SectionLabel(if (liveAceRating != null) "Live calculation diagnostics" else "Calculation diagnostics")
     Spacer(Modifier.height(8.dp))
-    StatRow("Completed matches", diagnostics.completedMatches.toString())
+    val sourceCompleted = diagnostics.sourceCompletedSingles
+    val sourceValid = diagnostics.sourceMatchesWithValidServeStats
+    if (sourceCompleted != null && sourceValid != null) {
+        Spacer(Modifier.height(10.dp))
+        SectionLabel("Davis Cup · TML source coverage")
+        Spacer(Modifier.height(6.dp))
+        diagnostics.sourceIdentifiedSingles?.let {
+            StatRow("Identified singles", it.toString())
+            HairLine()
+        }
+        StatRow("Completed, played singles", sourceCompleted.toString())
+        HairLine()
+        StatRow("With valid serve statistics", "$sourceValid/$sourceCompleted")
+        val missing = diagnostics.sourceMatchesMissingServeStats ?: 0
+        val malformed = diagnostics.sourceMatchesMalformedServeStats ?: 0
+        HairLine()
+        StatRow("Missing serve-stat matches", missing.toString())
+        HairLine()
+        StatRow("Invalid-stat matches", malformed.toString())
+        if (missing > 0) {
+            Spacer(Modifier.height(8.dp))
+            GlassNote(
+                "The TML annual feed contains completed results for these rubbers but omits one or more " +
+                    "ace/service-point fields required by the rating. They remain outside the CALC sample " +
+                    "and are never treated as zero.",
+            )
+        }
+        if (malformed > 0) {
+            Spacer(Modifier.height(8.dp))
+            GlassNote(
+                "Some source statistics are present but fail validation. Those matches are excluded until " +
+                    "the source provides a complete, valid record.",
+            )
+        }
+        Spacer(Modifier.height(10.dp))
+        SectionLabel("Calculation sample")
+    }
+    StatRow("Matches included in CALC", diagnostics.completedMatches.toString())
     HairLine()
     StatRow("Adjusted server sides", "${diagnostics.adjustedServerSides}/${diagnostics.totalServerSides}")
     HairLine()
