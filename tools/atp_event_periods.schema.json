@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://courtpace.invalid/schemas/atp-event-periods.schema.json",
+  "title": "ATP official event periods",
+  "description": "Permissioned ATP event-period records, with optional official competition-organiser corroboration for malformed or incomplete ATP date fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "records"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "season",
+          "eventId",
+          "tournamentId",
+          "sourceEventIds",
+          "startDate",
+          "endDate",
+          "timeZone",
+          "sourceUrl",
+          "sourceKind",
+          "dateStatus",
+          "verifiedAt"
+        ],
+        "properties": {
+          "season": {
+            "type": "integer",
+            "minimum": 1991
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tournamentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceEventIds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "timeZone": {
+            "type": "string",
+            "pattern": "^(MULTI_LOCATION|.+/.+)$",
+            "description": "IANA venue timezone, or MULTI_LOCATION when ATP publishes an event date window spanning venues. MULTI_LOCATION uses a conservative UTC envelope covering UTC+14 through UTC-12."
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://(www\\.)?atptour\\.com/"
+          },
+          "sourceKind": {
+            "enum": [
+              "results_archive",
+              "calendar"
+            ]
+          },
+          "dateStatus": {
+            "enum": [
+              "actual",
+              "scheduled"
+            ]
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date"
+          },
+          "supportingSourceUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://(www\\.)?itftennis\\.com/",
+            "description": "Optional official organiser corroboration, used only when an ATP archive date field is malformed or incomplete."
+          },
+          "dateEvidenceNote": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Explains why corroborating official organiser evidence was needed."
+          }
+        }
+      }
+    }
+  }
+}
