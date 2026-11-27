@@ -57,7 +57,8 @@ The importer validates every record, source URL, date, timezone and global sourc
 
 ## Current repository status
 
-The strict registry loader, one-time ATP archive date-card capture, source-coverage audit and strict CALC code path are implemented. The temporary collection helper has been removed; the temporary card cache and builder remain only until the official period registry is generated and passes the full coverage gate.
+The checked-in `data/atp_event_periods.json` contains **2,654 verified actual event periods across 1991–2026**. The one-time ATP archive card capture and its temporary cache, builder, browser probe and workflow have been removed; the application contains only derived event-period metadata and ATP source links, and it does not scrape ATP at runtime.
 
-Consequently, production `--write` remains fail-closed until every standard ATP tour-level event and every current-season supported Davis Cup target source ID has a valid official date period. Match/stat sample eligibility remains a separate calculation gate.
+One standard-tour source event remains unresolved: `1999-615` (World Team Cup, Düsseldorf). ATP's [1999 Results Archive](https://www.atptour.com/en/scores/results-archive?year=1999) renders its date as `16 May, 1999 - 1 January, 1`, which is malformed. The linked [official event results page](https://www.atptour.com/en/scores/archive/dusseldorf/615/1999/results) rejected the one-time browser request with an HTTP 403 security-verification response, so no official finish date could be verified. The source archive contains 26 match rows for this event, including 21 with valid serve statistics; it cannot be treated as a sample-ineligible event. No end date has been inferred or substituted.
 
+The production coverage audit therefore remains fail-closed: `python3 tools/compute_speed.py --write` cannot proceed until ATP supplies a valid official end date (or an authorised official record/export for this event). All other mapped event periods are retained in the registry. Match/stat sample eligibility remains a separate calculation gate.
