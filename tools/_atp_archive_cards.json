@@ -15254,6 +15254,18 @@
       "cardText": "Nexo Dallas Open Dallas, United States",
       "officialDateText": "9 - 15 February, 2026",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026"
+    },
+    {
+      "season": 2017,
+      "cardText": "Nitto ATP Finals London, Great Britain",
+      "officialDateText": "12 - 19 November, 2017",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017"
+    },
+    {
+      "season": 2019,
+      "cardText": "Nitto ATP Finals London, Great Britain",
+      "officialDateText": "10 - 17 November, 2019",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019"
     }
   ]
 }
