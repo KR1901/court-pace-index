@@ -136,8 +136,11 @@ def score_name(source,card):
  if sn in cn or cn in sn: return 1.0
  st,ct=toks(source),toks(card)
  if st and st.issubset(ct): return 1.0
- if any(a in cn or a in ct for a in ALIASES.get(sn,set())): return 1.0
- if sn in ALIASES.get(cn,set()): return 1.0
+ # Prefer an ATP card with the explicit event name over a duplicate card that
+ # contains only the venue cities (United Cup is the important multi-city case).
+ # Alias matches remain usable but rank below an exact competition-name match.
+ if any(a in cn or a in ct for a in ALIASES.get(sn,set())): return 0.90
+ if sn in ALIASES.get(cn,set()): return 0.90
  if not st: return 0.0
  overlap=len(st&ct)/len(st)
  if len(st)==1 and overlap<1: return 0.0
