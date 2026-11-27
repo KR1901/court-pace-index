@@ -39,11 +39,10 @@ jobs:
             atp_event_periods_build_audit.json
             atp_event_periods_build.log
             data/atp_event_periods.json
-            atp_dusseldorf_1999_probe.json
-            atp-dusseldorf-1999.png
           if-no-files-found: warn
           retention-days: 7
       - name: Require 100% official date coverage before committing
+        id: coverage_gate
         run: |
           python - <<'PY'
           import json
@@ -72,6 +71,24 @@ jobs:
               )
           print("PASS: all source event IDs across 1991–2026 have official ATP event periods.")
           PY
+      - name: Commit partial official periods to PR branch for the single unresolved source event
+        if: steps.coverage_gate.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          registry_copy="$(mktemp)"
+          cp data/atp_event_periods.json "$registry_copy"
+          git fetch origin "$GITHUB_REF_NAME"
+          git checkout -B "$GITHUB_REF_NAME" "origin/$GITHUB_REF_NAME"
+          cp "$registry_copy" data/atp_event_periods.json
+          git add data/atp_event_periods.json
+          if git diff --cached --quiet; then
+            echo "Partial registry unchanged; no commit needed."
+          else
+            git diff --cached --check
+            git commit -m "data: stage ATP official event periods with one unresolved source event"
+            git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          fi
       - name: Commit the validated official date registry
         run: |
           git config user.name "github-actions[bot]"
