@@ -19,21 +19,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.theme.PaceTheme
 import kotlin.math.abs
 
@@ -78,7 +82,7 @@ fun MetricToggle(
     }
 }
 
-/** Season stepper: ‹ 2026 ›, moving only through seasons that hold data. */
+/** Direct year picker using the same YEAR chip and dropdown as Player Stats. */
 @Composable
 fun SeasonStepper(
     seasons: List<Int>,
@@ -86,62 +90,28 @@ fun SeasonStepper(
     onChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = PaceTheme.colors
-    val index = seasons.indexOf(selected)
-        .let { if (it >= 0) it else seasons.indexOf(nearest(seasons, selected)) }
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        StepperArrow("‹", enabled = index > 0) {
-            if (index > 0) onChange(seasons[index - 1])
-        }
-        Text(
-            text = selected.toString(),
-            style = TextStyle(
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.6).sp,
-            ),
-            color = colors.text,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(64.dp),
+    val availableSeasons = remember(seasons) { seasons.distinct().sortedDescending() }
+    var yearMenu by remember { mutableStateOf(false) }
+
+    Box(modifier) {
+        GlassChip(
+            text = "YEAR · " + selected,
+            selected = true,
+            onClick = { yearMenu = true },
         )
-        StepperArrow("›", enabled = index < seasons.lastIndex) {
-            if (index < seasons.lastIndex) onChange(seasons[index + 1])
-        }
-    }
-}
-
-private fun nearest(seasons: List<Int>, value: Int): Int =
-    seasons.minByOrNull { kotlin.math.abs(it - value) } ?: seasons.first()
-
-@Composable
-private fun StepperArrow(symbol: String, enabled: Boolean, onClick: () -> Unit) {
-    val colors = PaceTheme.colors
-    // The visual circle is 34dp but the touch area must be at least 48dp.
-    Box(
-        Modifier
-            .size(48.dp)
-            .clickable(
-                enabled = enabled,
-                onClickLabel = if (symbol == "\u2039") "Previous season" else "Next season",
-                role = Role.Button,
-            ) { onClick() },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            Modifier
-                .size(34.dp)
-                .clip(CircleShape)
-                .background(
-                    Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f),
-                    CircleShape,
-                ),
-            contentAlignment = Alignment.Center,
+        DropdownMenu(
+            expanded = yearMenu,
+            onDismissRequest = { yearMenu = false },
         ) {
-            Text(
-                text = symbol,
-                style = TextStyle(fontSize = 19.sp, fontWeight = FontWeight.Medium),
-                color = if (enabled) colors.text else colors.textFaint.copy(alpha = 0.4f),
-            )
+            availableSeasons.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.toString()) },
+                    onClick = {
+                        onChange(option)
+                        yearMenu = false
+                    },
+                )
+            }
         }
     }
 }
