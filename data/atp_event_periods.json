@@ -3138,6 +3138,21 @@
     },
     {
       "season": 1993,
+      "eventId": "atp-1993-1993-540",
+      "tournamentId": "wimbledon",
+      "sourceEventIds": [
+        "1993-540"
+      ],
+      "startDate": "1993-06-21",
+      "endDate": "1993-07-04",
+      "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
       "eventId": "atp-1993-1993-316",
       "tournamentId": "bastad",
       "sourceEventIds": [
@@ -5808,6 +5823,96 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-317",
+      "tournamentId": "unmapped-amsterdam",
+      "sourceEventIds": [
+        "1995-317"
+      ],
+      "startDate": "1995-07-24",
+      "endDate": "1995-07-30",
+      "timeZone": "Europe/Amsterdam",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "1995-421"
+      ],
+      "startDate": "1995-07-24",
+      "endDate": "1995-07-30",
+      "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-319",
+      "tournamentId": "kitzbuhel",
+      "sourceEventIds": [
+        "1995-319"
+      ],
+      "startDate": "1995-07-31",
+      "endDate": "1995-08-06",
+      "timeZone": "Europe/Vienna",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-423",
+      "tournamentId": "unmapped-losangeles",
+      "sourceEventIds": [
+        "1995-423"
+      ],
+      "startDate": "1995-07-31",
+      "endDate": "1995-08-06",
+      "timeZone": "America/Los_Angeles",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-379",
+      "tournamentId": "unmapped-prague",
+      "sourceEventIds": [
+        "1995-379"
+      ],
+      "startDate": "1995-07-31",
+      "endDate": "1995-08-06",
+      "timeZone": "Europe/Prague",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "1995-422"
+      ],
+      "startDate": "1995-08-07",
+      "endDate": "1995-08-13",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-475",
       "tournamentId": "unmapped-sanmarino",
       "sourceEventIds": [
@@ -5838,6 +5943,66 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-420",
+      "tournamentId": "unmapped-newhaven",
+      "sourceEventIds": [
+        "1995-420"
+      ],
+      "startDate": "1995-08-14",
+      "endDate": "1995-08-20",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-441",
+      "tournamentId": "unmapped-longisland",
+      "sourceEventIds": [
+        "1995-441"
+      ],
+      "startDate": "1995-08-21",
+      "endDate": "1995-08-27",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-439",
+      "tournamentId": "umag",
+      "sourceEventIds": [
+        "1995-439"
+      ],
+      "startDate": "1995-08-21",
+      "endDate": "1995-08-27",
+      "timeZone": "Europe/Zagreb",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-560",
+      "tournamentId": "usopen",
+      "sourceEventIds": [
+        "1995-560"
+      ],
+      "startDate": "1995-08-28",
+      "endDate": "1995-09-10",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-359",
       "tournamentId": "unmapped-bogota",
       "sourceEventIds": [
@@ -5846,6 +6011,36 @@
       "startDate": "1995-09-11",
       "endDate": "1995-09-17",
       "timeZone": "America/Bogota",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-323",
+      "tournamentId": "unmapped-bordeaux",
+      "sourceEventIds": [
+        "1995-323"
+      ],
+      "startDate": "1995-09-11",
+      "endDate": "1995-09-17",
+      "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-773",
+      "tournamentId": "bucharest",
+      "sourceEventIds": [
+        "1995-773"
+      ],
+      "startDate": "1995-09-11",
+      "endDate": "1995-09-17",
+      "timeZone": "Europe/Bucharest",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -6018,6 +6213,21 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-430",
+      "tournamentId": "unmapped-essenmasters",
+      "sourceEventIds": [
+        "1995-430"
+      ],
+      "startDate": "1995-10-23",
+      "endDate": "1995-10-29",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-505",
       "tournamentId": "santiago",
       "sourceEventIds": [
@@ -6041,6 +6251,21 @@
       "startDate": "1995-10-30",
       "endDate": "1995-11-05",
       "timeZone": "America/Montevideo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-352",
+      "tournamentId": "paris",
+      "sourceEventIds": [
+        "1995-352"
+      ],
+      "startDate": "1995-10-30",
+      "endDate": "1995-11-05",
+      "timeZone": "Europe/Paris",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -28983,6 +29208,21 @@
     },
     {
       "season": 2018,
+      "eventId": "atp-2018-2018-0605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2018-0605"
+      ],
+      "startDate": "2018-11-11",
+      "endDate": "2018-11-18",
+      "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2018,
       "eventId": "atp-2018-2018-9210",
       "tournamentId": "lavercup",
       "sourceEventIds": [
@@ -30423,6 +30663,21 @@
     },
     {
       "season": 2021,
+      "eventId": "atp-2021-2021-0314",
+      "tournamentId": "gstaad",
+      "sourceEventIds": [
+        "2021-0314"
+      ],
+      "startDate": "2021-07-19",
+      "endDate": "2021-07-25",
+      "timeZone": "Europe/Zurich",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
       "eventId": "atp-2021-2021-0315",
       "tournamentId": "unmapped-newport",
       "sourceEventIds": [
@@ -30791,6 +31046,21 @@
       "startDate": "2021-10-25",
       "endDate": "2021-10-31",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-0605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2021-0605"
+      ],
+      "startDate": "2021-11-14",
+      "endDate": "2021-11-21",
+      "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -32156,6 +32426,21 @@
       "startDate": "2022-10-31",
       "endDate": "2022-11-06",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
+      "eventId": "atp-2022-2022-0605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2022-0605"
+      ],
+      "startDate": "2022-11-13",
+      "endDate": "2022-11-20",
+      "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -33902,6 +34187,21 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 2024,
+      "eventId": "atp-2024-2024-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2024-7696"
+      ],
+      "startDate": "2024-12-18",
+      "endDate": "2024-12-22",
+      "timeZone": "Asia/Riyadh",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 2025,
       "eventId": "atp-2025-2025-0339",
       "tournamentId": "brisbane",
@@ -34802,6 +35102,21 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 2025,
+      "eventId": "atp-2025-2025-7696",
+      "tournamentId": "nextgen",
+      "sourceEventIds": [
+        "2025-7696"
+      ],
+      "startDate": "2025-12-17",
+      "endDate": "2025-12-21",
+      "timeZone": "Asia/Riyadh",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2025",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 2026,
       "eventId": "atp-2026-2026-9900",
       "tournamentId": "unitedcup",
@@ -35512,6 +35827,21 @@
       "tournamentId": "chengdu",
       "sourceEventIds": [
         "2026-7581"
+      ],
+      "startDate": "2026-09-23",
+      "endDate": "2026-09-29",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-4713",
+      "tournamentId": "hangzhou",
+      "sourceEventIds": [
+        "2026-4713"
       ],
       "startDate": "2026-09-23",
       "endDate": "2026-09-29",
