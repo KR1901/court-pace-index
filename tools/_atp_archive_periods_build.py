@@ -215,9 +215,13 @@ def main():
   title_norm=norm(raw["cardText"])
   if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals")):
    zone=finals_zone(int(raw["season"]))
+  boundary_mode="venue_local"
+  if not zone and ("davis" in toks(raw["cardText"]) or "multiplelocations" in title_norm):
+   zone="UTC"
+   boundary_mode="global_date_envelope"
   if not zone:
    unresolved_zones.append({"season":raw["season"],"cardText":raw["cardText"],"dateText":raw["officialDateText"],"cityGuess":city})
-  cards[int(raw["season"])].append({**raw,"start":start,"end":end,"city":city,"timeZone":zone})
+  cards[int(raw["season"])].append({**raw,"start":start,"end":end,"city":city,"timeZone":zone,"boundaryMode":boundary_mode})
 
  records=[]; coverage_rows=[]; details=[]
  for year in range(1991,datetime.utcnow().year+1):
@@ -245,11 +249,19 @@ def main():
    scored=[]
    for c in cards.get(year,[]):
     # Match using the legacy source's start-of-week date; store exact ATP dates.
-    tolerance_days = 7 if any(k in norm(c["cardText"]) for k in ("finals","worldchampionship","masterscup")) else 3
+    tolerance_days = 7
     if not c["start"]-timedelta(days=tolerance_days)<=e["_date"]<=c["end"] or not c["timeZone"]: continue
     if is_d:
-     if "davis" not in toks(c["cardText"]) or not is_final: continue
-     score=1.0
+     if "davis" not in toks(c["cardText"]): continue
+     source_label=norm(sname)
+     card_label=norm(c["cardText"])
+     score=1.0-min(abs((e["_date"]-c["start"]).days),14)*0.01
+     if "qual" in source_label and "qual" in card_label: score+=0.18
+     if "group" in source_label and "group" in card_label: score+=0.18
+     if "finals" in card_label and ("finals" in source_label or is_final): score+=0.18
+     if "qf" in source_label and "quarter" in card_label: score+=0.18
+     if "sf" in source_label and "semi" in card_label: score+=0.18
+     if "r1" in source_label and "first" in card_label: score+=0.18
     else:
      if "davis" in toks(c["cardText"]): continue
      score=score_name(sname,c["cardText"])
