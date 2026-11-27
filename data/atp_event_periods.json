@@ -588,6 +588,21 @@
     },
     {
       "season": 1991,
+      "eventId": "atp-1991-1991-306",
+      "tournamentId": "unmapped-genova",
+      "sourceEventIds": [
+        "1991-306"
+      ],
+      "startDate": "1991-06-17",
+      "endDate": "1991-06-23",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
       "eventId": "atp-1991-1991-741",
       "tournamentId": "unmapped-manchester",
       "sourceEventIds": [
@@ -1181,6 +1196,36 @@
       "startDate": "1991-11-04",
       "endDate": "1991-11-10",
       "timeZone": "America/Sao_Paulo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
+      "eventId": "atp-1991-1991-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1991-605"
+      ],
+      "startDate": "1991-11-12",
+      "endDate": "1991-11-17",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1991,
+      "eventId": "atp-1991-1991-D045",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1991-D045"
+      ],
+      "startDate": "1991-11-29",
+      "endDate": "1991-12-01",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1991",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -1803,6 +1848,21 @@
     },
     {
       "season": 1992,
+      "eventId": "atp-1992-1992-306",
+      "tournamentId": "unmapped-genova",
+      "sourceEventIds": [
+        "1992-306"
+      ],
+      "startDate": "1992-06-15",
+      "endDate": "1992-06-21",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
       "eventId": "atp-1992-1992-741",
       "tournamentId": "unmapped-manchester",
       "sourceEventIds": [
@@ -1901,6 +1961,21 @@
       "startDate": "1992-07-13",
       "endDate": "1992-07-19",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
+      "eventId": "atp-1992-1992-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "1992-421"
+      ],
+      "startDate": "1992-07-20",
+      "endDate": "1992-07-26",
+      "timeZone": "America/Toronto",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -2411,6 +2486,36 @@
       "startDate": "1992-11-09",
       "endDate": "1992-11-15",
       "timeZone": "America/Sao_Paulo",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
+      "eventId": "atp-1992-1992-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1992-605"
+      ],
+      "startDate": "1992-11-16",
+      "endDate": "1992-11-22",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1992,
+      "eventId": "atp-1992-1992-D075",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1992-D075"
+      ],
+      "startDate": "1992-12-04",
+      "endDate": "1992-12-06",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -3108,6 +3213,21 @@
     },
     {
       "season": 1993,
+      "eventId": "atp-1993-1993-306",
+      "tournamentId": "unmapped-genova",
+      "sourceEventIds": [
+        "1993-306"
+      ],
+      "startDate": "1993-06-14",
+      "endDate": "1993-06-20",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
       "eventId": "atp-1993-1993-500",
       "tournamentId": "halle",
       "sourceEventIds": [
@@ -3731,6 +3851,36 @@
       "startDate": "1993-11-08",
       "endDate": "1993-11-14",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
+      "eventId": "atp-1993-1993-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1993-605"
+      ],
+      "startDate": "1993-11-15",
+      "endDate": "1993-11-21",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1993,
+      "eventId": "atp-1993-1993-D005",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1993-D005"
+      ],
+      "startDate": "1993-12-03",
+      "endDate": "1993-12-05",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1993",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -4503,6 +4653,21 @@
     },
     {
       "season": 1994,
+      "eventId": "atp-1994-1994-314",
+      "tournamentId": "gstaad",
+      "sourceEventIds": [
+        "1994-314"
+      ],
+      "startDate": "1994-07-04",
+      "endDate": "1994-07-10",
+      "timeZone": "Europe/Zurich",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
       "eventId": "atp-1994-1994-315",
       "tournamentId": "unmapped-newport",
       "sourceEventIds": [
@@ -5066,6 +5231,36 @@
       "startDate": "1994-11-07",
       "endDate": "1994-11-13",
       "timeZone": "Europe/Moscow",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
+      "eventId": "atp-1994-1994-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1994-605"
+      ],
+      "startDate": "1994-11-15",
+      "endDate": "1994-11-20",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1994,
+      "eventId": "atp-1994-1994-D074",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1994-D074"
+      ],
+      "startDate": "1994-12-02",
+      "endDate": "1994-12-11",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -6348,6 +6543,36 @@
     },
     {
       "season": 1995,
+      "eventId": "atp-1995-1995-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1995-605"
+      ],
+      "startDate": "1995-11-14",
+      "endDate": "1995-11-19",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
+      "eventId": "atp-1995-1995-D079",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1995-D079"
+      ],
+      "startDate": "1995-12-01",
+      "endDate": "1995-12-03",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1995,
       "eventId": "atp-1995-1995-604",
       "tournamentId": "unmapped-grandslamcup",
       "sourceEventIds": [
@@ -7608,6 +7833,36 @@
     },
     {
       "season": 1996,
+      "eventId": "atp-1996-1996-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1996-605"
+      ],
+      "startDate": "1996-11-19",
+      "endDate": "1996-11-24",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
+      "eventId": "atp-1996-1996-D047",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1996-D047"
+      ],
+      "startDate": "1996-11-29",
+      "endDate": "1996-12-01",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1996",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1996,
       "eventId": "atp-1996-1996-604",
       "tournamentId": "unmapped-grandslamcup",
       "sourceEventIds": [
@@ -8822,6 +9077,36 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 1997,
+      "eventId": "atp-1997-1997-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1997-605"
+      ],
+      "startDate": "1997-11-10",
+      "endDate": "1997-11-16",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1997,
+      "eventId": "atp-1997-1997-D082",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1997-D082"
+      ],
+      "startDate": "1997-11-28",
+      "endDate": "1997-11-30",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1997",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 1998,
       "eventId": "atp-1998-1998-339",
       "tournamentId": "adelaide",
@@ -10007,6 +10292,36 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 1998,
+      "eventId": "atp-1998-1998-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1998-605"
+      ],
+      "startDate": "1998-11-23",
+      "endDate": "1998-11-29",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1998,
+      "eventId": "atp-1998-1998-D060",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1998-D060"
+      ],
+      "startDate": "1998-12-04",
+      "endDate": "1998-12-11",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1998",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 1999,
       "eventId": "atp-1999-1999-339",
       "tournamentId": "adelaide",
@@ -10503,6 +10818,21 @@
     },
     {
       "season": 1999,
+      "eventId": "atp-1999-1999-473",
+      "tournamentId": "unmapped-merano",
+      "sourceEventIds": [
+        "1999-473"
+      ],
+      "startDate": "1999-06-07",
+      "endDate": "1999-06-13",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
       "eventId": "atp-1999-1999-311",
       "tournamentId": "queens",
       "sourceEventIds": [
@@ -10691,6 +11021,21 @@
       "startDate": "1999-08-02",
       "endDate": "1999-08-08",
       "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
+      "eventId": "atp-1999-1999-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "1999-422"
+      ],
+      "startDate": "1999-08-09",
+      "endDate": "1999-08-15",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -11021,6 +11366,36 @@
       "startDate": "1999-11-08",
       "endDate": "1999-11-14",
       "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
+      "eventId": "atp-1999-1999-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "1999-605"
+      ],
+      "startDate": "1999-11-22",
+      "endDate": "1999-11-28",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 1999,
+      "eventId": "atp-1999-1999-D005",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "1999-D005"
+      ],
+      "startDate": "1999-12-03",
+      "endDate": "1999-12-05",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -11553,6 +11928,21 @@
     },
     {
       "season": 2000,
+      "eventId": "atp-2000-2000-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "2000-422"
+      ],
+      "startDate": "2000-08-07",
+      "endDate": "2000-08-13",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
       "eventId": "atp-2000-2000-423",
       "tournamentId": "unmapped-losangeles",
       "sourceEventIds": [
@@ -11913,6 +12303,21 @@
     },
     {
       "season": 2000,
+      "eventId": "atp-2000-2000-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2000-605"
+      ],
+      "startDate": "2000-11-27",
+      "endDate": "2000-12-03",
+      "timeZone": "Europe/Lisbon",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
       "eventId": "atp-2000-2000-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -12056,6 +12461,21 @@
       "startDate": "2000-09-18",
       "endDate": "2000-10-01",
       "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2000,
+      "eventId": "atp-2000-2000-D049",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2000-D049"
+      ],
+      "startDate": "2000-12-08",
+      "endDate": "2000-12-10",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -12978,6 +13398,21 @@
     },
     {
       "season": 2001,
+      "eventId": "atp-2001-2001-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2001-605"
+      ],
+      "startDate": "2001-11-12",
+      "endDate": "2001-11-18",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2001,
       "eventId": "atp-2001-2001-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -13091,6 +13526,21 @@
       "startDate": "2001-01-01",
       "endDate": "2001-01-07",
       "timeZone": "Asia/Kolkata",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2001,
+      "eventId": "atp-2001-2001-D079",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2001-D079"
+      ],
+      "startDate": "2001-11-30",
+      "endDate": "2001-12-02",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2001",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -13578,6 +14028,21 @@
     },
     {
       "season": 2002,
+      "eventId": "atp-2002-2002-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "2002-422"
+      ],
+      "startDate": "2002-08-05",
+      "endDate": "2002-08-11",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2002,
       "eventId": "atp-2002-2002-423",
       "tournamentId": "unmapped-losangeles",
       "sourceEventIds": [
@@ -13961,6 +14426,21 @@
       "startDate": "2002-01-14",
       "endDate": "2002-01-27",
       "timeZone": "Australia/Melbourne",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2002,
+      "eventId": "atp-2002-2002-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2002-605"
+      ],
+      "startDate": "2002-11-11",
+      "endDate": "2002-11-17",
+      "timeZone": "Asia/Shanghai",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -14553,6 +15033,21 @@
     },
     {
       "season": 2003,
+      "eventId": "atp-2003-2003-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "2003-421"
+      ],
+      "startDate": "2003-08-04",
+      "endDate": "2003-08-10",
+      "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2003,
       "eventId": "atp-2003-2003-422",
       "tournamentId": "cincinnati",
       "sourceEventIds": [
@@ -14958,6 +15453,21 @@
     },
     {
       "season": 2003,
+      "eventId": "atp-2003-2003-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2003-605"
+      ],
+      "startDate": "2003-11-10",
+      "endDate": "2003-11-16",
+      "timeZone": "America/Chicago",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2003,
       "eventId": "atp-2003-2003-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -15056,6 +15566,21 @@
       "startDate": "2002-12-30",
       "endDate": "2003-01-05",
       "timeZone": "Asia/Kolkata",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2003,
+      "eventId": "atp-2003-2003-D039",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2003-D039"
+      ],
+      "startDate": "2003-11-28",
+      "endDate": "2003-11-30",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -15513,6 +16038,21 @@
     },
     {
       "season": 2004,
+      "eventId": "atp-2004-2004-418",
+      "tournamentId": "washington",
+      "sourceEventIds": [
+        "2004-418"
+      ],
+      "startDate": "2004-08-16",
+      "endDate": "2004-08-22",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2004,
       "eventId": "atp-2004-2004-419",
       "tournamentId": "unmapped-indianapolis",
       "sourceEventIds": [
@@ -15926,6 +16466,21 @@
       "startDate": "2004-01-19",
       "endDate": "2004-02-01",
       "timeZone": "Australia/Melbourne",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2004,
+      "eventId": "atp-2004-2004-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2004-605"
+      ],
+      "startDate": "2004-11-15",
+      "endDate": "2004-11-21",
+      "timeZone": "America/Chicago",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -16563,6 +17118,21 @@
     },
     {
       "season": 2005,
+      "eventId": "atp-2005-2005-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "2005-421"
+      ],
+      "startDate": "2005-08-08",
+      "endDate": "2005-08-14",
+      "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2005",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2005,
       "eventId": "atp-2005-2005-422",
       "tournamentId": "cincinnati",
       "sourceEventIds": [
@@ -16938,6 +17508,21 @@
     },
     {
       "season": 2005,
+      "eventId": "atp-2005-2005-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2005-605"
+      ],
+      "startDate": "2005-11-14",
+      "endDate": "2005-11-20",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2005",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2005,
       "eventId": "atp-2005-2005-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -17111,6 +17696,21 @@
       "startDate": "2006-01-09",
       "endDate": "2006-01-15",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2006,
+      "eventId": "atp-2006-2006-306",
+      "tournamentId": "unmapped-poertschach",
+      "sourceEventIds": [
+        "2006-306"
+      ],
+      "startDate": "2006-05-22",
+      "endDate": "2006-05-28",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -17553,6 +18153,36 @@
     },
     {
       "season": 2006,
+      "eventId": "atp-2006-2006-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "2006-421"
+      ],
+      "startDate": "2006-08-07",
+      "endDate": "2006-08-13",
+      "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2006,
+      "eventId": "atp-2006-2006-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "2006-422"
+      ],
+      "startDate": "2006-08-14",
+      "endDate": "2006-08-20",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2006,
       "eventId": "atp-2006-2006-423",
       "tournamentId": "unmapped-losangeles",
       "sourceEventIds": [
@@ -17913,6 +18543,21 @@
     },
     {
       "season": 2006,
+      "eventId": "atp-2006-2006-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2006-605"
+      ],
+      "startDate": "2006-11-13",
+      "endDate": "2006-11-19",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2006,
       "eventId": "atp-2006-2006-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -18071,6 +18716,21 @@
       "startDate": "2007-01-08",
       "endDate": "2007-01-14",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2007,
+      "eventId": "atp-2007-2007-306",
+      "tournamentId": "unmapped-poertschach",
+      "sourceEventIds": [
+        "2007-306"
+      ],
+      "startDate": "2007-05-20",
+      "endDate": "2007-05-27",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -18498,6 +19158,36 @@
     },
     {
       "season": 2007,
+      "eventId": "atp-2007-2007-421",
+      "tournamentId": "canada",
+      "sourceEventIds": [
+        "2007-421"
+      ],
+      "startDate": "2007-08-05",
+      "endDate": "2007-08-12",
+      "timeZone": "America/Toronto",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2007,
+      "eventId": "atp-2007-2007-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "2007-422"
+      ],
+      "startDate": "2007-08-13",
+      "endDate": "2007-08-19",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2007,
       "eventId": "atp-2007-2007-423",
       "tournamentId": "unmapped-losangeles",
       "sourceEventIds": [
@@ -18843,6 +19533,21 @@
     },
     {
       "season": 2007,
+      "eventId": "atp-2007-2007-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2007-605"
+      ],
+      "startDate": "2007-11-12",
+      "endDate": "2007-11-18",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2007,
       "eventId": "atp-2007-2007-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -18948,6 +19653,21 @@
     },
     {
       "season": 2007,
+      "eventId": "atp-2007-2007-D023",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2007-D023"
+      ],
+      "startDate": "2007-11-30",
+      "endDate": "2007-12-02",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2007,
       "eventId": "atp-2007-2007-505",
       "tournamentId": "unmapped-vinadelmar",
       "sourceEventIds": [
@@ -19016,6 +19736,21 @@
       "startDate": "2008-01-07",
       "endDate": "2008-01-13",
       "timeZone": "Pacific/Auckland",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2008,
+      "eventId": "atp-2008-2008-306",
+      "tournamentId": "unmapped-poertschach",
+      "sourceEventIds": [
+        "2008-306"
+      ],
+      "startDate": "2008-05-18",
+      "endDate": "2008-05-25",
+      "timeZone": "Europe/Vienna",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -19443,6 +20178,21 @@
     },
     {
       "season": 2008,
+      "eventId": "atp-2008-2008-422",
+      "tournamentId": "cincinnati",
+      "sourceEventIds": [
+        "2008-422"
+      ],
+      "startDate": "2008-07-28",
+      "endDate": "2008-08-03",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2008,
       "eventId": "atp-2008-2008-423",
       "tournamentId": "unmapped-losangeles",
       "sourceEventIds": [
@@ -19803,6 +20553,21 @@
     },
     {
       "season": 2008,
+      "eventId": "atp-2008-2008-605",
+      "tournamentId": "unmapped-masterscup",
+      "sourceEventIds": [
+        "2008-605"
+      ],
+      "startDate": "2008-11-09",
+      "endDate": "2008-11-16",
+      "timeZone": "Asia/Shanghai",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2008,
       "eventId": "atp-2008-2008-615",
       "tournamentId": "unmapped-dusseldorf",
       "sourceEventIds": [
@@ -19922,6 +20687,21 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 2008,
+      "eventId": "atp-2008-2008-D043",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2008-D043"
+      ],
+      "startDate": "2008-11-21",
+      "endDate": "2008-11-23",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 2009,
       "eventId": "atp-2009-2009-1536",
       "tournamentId": "madrid",
@@ -20021,6 +20801,21 @@
       "startDate": "2009-06-08",
       "endDate": "2009-06-14",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2009,
+      "eventId": "atp-2009-2009-314",
+      "tournamentId": "gstaad",
+      "sourceEventIds": [
+        "2009-314"
+      ],
+      "startDate": "2009-07-26",
+      "endDate": "2009-08-02",
+      "timeZone": "Europe/Zurich",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -20771,6 +21566,21 @@
       "startDate": "2009-09-28",
       "endDate": "2009-10-04",
       "timeZone": "Asia/Kuala_Lumpur",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2009,
+      "eventId": "atp-2009-2009-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2009-605"
+      ],
+      "startDate": "2009-11-22",
+      "endDate": "2009-11-29",
+      "timeZone": "Europe/London",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -21857,6 +22667,36 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 2010,
+      "eventId": "atp-2010-2010-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2010-605"
+      ],
+      "startDate": "2010-11-21",
+      "endDate": "2010-11-28",
+      "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2010",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2010,
+      "eventId": "atp-2010-2010-D045",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2010-D045"
+      ],
+      "startDate": "2010-12-03",
+      "endDate": "2010-12-05",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2010",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 2011,
       "eventId": "atp-2011-2011-339",
       "tournamentId": "brisbane",
@@ -22458,6 +23298,21 @@
     },
     {
       "season": 2011,
+      "eventId": "atp-2011-2011-6116",
+      "tournamentId": "unmapped-atlanta",
+      "sourceEventIds": [
+        "2011-6116"
+      ],
+      "startDate": "2011-07-18",
+      "endDate": "2011-07-24",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2011",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2011,
       "eventId": "atp-2011-2011-414",
       "tournamentId": "hamburg",
       "sourceEventIds": [
@@ -22931,6 +23786,21 @@
       "startDate": "2012-01-30",
       "endDate": "2012-02-05",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2012",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2012,
+      "eventId": "atp-2012-2012-505",
+      "tournamentId": "santiago",
+      "sourceEventIds": [
+        "2012-505"
+      ],
+      "startDate": "2012-01-30",
+      "endDate": "2012-02-05",
+      "timeZone": "America/Santiago",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2012",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -23478,6 +24348,21 @@
     },
     {
       "season": 2012,
+      "eventId": "atp-2012-2012-414",
+      "tournamentId": "hamburg",
+      "sourceEventIds": [
+        "2012-414"
+      ],
+      "startDate": "2012-07-16",
+      "endDate": "2012-07-22",
+      "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2012",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2012,
       "eventId": "atp-2012-2012-319",
       "tournamentId": "kitzbuhel",
       "sourceEventIds": [
@@ -23807,6 +24692,21 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 2012,
+      "eventId": "atp-2012-2012-M-DC-2012-WG-M-ESP-CZE-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2012-M-DC-2012-WG-M-ESP-CZE-01"
+      ],
+      "startDate": "2012-11-16",
+      "endDate": "2012-11-18",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2012",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 2013,
       "eventId": "atp-2013-2013-339",
       "tournamentId": "brisbane",
@@ -23906,6 +24806,21 @@
       "startDate": "2013-02-04",
       "endDate": "2013-02-10",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2013,
+      "eventId": "atp-2013-2013-505",
+      "tournamentId": "santiago",
+      "sourceEventIds": [
+        "2013-505"
+      ],
+      "startDate": "2013-02-04",
+      "endDate": "2013-02-10",
+      "timeZone": "America/Santiago",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -24168,6 +25083,21 @@
     },
     {
       "season": 2013,
+      "eventId": "atp-2013-2013-468",
+      "tournamentId": "estoril",
+      "sourceEventIds": [
+        "2013-468"
+      ],
+      "startDate": "2013-04-29",
+      "endDate": "2013-05-05",
+      "timeZone": "Europe/Lisbon",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2013,
       "eventId": "atp-2013-2013-308",
       "tournamentId": "munich",
       "sourceEventIds": [
@@ -24371,6 +25301,21 @@
       "startDate": "2013-07-08",
       "endDate": "2013-07-14",
       "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2013,
+      "eventId": "atp-2013-2013-6718",
+      "tournamentId": "unmapped-bogota",
+      "sourceEventIds": [
+        "2013-6718"
+      ],
+      "startDate": "2013-07-15",
+      "endDate": "2013-07-21",
+      "timeZone": "America/Bogota",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -24716,6 +25661,36 @@
       "startDate": "2013-10-28",
       "endDate": "2013-11-03",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2013,
+      "eventId": "atp-2013-2013-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2013-605"
+      ],
+      "startDate": "2013-11-04",
+      "endDate": "2013-11-11",
+      "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2013,
+      "eventId": "atp-2013-2013-D015",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2013-D015"
+      ],
+      "startDate": "2013-11-15",
+      "endDate": "2013-11-17",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -25098,6 +26073,21 @@
     },
     {
       "season": 2014,
+      "eventId": "atp-2014-2014-468",
+      "tournamentId": "estoril",
+      "sourceEventIds": [
+        "2014-468"
+      ],
+      "startDate": "2014-04-28",
+      "endDate": "2014-05-04",
+      "timeZone": "Europe/Lisbon",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2014,
       "eventId": "atp-2014-2014-308",
       "tournamentId": "munich",
       "sourceEventIds": [
@@ -25301,6 +26291,21 @@
       "startDate": "2014-07-07",
       "endDate": "2014-07-13",
       "timeZone": "Europe/Berlin",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2014,
+      "eventId": "atp-2014-2014-6718",
+      "tournamentId": "unmapped-bogota",
+      "sourceEventIds": [
+        "2014-6718"
+      ],
+      "startDate": "2014-07-14",
+      "endDate": "2014-07-20",
+      "timeZone": "America/Bogota",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -25616,6 +26621,36 @@
       "startDate": "2014-10-20",
       "endDate": "2014-10-26",
       "timeZone": "Europe/Madrid",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2014,
+      "eventId": "atp-2014-2014-352",
+      "tournamentId": "paris",
+      "sourceEventIds": [
+        "2014-352"
+      ],
+      "startDate": "2014-10-27",
+      "endDate": "2014-11-02",
+      "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2014,
+      "eventId": "atp-2014-2014-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2014-605"
+      ],
+      "startDate": "2014-11-09",
+      "endDate": "2014-11-16",
+      "timeZone": "Europe/London",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -26223,6 +27258,36 @@
     },
     {
       "season": 2015,
+      "eventId": "atp-2015-2015-316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2015-316"
+      ],
+      "startDate": "2015-07-20",
+      "endDate": "2015-07-26",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2015,
+      "eventId": "atp-2015-2015-6718",
+      "tournamentId": "unmapped-bogota",
+      "sourceEventIds": [
+        "2015-6718"
+      ],
+      "startDate": "2015-07-20",
+      "endDate": "2015-07-26",
+      "timeZone": "America/Bogota",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2015,
       "eventId": "atp-2015-2015-439",
       "tournamentId": "umag",
       "sourceEventIds": [
@@ -26561,6 +27626,21 @@
       "startDate": "2015-11-02",
       "endDate": "2015-11-08",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2015,
+      "eventId": "atp-2015-2015-605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2015-605"
+      ],
+      "startDate": "2015-11-15",
+      "endDate": "2015-11-22",
+      "timeZone": "Europe/London",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -27146,6 +28226,21 @@
       "startDate": "2016-06-27",
       "endDate": "2016-07-10",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2016",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2016,
+      "eventId": "atp-2016-2016-0316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2016-0316"
+      ],
+      "startDate": "2016-07-11",
+      "endDate": "2016-07-17",
+      "timeZone": "Europe/Stockholm",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2016",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -28158,6 +29253,36 @@
     },
     {
       "season": 2017,
+      "eventId": "atp-2017-2017-0316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2017-0316"
+      ],
+      "startDate": "2017-07-17",
+      "endDate": "2017-07-23",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2017,
+      "eventId": "atp-2017-2017-0315",
+      "tournamentId": "unmapped-newport",
+      "sourceEventIds": [
+        "2017-0315"
+      ],
+      "startDate": "2017-07-17",
+      "endDate": "2017-07-23",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2017,
       "eventId": "atp-2017-2017-0439",
       "tournamentId": "umag",
       "sourceEventIds": [
@@ -28511,6 +29636,21 @@
       "startDate": "2017-10-30",
       "endDate": "2017-11-05",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2017,
+      "eventId": "atp-2017-2017-0605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2017-0605"
+      ],
+      "startDate": "2017-11-12",
+      "endDate": "2017-11-19",
+      "timeZone": "Europe/London",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -29141,6 +30281,36 @@
       "startDate": "2018-07-02",
       "endDate": "2018-07-15",
       "timeZone": "Europe/London",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2018,
+      "eventId": "atp-2018-2018-0316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2018-0316"
+      ],
+      "startDate": "2018-07-16",
+      "endDate": "2018-07-22",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2018,
+      "eventId": "atp-2018-2018-0315",
+      "tournamentId": "unmapped-newport",
+      "sourceEventIds": [
+        "2018-0315"
+      ],
+      "startDate": "2018-07-16",
+      "endDate": "2018-07-22",
+      "timeZone": "America/New_York",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -30138,6 +31308,21 @@
     },
     {
       "season": 2019,
+      "eventId": "atp-2019-2019-0316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2019-0316"
+      ],
+      "startDate": "2019-07-15",
+      "endDate": "2019-07-21",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2019,
       "eventId": "atp-2019-2019-0315",
       "tournamentId": "unmapped-newport",
       "sourceEventIds": [
@@ -30146,6 +31331,21 @@
       "startDate": "2019-07-14",
       "endDate": "2019-07-21",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2019,
+      "eventId": "atp-2019-2019-0439",
+      "tournamentId": "umag",
+      "sourceEventIds": [
+        "2019-0439"
+      ],
+      "startDate": "2019-07-15",
+      "endDate": "2019-07-21",
+      "timeZone": "Europe/Zagreb",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -30491,6 +31691,21 @@
       "startDate": "2019-10-28",
       "endDate": "2019-11-03",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2019,
+      "eventId": "atp-2019-2019-0605",
+      "tournamentId": "atpfinals",
+      "sourceEventIds": [
+        "2019-0605"
+      ],
+      "startDate": "2019-11-10",
+      "endDate": "2019-11-17",
+      "timeZone": "Europe/London",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -31818,6 +33033,21 @@
     },
     {
       "season": 2021,
+      "eventId": "atp-2021-2021-8998",
+      "tournamentId": "unmapped-greatoceanroadopen",
+      "sourceEventIds": [
+        "2021-8998"
+      ],
+      "startDate": "2021-02-01",
+      "endDate": "2021-02-07",
+      "timeZone": "Australia/Melbourne",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
       "eventId": "atp-2021-2021-9158",
       "tournamentId": "unmapped-cordoba",
       "sourceEventIds": [
@@ -31856,6 +33086,21 @@
       "startDate": "2021-01-07",
       "endDate": "2021-01-13",
       "timeZone": "Europe/Istanbul",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2021,
+      "eventId": "atp-2021-2021-9428",
+      "tournamentId": "unmapped-murrayriveropen",
+      "sourceEventIds": [
+        "2021-9428"
+      ],
+      "startDate": "2021-02-01",
+      "endDate": "2021-02-07",
+      "timeZone": "Australia/Melbourne",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2021",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -32568,6 +33813,21 @@
     },
     {
       "season": 2022,
+      "eventId": "atp-2022-2022-0316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2022-0316"
+      ],
+      "startDate": "2022-07-11",
+      "endDate": "2022-07-17",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2022,
       "eventId": "atp-2022-2022-0315",
       "tournamentId": "unmapped-newport",
       "sourceEventIds": [
@@ -33012,6 +34272,21 @@
       "endDate": "2022-11-20",
       "timeZone": "Europe/Rome",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-9900",
+      "tournamentId": "unitedcup",
+      "sourceEventIds": [
+        "2023-9900"
+      ],
+      "startDate": "2022-12-29",
+      "endDate": "2023-01-08",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
       "verifiedAt": "2026-11-27"
@@ -33588,6 +34863,21 @@
     },
     {
       "season": 2023,
+      "eventId": "atp-2023-2023-0314",
+      "tournamentId": "gstaad",
+      "sourceEventIds": [
+        "2023-0314"
+      ],
+      "startDate": "2023-07-17",
+      "endDate": "2023-07-23",
+      "timeZone": "Europe/Zurich",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
       "eventId": "atp-2023-2023-0316",
       "tournamentId": "bastad",
       "sourceEventIds": [
@@ -33992,6 +35282,366 @@
       "verifiedAt": "2026-11-27"
     },
     {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-1-A-M-CAN-CHI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-1-A-M-CAN-CHI-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-1-A-M-CAN-ITA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-1-A-M-CAN-ITA-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-1-A-M-CAN-SWE-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-1-A-M-CAN-SWE-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-1-A-M-ITA-CHI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-1-A-M-ITA-CHI-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-1-A-M-ITA-SWE-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-1-A-M-ITA-SWE-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-1-A-M-SWE-CHI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-1-A-M-SWE-CHI-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-2-B-M-AUS-FRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-2-B-M-AUS-FRA-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-2-B-M-AUS-GBR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-2-B-M-AUS-GBR-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-2-B-M-AUS-SUI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-2-B-M-AUS-SUI-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-2-B-M-FRA-SUI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-2-B-M-FRA-SUI-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-2-B-M-GBR-FRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-2-B-M-GBR-FRA-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-2-B-M-GBR-SUI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-2-B-M-GBR-SUI-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-3-C-M-CZE-KOR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-3-C-M-CZE-KOR-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-3-C-M-ESP-CZE-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-3-C-M-ESP-CZE-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-3-C-M-ESP-KOR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-3-C-M-ESP-KOR-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-3-C-M-ESP-SRB-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-3-C-M-ESP-SRB-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-3-C-M-SRB-CZE-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-3-C-M-SRB-CZE-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-3-C-M-SRB-KOR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-3-C-M-SRB-KOR-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-4-D-M-CRO-FIN-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-4-D-M-CRO-FIN-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-4-D-M-CRO-NED-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-4-D-M-CRO-NED-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-4-D-M-CRO-USA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-4-D-M-CRO-USA-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-4-D-M-NED-FIN-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-4-D-M-NED-FIN-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-4-D-M-NED-USA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-4-D-M-NED-USA-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2023,
+      "eventId": "atp-2023-2023-M-DC-2023-FLS-4-D-M-USA-FIN-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2023-M-DC-2023-FLS-4-D-M-USA-FIN-01"
+      ],
+      "startDate": "2023-09-12",
+      "endDate": "2023-09-17",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
       "season": 2024,
       "eventId": "atp-2024-2024-0339",
       "tournamentId": "brisbane",
@@ -34001,6 +35651,21 @@
       "startDate": "2023-12-31",
       "endDate": "2024-01-07",
       "timeZone": "Australia/Brisbane",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-9900",
+      "tournamentId": "unitedcup",
+      "sourceEventIds": [
+        "2024-9900"
+      ],
+      "startDate": "2023-12-29",
+      "endDate": "2024-01-07",
+      "timeZone": "Australia/Sydney",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -34608,6 +36273,36 @@
     },
     {
       "season": 2024,
+      "eventId": "atp-2024-2024-0316",
+      "tournamentId": "bastad",
+      "sourceEventIds": [
+        "2024-0316"
+      ],
+      "startDate": "2024-07-15",
+      "endDate": "2024-07-21",
+      "timeZone": "Europe/Stockholm",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-0315",
+      "tournamentId": "unmapped-newport",
+      "sourceEventIds": [
+        "2024-0315"
+      ],
+      "startDate": "2024-07-15",
+      "endDate": "2024-07-21",
+      "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
       "eventId": "atp-2024-2024-6116",
       "tournamentId": "unmapped-atlanta",
       "sourceEventIds": [
@@ -34962,6 +36657,381 @@
       "endDate": "2024-12-22",
       "timeZone": "Asia/Riyadh",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-1-M-A-BEL-BRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-1-M-A-BEL-BRA-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-1-M-A-ITA-BEL-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-1-M-A-ITA-BEL-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-1-M-A-ITA-BRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-1-M-A-ITA-BRA-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-1-M-A-ITA-NED-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-1-M-A-ITA-NED-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-1-M-A-NED-BEL-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-1-M-A-NED-BEL-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-1-M-A-NED-BRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-1-M-A-NED-BRA-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-2-M-B-AUS-CZE-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-2-M-B-AUS-CZE-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-2-M-B-AUS-ESP-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-2-M-B-AUS-ESP-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-2-M-B-AUS-FRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-2-M-B-AUS-FRA-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-2-M-B-CZE-ESP-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-2-M-B-CZE-ESP-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-2-M-B-CZE-FRA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-2-M-B-CZE-FRA-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-2-M-B-FRA-ESP-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-2-M-B-FRA-ESP-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-3-M-C-GER-CHI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-3-M-C-GER-CHI-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-3-M-C-GER-SVK-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-3-M-C-GER-SVK-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-3-M-C-GER-USA-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-3-M-C-GER-USA-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-3-M-C-SVK-CHI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-3-M-C-SVK-CHI-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-3-M-C-USA-CHI-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-3-M-C-USA-CHI-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-3-M-C-USA-SVK-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-3-M-C-USA-SVK-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-4-M-D-CAN-ARG-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-4-M-D-CAN-ARG-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-4-M-D-CAN-FIN-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-4-M-D-CAN-FIN-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-4-M-D-CAN-GBR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-4-M-D-CAN-GBR-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-4-M-D-FIN-ARG-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-4-M-D-FIN-ARG-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-4-M-D-FIN-GBR-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-4-M-D-FIN-GBR-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2024,
+      "eventId": "atp-2024-2024-M-DC-2024-FLS-4-M-D-GBR-ARG-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2024-M-DC-2024-FLS-4-M-D-GBR-ARG-01"
+      ],
+      "startDate": "2024-09-10",
+      "endDate": "2024-09-15",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2025,
+      "eventId": "atp-2025-2025-9900",
+      "tournamentId": "unitedcup",
+      "sourceEventIds": [
+        "2025-9900"
+      ],
+      "startDate": "2024-12-27",
+      "endDate": "2025-01-05",
+      "timeZone": "Australia/Sydney",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2025",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
       "verifiedAt": "2026-11-27"
@@ -35553,6 +37623,21 @@
     },
     {
       "season": 2025,
+      "eventId": "atp-2025-2025-0439",
+      "tournamentId": "umag",
+      "sourceEventIds": [
+        "2025-0439"
+      ],
+      "startDate": "2025-07-20",
+      "endDate": "2025-07-26",
+      "timeZone": "Europe/Zagreb",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2025",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2025,
       "eventId": "atp-2025-2025-0319",
       "tournamentId": "kitzbuhel",
       "sourceEventIds": [
@@ -35981,6 +38066,396 @@
       "startDate": "2026-02-02",
       "endDate": "2026-02-08",
       "timeZone": "Europe/Paris",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-CHN-POR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-CHN-POR-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-NOR-GBR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-NOR-GBR-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CAN-BRA-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CAN-BRA-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CHI-SRB-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CHI-SRB-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-PAR-ROU-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-PAR-ROU-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CRO-DEN-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CRO-DEN-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-GER-PER-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-GER-PER-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-SLO-TUR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-SLO-TUR-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-SUI-TUN-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-SUI-TUN-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-ISR-LTU-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-ISR-LTU-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-KAZ-MON-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-KAZ-MON-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-JPN-AUT-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-JPN-AUT-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-ECU-AUS-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-ECU-AUS-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-GRE-MEX-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-GRE-MEX-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-HUN-USA-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-HUN-USA-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-BUL-BEL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-BUL-BEL-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-LUX-UKR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-LUX-UKR-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CZE-SWE-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CZE-SWE-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-IND-NED-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-IND-NED-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-FRA-SVK-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-FRA-SVK-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-MAR-COL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-MAR-COL-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-EGY-POL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-EGY-POL-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-FIN-HKG-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-FIN-HKG-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-KOR-ARG-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-KOR-ARG-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-TPE-LBN-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-TPE-LBN-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-PO-NZL-BIH-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-PO-NZL-BIH-01"
+      ],
+      "startDate": "2026-02-05",
+      "endDate": "2026-02-08",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
@@ -36581,6 +39056,486 @@
       "startDate": "2026-08-30",
       "endDate": "2026-09-13",
       "timeZone": "America/New_York",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-KOR-IND-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-KOR-IND-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-AUT-BEL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-AUT-BEL-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CZE-USA-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CZE-USA-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CAN-FRA-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CAN-FRA-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-GER-CRO-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-GER-CRO-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-GBR-ECU-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-GBR-ECU-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-QLS-M-CHI-ESP-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-QLS-M-CHI-ESP-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-FIN-MON-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-FIN-MON-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-LUX-HUN-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-LUX-HUN-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-NED-COL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-NED-COL-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-NOR-CHN-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-NOR-CHN-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-DEN-BUL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-DEN-BUL-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-BRA-SUI-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-BRA-SUI-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-PER-PAR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-PER-PAR-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-NZL-JPN-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-NZL-JPN-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-AUS-POL-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-AUS-POL-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-TPE-SWE-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-TPE-SWE-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-SVK-GRE-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-SVK-GRE-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-SRB-LTU-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-SRB-LTU-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG1-R1-ARG-TUR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG1-R1-ARG-TUR-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-INA-ROU-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-INA-ROU-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-KAZ-THA-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-KAZ-THA-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-TUN-PAK-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-TUN-PAK-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-SLO-ISR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-SLO-ISR-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-DOM-EGY-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-DOM-EGY-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-URU-EST-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-URU-EST-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-BOL-HKG-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-BOL-HKG-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-CYP-UKR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-CYP-UKR-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-MAR-NGR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-MAR-NGR-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-RSA-BIH-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-RSA-BIH-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-BER-MEX-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-BER-MEX-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-WG2-R1-ESA-POR-01",
+      "tournamentId": "daviscup",
+      "sourceEventIds": [
+        "2026-M-DC-2026-WG2-R1-ESA-POR-01"
+      ],
+      "startDate": "2026-09-17",
+      "endDate": "2026-09-20",
+      "timeZone": "MULTI_LOCATION",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
       "sourceKind": "results_archive",
       "dateStatus": "actual",
