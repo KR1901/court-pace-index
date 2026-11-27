@@ -1,0 +1,92 @@
+name: CALC methodology research audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/calculation-research-audit.yml"
+      - "tools/compute_speed.py"
+      - "tools/chronological_loeo_study.py"
+      - "tools/deep_calculation_audit.py"
+      - "tools/compare_speed_variants.py"
+      - "tools/test_compute_speed.py"
+      - "tools/test_chronological_loeo_study.py"
+      - "docs/CALC_RESEARCH_AUDIT.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calc-methodology-research-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore ATP archive and Tennis Abstract caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/atp
+            .cache/tennisabstract
+          key: calc-methodology-research-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py', 'tools/chronological_loeo_study.py', 'tools/deep_calculation_audit.py', 'tools/compare_speed_variants.py') }}
+          restore-keys: |
+            calc-methodology-research-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
+
+      - name: Run all Python tooling tests
+        run: python3 -m unittest discover -s tools -p "test_*.py" -v
+
+      - name: Run production-equivalent chronology and cross-fitted normalisation study
+        run: |
+          set -euo pipefail
+          python3 tools/chronological_loeo_study.py \
+            --start-year 2016 \
+            --end-year "$(date -u +%Y)" \
+            --crossfit \
+            --bootstrap 100 \
+            --detail rio \
+            --output calc-crossfit-study.json | tee calc-crossfit-study.log
+          cat calc-crossfit-study.log >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run LOEO, empirical-Bayes, surface-weighting and full-pipeline audit
+        run: |
+          set -euo pipefail
+          python3 tools/deep_calculation_audit.py \
+            --seasons $(seq 1991 "$(date -u +%Y)") \
+            --boot 1000 \
+            --detail rio,marrakech,lavercup,montpellier,paris \
+            | tee deep-calculation-audit.txt
+          cat deep-calculation-audit.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Compare expected-aces formulas against Tennis Abstract
+        run: |
+          set -euo pipefail
+          python3 tools/compare_speed_variants.py \
+            --seasons $(seq 1991 "$(date -u +%Y)") \
+            --reference-source tennisabstract \
+            --boot 2000 \
+            --baseline surface_returner \
+            | tee formula-comparison.txt
+          cat formula-comparison.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload research reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: court-pace-calc-methodology-research
+          path: |
+            calc-crossfit-study.json
+            calc-crossfit-study.log
+            deep-calculation-audit.txt
+            formula-comparison.txt
+          if-no-files-found: error
+          retention-days: 90
