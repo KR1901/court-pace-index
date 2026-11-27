@@ -140,6 +140,70 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertEqual(1.203, merged["daviscupfinal8"]["speed"])
         self.assertEqual(1.30, merged["rome"]["speed"])
 
+    def test_published_historical_davis_cup_reading_is_preserved_as_frozen_legacy_snapshot(self):
+        previous = {
+            "season_sources": {"2024": "Jeff Sackmann ATP archive"},
+            "seasons": {
+                "2024": {
+                    "daviscup": {
+                        "speed": 1.087,
+                        "matches": 212,
+                        "adjustedServerSides": 424,
+                        "calculationDiagnostics": {
+                            "chronologyRule": "legacy_max_event_window_by_source_level",
+                        },
+                    },
+                    "daviscupfinal8": {
+                        "speed": 1.20,
+                        "matches": 8,
+                        "adjustedServerSides": 16,
+                    },
+                },
+            },
+        }
+        freshly_recalculated = {
+            "rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62},
+        }
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2024,
+            freshly_recalculated,
+            "Jeff Sackmann ATP archive",
+            previous,
+            current_year=2026,
+        )
+
+        self.assertEqual(["daviscup"], retained)
+        self.assertEqual("Jeff Sackmann ATP archive", source)
+        self.assertEqual(1.30, merged["rome"]["speed"])
+        self.assertEqual(1.087, merged["daviscup"]["speed"])
+        self.assertNotIn("daviscupfinal8", merged)
+        diagnostics = merged["daviscup"]["calculationDiagnostics"]
+        self.assertEqual("legacy_frozen", diagnostics["chronologySnapshotStatus"])
+        self.assertIn("not recomputed under strict whole-event dates", diagnostics["chronologySnapshotNote"])
+
+    def test_strictly_recalculated_historical_davis_cup_rating_is_not_overwritten(self):
+        previous = {
+            "season_sources": {"2024": "Jeff Sackmann ATP archive"},
+            "seasons": {
+                "2024": {
+                    "daviscup": {"speed": 1.087, "matches": 212, "adjustedServerSides": 424},
+                },
+            },
+        }
+        freshly_recalculated = {
+            "daviscup": {"speed": 1.11, "matches": 200, "adjustedServerSides": 400},
+        }
+        merged, _, retained = compute_speed.preserve_validated_davis_cup_history(
+            2024,
+            freshly_recalculated,
+            "Jeff Sackmann ATP archive",
+            previous,
+            current_year=2026,
+        )
+        self.assertEqual([], retained)
+        self.assertEqual(1.11, merged["daviscup"]["speed"])
+
     def test_davis_cup_phase_history_is_not_retained_without_a_validated_source_audit(self):
         tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
         previous = {

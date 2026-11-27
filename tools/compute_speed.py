@@ -2361,18 +2361,22 @@ def preserve_validated_davis_cup_history(
     previous_history,
     current_year=None,
 ):
-    """Keep already validated TML Davis Cup phase ratings after their season becomes historical.
+    """Preserve only eligible prior Davis Cup target snapshots during a strict rebuild.
 
-    The current-season TML feed supplies exact source phase IDs (including the Final 8
-    FLS token). The open Sackmann archive does not preserve that phase identifier. When
-    a later-year full rebuild recalculates an older season from Sackmann, silently
-    replacing the previously validated Davis Cup targets with an aggregate or no row
-    would erase the distinct Final 8 history.
+    The current-season TML feed identifies the separate Davis Cup Final 8 phase (FLS).
+    When a season later becomes historical, its already-validated TML overall/Final 8
+    derived readings may be carried forward if the old feed audit confirms provenance.
 
-    Retain only the archived derived CALC records from a prior TML snapshot whose
-    season-level source and coverage audit both explicitly attest to the validated
-    TML annual + ongoing feed. Never retain current-season data after a feed failure,
-    never manufacture a missing phase, and never overwrite a newly recalculated row.
+    The 2016–2024 overall Davis Cup readings predate that TML phase-audit metadata and
+    were published from the Jeff Sackmann archive as target-only historical readings.
+    Older archive identifiers do not preserve tie-level dates, so those existing values
+    cannot honestly be described as recomputed under the new strict event-period rules.
+    Preserve those supported overall readings as explicitly marked frozen legacy
+    snapshots only. They remain target-only and are never used for standard ATP player
+    profile training or season normalisation.
+
+    Never preserve an unsupported year/phase, invalid numeric record, current-season
+    snapshot after a feed failure, or overwrite a newly recalculated rating.
     """
     current_year = date.today().year if current_year is None else int(current_year)
     year = int(year)
@@ -2384,46 +2388,77 @@ def preserve_validated_davis_cup_history(
     previous_history = previous_history if isinstance(previous_history, dict) else {}
     season_key = str(year)
     previous_source = previous_history.get("season_sources", {}).get(season_key)
-    coverage = previous_history.get("davis_cup_coverage", {}).get(season_key)
-
-    if (
-        previous_source != TML_DAVIS_CUP_SOURCE
-        or not isinstance(coverage, dict)
-        or coverage.get("validatedSource") is not True
-        or coverage.get("source") != TML_DAVIS_CUP_SOURCE
-    ):
-        return dict(ratings), current_source, retained_ids
-
     previous_events = previous_history.get("seasons", {}).get(season_key, {})
     merged = dict(ratings)
-    for event_id in ("daviscup", "daviscupfinal8"):
-        if not is_supported_davis_cup_calculation_year(
-            event_id, year, source=previous_source,
-        ):
-            continue
-        archived = previous_events.get(event_id) if isinstance(previous_events, dict) else None
-        if not isinstance(archived, dict):
-            continue
-        speed = archived.get("speed")
-        matches = archived.get("matches")
-        adjusted_sides = archived.get("adjustedServerSides")
-        if (
-            not isinstance(speed, (int, float))
-            or not math.isfinite(float(speed))
-            or speed < 0
-            or not isinstance(matches, int)
-            or matches <= 0
-            or not isinstance(adjusted_sides, int)
-            or adjusted_sides <= 0
-        ):
-            continue
-        if event_id not in merged:
-            merged[event_id] = archived
-            retained_ids.append(event_id)
 
-    if not retained_ids:
-        return merged, current_source, retained_ids
-    return merged, previous_source, retained_ids
+    def valid_archived_rating(value):
+        if not isinstance(value, dict):
+            return False
+        speed = value.get("speed")
+        matches = value.get("matches")
+        adjusted_sides = value.get("adjustedServerSides")
+        return (
+            isinstance(speed, (int, float))
+            and math.isfinite(float(speed))
+            and speed >= 0
+            and isinstance(matches, int)
+            and matches > 0
+            and isinstance(adjusted_sides, int)
+            and adjusted_sides > 0
+        )
+
+    # Preferred preservation path: a season previously calculated from the validated
+    # TML annual + ongoing feeds, with a matching source-coverage audit. This also keeps
+    # the distinct Final 8 for 2026 when that season becomes historical.
+    coverage = previous_history.get("davis_cup_coverage", {}).get(season_key)
+    tml_snapshot_valid = (
+        previous_source == TML_DAVIS_CUP_SOURCE
+        and isinstance(coverage, dict)
+        and coverage.get("validatedSource") is True
+        and coverage.get("source") == TML_DAVIS_CUP_SOURCE
+    )
+    if tml_snapshot_valid:
+        for event_id in ("daviscup", "daviscupfinal8"):
+            if not is_supported_davis_cup_calculation_year(
+                event_id, year, source=previous_source,
+            ):
+                continue
+            archived = previous_events.get(event_id) if isinstance(previous_events, dict) else None
+            if not valid_archived_rating(archived):
+                continue
+            if event_id not in merged:
+                merged[event_id] = archived
+                retained_ids.append(event_id)
+        if not retained_ids:
+            return merged, current_source, retained_ids
+        return merged, previous_source, retained_ids
+
+    # Compatibility path for the established historical overall Davis Cup series.
+    # These are frozen prior publications, not newly strict-recomputed ratings. The
+    # source archive's historical tie IDs do not carry enough chronology to rebuild
+    # them safely, and no Final 8 phase is inferred for these years.
+    if (
+        previous_source == "Jeff Sackmann ATP archive"
+        and is_supported_davis_cup_calculation_year("daviscup", year)
+        and "daviscup" not in merged
+    ):
+        archived = previous_events.get("daviscup") if isinstance(previous_events, dict) else None
+        if valid_archived_rating(archived):
+            frozen = dict(archived)
+            diagnostics = dict(frozen.get("calculationDiagnostics") or {})
+            diagnostics["chronologySnapshotStatus"] = "legacy_frozen"
+            diagnostics["chronologySnapshotNote"] = (
+                "Retained from the previously published historical Davis Cup series. "
+                "Older archive records do not preserve tie-level chronology, so this "
+                "value was not recomputed under strict whole-event dates. Davis Cup is "
+                "target-only and this snapshot is never used for standard ATP player "
+                "profile training or season normalisation."
+            )
+            frozen["calculationDiagnostics"] = diagnostics
+            merged["daviscup"] = frozen
+            retained_ids.append("daviscup")
+
+    return merged, current_source, retained_ids
 
 
 def main():
