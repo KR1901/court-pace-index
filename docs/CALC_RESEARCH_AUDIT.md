@@ -10,7 +10,7 @@ The study tests three different questions separately: (1) does the chronology re
 
 The earlier audit harness had two defects that were corrected before the successful run. First, it independently reconstructed the target profile-training rows and missed production's opening-event previous-season fallback. It now calls production's `_chronological_profiles_and_anchor()` helper. Second, it assumed the compact highest/lowest side-diagnostics display contained every scored side. Repeated display match numbers can be deduplicated there; log loss is now calculated directly over every eligible match-side and checked against the production ratio-cluster population.
 
-The successful research run compared **564 event-seasons across 2016–2026**. The archive-wide guard required the study's target raw score and production normaliser to match `season_ratings()` to an absolute tolerance of 1e-9 for every compared event; the job passed. The full Python tooling suite also passed (241 tests).
+The successful research run compared **564 event-seasons across 2016–2026**. The archive-wide guard required the study's target raw score and production normaliser to match `season_ratings()` to an absolute tolerance of 1e-9 for every compared event; the job passed. The full Python tooling suite also passed (254 tests).
 
 The calendar-year retrospective comparison is deliberately not an as-of-event benchmark: it excludes the target event but can use later matches from the same season. The production chronological score must instead use only data available before the target begins. A difference between those estimands is therefore expected and is not, by itself, a production discrepancy.
 
@@ -121,3 +121,20 @@ The successful GitHub research run completed:
 Production parity was exact on the run's compared events. The current evidence supports retaining the production formula and 150-point prior while the cross-fitted normaliser and the Rio sensitivity remain under study. It does **not** support claiming 100% certainty or replacing production normalisation on the basis of a single alternative benchmark.
 
 No formula, prior strength, surface weighting, minimum-side threshold, or published rating has been changed.
+
+
+## 9. Final main-synced verification (2026-11-27)
+
+The final research run was executed on synced head `8c36ecccf76b0ddda90e883c98e3ec4cd1c5d0f2`, based on main `d59a66b56980bf34c5fbf1fa89a0b2faebc03316`. GitHub Actions run [45943832349](https://github.com/KR1901/court-pace-index/actions/runs/45943832349) completed successfully. The complete run passed all **254 Python tooling tests**, the 2016–2026 production-equivalent chronology/cross-fit study, the archive-wide LOEO/shrinkage/surface/full-pipeline audit, and the Tennis Abstract formula comparison. On the same head, [Android CI](https://github.com/KR1901/court-pace-index/actions/runs/45943832385) and [ACE probability calibration](https://github.com/KR1901/court-pace-index/actions/runs/45943832286) also passed.
+
+The refreshed 2026 source run validated the TML Davis Cup supplement: **8 supplement rows were incorporated as 8 new annual rows**. The 2026 archive-wide event-detail selector reported all five requested IDs as matched (`lavercup`, `marrakech`, `montpellier`, `parismasters`, and `riodejaneiro`), with `not_found=none`. Rio was therefore present in the detailed output, rather than silently omitted.
+
+The latest archive-wide report confirms the main comparisons above on the synced head: 2,205 common event-seasons across 36 seasons for the profile/shrinkage/surface study; 1,000 season-stratified paired bootstrap resamples; and 1,240 common completed-season event-seasons for the 1991–2025 Tennis Abstract formula comparison. Under matched three-match surface eligibility, the empirical-Bayes profile remained slightly weaker than the production 150-point prior (paired deltas: Pearson -0.0045, Spearman -0.0048, MAE +0.0008; all paired intervals exclude zero). The one-factor 0.5 clay-weight variant with the production prior/eligibility also did not improve the production configuration (MAE delta +0.0022; 95% CI +0.0013 to +0.0030). These results support retaining the current production prior and surface blend.
+
+### Rio uncertainty estimates: keep the estimands separate
+
+The production-equivalent chronology study continues to reproduce Rio 2026 exactly: **1.5324** (raw 1.524634 / normaliser 0.994929), with zero raw-score, normaliser and rating differences against `season_ratings()`. Its cross-fitted-anchor sensitivity is **1.0640** (seven independently scored completed anchors; mean raw anchor 1.432992), with a 100-draw full-pipeline 95% interval of **0.725–1.604**.
+
+The separate archive-wide deep LOEO audit reports a different secondary Rio result: **0.974**, with a 250-draw full-pipeline interval of **0.821–1.153**. That secondary audit uses its own same-season LOEO estimand and 50 eligible server sides for the 2026 Rio event; the production-equivalent chronology study scores 62 sides. These figures answer different research questions and must not be combined or presented as competing estimates of the same production calculation. Neither result is a proposal to replace the production normaliser.
+
+The final synced-head evidence supports leaving the production formula, 150-point prior, 1/3–2/3 surface blend, expected-ace probability and published ratings unchanged. The cross-fitted normaliser remains a research sensitivity, not an approved production replacement.
