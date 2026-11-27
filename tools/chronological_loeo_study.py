@@ -15,6 +15,7 @@ import argparse
 import json
 import math
 import os
+import random
 import statistics
 from collections import defaultdict
 from datetime import date
@@ -73,27 +74,61 @@ def grouped_standard_chronology_rows(rows):
 
 
 def event_metrics(event_rows, profiles, tour_rate):
-    details = compute_speed.event_side_diagnostics(
-        event_rows,
-        profiles,
-        tour_rate,
-        retain_per_tail=max(1, len(event_rows) * 2),
-    )
-    sides = details["sideDiagnostics"]
-    ratios = [side["actualExpectedRatio"] for side in sides]
+    """Score an event with the same identity fallback and ratio path as production."""
+    profile_coverage = compute_speed.ensure_event_profiles(event_rows, profiles, tour_rate)
+    clusters = compute_speed.event_match_ratio_clusters(event_rows, profiles, tour_rate)
+    ratios = [ratio for cluster in clusters for ratio in cluster]
     if not ratios:
         return None
+
+    # Side diagnostics are retained for profile coverage, but their highest/lowest
+    # detail list can collapse repeated display keys when source aliases share match_num.
+    # Compute proper binomial log loss directly from every match-side instead.
+    details = compute_speed.event_side_diagnostics(event_rows, profiles, tour_rate)
+
     nll = 0.0
-    points = 0
-    for side in sides:
-        service_points = side["servicePoints"]
-        aces = side["actualAces"]
-        probability = side["expectedAces"] / service_points
-        probability = min(max(probability, 1e-9), 1.0 - 1e-9)
-        nll -= aces * math.log(probability) + (service_points - aces) * math.log(1.0 - probability)
-        points += service_points
+    points = 0.0
+    log_loss_sides = 0
+    for row in event_rows:
+        for server_key, returner_key, points_key, aces_key in (
+            ("winner_id", "loser_id", "w_svpt", "w_ace"),
+            ("loser_id", "winner_id", "l_svpt", "l_ace"),
+        ):
+            service_points = compute_speed.num(row.get(points_key))
+            aces = compute_speed.num(row.get(aces_key))
+            serve_rate = profiles.get(row.get(server_key), {}).get("serve_rate")
+            concede_rate = profiles.get(row.get(returner_key), {}).get("concede_rate")
+            if (
+                service_points <= 0 or aces < 0 or aces > service_points
+                or serve_rate is None or concede_rate is None
+                or not 0.0 < serve_rate < 1.0
+                or not 0.0 < concede_rate < 1.0
+                or not 0.0 < tour_rate < 1.0
+            ):
+                continue
+            expected = compute_speed.expected_calibrated_aces(
+                serve_rate, concede_rate, tour_rate, service_points
+            )
+            if not math.isfinite(expected) or expected <= compute_speed.MIN_EXPECTED_ACES:
+                continue
+            # The 0.5 expected-ace floor protects the ratio denominator only. It is
+            # not a probability floor and must not be substituted into binomial log loss.
+            probability = expected / service_points
+            probability = min(max(probability, 1e-9), 1.0 - 1e-9)
+            nll -= (
+                aces * math.log(probability)
+                + (service_points - aces) * math.log(1.0 - probability)
+            )
+            points += service_points
+            log_loss_sides += 1
+
+    if log_loss_sides != len(ratios):
+        raise RuntimeError(
+            "Research binomial log-loss coverage differs from production ratio coverage: "
+            f"{log_loss_sides} log-loss sides vs {len(ratios)} score sides"
+        )
     return {
-        "raw": sum(ratios) / len(ratios),
+        "raw": statistics.fmean(ratios),
         "adjustedServerSides": len(ratios),
         "totalServerSides": len(event_rows) * 2,
         "matches": len(event_rows),
@@ -105,8 +140,192 @@ def event_metrics(event_rows, profiles, tour_rate):
         "returnerProfilesMatched": details["returnerProfilesMatched"],
         "serverProfilesFallback": details["serverProfilesFallback"],
         "returnerProfilesFallback": details["returnerProfilesFallback"],
+        "tourPriorServerSideUses": profile_coverage["tour_prior_server_side_uses"],
+        "tourPriorReturnerSideUses": profile_coverage["tour_prior_returner_side_uses"],
+        "careerHistoryServerSides": profile_coverage["career_history_server_sides"],
+        "careerHistoryReturnerSides": profile_coverage["career_history_returner_sides"],
     }
 
+
+def completed_standard_event_ids_before_target(
+    chronology_groups, target_event_id, target_start_date, target_start_timestamp,
+    source_precision_by_event,
+):
+    """Return whole standard events provably finished before the target began.
+
+    Event aliases may map several source tournament IDs into one app event ID. An
+    event is admitted only when every source edition contributing to that app event
+    is independently proven complete; this prevents a partial alias from making a
+    combined cross-fit anchor look complete.
+    """
+    completed = set()
+    for event_id, event_rows in chronology_groups.items():
+        if event_id == target_event_id or event_id in compute_speed.CALC_TARGET_ONLY_EVENT_IDS:
+            continue
+        rows_by_source = defaultdict(list)
+        for row in event_rows:
+            source_key = compute_speed._source_event_key(row)
+            if source_key:
+                rows_by_source[source_key].append(row)
+        if not rows_by_source:
+            continue
+        source_editions_complete = all(
+            compute_speed._event_completion_precedes_target(
+                source_rows,
+                target_start_date,
+                target_start_timestamp,
+                match_day_precision=(
+                    source_precision_by_event.get(source_key) == "match_day"
+                ),
+            )
+            for source_key, source_rows in rows_by_source.items()
+        )
+        if source_editions_complete:
+            completed.add(event_id)
+    return completed
+
+
+def cross_fitted_normalisation(completed_event_ids, event_ratings):
+    """Mean independent event-specific raw scores for a completed anchor cohort.
+
+    Each anchor event's raw score comes from its own production chronological LOEO
+    profile and tour baseline, rather than reusing the target event's player profiles.
+    The production stable-cohort rule (20 adjusted server sides) is applied again.
+    This is a research-only comparator; it does not change production calculations.
+    """
+    candidates = {}
+    for event_id in sorted(set(completed_event_ids)):
+        if event_id in compute_speed.CALC_TARGET_ONLY_EVENT_IDS:
+            continue
+        item = event_ratings.get(event_id)
+        if not item:
+            continue
+        diagnostics = item.get("calculationDiagnostics") or {}
+        raw = diagnostics.get("rawAdjustedEventScore")
+        sides = diagnostics.get("adjustedServerSides", item.get("adjustedServerSides"))
+        matches = diagnostics.get("completedMatches", item.get("matches"))
+        if (
+            isinstance(raw, (int, float)) and math.isfinite(raw) and raw >= 0
+            and isinstance(sides, (int, float)) and math.isfinite(sides) and sides > 0
+        ):
+            candidates[event_id] = {
+                "raw": float(raw),
+                "adjustedServerSides": int(sides),
+                "matches": int(matches or 0),
+            }
+
+    stable = {
+        event_id: item for event_id, item in candidates.items()
+        if item["adjustedServerSides"] >= compute_speed.MIN_NORMALISER_SERVER_SIDES
+    }
+    selected = stable or candidates
+    if not selected:
+        return {
+            "normalisation": None,
+            "mode": "no_cross_fitted_completed_anchor",
+            "eventIds": [],
+            "candidateEventIds": [],
+            "adjustedServerSides": 0,
+            "matches": 0,
+        }
+    return {
+        "normalisation": statistics.fmean(item["raw"] for item in selected.values()),
+        "mode": (
+            "cross_fitted_stable_completed_events"
+            if stable else "cross_fitted_all_completed_events_fallback"
+        ),
+        "eventIds": sorted(selected),
+        "candidateEventIds": sorted(candidates),
+        "adjustedServerSides": sum(item["adjustedServerSides"] for item in selected.values()),
+        "matches": sum(item["matches"] for item in selected.values()),
+    }
+
+
+def full_pipeline_crossfit_interval(
+    year, rows, target_event_id, completed_anchor_event_ids,
+    iterations=100, seed=1,
+):
+    """Bootstrap the full production chronology pipeline with an independent anchor.
+
+    Match statistics are resampled within each tournament. A statistics-free copy of
+    every source row is retained as a chronology skeleton so the original event start,
+    final-round completion evidence, and source date precision do not disappear when
+    a match is not selected in a bootstrap draw. Each draw reruns season_ratings(), so
+    player profiles, target raw score, and every independent anchor raw score are refit.
+    The completed-event ID set is held fixed to isolate rating uncertainty conditional
+    on the original, source-verified chronology.
+    """
+    if not rows or iterations < 1:
+        return None
+    usable = compute_speed.calculation_eligible_rows(compute_speed.valid_rows(rows))
+    by_event = defaultdict(list)
+    for row in usable:
+        event_id = compute_speed.tournament_id(row.get("tourney_name"))
+        if event_id:
+            by_event[event_id].append(row)
+    if target_event_id not in by_event:
+        return None
+
+    chronology_skeleton = []
+    for row in rows:
+        stub = dict(row)
+        for key in ("w_ace", "l_ace", "w_svpt", "l_svpt"):
+            stub[key] = None
+        chronology_skeleton.append(stub)
+
+    rng = random.Random(seed)
+    source = compute_speed.SOURCE_BY_YEAR.get(year)
+    samples = []
+    for _ in range(iterations):
+        sampled_rows = list(chronology_skeleton)
+        for matches in by_event.values():
+            sampled_rows.extend(rng.choices(matches, k=len(matches)))
+        # The outer bootstrap is the full-pipeline interval. Disable the production
+        # per-event conditional 1,000-draw CI nested inside each refit; it is neither
+        # used in the target raw score nor the cross-fitted normaliser and would turn
+        # 100 outer draws into millions of redundant inner resamples.
+        original_interval = compute_speed.bootstrap_event_interval
+        try:
+            compute_speed.bootstrap_event_interval = lambda *args, **kwargs: None
+            ratings = compute_speed.season_ratings(year, sampled_rows, source=source)
+        finally:
+            compute_speed.bootstrap_event_interval = original_interval
+        target = ratings.get(target_event_id)
+        if not target:
+            continue
+        target_raw = (target.get("calculationDiagnostics") or {}).get("rawAdjustedEventScore")
+        anchor = cross_fitted_normalisation(completed_anchor_event_ids, ratings)
+        normalisation = anchor.get("normalisation")
+        if (
+            isinstance(target_raw, (int, float)) and math.isfinite(target_raw)
+            and isinstance(normalisation, (int, float)) and math.isfinite(normalisation)
+            and normalisation > 0
+        ):
+            samples.append(target_raw / normalisation)
+
+    if len(samples) < max(30, int(iterations * 0.8)):
+        return {
+            "low": None,
+            "high": None,
+            "iterations": iterations,
+            "successful": len(samples),
+            "method": "full-pipeline-match-bootstrap-cross-fitted-anchor",
+            "warning": "Too few successful bootstrap draws for a stable interval.",
+        }
+    samples.sort()
+
+    def percentile(q):
+        position = (len(samples) - 1) * q
+        low, high = int(math.floor(position)), int(math.ceil(position))
+        return samples[low] + (samples[high] - samples[low]) * (position - low)
+
+    return {
+        "low": percentile(0.025),
+        "high": percentile(0.975),
+        "iterations": iterations,
+        "successful": len(samples),
+        "method": "full-pipeline-match-bootstrap-cross-fitted-anchor",
+    }
 
 def fit_profiles(year, training_rows):
     current = compute_speed.player_rates(
@@ -152,9 +371,10 @@ def spearman_rank(left, right):
     return 1.0 - (6.0 * d2) / (n * (n * n - 1))
 
 
-def run(start_year, end_year):
+def run(start_year, end_year, crossfit_enabled=False, bootstrap_iterations=0, detail_ids=None):
     year_results = []
     all_event_pairs = []
+    detail_ids = set(detail_ids or [])
     for year in range(start_year, end_year + 1):
         print(f"Loading {year} source rows...", flush=True)
         rows = compute_speed.load(year)
@@ -167,6 +387,10 @@ def run(start_year, end_year):
 
         source_precision_by_event = compute_speed._source_event_date_granularity(rows, source)
         date_granularity = compute_speed._source_match_date_granularity(rows, source)
+        production_ratings = (
+            compute_speed.season_ratings(year, rows, source=source)
+            if crossfit_enabled else {}
+        )
         prior_tour_rate, prior_anchor, prior_error = prior_year_reference(year)
         dated_events = []
         for event_id, event_rows in groups.items():
@@ -247,25 +471,18 @@ def run(start_year, end_year):
                 chronology_rule = "legacy_max_event_window_by_source_level"
                 event_quarantine_days = 0
 
-            # Legacy start-date rows keep their own maximum event window; daily editions
-            # are ordered by verified per-match dates, independently of the target source.
-            chronological_training = [
-                row for row in standard_rows
-                if compute_speed._row_precedes_target(
-                    row,
+            # Use the exact production chronology/profile helper, including its special
+            # opening-event fallback to the completed previous season. Reimplementing this
+            # selection in the study previously missed that fallback and created false
+            # production-parity failures in the first event of a season.
+            chrono_profiles, chrono_tour_rate, chronological_training = (
+                compute_speed._chronological_profiles_and_anchor(
+                    year,
+                    rows,
                     start_date,
-                    source_precision_by_event.get(
-                        compute_speed._source_event_key(row), "tournament_start",
-                    ),
+                    source_precision_by_event,
                     target_start_timestamp,
                 )
-            ]
-            chrono_profiles = fit_profiles(year, chronological_training)
-            # Match production: use this pre-target sample's tour rate directly;
-            # use the completed prior-year rate only when no same-season sample exists.
-            current_tour_rate = compute_speed.tour_average_ace_rate(chronological_training)
-            chrono_tour_rate = (
-                current_tour_rate if current_tour_rate is not None else prior_tour_rate
             )
 
             if chrono_tour_rate is None or not 0.0 < chrono_tour_rate < 1.0:
@@ -289,6 +506,86 @@ def run(start_year, end_year):
 
             retro_rating = retro["raw"] / retrospective_anchor
             chrono_rating = chronological["raw"] / chrono_anchor if chrono_anchor else None
+
+            crossfit = None
+            crossfit_anchor_ids = set()
+            production_item = production_ratings.get(event_id) if crossfit_enabled else None
+            production_diagnostics = (
+                (production_item or {}).get("calculationDiagnostics") or {}
+            )
+            production_raw = production_diagnostics.get("rawAdjustedEventScore")
+            production_normalisation = production_diagnostics.get("seasonNormalisation")
+            production_rating = (production_item or {}).get("speed")
+            production_parity = None
+            crossfit_rating = None
+            if crossfit_enabled:
+                completed_anchor_ids = completed_standard_event_ids_before_target(
+                    chronology_groups,
+                    event_id,
+                    start_date,
+                    target_start_timestamp,
+                    source_precision_by_event,
+                )
+                crossfit = cross_fitted_normalisation(completed_anchor_ids, production_ratings)
+                crossfit_anchor_ids = set(completed_anchor_ids)
+                if crossfit["normalisation"] is None and year > compute_speed.PROFILE_HISTORY_START_YEAR:
+                    try:
+                        prior_rows = compute_speed.load(year - 1)
+                        prior_source = compute_speed.SOURCE_BY_YEAR.get(year - 1)
+                        prior_independent_ratings = compute_speed.season_ratings(
+                            year - 1, prior_rows, source=prior_source,
+                        )
+                        crossfit = cross_fitted_normalisation(
+                            set(prior_independent_ratings), prior_independent_ratings,
+                        )
+                        if crossfit["normalisation"] is not None:
+                            crossfit["mode"] = "cross_fitted_prior_season"
+                            crossfit_anchor_ids = set(prior_independent_ratings)
+                    except Exception as error:
+                        crossfit["priorSeasonWarning"] = str(error)
+                crossfit_raw = (
+                    production_raw if isinstance(production_raw, (int, float))
+                    and math.isfinite(production_raw) else chronological["raw"]
+                )
+                if crossfit["normalisation"] is None:
+                    crossfit["normalisation"] = crossfit_raw
+                    crossfit["mode"] = "target_self_fallback_no_prior_anchor"
+                crossfit_rating = (
+                    crossfit_raw / crossfit["normalisation"]
+                    if crossfit["normalisation"] and crossfit["normalisation"] > 0 else None
+                )
+                production_parity = {
+                    "rawScoreDifference": (
+                        production_raw - chronological["raw"]
+                        if isinstance(production_raw, (int, float)) else None
+                    ),
+                    "normalisationDifference": (
+                        production_normalisation - chrono_anchor
+                        if isinstance(production_normalisation, (int, float)) else None
+                    ),
+                    "ratingDifference": (
+                        production_rating - chrono_rating
+                        if isinstance(production_rating, (int, float)) and chrono_rating is not None
+                        else None
+                    ),
+                    "rawScoreMatches": (
+                        math.isclose(production_raw, chronological["raw"], rel_tol=0.0, abs_tol=1e-9)
+                        if isinstance(production_raw, (int, float)) else False
+                    ),
+                    "normalisationMatches": (
+                        math.isclose(production_normalisation, chrono_anchor, rel_tol=0.0, abs_tol=1e-9)
+                        if isinstance(production_normalisation, (int, float)) else False
+                    ),
+                }
+                if production_item is not None and not (
+                    production_parity["rawScoreMatches"]
+                    and production_parity["normalisationMatches"]
+                ):
+                    raise RuntimeError(
+                        "Chronological research study does not reproduce production season_ratings() "
+                        f"for {year} {event_id}: {production_parity}"
+                    )
+
             event = {
                 "year": year,
                 "event": event_id,
@@ -341,6 +638,33 @@ def run(start_year, end_year):
                     "quarantineDays": event_quarantine_days,
                 },
             }
+            if crossfit_enabled:
+                event["productionParity"] = production_parity
+                event["crossFitted"] = {
+                    "rating": crossfit_rating,
+                    "raw": (
+                        production_raw if isinstance(production_raw, (int, float))
+                        and math.isfinite(production_raw) else chronological["raw"]
+                    ),
+                    "normalisation": crossfit["normalisation"],
+                    "normalisationAnchorMode": crossfit["mode"],
+                    "normalisationAnchorEvents": len(crossfit["eventIds"]),
+                    "normalisationAnchorMatches": crossfit["matches"],
+                    "normalisationAnchorServerSides": crossfit["adjustedServerSides"],
+                    "normalisationAnchorEventIds": crossfit["eventIds"],
+                    "normalisationCandidateEventIds": crossfit["candidateEventIds"],
+                }
+                if bootstrap_iterations > 0 and event_id in detail_ids and year == end_year:
+                    event["crossFitted"]["fullPipelineBootstrap95"] = (
+                        full_pipeline_crossfit_interval(
+                            year,
+                            rows,
+                            event_id,
+                            crossfit_anchor_ids,
+                            iterations=bootstrap_iterations,
+                            seed=90000 + year + sum(ord(char) for char in event_id),
+                        )
+                    )
             event["ratingDeltaChronologicalMinusRetrospective"] = (
                 chrono_rating - retro_rating if chrono_rating is not None else None
             )
@@ -349,6 +673,15 @@ def run(start_year, end_year):
 
         retro_scores = {item["event"]: item["retrospective"]["rating"] for item in event_items}
         chrono_scores = {item["event"]: item["chronological"]["rating"] for item in event_items}
+        crossfit_scores = {
+            item["event"]: item["crossFitted"]["rating"]
+            for item in event_items
+            if item.get("crossFitted") and item["crossFitted"].get("rating") is not None
+        }
+        crossfit_deltas = [
+            crossfit_scores[event_id] - chrono_scores[event_id]
+            for event_id in set(crossfit_scores) & set(chrono_scores)
+        ]
         deltas = [item["ratingDeltaChronologicalMinusRetrospective"] for item in event_items
                   if item["ratingDeltaChronologicalMinusRetrospective"] is not None]
         ret_points = sum(item["retrospective"]["totalServicePoints"] for item in event_items)
@@ -362,6 +695,15 @@ def run(start_year, end_year):
             "meanAbsoluteRatingDelta": statistics.mean(abs(value) for value in deltas) if deltas else None,
             "medianAbsoluteRatingDelta": statistics.median(abs(value) for value in deltas) if deltas else None,
             "spearmanRatingRankCorrelation": spearman_rank(retro_scores, chrono_scores),
+            "crossFittedSpearmanVsProductionChronological": (
+                spearman_rank(chrono_scores, crossfit_scores) if crossfit_scores else None
+            ),
+            "crossFittedMeanAbsoluteRatingDelta": (
+                statistics.mean(abs(value) for value in crossfit_deltas) if crossfit_deltas else None
+            ),
+            "crossFittedMedianAbsoluteRatingDelta": (
+                statistics.median(abs(value) for value in crossfit_deltas) if crossfit_deltas else None
+            ),
             "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
             "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
             "priorYearFallbackAnchor": prior_anchor,
@@ -382,6 +724,12 @@ def run(start_year, end_year):
               if item["ratingDeltaChronologicalMinusRetrospective"] is not None]
     ret_points = sum(item["retrospective"]["totalServicePoints"] for item in all_event_pairs)
     chrono_points = sum(item["chronological"]["totalServicePoints"] for item in all_event_pairs)
+    crossfit_pairs = [
+        (item["chronological"]["rating"], item["crossFitted"]["rating"])
+        for item in all_event_pairs
+        if item.get("crossFitted") and item["crossFitted"].get("rating") is not None
+    ]
+    crossfit_delta_values = [right - left for left, right in crossfit_pairs]
     ret_loss = sum(item["retrospective"]["logLoss"] for item in all_event_pairs)
     chrono_loss = sum(item["chronological"]["logLoss"] for item in all_event_pairs)
     summary = {
@@ -394,6 +742,23 @@ def run(start_year, end_year):
         "medianAbsoluteRatingDelta": statistics.median(abs(value) for value in deltas) if deltas else None,
         "retrospectiveLogLossPerServicePoint": ret_loss / ret_points if ret_points else None,
         "chronologicalLogLossPerServicePoint": chrono_loss / chrono_points if chrono_points else None,
+        "crossFittedEventsCompared": len(crossfit_pairs),
+        "crossFittedMeanAbsoluteRatingDelta": (
+            statistics.mean(abs(value) for value in crossfit_delta_values)
+            if crossfit_delta_values else None
+        ),
+        "crossFittedMedianAbsoluteRatingDelta": (
+            statistics.median(abs(value) for value in crossfit_delta_values)
+            if crossfit_delta_values else None
+        ),
+        "crossFittedSpearmanVsProductionChronological": (
+            spearman_rank(
+                {item["event"]: item["chronological"]["rating"] for item in all_event_pairs
+                 if item.get("crossFitted") and item["crossFitted"].get("rating") is not None},
+                {item["event"]: item["crossFitted"]["rating"] for item in all_event_pairs
+                 if item.get("crossFitted") and item["crossFitted"].get("rating") is not None},
+            ) if crossfit_pairs else None
+        ),
         "warning": (
             "Research only. Match-day and timestamp precision is source-dependent. The legacy "
             "Sackmann/TML historical archive provides tournament-start dates only; those years use "
@@ -412,13 +777,20 @@ def main():
     parser.add_argument("--start-year", type=int, default=2016)
     parser.add_argument("--end-year", type=int, default=date.today().year)
     parser.add_argument("--output", default="build/chronological-loeo-study.json")
+    parser.add_argument("--crossfit", action="store_true", help="add independent event-specific normalisation diagnostics")
+    parser.add_argument("--bootstrap", type=int, default=0, help="full-pipeline match bootstrap draws for selected --detail events")
+    parser.add_argument("--detail", default="rio", help="comma-separated event IDs for optional cross-fit bootstrap")
     args = parser.parse_args()
     if args.start_year < compute_speed.PROFILE_HISTORY_START_YEAR:
         parser.error(f"start year must be >= {compute_speed.PROFILE_HISTORY_START_YEAR}")
     if args.end_year < args.start_year:
         parser.error("end year must be >= start year")
 
-    report = run(args.start_year, args.end_year)
+    if args.bootstrap < 0:
+        parser.error("--bootstrap must be non-negative")
+    detail_ids = {item.strip() for item in args.detail.split(",") if item.strip()}
+    report = run(args.start_year, args.end_year, crossfit_enabled=args.crossfit or args.bootstrap > 0,
+                 bootstrap_iterations=args.bootstrap, detail_ids=detail_ids)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

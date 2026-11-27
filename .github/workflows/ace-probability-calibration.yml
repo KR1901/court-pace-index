@@ -1,0 +1,62 @@
+name: ACE probability calibration research audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/ace-probability-calibration.yml"
+      - "tools/ace_probability_calibration_audit.py"
+      - "tools/test_ace_probability_calibration_audit.py"
+      - "tools/chronological_loeo_study.py"
+      - "docs/ACE_PROBABILITY_CALIBRATION.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ace-probability-calibration-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore ATP archive cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/atp
+          key: ace-probcal-${{ runner.os }}-${{ hashFiles('tools/compute_speed.py', 'tools/chronological_loeo_study.py') }}
+          restore-keys: |
+            calc-methodology-research-${{ runner.os }}-
+            tennis-history-${{ runner.os }}-
+
+      - name: Run Python tooling tests
+        run: python3 -m unittest discover -s tools -p "test_*.py" -v
+
+      - name: Evaluate chronological held-out ace probabilities
+        run: |
+          set -euo pipefail
+          python3 tools/ace_probability_calibration_audit.py \
+            --start-year 2016 \
+            --end-year "$(date -u +%Y)" \
+            --bootstrap 1000 \
+            --output ace-probability-calibration.json | tee ace-probability-calibration.log
+          cat ace-probability-calibration.log >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload probability calibration report
+        uses: actions/upload-artifact@v4
+        with:
+          name: court-pace-ace-probability-calibration
+          path: |
+            ace-probability-calibration.json
+            ace-probability-calibration.log
+          if-no-files-found: error
+          retention-days: 90
