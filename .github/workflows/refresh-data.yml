@@ -1,3 +1,4 @@
+# Davis Cup Final 8 is its own live target; keep this branch's generated phase-separated ratings in sync with refreshed match-source data.
 name: Refresh dataset
 
 # Regenerates the bundled dataset from the public match archive and source year tables,
