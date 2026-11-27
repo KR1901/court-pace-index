@@ -273,7 +273,8 @@ def main():
     unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"]})
     continue
    best,card=scored[0]
-   if len(scored)>1 and best-scored[1][0]<0.08:
+   ambiguity_gap = 0.02 if is_d else 0.08
+   if len(scored)>1 and best-scored[1][0]<ambiguity_gap:
     unmatched.append(sid)
     unmatched_events.append({"sourceEventId":sid,"name":sname,"date":e["tourney_date"],"level":e["tourney_level"],"reason":"ambiguous ATP card"})
     continue
