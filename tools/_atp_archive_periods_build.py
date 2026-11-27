@@ -72,7 +72,11 @@ ALIASES={
  "queensclub":{"hsbcchampionships","london"},
  "tokyooutdoor":{"tokyo"},"tokyoindoor":{"tokyo"},
  "stuttgartoutdoor":{"stuttgart"},"stuttgartindoor":{"stuttgart"},
- "genova":{"genoa"},"stpoelten":{"stpolten"},"bstad":{"bastad"},"bastad":{"bstad"},
+ "genova":{"genoa"},"stpoelten":{"stpolten"},"poertschach":{"portschach"},"portschach":{"poertschach"},
+ "merano":{"meran"},"meran":{"merano"},"santiago":{"vinadelmar"},"vinadelmar":{"santiago"},
+ "estoril":{"oeiras"},"oeiras":{"estoril"},"bstad":{"bastad"},"bastad":{"bstad"},
+ "unitedcup":{"perthsydney","brisbaneperthsydney"},"perthsydney":{"unitedcup"},
+ "brisbaneperthsydney":{"unitedcup"},
  "indianwellsmaster":{"indianwells"},"miamimaster":{"miami"},"romemaster":{"rome"},
  "greatoceanroadopen":{"melbourne1"},"murrayriveropen":{"melbourne2"},
  "nextgenfinals":{"nextgenatpfinals","nextgen"},"nextgenatpfinals":{"nextgenfinals","nextgen"},
@@ -132,8 +136,8 @@ def score_name(source,card):
  if sn in cn or cn in sn: return 1.0
  st,ct=toks(source),toks(card)
  if st and st.issubset(ct): return 1.0
- if any(a in cn or a in ct for a in ALIASES.get(sn,set())): return 0.98
- if sn in ALIASES.get(cn,set()): return 0.98
+ if any(a in cn or a in ct for a in ALIASES.get(sn,set())): return 1.0
+ if sn in ALIASES.get(cn,set()): return 1.0
  if not st: return 0.0
  overlap=len(st&ct)/len(st)
  if len(st)==1 and overlap<1: return 0.0
@@ -213,7 +217,7 @@ def main():
   city,zone=venue_zone(raw["cardText"],ci)
   # ATP annual Results Archive may omit Finals city; use ATP's official historic venue table.
   title_norm=norm(raw["cardText"])
-  if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals")):
+  if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals","atpfinals")):
    zone=finals_zone(int(raw["season"]))
   # ATP multi-location Davis Cup stages have official dates but no single venue zone.
   if not zone and ("davis" in title_norm or "unitedcup" in title_norm or "perthsydney" in title_norm or "atpcup" in title_norm):

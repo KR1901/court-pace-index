@@ -15266,6 +15266,286 @@
       "cardText": "Nitto ATP Finals London, Great Britain",
       "officialDateText": "10 - 17 November, 2019",
       "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019"
+    },
+    {
+      "season": 1992,
+      "cardText": "ATP Masters 1000 Canada Toronto,",
+      "officialDateText": "20 - 26 July, 1992",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1992",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 1994,
+      "cardText": "Gstaad Gstaad,",
+      "officialDateText": "4 - 10 July, 1994",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1994",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 1995,
+      "cardText": "ATP Tour World Championship Frankfurt,",
+      "officialDateText": "14 - 19 November, 1995",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1995",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 1999,
+      "cardText": "ATP Masters 1000 Cincinnati Cincinnati,",
+      "officialDateText": "9 - 15 August, 1999",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=1999",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2000,
+      "cardText": "ATP Masters 1000 Cincinnati Cincinnati,",
+      "officialDateText": "7 - 13 August, 2000",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2000",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2002,
+      "cardText": "ATP Masters 1000 Cincinnati Cincinnati,",
+      "officialDateText": "5 - 11 August, 2002",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2002",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2003,
+      "cardText": "ATP Masters 1000 Canada Montreal,",
+      "officialDateText": "4 - 10 August, 2003",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2003",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2004,
+      "cardText": "Washington Washington,",
+      "officialDateText": "16 - 22 August, 2004",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2004",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2005,
+      "cardText": "ATP Masters 1000 Canada Montreal,",
+      "officialDateText": "8 - 14 August, 2005",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2005",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2006,
+      "cardText": "ATP Masters 1000 Canada Toronto,",
+      "officialDateText": "7 - 13 August, 2006",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2006,
+      "cardText": "ATP Masters 1000 Cincinnati Cincinnati,",
+      "officialDateText": "14 - 20 August, 2006",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2006",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2007,
+      "cardText": "ATP Masters 1000 Canada Montreal,",
+      "officialDateText": "5 - 12 August, 2007",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2007,
+      "cardText": "ATP Masters 1000 Cincinnati Cincinnati,",
+      "officialDateText": "13 - 19 August, 2007",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2007",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2008,
+      "cardText": "ATP Masters 1000 Cincinnati Cincinnati,",
+      "officialDateText": "28 July - 3 August, 2008",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2008",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2009,
+      "cardText": "Gstaad Gstaad,",
+      "officialDateText": "26 July - 2 August, 2009",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2009",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2011,
+      "cardText": "Atlanta Atlanta, United States",
+      "officialDateText": "18 - 24 July, 2011",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2011",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2012,
+      "cardText": "Hamburg Hamburg, Germany",
+      "officialDateText": "16 - 22 July, 2012",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2012",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2013,
+      "cardText": "Bogota Bogota, Colombia",
+      "officialDateText": "15 - 21 July, 2013",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2013,
+      "cardText": "ATP Finals London, Great Britain",
+      "officialDateText": "4 - 11 November, 2013",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2013",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2014,
+      "cardText": "Bogota Bogota, Colombia",
+      "officialDateText": "14 - 20 July, 2014",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2014,
+      "cardText": "ATP Masters 1000 Paris Paris, France",
+      "officialDateText": "27 October - 2 November, 2014",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2014,
+      "cardText": "ATP Finals London, Great Britain",
+      "officialDateText": "9 - 16 November, 2014",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2014",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2015,
+      "cardText": "Bogota Bogota, Colombia",
+      "officialDateText": "20 - 26 July, 2015",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2015,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "20 - 26 July, 2015",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2015,
+      "cardText": "ATP Finals London, Great Britain",
+      "officialDateText": "15 - 22 November, 2015",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2015",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2016,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "11 - 17 July, 2016",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2016",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2017,
+      "cardText": "Newport Newport, United States",
+      "officialDateText": "17 - 23 July, 2017",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2017,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "17 - 23 July, 2017",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2017",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2018,
+      "cardText": "Newport Newport, United States",
+      "officialDateText": "16 - 22 July, 2018",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2018,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "16 - 22 July, 2018",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2018",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2019,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "15 - 21 July, 2019",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2019,
+      "cardText": "Umag Umag, Croatia",
+      "officialDateText": "15 - 21 July, 2019",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2019",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2022,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "11 - 17 July, 2022",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2022",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2023,
+      "cardText": "United Cup Brisbane-Perth-Sydney, Australia",
+      "officialDateText": "29 December, 2022 - 8 January, 2023",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2023,
+      "cardText": "Gstaad Gstaad, Switzerland",
+      "officialDateText": "17 - 23 July, 2023",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2023",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2024,
+      "cardText": "United Cup Perth-Sydney, Australia",
+      "officialDateText": "29 December, 2023 - 7 January, 2024",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2024,
+      "cardText": "Newport Newport, United States",
+      "officialDateText": "15 - 21 July, 2024",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2024,
+      "cardText": "Bastad Bastad, Sweden",
+      "officialDateText": "15 - 21 July, 2024",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2024",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2025,
+      "cardText": "United Cup Perth-Sydney, Australia",
+      "officialDateText": "27 December, 2024 - 5 January, 2025",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2025",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
+    },
+    {
+      "season": 2025,
+      "cardText": "Umag Umag, Croatia",
+      "officialDateText": "20 - 26 July, 2025",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2025",
+      "sourceType": "ATP official Results Archive — one-time manual completion of an omitted official event card"
     }
   ]
 }
