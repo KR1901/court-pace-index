@@ -30,6 +30,35 @@ class LiveFeedTest {
     private fun withParisLive() = data.dataset.copy(live = listOf(activeParis))
 
     @Test
+    fun `only the Davis Cup Final 8 is live while the earlier competition remains a separate completed CALC entry`() {
+        val liveFinal8 = LiveEvent(
+            t = "daviscupfinal8",
+            s = 2026,
+            status = "in_progress",
+            start = LocalDate.now().minusDays(1).toString(),
+            end = LocalDate.now().plusDays(2).toString(),
+            round = "Final 8",
+            slug = "davis-cup-final-8-2026",
+        )
+        val phaseData = PaceData(data.dataset.copy(
+            live = listOf(liveFinal8),
+            liveSchedule = listOf(liveFinal8),
+        ))
+
+        val liveDavisIds = phaseData.liveEvents(2026, Metric.SPEED)
+            .map { it.first.id }
+            .filter { it == "daviscup" || it == "daviscupfinal8" }
+        assertEquals(listOf("daviscupfinal8"), liveDavisIds)
+        assertTrue(phaseData.isLive("daviscupfinal8", 2026))
+        assertFalse(phaseData.isLive("daviscup", 2026))
+        assertTrue(phaseData.liveWithoutRating(2026, Metric.SPEED).any {
+            it.first.id == "daviscupfinal8"
+        })
+        assertTrue(phaseData.entries(2026, Metric.SPEED).any { it.first.id == "daviscup" })
+        assertTrue(phaseData.entries(2026, Metric.SPEED).any { it.first.id == "daviscupfinal8" })
+    }
+
+    @Test
     fun `the bundled feed does not retain an event after its end date`() {
         assertNull("Paris ended on 8-Nov-2026 and must not remain live", data.liveEvent("paris"))
         assertFalse(data.isLive("paris"))
