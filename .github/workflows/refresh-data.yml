@@ -320,8 +320,24 @@ jobs:
                           assert diagnostics.get("completedMatches") == values.get("matches")
                           assert diagnostics.get("adjustedServerSides") == values.get("adjustedServerSides")
                           assert diagnostics.get("totalServerSides") == values.get("matches", 0) * 2
-                          assert diagnostics.get("sideDiagnostics"), f"${season}/${tournament_id} has no retained influential sides"
-                          assert len(diagnostics["sideDiagnostics"]) <= 20
+                          if diagnostics.get("chronologySnapshotStatus") == "legacy_frozen":
+                              # The published 2016–2024 Davis Cup targets are explicitly
+                              # frozen because the historical source no longer preserves
+                              # tie-level identity. Do not pretend they have newly recomputed
+                              # per-side diagnostics, and never extend this exception to ATP events.
+                              assert tournament_id == "daviscup" and 2016 <= int(season) <= 2024, (
+                                  f"${season}/${tournament_id} has an unsupported frozen chronology marker"
+                              )
+                              note = diagnostics.get("chronologySnapshotNote")
+                              assert isinstance(note, str) and "not recomputed" in note, (
+                                  f"${season}/${tournament_id} has no honest frozen-snapshot explanation"
+                              )
+                              assert not diagnostics.get("sideDiagnostics"), (
+                                  f"${season}/${tournament_id} frozen snapshot must not invent side diagnostics"
+                              )
+                          else:
+                              assert diagnostics.get("sideDiagnostics"), f"${season}/${tournament_id} has no retained influential sides"
+                              assert len(diagnostics["sideDiagnostics"]) <= 20
                           assert row.get("calculationDiagnostics") == diagnostics, f"${filename} stale detail diagnostics for ${season}/${tournament_id}"
                           checked += 1
                       elif values.get("provisionalSpeed") is not None:
