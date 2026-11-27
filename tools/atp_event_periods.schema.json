@@ -65,6 +65,13 @@
             "type": "string",
             "minLength": 1
           },
+          "boundaryMode": {
+            "type": "string",
+            "enum": [
+              "venue_local",
+              "global_date_envelope"
+            ]
+          },
           "sourceUrl": {
             "type": "string",
             "format": "uri",
