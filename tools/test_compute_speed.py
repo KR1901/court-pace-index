@@ -97,6 +97,98 @@ class HistoricalCalculationDiagnosticsTests(unittest.TestCase):
         self.assertFalse(is_supported_davis_cup_calculation_year("daviscupfinal8", 2026))
         self.assertFalse(is_supported_davis_cup_calculation_year("daviscup", 2026))
 
+
+
+    def test_validated_davis_cup_phase_ratings_survive_when_their_season_becomes_historical(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        previous = {
+            "season_sources": {"2026": tml},
+            "davis_cup_coverage": {
+                "2026": {"source": tml, "validatedSource": True, "identifiedSingles": 187},
+            },
+            "source_metadata": {"2026": {"sha256": "validated-tml-snapshot"}},
+            "seasons": {
+                "2026": {
+                    "rome": {"speed": 1.22, "matches": 31, "adjustedServerSides": 62},
+                    "daviscup": {
+                        "speed": 1.138, "matches": 148, "adjustedServerSides": 296,
+                        "calculationDiagnostics": {"chronologyRule": "strictly_before_target_local_match_day"},
+                    },
+                    "daviscupfinal8": {
+                        "speed": 1.203, "matches": 6, "adjustedServerSides": 12,
+                        "calculationDiagnostics": {"chronologyRule": "strictly_before_target_local_match_day"},
+                    },
+                },
+            },
+        }
+        freshly_recalculated = {
+            "rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62},
+        }
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2026,
+            freshly_recalculated,
+            "Jeff Sackmann ATP archive",
+            previous,
+            current_year=2027,
+        )
+
+        self.assertEqual({"daviscup", "daviscupfinal8"}, set(retained))
+        self.assertEqual(tml, source)
+        self.assertEqual(1.138, merged["daviscup"]["speed"])
+        self.assertEqual(1.203, merged["daviscupfinal8"]["speed"])
+        self.assertEqual(1.30, merged["rome"]["speed"])
+
+    def test_davis_cup_phase_history_is_not_retained_without_a_validated_source_audit(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        previous = {
+            "season_sources": {"2026": tml},
+            "davis_cup_coverage": {
+                "2026": {"source": tml, "validatedSource": False},
+            },
+            "seasons": {
+                "2026": {
+                    "daviscup": {"speed": 1.10, "matches": 20, "adjustedServerSides": 40},
+                    "daviscupfinal8": {"speed": 1.20, "matches": 6, "adjustedServerSides": 12},
+                },
+            },
+        }
+        current = {"rome": {"speed": 1.30, "matches": 31, "adjustedServerSides": 62}}
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2026, current, "Jeff Sackmann ATP archive", previous, current_year=2027,
+        )
+
+        self.assertEqual([], retained)
+        self.assertNotIn("daviscup", merged)
+        self.assertNotIn("daviscupfinal8", merged)
+        self.assertEqual("Jeff Sackmann ATP archive", source)
+
+    def test_current_year_tml_refresh_always_supersedes_old_davis_cup_snapshot(self):
+        tml = "TennisMyLife ATP Match Database + ongoing_tourneys.csv"
+        previous = {
+            "season_sources": {"2026": tml},
+            "davis_cup_coverage": {
+                "2026": {"source": tml, "validatedSource": True},
+            },
+            "seasons": {
+                "2026": {
+                    "daviscup": {"speed": 1.10, "matches": 20, "adjustedServerSides": 40},
+                    "daviscupfinal8": {"speed": 1.20, "matches": 6, "adjustedServerSides": 12},
+                },
+            },
+        }
+        current = {"daviscup": {"speed": 1.17, "matches": 150, "adjustedServerSides": 300}}
+
+        merged, source, retained = compute_speed.preserve_validated_davis_cup_history(
+            2026, current, tml, previous, current_year=2026,
+        )
+
+        self.assertEqual([], retained)
+        self.assertEqual(tml, source)
+        self.assertNotIn("daviscupfinal8", merged)
+        self.assertEqual(1.17, merged["daviscup"]["speed"])
+
     def test_davis_cup_tie_labels_are_grouped_into_one_target_event(self):
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup Finals RR: FRA vs JPN"))
         self.assertEqual("daviscup", compute_speed.tournament_id("Davis Cup WG1 PO: CHN vs POR"))

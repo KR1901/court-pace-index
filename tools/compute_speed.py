@@ -2144,6 +2144,78 @@ def exclude_live_event_rows(rows, event_ids):
     return [row for row in rows if _row_tournament_id(row) not in excluded]
 
 
+def preserve_validated_davis_cup_history(
+    year,
+    ratings,
+    current_source,
+    previous_history,
+    current_year=None,
+):
+    """Keep already validated TML Davis Cup phase ratings after their season becomes historical.
+
+    The current-season TML feed supplies exact source phase IDs (including the Final 8
+    FLS token). The open Sackmann archive does not preserve that phase identifier. When
+    a later-year full rebuild recalculates an older season from Sackmann, silently
+    replacing the previously validated Davis Cup targets with an aggregate or no row
+    would erase the distinct Final 8 history.
+
+    Retain only the archived derived CALC records from a prior TML snapshot whose
+    season-level source and coverage audit both explicitly attest to the validated
+    TML annual + ongoing feed. Never retain current-season data after a feed failure,
+    never manufacture a missing phase, and never overwrite a newly recalculated row.
+    """
+    current_year = date.today().year if current_year is None else int(current_year)
+    year = int(year)
+    retained_ids = []
+
+    if year >= current_year or current_source == TML_DAVIS_CUP_SOURCE:
+        return dict(ratings), current_source, retained_ids
+
+    previous_history = previous_history if isinstance(previous_history, dict) else {}
+    season_key = str(year)
+    previous_source = previous_history.get("season_sources", {}).get(season_key)
+    coverage = previous_history.get("davis_cup_coverage", {}).get(season_key)
+
+    if (
+        previous_source != TML_DAVIS_CUP_SOURCE
+        or not isinstance(coverage, dict)
+        or coverage.get("validatedSource") is not True
+        or coverage.get("source") != TML_DAVIS_CUP_SOURCE
+    ):
+        return dict(ratings), current_source, retained_ids
+
+    previous_events = previous_history.get("seasons", {}).get(season_key, {})
+    merged = dict(ratings)
+    for event_id in ("daviscup", "daviscupfinal8"):
+        if not is_supported_davis_cup_calculation_year(
+            event_id, year, source=previous_source,
+        ):
+            continue
+        archived = previous_events.get(event_id) if isinstance(previous_events, dict) else None
+        if not isinstance(archived, dict):
+            continue
+        speed = archived.get("speed")
+        matches = archived.get("matches")
+        adjusted_sides = archived.get("adjustedServerSides")
+        if (
+            not isinstance(speed, (int, float))
+            or not math.isfinite(float(speed))
+            or speed < 0
+            or not isinstance(matches, int)
+            or matches <= 0
+            or not isinstance(adjusted_sides, int)
+            or adjusted_sides <= 0
+        ):
+            continue
+        if event_id not in merged:
+            merged[event_id] = archived
+            retained_ids.append(event_id)
+
+    if not retained_ids:
+        return merged, current_source, retained_ids
+    return merged, previous_source, retained_ids
+
+
 def main():
     published_path = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main",
                                   "assets", "pace_dataset.json")
@@ -2153,7 +2225,17 @@ def main():
 
     history = {}
     season_sources = {}
+    season_source_notes = {}
     davis_cup_coverage = {}
+    prior_history_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "speed_history.json",
+    )
+    try:
+        previous_history = json.load(open(prior_history_path, encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, TypeError):
+        previous_history = {}
+    previous_source_metadata = previous_history.get("source_metadata", {})
+    retained_source_metadata = {}
     for year in YEARS:
         try:
             rows = load(year)
@@ -2177,9 +2259,36 @@ def main():
                 f"{audit['completedMissingServeStats']} missing stats · "
                 f"{audit['completedMalformedStats']} malformed stats"
             )
-        ratings = season_ratings(year, rows, source=SOURCE_BY_YEAR.get(year))
+        current_source = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
+        ratings = season_ratings(year, rows, source=current_source)
+        published_source = current_source
+        source_note = current_source
+        if year < date.today().year:
+            ratings, published_source, retained_ids = preserve_validated_davis_cup_history(
+                year,
+                ratings,
+                current_source,
+                previous_history,
+            )
+            if retained_ids:
+                source_note = (
+                    f"Standard ATP target rows recalculated from {current_source}; "
+                    f"validated Davis Cup phase CALC records retained from the prior "
+                    f"{TML_DAVIS_CUP_SOURCE} snapshot: {', '.join(retained_ids)}."
+                )
+                previous_coverage = previous_history.get("davis_cup_coverage", {}).get(str(year))
+                if isinstance(previous_coverage, dict):
+                    davis_cup_coverage[str(year)] = previous_coverage
+                previous_metadata = previous_source_metadata.get(str(year))
+                if isinstance(previous_metadata, dict):
+                    retained_source_metadata[str(year)] = previous_metadata
+                print(
+                    f"{year}: retained validated historical Davis Cup phases · "
+                    f"{', '.join(retained_ids)}"
+                )
         history[year] = ratings
-        season_sources[year] = SOURCE_BY_YEAR.get(year, "Jeff Sackmann ATP archive")
+        season_sources[year] = published_source
+        season_source_notes[str(year)] = source_note
         print(f"{year}: {len(rows):5d} matches, {len(ratings):3d} events rated")
 
     ours = history.get(2026, {})
@@ -2344,8 +2453,10 @@ def main():
             "method": "chronological leave-one-tournament-out calibrated server/returner expected-aces odds ratio using actual match timestamps/days where available and conservative level-based event-window bounds for legacy tournament-start-only archives; player profiles aggregate up to 35 prior ATP seasons from 1991 with 0.90 per-year recency decay and a 150-service-point prior; qualified clay and hard/grass rates use the 1/3–2/3 neutral blend, pooled profiles are shrunk toward the tour rate, current TML alphanumeric IDs are crosswalked to historical Sackmann IDs only by unique normalised full name, and players with no defensible personal rate receive an explicit tour-average prior; valid-side actual/expected ratios use the 0.5 expected-aces floor and are season-normalised",
             "source": "Jeff Sackmann ATP archive for historical seasons; TennisMyLife annual ATP CSV for the current season; TML ongoing_tourneys.csv is merged for current-year Davis Cup targets when validated.",
             "season_sources": {str(y): source for y, source in season_sources.items()},
+            "season_source_notes": season_source_notes,
             "source_metadata": {
-                str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR
+                **{str(y): SOURCE_METADATA_BY_YEAR[y] for y in SOURCE_METADATA_BY_YEAR},
+                **retained_source_metadata,
             },
             "davis_cup_coverage": davis_cup_coverage,
             "seasons": {str(y): {t: {k: round(v, 3) if isinstance(v, float) else v
