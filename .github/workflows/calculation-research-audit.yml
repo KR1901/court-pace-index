@@ -10,6 +10,7 @@ on:
       - "tools/deep_calculation_audit.py"
       - "tools/compare_speed_variants.py"
       - "tools/test_compute_speed.py"
+      - "tools/_atp_archive_probe.py"
       - "tools/test_chronological_loeo_study.py"
       - "docs/CALC_RESEARCH_AUDIT.md"
   workflow_dispatch:
