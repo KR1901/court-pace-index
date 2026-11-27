@@ -66,7 +66,12 @@ jobs:
       - name: Test live player profile fallback
         run: python3 -m unittest discover -s tools -p 'test_*.py' -v
 
+      # The complete LOEO/chronology research audit runs on calculator-changing PRs
+      # in calculation-research-audit.yml. Keep routine production dataset refreshes
+      # focused on source refresh, strict CALC recomputation and publication gates.
+      # A manual dispatch can still generate a fresh LOEO comparison artifact on demand.
       - name: Compare retrospective and chronological LOEO methods
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           python3 tools/chronological_loeo_study.py \
             --start-year 2016 \
@@ -74,6 +79,7 @@ jobs:
             --output build/chronological-loeo-study.json
 
       - name: Upload LOEO methodology research
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v4
         with:
           name: chronological-loeo-study-current
