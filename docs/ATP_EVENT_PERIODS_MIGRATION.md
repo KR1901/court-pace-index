@@ -15,7 +15,7 @@ The official ATP Results Archive exposes historical date ranges back to 1991, wh
 ## Implemented registry and import contract
 
 - `tools/atp_event_periods.schema.json` defines the record schema.
-- `data/atp_event_periods.json` is the checked-in starter registry.
+- `data/atp_event_periods.json` is the checked-in derived registry (currently 2,654 actual ATP event periods across 1991–2026).
 - `tools/atp_event_periods.py` validates the records, converts inclusive local date periods to UTC boundaries, resolves source IDs and audits annual coverage.
 - `tools/import_atp_event_periods.py` imports a permissioned CSV export. It does not connect to ATP or retrieve web pages.
 - `tools/test_atp_event_periods.py` covers timezone conversion, overlap ordering, scheduled-period exclusion from training, duplicate IDs, invalid timezones and source-coverage accounting.
@@ -61,4 +61,6 @@ After the registry reaches 100% coverage:
 
 ## Current status
 
-**Strict calculation consumer and one-time official archive date collection are implemented.** The one-time retrieval helper is temporary and removed after the archive cards were collected. The remaining registry build must pass 100% coverage for standard ATP tour events and current supported Davis Cup targets before production can write.
+**Strict calculation consumer and one-time official ATP archive collection are implemented; all temporary collection tooling has been removed.** The checked-in registry contains 2,654 verified actual event periods across 1991–2026. One source event, `1999-615` (World Team Cup, Düsseldorf), remains unmapped because ATP's 1999 archive displays the malformed date `16 May, 1999 - 1 January, 1`; the linked ATP event-results endpoint returned HTTP 403 during the one-time official-page check. The source archive has 26 match rows for the event, 21 with valid serve statistics, so it cannot be ignored as an unrateable event.
+
+No end date has been inferred. The strict production `--write` gate remains closed until a valid ATP-official end date or authorised ATP record/export is available for `1999-615`. No runtime ATP scraping or one-time collector code remains in the repository.
