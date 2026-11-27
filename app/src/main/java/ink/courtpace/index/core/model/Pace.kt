@@ -131,6 +131,12 @@ data class CalculationDiagnostics(
     val returnerProfilesMatched: Int,
     val serverProfilesFallback: Int,
     val returnerProfilesFallback: Int,
+    /** Aggregate source reconciliation; present only for validated TML Davis Cup phases. */
+    val sourceIdentifiedSingles: Int? = null,
+    val sourceCompletedSingles: Int? = null,
+    val sourceMatchesWithValidServeStats: Int? = null,
+    val sourceMatchesMissingServeStats: Int? = null,
+    val sourceMatchesMalformedServeStats: Int? = null,
     /** Highest and lowest ten server-side ratios, not the complete raw match archive. */
     val sideDiagnostics: List<SideRatioDiagnostic> = emptyList(),
 )
