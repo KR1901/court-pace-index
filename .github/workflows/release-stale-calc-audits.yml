@@ -1,0 +1,51 @@
+name: Release stale CALC research audit slots
+
+on:
+  push:
+    branches:
+      - feature/atp-event-period-contract-pace-year-picker-20261127
+    paths:
+      - ".github/workflows/release-stale-calc-audits.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  supersede:
+    name: Supersede CALC audit ${{ matrix.sha }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    strategy:
+      fail-fast: false
+      max-parallel: 25
+      matrix:
+        sha:
+          - "5632ccb255d866b8e17812bcb4a046afc1b8ae46"
+          - "2aa2ceca76ce6d22bfc4a081a469009586b7a3bd"
+          - "376d6a6d0dd01b8aaf99b59d2309e9b5f653dce5"
+          - "70ae0b48595c1048aa204a978a3ce4ef5b3192e3"
+          - "2a22e7e54193a4cb02dd5640e8242310f6d3f190"
+          - "114138fbee3621dc9b883ec5f36e7af6a5c8a72b"
+          - "f8a06728959ef03fdb632d3aca3f834106a692ff"
+          - "430c3be3e6ee25cac03d189490fb039d67750c11"
+          - "a9a4cbe9c3f842facac205d665e9eb13c76b4436"
+          - "6b0a6778473da1dbd19e5e1846165aa94add71f7"
+          - "cd501b239e0fb390c8e1c69acc4bb2f3fcac2210"
+          - "c96ea167dab06c4ab4fbbf6f79d098ba1245066c"
+          - "fa9f31ac9ef05e53e7356403cc774447efed0552"
+          - "134c1c7a60d6600f0517a319830b34fd9319948a"
+          - "4189457b5541e7aae116e7c1d4541d9c07c24bb5"
+          - "44cbb7a471db0395bf40b9a7d5eb66eaefb59f99"
+          - "0db06ed8ecb6e76087d910bafdbf3d27e33ee9b8"
+          - "2e0ddf22090e10f610a229507fcd3c17ceb8045b"
+          - "fad3049631f470df0dd7ca4558c5f867520fe1ef"
+          - "abac4cecfe689c3bd7cb06e98e8eeef62f10478e"
+          - "594bafea166244b729e750a27b12a19fd87ba863"
+          - "55b6ee31a2e0fb9fddb145b4acf2dea03c4b4305"
+          - "c6a264c34d0875463d338e3cd91cfe77ffa07d2f"
+    concurrency:
+      group: calc-methodology-research-crossfit-${{ matrix.sha }}
+      cancel-in-progress: true
+    steps:
+      - name: Release obsolete audit slot
+        run: echo "Superseding obsolete CALC methodology audit for ${{ matrix.sha }}."
