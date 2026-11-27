@@ -113,7 +113,7 @@ The probability-level audit strengthens the evidence for the current expected-ac
 ## 8. Validation and production decision
 
 The successful GitHub research run completed:
-1. 241 Python tooling tests.
+1. 254 Python tooling tests.
 2. Production-equivalent chronology/parity checks for 564 event-seasons (2016–2026), including a 100-draw Rio full-pipeline cross-fit bootstrap.
 3. Archive-wide shrinkage, empirical-Bayes, surface-weighting, conditional/profile/full-pipeline bootstrap and physical CPI diagnostics.
 4. Expected-aces formula comparisons against Tennis Abstract with 2,000 season-stratified paired bootstrap draws.
