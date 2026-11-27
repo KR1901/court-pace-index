@@ -89,6 +89,43 @@ jobs:
               assert final8_2026, (
                   "The validated TML 2026 source is declared, but the separate Davis Cup Final 8 CALC is missing."
               )
+              # Do not let a release workflow_run from an older, already queued dataset
+              # refresh publish a new app version with stale diagnostics. The current
+              # TML refresh must publish aggregate-only phase coverage alongside each CALC.
+              def require_phase_coverage(readings, event_id, expected_name):
+                  row = next((item for item in readings if item.get("t") == event_id), None)
+                  if row is None:
+                      raise SystemExit(f"Missing {expected_name} Davis Cup reading.")
+                  diagnostics = row.get("calculationDiagnostics")
+                  fields = (
+                      "sourceIdentifiedSingles", "sourceCompletedSingles",
+                      "sourceMatchesWithValidServeStats",
+                      "sourceMatchesMissingServeStats",
+                      "sourceMatchesMalformedServeStats",
+                  )
+                  if not isinstance(diagnostics, dict) or any(
+                      not isinstance(diagnostics.get(key), int) for key in fields
+                  ):
+                      raise SystemExit(
+                          f"{expected_name} Davis Cup source-coverage diagnostics are absent; "
+                          "wait for the matching Refresh dataset run before releasing."
+                      )
+                  valid = diagnostics["sourceMatchesWithValidServeStats"]
+                  missing = diagnostics["sourceMatchesMissingServeStats"]
+                  malformed = diagnostics["sourceMatchesMalformedServeStats"]
+                  completed = diagnostics["sourceCompletedSingles"]
+                  identified = diagnostics["sourceIdentifiedSingles"]
+                  assert identified >= completed > 0, (
+                      f"{expected_name} Davis Cup source counts do not reconcile."
+                  )
+                  assert valid + missing + malformed == completed, (
+                      f"{expected_name} Davis Cup serve-stat buckets do not sum to completed singles."
+                  )
+                  assert row.get("matches") == valid, (
+                      f"{expected_name} Davis Cup CALC match count differs from source-valid match count."
+                  )
+              require_phase_coverage(dataset.get("readings", []), "daviscup", "earlier-phase")
+              require_phase_coverage(dataset.get("readings", []), "daviscupfinal8", "Final 8")
           else:
               assert not davis_2026 and not final8_2026, (
                   "2026 Davis Cup phase CALC values cannot be packaged without validated TML annual + ongoing source provenance."
