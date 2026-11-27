@@ -72,8 +72,9 @@ ALIASES={
  "queensclub":{"hsbcchampionships","london"},
  "tokyooutdoor":{"tokyo"},"tokyoindoor":{"tokyo"},
  "stuttgartoutdoor":{"stuttgart"},"stuttgartindoor":{"stuttgart"},
- "genova":{"genoa"},"stpoelten":{"stpolten"},"bstad":{"bastad"},
- "greatoceanroadopen":{"melbourne1","melbourne"},"murrayriveropen":{"melbourne2","melbourne"},
+ "genova":{"genoa"},"stpoelten":{"stpolten"},"bstad":{"bastad"},"bastad":{"bstad"},
+ "indianwellsmaster":{"indianwells"},"miamimaster":{"miami"},"romemaster":{"rome"},
+ "greatoceanroadopen":{"melbourne1"},"murrayriveropen":{"melbourne2"},
  "nextgenfinals":{"nextgenatpfinals","nextgen"},"nextgenatpfinals":{"nextgenfinals","nextgen"},
  "nittoatpfinals":{"tourfinals","atpfinals"},"masterscup":{"tourfinals","atpfinals"},
  "canadamasters":{"canada"},"parismasters":{"paris"},"tourfinals":{"atptourworldchampionship","tennismasterscup","atpfinals"},
@@ -210,6 +211,10 @@ def main():
    bad_dates.append({"season":raw.get("season"),"card":raw.get("cardText"),"date":raw.get("officialDateText"),"error":str(e)})
    continue
   city,zone=venue_zone(raw["cardText"],ci)
+  # ATP annual Results Archive may omit Finals city; use ATP's official historic venue table.
+  title_norm=norm(raw["cardText"])
+  if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals")):
+   zone=finals_zone(int(raw["season"]))
   if not zone:
    unresolved_zones.append({"season":raw["season"],"cardText":raw["cardText"],"dateText":raw["officialDateText"],"cityGuess":city})
   cards[int(raw["season"])].append({**raw,"start":start,"end":end,"city":city,"timeZone":zone})
