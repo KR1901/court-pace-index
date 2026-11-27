@@ -355,6 +355,14 @@ jobs:
                   "- Preserves the existing H2H meeting history, CPI/CALC formulas, Surface Speed calculations and Live Now pipeline.",
                   "",
               ]
+          elif version == "4.2.0":
+              lines += [
+                  "### Direct Pace year selection",
+                  "- Replaces the Pace screen's previous/next season arrows with a direct YEAR dropdown, matching the Player Stats year selector.",
+                  "- Lets users jump straight to any season with available Pace data.",
+                  "- Preserves all existing CALC formulas, historical ratings, player profiles, normalisation and live Surface Speed calculations.",
+                  "",
+              ]
           elif version == "4.1.9":
               lines += [
                   "### Davis Cup source-coverage diagnostics",
