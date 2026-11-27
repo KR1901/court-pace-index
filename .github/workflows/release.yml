@@ -363,6 +363,16 @@ jobs:
                   "- Preserves all existing CALC formulas, historical ratings, player profiles, normalisation and live Surface Speed calculations.",
                   "",
               ]
+          elif version == "4.2.1":
+              lines += [
+                  "### Strict chronological CALC history",
+                  "- Regenerates the historical CALC dataset using official event-period boundaries across 1991–2026.",
+                  "- Uses whole-event UTC completion: an earlier event can train player profiles and normalisation only after its full event period has ended before the target event starts.",
+                  "- Excludes concurrent, overlapping and same-week event editions instead of relying on an arbitrary quarantine window.",
+                  "- Adds 2,655 event-period records, including the 1999 Düsseldorf World Team Cup (16–22 May 1999), with explicit ATP archive and official ITF corroboration metadata.",
+                  "- Keeps historical date acquisition out of runtime; the APK uses the committed offline registry and does not scrape ATP.",
+                  "",
+              ]
           elif version == "4.1.9":
               lines += [
                   "### Davis Cup source-coverage diagnostics",
