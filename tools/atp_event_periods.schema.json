@@ -63,7 +63,8 @@
           },
           "timeZone": {
             "type": "string",
-            "minLength": 1
+            "pattern": "^(MULTI_LOCATION|.+/.+)$",
+            "description": "IANA venue timezone, or MULTI_LOCATION when ATP publishes an event date window spanning venues. MULTI_LOCATION uses a conservative UTC envelope covering UTC+14 through UTC-12."
           },
           "sourceUrl": {
             "type": "string",

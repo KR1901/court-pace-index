@@ -10,7 +10,7 @@ Make historical CALC chronology deterministic for every ATP tournament edition f
 2. **ATP official season calendar for future/current provisional editions.** Store the announced period as scheduled. It can define a target event's published window, but it cannot prove that a source tournament has completed and cannot enter player-profile training or normalisation until reconciled to an actual Results Archive period.
 3. Do not treat order-of-play "start", "not before", or court schedule times as actual match start/finish timestamps.
 
-The official ATP Results Archive exposes historical date ranges back to 1991, while the season calendar publishes scheduled ranges. ATP's published terms expressly prohibit systematic retrieval/compilation into a database without ATP's prior express written permission. Therefore this repository does not contain an unauthorised scraper or bulk transcription. Populate the registry only from an ATP-authorised feed/export or another delivery whose collection and reuse are expressly authorised.
+The official ATP Results Archive exposes historical date ranges back to 1991, while the season calendar publishes scheduled ranges. The repository owner confirmed that permission was in place for a one-time official archive date capture. The temporary retrieval tooling has been removed after collection; the application does not perform live ATP archive scraping.
 
 ## Implemented registry and import contract
 
@@ -26,13 +26,13 @@ Each record includes:
 - `tournamentId`: exact app/CALC tournament identity.
 - `sourceEventIds`: exact source `tourney_id` values mapped to that ATP event edition.
 - `startDate` / `endDate`: inclusive local dates shown by ATP.
-- `timeZone`: IANA venue timezone.
+- `timeZone`: IANA venue timezone, or the reserved value `MULTI_LOCATION` for an ATP-published card that spans multiple venues or has no single venue. This uses a conservative UTC envelope (local midnight minus 14 hours at the start; midnight after the final date plus 12 hours at the end) covering the full UTC+14 to UTC-12 range.
 - `sourceUrl`: direct ATP first-party archive or calendar page.
 - `sourceKind`: `results_archive` or `calendar`.
 - `dateStatus`: `actual` or `scheduled`.
 - `verifiedAt`: ISO date when the source range was checked.
 
-For multi-venue/team events, a single fabricated timezone is not acceptable. They must be represented as separately identified source event/tie records with their own venue timezone, or remain uncovered and block the strict production date-coverage gate.
+For multi-venue/team events, a single fabricated venue timezone is not acceptable. If ATP publishes a round-level date span across multiple locations, each exact source event/tie ID may map to that round window using `MULTI_LOCATION`; the conservative UTC envelope prevents the round from being treated as complete before it could have finished in any participating timezone.
 
 ## Strict CALC behaviour implemented
 
@@ -47,7 +47,7 @@ For multi-venue/team events, a single fabricated timezone is not acceptable. The
 
 ## Production coverage/release gate
 
-Every source ATP singles event ID in each annual match source from 1991 onward, including events whose matches lack serve statistics, must map to one registry record before `--write` may proceed. Historical seasons must be backed by `results_archive` / `actual`; the current year may additionally contain `calendar` / `scheduled` target records.
+Every standard ATP tour-level singles event ID in each annual match source from 1991 onward, including events whose matches lack serve statistics, must map to one registry record before `--write` may proceed. Current-season supported Davis Cup target IDs are separately audited and must all map to ATP's round/final date windows. Historical Davis Cup ratings from a previously validated TML source snapshot are retained and are not re-derived from old archive IDs that do not represent individual tie periods. Historical seasons require `results_archive` / `actual`; the current year may additionally contain `calendar` / `scheduled` target records.
 
 The gate fails on missing IDs, missing date records, duplicate source mappings, mismatched tournament identity, invalid timezones, or incomplete historical actual-period coverage. No dataset/history/baseline output is written if coverage is incomplete.
 
@@ -61,4 +61,4 @@ After the registry reaches 100% coverage:
 
 ## Current status
 
-**Strict calculation consumer and authorised-import tooling are implemented. Historical official date data is not yet populated.** The checked-in registry is empty. Production `--write` intentionally fails closed until the full 1991-onward registry is supplied through an authorised ATP delivery. No ATP website scraper is included because the currently published terms prohibit systematic retrieval and compiling without prior express written permission.
+**Strict calculation consumer and one-time official archive date collection are implemented.** The one-time retrieval helper is temporary and removed after the archive cards were collected. The remaining registry build must pass 100% coverage for standard ATP tour events and current supported Davis Cup targets before production can write.

@@ -2472,6 +2472,7 @@ def main():
                 rows, year, event_period_registry,
                 tournament_id_resolver=_row_tournament_id,
                 require_actual=(year < date.today().year),
+                include_davis_cup=(year == date.today().year),
             )
             event_period_coverage[str(year)] = coverage
             print(
@@ -2514,7 +2515,10 @@ def main():
             )
         published_source = current_source
         source_note = current_source
-        if year < date.today().year and not write_mode:
+        if year < date.today().year:
+            # A full write recomputes every ATP event, but it must not erase already
+            # validated historical TML Davis Cup readings merely because the older
+            # match archive lacks tie-level source identifiers/dates.
             ratings, published_source, retained_ids = preserve_validated_davis_cup_history(
                 year,
                 ratings,

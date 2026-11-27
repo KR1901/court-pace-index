@@ -18,6 +18,9 @@ REQUIRED_FIELDS = {
 }
 
 
+MULTI_LOCATION_TIMEZONE = "MULTI_LOCATION"
+
+
 class EventPeriodError(ValueError):
     """Invalid or incomplete official event-period registry."""
 
@@ -69,10 +72,16 @@ def validate_record(raw: object) -> dict:
         raise EventPeriodError("startDate must not be after endDate")
 
     zone_name = str(raw.get("timeZone") or "").strip()
-    try:
-        zone = ZoneInfo(zone_name)
-    except (ZoneInfoNotFoundError, ValueError) as exc:
-        raise EventPeriodError(f"unknown IANA timeZone: {zone_name!r}") from exc
+    if zone_name == MULTI_LOCATION_TIMEZONE:
+        # ATP publishes some team-event windows as "Multiple Locations". There is no
+        # single venue timezone. Bound all IANA civil zones conservatively: UTC+14 is
+        # the earliest possible local midnight, UTC-12 the latest possible day-end.
+        zone = None
+    else:
+        try:
+            zone = ZoneInfo(zone_name)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise EventPeriodError(f"unknown IANA timeZone: {zone_name!r}") from exc
 
     source_url = str(raw.get("sourceUrl") or "").strip()
     parsed_url = urlparse(source_url)
@@ -89,8 +98,15 @@ def validate_record(raw: object) -> dict:
             "sourceKind/dateStatus must be results_archive/actual or calendar/scheduled"
         )
 
-    start_utc = _utc_boundary(start_day, zone)
-    end_utc_exclusive = _utc_boundary(end_day + timedelta(days=1), zone)
+    if zone is None:
+        start_utc = datetime.combine(start_day, time.min, tzinfo=timezone.utc) - timedelta(hours=14)
+        end_utc_exclusive = (
+            datetime.combine(end_day + timedelta(days=1), time.min, tzinfo=timezone.utc)
+            + timedelta(hours=12)
+        )
+    else:
+        start_utc = _utc_boundary(start_day, zone)
+        end_utc_exclusive = _utc_boundary(end_day + timedelta(days=1), zone)
     if end_utc_exclusive <= start_utc:
         raise EventPeriodError("event period must have positive duration")
 
@@ -220,13 +236,16 @@ def completed_before(source_period: dict | None, target_period: dict | None) -> 
 
 def audit_source_coverage(
     rows: list[dict], season: int, registry: dict, tournament_id_resolver=None,
-    require_actual: bool = False,
+    require_actual: bool = False, include_davis_cup: bool = False,
 ) -> dict:
-    """Count all identified ATP singles editions, independently of serve-stat eligibility."""
+    """Count ATP tour-level singles editions; Davis Cup is separately target-audited."""
     source_ids = set()
     missing_ids = []
+    audited_levels = {"G", "M", "A", "F", "250", "500"}
+    if include_davis_cup:
+        audited_levels.add("D")
     for row in rows:
-        if str(row.get("tourney_level") or "") not in {"G", "M", "A", "F", "250", "500", "D"}:
+        if str(row.get("tourney_level") or "") not in audited_levels:
             continue
         winner = str(row.get("winner_name") or "")
         loser = str(row.get("loser_name") or "")

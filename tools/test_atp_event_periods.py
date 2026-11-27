@@ -105,6 +105,54 @@ class OfficialEventPeriodRegistryTests(unittest.TestCase):
         self.assertFalse(audit["dateCoverageComplete"])
         self.assertEqual(["missing"], audit["missingSourceEventIds"])
 
+
+    def test_multi_location_period_uses_conservative_worldwide_utc_envelope(self):
+        registry = self.registry([record(
+            timeZone="MULTI_LOCATION",
+            startDate="2026-02-05",
+            endDate="2026-02-08",
+        )])
+        period = registry["by_source_id"][(2026, "2026-1536")]
+        self.assertEqual(datetime(2026, 2, 4, 10, 0, tzinfo=timezone.utc), period["_start_utc"])
+        self.assertEqual(datetime(2026, 2, 9, 12, 0, tzinfo=timezone.utc), period["_end_utc_exclusive"])
+
+    def test_multi_location_overlap_is_conservative_across_extreme_timezones(self):
+        registry = self.registry([
+            record(
+                timeZone="MULTI_LOCATION",
+                startDate="2026-02-05",
+                endDate="2026-02-08",
+            ),
+            record(
+                eventId="2026-target",
+                tournamentId="rome",
+                sourceEventIds=["2026-target"],
+                startDate="2026-02-09",
+                endDate="2026-02-15",
+                timeZone="Europe/Rome",
+                sourceUrl="https://www.atptour.com/en/scores/archive/rome/416/2026/results",
+            ),
+        ])
+        source = registry["by_source_id"][(2026, "2026-1536")]
+        target = registry["by_source_id"][(2026, "2026-target")]
+        # The multi-location stage could run as late as 12:00 UTC on 9 February,
+        # after the Rome target's earliest possible start that same day.
+        self.assertFalse(completed_before(source, target))
+
+    def test_davis_cup_is_outside_standard_atp_coverage_unless_explicitly_requested(self):
+        rows = [
+            {"tourney_id": "atp", "tourney_level": "250", "winner_name": "A", "loser_name": "B"},
+            {"tourney_id": "dc", "tourney_level": "D", "winner_name": "C", "loser_name": "D"},
+        ]
+        registry = self.registry([record()])
+        normal = audit_source_coverage(rows, 2026, registry)
+        self.assertEqual(1, normal["identifiedSourceEvents"])
+        self.assertTrue(normal["dateCoverageComplete"])
+        strict_davis = audit_source_coverage(rows, 2026, registry, include_davis_cup=True)
+        self.assertEqual(2, strict_davis["identifiedSourceEvents"])
+        self.assertFalse(strict_davis["dateCoverageComplete"])
+        self.assertEqual(["dc"], strict_davis["missingSourceEventIds"])
+
     def test_duplicate_source_ids_and_unknown_timezones_are_rejected(self):
         with self.assertRaises(EventPeriodError):
             self.registry([

@@ -215,6 +215,9 @@ def main():
   title_norm=norm(raw["cardText"])
   if not zone and any(x in title_norm for x in ("tourworldchampionship","tourfinals","masterscup","nittoatpfinals")):
    zone=finals_zone(int(raw["season"]))
+  # ATP multi-location Davis Cup stages have official dates but no single venue zone.
+  if not zone and "davis" in title_norm:
+   zone = "MULTI_LOCATION"
   if not zone:
    unresolved_zones.append({"season":raw["season"],"cardText":raw["cardText"],"dateText":raw["officialDateText"],"cityGuess":city})
   cards[int(raw["season"])].append({**raw,"start":start,"end":end,"city":city,"timeZone":zone})
@@ -248,7 +251,19 @@ def main():
     tolerance_days = 7 if any(k in norm(c["cardText"]) for k in ("finals","worldchampionship","masterscup")) else 3
     if not c["start"]-timedelta(days=tolerance_days)<=e["_date"]<=c["end"] or not c["timeZone"]: continue
     if is_d:
-     if "davis" not in toks(c["cardText"]) or not is_final: continue
+     if "davis" not in toks(c["cardText"]): continue
+     if year == datetime.utcnow().year:
+      # Current-year Davis Cup has several official ATP date cards. Match each tie
+      # to its published round window; the Final 8 remains its separate app target.
+      card_final = "finals" in norm(c["cardText"])
+      if is_final != card_final:
+       continue
+      if not c["start"] - timedelta(days=1) <= e["_date"] <= c["end"] + timedelta(days=1):
+       continue
+     elif not is_final:
+      # Older archive years often expose only the single Finals card, not each tie.
+      # Do not assign its dates to all historical qualifiers/group-stage ties.
+      continue
      score=1.0
     else:
      if "davis" in toks(c["cardText"]): continue
@@ -289,7 +304,9 @@ def main():
    tmp.write_text(json.dumps({"schemaVersion":1,"records":records},indent=2)+"\n",encoding="utf-8")
    try:
     reg=load_event_periods(tmp,require_non_empty=True)
-    coverage=audit_source_coverage(rows,year,reg)
+    coverage=audit_source_coverage(
+     rows, year, reg, include_davis_cup=(year == datetime.utcnow().year),
+    )
    except Exception as e: coverage={"dateCoverageComplete":False,"error":f"{type(e).__name__}: {e}"}
    finally: tmp.unlink(missing_ok=True)
   coverage_rows.append({

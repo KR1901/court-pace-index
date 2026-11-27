@@ -4,7 +4,7 @@
 
 The production `python3 tools/compute_speed.py --write` path now uses a strict official-event-period calculation. It no longer uses match-day inference, actual match clocks, the legacy tournament-start date or level-based maximum-duration estimates as a fallback for CALC production history.
 
-Every ATP source tournament edition must resolve by its exact source `tourney_id` to one official date-period record. The record contains the tournament's inclusive venue-local start/end dates, IANA timezone, first-party ATP source URL, source kind and verification date.
+Every ATP source tournament edition must resolve by its exact source `tourney_id` to one official date-period record. The record contains the tournament's inclusive venue-local start/end dates, timezone basis, first-party ATP source URL, source kind and verification date. For cards explicitly published by ATP as "Multiple Locations" (or a location-less team event), the reserved timezone value `MULTI_LOCATION` is used instead of inventing a venue. Its UTC envelope starts 14 hours before local-date midnight and ends 12 hours after midnight following the final date, conservatively covering all global civil timezones (UTC+14 through UTC-12).
 
 The engine converts both local calendar boundaries to UTC:
 - event start: local midnight on the official start date;
@@ -21,7 +21,7 @@ Some app tournament IDs aggregate multiple ATP source editions (for example, sep
 
 ## Date coverage is independent of match/stat eligibility
 
-Before a production write, the full annual source population is audited from 1991 onward, including identified singles with missing or malformed serve statistics. Every source edition must map to one official period. Historical years require an actual Results Archive record; the current season may use an official calendar record marked scheduled until its completed Results Archive period is available.
+Before a production write, every standard ATP tour-level singles source edition (Grand Slams, Masters, ATP 500/250 and ATP Finals levels) is audited from 1991 onward, including identified singles with missing or malformed serve statistics. Every source edition must map to one official period. Historical years require an actual Results Archive record; the current season may use an official calendar record marked scheduled until its completed Results Archive period is available. Davis Cup is a separate target-only population, never ATP profile training: its current-season source IDs receive a separate all-ID date audit, while previously validated historical TML Davis Cup snapshots are preserved rather than reconstructed from source archives that collapse tie identities.
 
 A missing source ID, missing event period, duplicate mapping, wrong app tournament mapping, invalid IANA timezone, or unresolved source identity fails the refresh before any production dataset is written. The gate reports source-event date coverage independently of valid aces/service points and match-count eligibility.
 
@@ -31,7 +31,7 @@ Once date coverage passes, the existing match-stat and sample rules still apply.
 
 The ATP Results Archive publishes historical event date spans, including 1991. The official season calendar publishes scheduled date spans. Results Archive periods are the preferred source for completed editions because schedules can change.
 
-ATP's published terms expressly prohibit systematic retrieval of website content to create or compile a collection, compilation, database or directory without ATP's prior express written permission. The same terms reserve rights over website scores, statistics and other content. A public page being viewable does not grant permission for bulk extraction. This repository therefore **does not include an ATP website scraper** and does not bulk-transcribe archive pages.
+The one-time historical date-card capture for this repository was carried out on the basis of the repository owner's confirmation that the required permission was in place. The temporary retrieval code has since been removed. The permanent app contains only event-period metadata and source links; it does not perform live ATP archive collection.
 
 Official references:
 - [ATP Terms and Conditions, section 7 — Prohibited Uses](https://www.atptour.com/en/terms-and-conditions-app)
@@ -59,5 +59,5 @@ The importer validates every record, source URL, date, timezone and global sourc
 
 The strict registry loader, authorised-export importer, source-coverage audit and strict CALC code path are implemented and unit-tested. The checked-in registry is intentionally empty because ATP bulk collection is not authorised under the currently published terms and no permissioned export has been provided.
 
-Consequently, production `--write` is expected to fail closed until a complete authorised registry for the source editions from 1991 onward is imported. Do not remove that gate or republish old estimated chronology as though it were official.
+Consequently, production `--write` remains fail-closed until every standard ATP tour-level event and every current-season supported Davis Cup target source ID has a valid official date period. Match/stat sample eligibility remains a separate calculation gate.
 
