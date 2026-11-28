@@ -2,6 +2,7 @@ package ink.courtpace.index.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -174,7 +175,10 @@ fun BoardScreen(
         }
 
         Spacer(Modifier.height(14.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             GlassChip(text = "All", selected = surfaces.isEmpty(), onClick = { onSurface(null) }, selectionRole = Role.Button)
             // Only surfaces with readings this season: a filter that can only return an
             // empty list is a dead end.

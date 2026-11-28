@@ -1,6 +1,12 @@
 package ink.courtpace.index.ui
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.test.assertHeightIsAtLeast
@@ -10,11 +16,14 @@ import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ink.courtpace.index.core.model.Metric
 import ink.courtpace.index.ui.components.MetricToggle
 import ink.courtpace.index.ui.glass.GlassChip
+import ink.courtpace.index.ui.glass.GlassTabBar
+import ink.courtpace.index.ui.glass.Glyph
 import ink.courtpace.index.ui.theme.CourtPaceTheme
 import ink.courtpace.index.ui.theme.DefaultAccent
 import org.junit.Rule
@@ -64,6 +73,56 @@ class AccessibilityControlsTest {
 
         compose.onNodeWithText("Speed").assertIsSelected()
         compose.onNodeWithText("CPI").assertIsNotSelected()
+    }
+
+
+    @Test
+    fun filterChipsRemainReachableInNarrowLayoutAtLargeFontScale() {
+        compose.setContent {
+            val baseDensity = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    density = baseDensity.density,
+                    fontScale = 1.5f,
+                ),
+            ) {
+                CourtPaceTheme(dark = true, accent = DefaultAccent) {
+                    Row(
+                        modifier = Modifier.width(240.dp).horizontalScroll(rememberScrollState()),
+                    ) {
+                        GlassChip(text = "All", selected = true, onClick = {}, selectionRole = Role.Button)
+                        GlassChip(text = "Hard", selected = false, onClick = {})
+                        GlassChip(text = "Clay", selected = false, onClick = {})
+                        GlassChip(
+                            text = "Grass",
+                            selected = false,
+                            onClick = {},
+                            modifier = Modifier.testTag("large-font-grass"),
+                        )
+                    }
+                }
+            }
+        }
+
+        compose.onNodeWithTag("large-font-grass")
+            .assertExists()
+            .assertHeightIsAtLeast(48.dp)
+    }
+
+    @Test
+    fun bottomNavigationExposesSelectedTabRole() {
+        compose.setContent {
+            CourtPaceTheme(dark = true, accent = DefaultAccent) {
+                GlassTabBar(
+                    items = listOf(Glyph.GAUGE to "Pace", Glyph.LIBRARY to "Compare"),
+                    selected = 0,
+                    onSelect = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText("Pace").assertIsSelected()
+        compose.onNodeWithText("Compare").assertIsNotSelected()
     }
 
     @Test
