@@ -340,9 +340,18 @@ fun SurfaceBar(
 @Composable
 fun ChartLegend(entries: List<Pair<String, Color>>, modifier: Modifier = Modifier) {
     val colors = PaceTheme.colors
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+    // Each entry gets the full available width. A single horizontal Row makes later
+    // labels progressively narrower, which can force long tournament names into
+    // character-by-character vertical wrapping on phone-sized screens.
+    Column(
+        modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         entries.forEach { (label, color) ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Canvas(Modifier.width(14.dp).height(4.dp)) {
                     drawLine(
                         color = color,
@@ -355,8 +364,9 @@ fun ChartLegend(entries: List<Pair<String, Color>>, modifier: Modifier = Modifie
                 Spacer(Modifier.width(6.dp))
                 Text(
                     text = label,
-                    style = TextStyle(fontSize = 10.5.sp),
+                    style = TextStyle(fontSize = 10.5.sp, lineHeight = 14.sp),
                     color = colors.textDim,
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
