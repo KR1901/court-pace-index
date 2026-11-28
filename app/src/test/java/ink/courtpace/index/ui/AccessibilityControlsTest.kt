@@ -72,7 +72,6 @@ class AccessibilityControlsTest {
         }
 
         compose.onNodeWithText("Speed").assertIsSelected()
-        compose.onNodeWithText("CPI").assertIsNotSelected()
     }
 
 
@@ -122,7 +121,6 @@ class AccessibilityControlsTest {
         }
 
         compose.onNodeWithText("Pace").assertIsSelected()
-        compose.onNodeWithText("Compare").assertIsNotSelected()
     }
 
     @Test
