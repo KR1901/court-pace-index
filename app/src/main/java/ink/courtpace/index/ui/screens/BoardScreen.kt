@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import ink.courtpace.index.core.analytics.PaceAnalytics
 import ink.courtpace.index.core.analytics.Ranked
 import ink.courtpace.index.core.data.PaceData
@@ -565,6 +567,7 @@ private fun missingReasonLabel(reason: String): String = when {
     else -> reason.substringAfterLast(": ").take(34).ifBlank { "unavailable" }
 }
 
+
 @Composable
 private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
     val colors = PaceTheme.colors
@@ -578,38 +581,42 @@ private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
         },
         label = "refresh",
     )
-    val tint = if (refreshing) colors.accent else colors.textDim
-    Box(
-        Modifier
+    val label = if (refreshing) "Checking for updates" else "Refresh pace data"
+    GlassSurface(
+        modifier = Modifier
             .size(48.dp)
+            .semantics { contentDescription = label }
             .clickable(
                 enabled = !refreshing,
-                onClickLabel = if (refreshing) "Checking for updates" else "Check for updates",
+                onClickLabel = label,
                 role = Role.Button,
             ) { onClick() },
-        contentAlignment = Alignment.Center,
+        shape = RoundedCornerShape(17.dp),
+        intensity = if (refreshing) 1.2f else 0.92f,
+        elevation = 9.dp,
+        contentPadding = PaddingValues(0.dp),
     ) {
         Box(
-            Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = if (colors.isDark) 0.09f else 0.6f), CircleShape),
-        )
-        Canvas(Modifier.size(18.dp).graphicsLayer { rotationZ = rotation }) {
-            val w = size.width
-            val stroke = Stroke(width = w * 0.11f, cap = StrokeCap.Round)
-            drawArc(
-                color = tint,
-                startAngle = 60f,
-                sweepAngle = 280f,
-                useCenter = false,
-                topLeft = Offset(w * 0.12f, w * 0.12f),
-                size = Size(w * 0.76f, w * 0.76f),
-                style = stroke,
-            )
-            val tip = Offset(w * 0.88f, w * 0.34f)
-            drawLine(tint, tip, Offset(tip.x - w * 0.16f, tip.y - w * 0.04f), w * 0.11f, StrokeCap.Round)
-            drawLine(tint, tip, Offset(tip.x + w * 0.02f, tip.y + w * 0.16f), w * 0.11f, StrokeCap.Round)
+            Modifier.size(48.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Canvas(Modifier.size(21.dp).graphicsLayer { rotationZ = rotation }) {
+                val w = size.width
+                val tint = colors.accent
+                val stroke = Stroke(width = w * 0.105f, cap = StrokeCap.Round)
+                drawArc(
+                    color = tint,
+                    startAngle = 60f,
+                    sweepAngle = 280f,
+                    useCenter = false,
+                    topLeft = Offset(w * 0.12f, w * 0.12f),
+                    size = Size(w * 0.76f, w * 0.76f),
+                    style = stroke,
+                )
+                val tip = Offset(w * 0.88f, w * 0.34f)
+                drawLine(tint, tip, Offset(tip.x - w * 0.16f, tip.y - w * 0.04f), w * 0.105f, StrokeCap.Round)
+                drawLine(tint, tip, Offset(tip.x + w * 0.02f, tip.y + w * 0.16f), w * 0.105f, StrokeCap.Round)
+            }
         }
     }
 }
