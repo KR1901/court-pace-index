@@ -175,7 +175,7 @@ fun BoardScreen(
 
         Spacer(Modifier.height(14.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GlassChip(text = "All", selected = surfaces.isEmpty(), onClick = { onSurface(null) })
+            GlassChip(text = "All", selected = surfaces.isEmpty(), onClick = { onSurface(null) }, selectionRole = Role.Button)
             // Only surfaces with readings this season: a filter that can only return an
             // empty list is a dead end.
             data.surfacesPresent(season, metric).forEach { surface ->
