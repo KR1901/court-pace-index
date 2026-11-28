@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,7 +57,8 @@ fun MetricToggle(
         modifier
             .clip(CircleShape)
             .background(Color.White.copy(alpha = if (colors.isDark) 0.07f else 0.55f), CircleShape)
-            .padding(4.dp),
+            .padding(4.dp)
+            .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Metric.entries.forEach { option ->

@@ -64,6 +64,31 @@ import ink.courtpace.index.ui.theme.accentFor
 import ink.courtpace.index.ui.theme.accentForBand
 import kotlin.math.abs
 
+
+internal data class CompareMenuEvent(
+    val tournament: Tournament,
+    val hasActiveReading: Boolean,
+)
+
+internal fun compareMenuEvents(
+    selectedIds: List<String>,
+    allTournaments: List<Tournament>,
+    activeCandidates: List<Tournament>,
+): List<CompareMenuEvent> {
+    val candidatesById = activeCandidates.associateBy { it.id }
+    val tournamentsById = allTournaments.associateBy { it.id }
+    val selectedEvents = selectedIds.mapNotNull(tournamentsById::get)
+    val remainingCandidates = activeCandidates.filterNot { it.id in selectedIds }
+    return buildList {
+        selectedEvents.forEach { tournament ->
+            add(CompareMenuEvent(tournament, tournament.id in candidatesById))
+        }
+        remainingCandidates.forEach { tournament ->
+            add(CompareMenuEvent(tournament, hasActiveReading = true))
+        }
+    }
+}
+
 private val seriesColors = listOf(
     Color(0xFF8B7BFF),
     Color(0xFF3E92D8),
@@ -80,6 +105,7 @@ fun CompareScreen(
     onOpen: (Tournament) -> Unit,
 ) {
     val colors = PaceTheme.colors
+    // Compare keeps an independent year selection; parent Pace navigation must not reset it.
     var compareSeason by remember { mutableIntStateOf(season) }
     var metric by remember { mutableStateOf(Metric.CPI) }
     var yearMenuExpanded by remember { mutableStateOf(false) }
@@ -90,6 +116,11 @@ fun CompareScreen(
         .sortedDescending()
     val activeSeason = PaceAnalytics.nearestSeason(availableSeasons, compareSeason)
     val candidates = data.entries(activeSeason, metric).sortedBy { it.first.name }
+    val menuEvents = compareMenuEvents(
+        selectedIds = selected,
+        allTournaments = data.tournaments,
+        activeCandidates = candidates.map { it.first },
+    )
     val fieldRanking = PaceAnalytics.ranking(data, activeSeason, metric)
     val rankById = fieldRanking.mapIndexed { index, row -> row.tournament.id to index + 1 }.toMap()
     val fieldValues = candidates.map { it.second }
@@ -215,7 +246,7 @@ fun CompareScreen(
                 }
                 Box(Modifier.weight(1f)) {
                     GlassChip(
-                        text = "EVENTS · ${selected.size}/3",
+                        text = "EVENTS · ${compared.size}/3 WITH DATA",
                         selected = tournamentMenuExpanded,
                         onClick = { tournamentMenuExpanded = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -226,29 +257,40 @@ fun CompareScreen(
                         onDismissRequest = { tournamentMenuExpanded = false },
                         modifier = Modifier.heightIn(max = 420.dp),
                     ) {
-                        DropdownMenuItem(
-                            text = { Text("SELECT UP TO THREE") },
-                            onClick = { },
-                            enabled = false,
-                            modifier = Modifier.width(260.dp),
+                        Text(
+                            text = "SELECT UP TO THREE",
+                            modifier = Modifier.width(260.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+                            style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp),
+                            color = colors.textFaint,
                         )
-                        candidates.forEach { (tournament, _) ->
+                        menuEvents.forEach { event ->
+                            val tournament = event.tournament
                             val isSelected = tournament.id in selected
                             DropdownMenuItem(
                                 text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = tournament.name,
-                                            modifier = Modifier.weight(1f),
-                                            maxLines = 1,
-                                        )
-                                        Text(
-                                            text = if (isSelected) "✓" else "＋",
-                                            color = if (isSelected) colors.accent else colors.textFaint,
-                                        )
+                                    Column {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = tournament.name,
+                                                modifier = Modifier.weight(1f),
+                                                maxLines = 1,
+                                            )
+                                            Text(
+                                                text = if (isSelected) "✓" else "＋",
+                                                color = if (isSelected) colors.accent else colors.textFaint,
+                                            )
+                                        }
+                                        if (!event.hasActiveReading) {
+                                            Text(
+                                                text = "No ${metric.short} reading in $activeSeason",
+                                                style = TextStyle(fontSize = 10.sp),
+                                                color = colors.textFaint,
+                                            )
+                                        }
                                     }
                                 },
                                 onClick = { onToggle(tournament.id) },
+                                // Keep unavailable selected events enabled so they can be removed.
                                 enabled = isSelected || selected.size < 3,
                                 modifier = Modifier.width(260.dp),
                             )
@@ -265,7 +307,7 @@ fun CompareScreen(
             }
             Spacer(Modifier.height(7.dp))
             Text(
-                text = "Higher readings indicate faster conditions. Event choices are specific to the selected year and measure.",
+                text = "Higher readings indicate faster conditions. Your event selections stay in place when you switch years or measures; unavailable readings are skipped.",
                 style = TextStyle(fontSize = 11.sp, lineHeight = 15.sp),
                 color = colors.textFaint,
             )
@@ -471,6 +513,14 @@ fun CompareScreen(
                     color = colors.textDim,
                 )
             } else {
+                if (divergences.none { !it.agrees }) {
+                    Text(
+                        text = "In $activeSeason the two measures broadly agree: no event is placed in a meaningfully different part of the field by CPI versus Speed.",
+                        style = TextStyle(fontSize = 12.sp, lineHeight = 17.sp),
+                        color = colors.textDim,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                }
                 divergences.forEach { divergence ->
                     DumbbellRow(
                         label = divergence.tournament.name,

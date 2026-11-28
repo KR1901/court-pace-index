@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import ink.courtpace.index.core.analytics.PaceAnalytics
@@ -181,7 +183,15 @@ fun BoardScreen(
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            GlassChip(text = "All", selected = surfaces.isEmpty(), onClick = { onSurface(null) }, selectionRole = Role.Button)
+            GlassChip(
+                text = "All",
+                selected = surfaces.isEmpty(),
+                onClick = { onSurface(null) },
+                modifier = Modifier.semantics {
+                    stateDescription = if (surfaces.isEmpty()) "All surfaces selected" else "All surfaces not selected"
+                },
+                selectionRole = Role.Button,
+            )
             // Only surfaces with readings this season: a filter that can only return an
             // empty list is a dead end.
             data.surfacesPresent(season, metric).forEach { surface ->
@@ -588,7 +598,6 @@ private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
             .semantics { contentDescription = label }
             .clickable(
                 enabled = !refreshing,
-                onClickLabel = label,
                 role = Role.Button,
             ) { onClick() },
         shape = RoundedCornerShape(17.dp),

@@ -103,7 +103,7 @@ class DatasetUpdater(private val context: Context) {
             val code = connection.responseCode
             if (code != HttpURLConnection.HTTP_OK) error("Server returned HTTP $code.")
             if (connection.contentLengthLong > MAX_DATASET_BYTES.toLong()) {
-                error("The published dataset exceeds the 64 MiB safety limit.")
+                error("The published dataset exceeds the ${MAX_DATASET_BYTES / (1024 * 1024)} MiB safety limit.")
             }
             return connection.inputStream.use { input ->
                 readBoundedDatasetText(input, MAX_DATASET_BYTES)
@@ -139,7 +139,7 @@ internal fun readBoundedDatasetText(input: InputStream, maxBytes: Int): String {
     while (true) {
         val count = input.read(buffer)
         if (count < 0) break
-        if (count == 0) continue
+        if (count == 0) break
         if (count > maxBytes - total) {
             throw IOException("The published dataset exceeds the configured size limit.")
         }
