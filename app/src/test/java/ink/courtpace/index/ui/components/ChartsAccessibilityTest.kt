@@ -29,10 +29,10 @@ class ChartsAccessibilityTest {
             referenceLabel = "Reference 40",
         )
 
-        assertTrue(description.contains("2 readings"))
-        assertTrue(description.contains("from 2022 at 45"))
+        assertTrue(description.contains("3 readings"))
+        assertTrue(description.contains("from 2020 at 30"))
         assertTrue(description.contains("to 2023 at 35"))
-        assertTrue(description.contains("low 35 in 2023"))
+        assertTrue(description.contains("low 30 in 2020"))
         assertTrue(description.contains("high 45 in 2022"))
         assertTrue(description.contains("Reference: Reference 40"))
         assertFalse(description.contains("99"))
