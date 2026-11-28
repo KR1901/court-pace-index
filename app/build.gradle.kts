@@ -21,14 +21,14 @@ android {
     namespace = "ink.courtpace.index"
     compileSdk = 37
 
-// Public app identity and signing certificate remain unchanged; 4.1.9 adds Davis Cup source-coverage diagnostics.
+// Public app identity and signing certificate remain unchanged for this 4.2.3 visual-fix release.
 // Keep the existing public-release signing certificate for in-place updates.
     defaultConfig {
         applicationId = "ink.courtpace.index.public"
         minSdk = 26
         targetSdk = 37
-        versionCode = 64
-        versionName = "4.2.2"
+        versionCode = 65
+        versionName = "4.2.3"
     }
 
     signingConfigs {
