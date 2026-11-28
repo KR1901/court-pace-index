@@ -14,6 +14,7 @@ on:
     paths:
       # Calculation, dataset, test-guard and refresh-workflow changes run a full data rebuild.
       - 'tools/compute_speed.py'
+      - 'data/atp_event_periods.json'
       - 'tools/chronological_loeo_study.py'
       - 'tools/davis_cup_policy.py'
       - 'tools/test_compute_speed.py'
