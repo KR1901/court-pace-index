@@ -69,14 +69,7 @@ fun MetricToggle(
                 animationSpec = tween(220),
                 label = "toggle",
             )
-            Text(
-                text = option.short,
-                style = TextStyle(
-                    fontSize = 12.5.sp,
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                    letterSpacing = 0.2.sp,
-                ),
-                color = if (selected) colors.text else colors.textDim,
+            Box(
                 modifier = Modifier
                     .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                     .clip(CircleShape)
@@ -85,9 +78,20 @@ fun MetricToggle(
                         selected = selected,
                         role = Role.RadioButton,
                         onClick = { onChange(option) },
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            )
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = option.short,
+                    style = TextStyle(
+                        fontSize = 12.5.sp,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                        letterSpacing = 0.2.sp,
+                    ),
+                    color = if (selected) colors.text else colors.textDim,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
         }
     }
 }

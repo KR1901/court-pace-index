@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -622,9 +623,15 @@ private fun RefreshButton(refreshing: Boolean, onClick: () -> Unit) {
                     size = Size(w * 0.76f, w * 0.76f),
                     style = stroke,
                 )
-                val tip = Offset(w * 0.88f, w * 0.34f)
-                drawLine(tint, tip, Offset(tip.x - w * 0.16f, tip.y - w * 0.04f), w * 0.105f, StrokeCap.Round)
-                drawLine(tint, tip, Offset(tip.x + w * 0.02f, tip.y + w * 0.16f), w * 0.105f, StrokeCap.Round)
+                // One solid arrowhead keeps the refresh mark crisp; separate stroked
+                // branches can visually overlap the circular stroke at small dp sizes.
+                val arrowHead = Path().apply {
+                    moveTo(w * 0.89f, w * 0.33f)
+                    lineTo(w * 0.65f, w * 0.27f)
+                    lineTo(w * 0.76f, w * 0.52f)
+                    close()
+                }
+                drawPath(arrowHead, tint)
             }
         }
     }
