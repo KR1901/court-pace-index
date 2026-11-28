@@ -9,8 +9,11 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.ui.components.MetricToggle
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.theme.CourtPaceTheme
 import ink.courtpace.index.ui.theme.DefaultAccent
@@ -44,6 +47,23 @@ class AccessibilityControlsTest {
             .assertIsOn()
             .assertWidthIsAtLeast(48.dp)
             .assertHeightIsAtLeast(48.dp)
+    }
+
+
+    @Test
+    fun metricToggleExposesItsSelectedRadioOption() {
+        compose.setContent {
+            CourtPaceTheme(dark = true, accent = DefaultAccent) {
+                MetricToggle(
+                    metric = Metric.SPEED,
+                    onChange = {},
+                    modifier = Modifier.testTag("metric-toggle"),
+                )
+            }
+        }
+
+        compose.onNodeWithText("Speed").assertIsSelected()
+        compose.onNodeWithText("CPI").assertIsNotSelected()
     }
 
     @Test

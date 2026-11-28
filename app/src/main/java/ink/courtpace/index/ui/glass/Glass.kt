@@ -56,9 +56,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -250,6 +250,7 @@ fun GlassButton(
 ) {
     val colors = PaceTheme.colors
     val interaction = remember { MutableInteractionSource() }
+    val haptics = LocalHapticFeedback.current
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.965f else 1f,
@@ -302,6 +303,7 @@ fun GlassButton(
                 enabled = enabled,
                 role = Role.Button,
             ) {
+                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onClick()
             }
             .padding(horizontal = 24.dp, vertical = 15.dp),
@@ -707,13 +709,13 @@ private fun TabItem(
         modifier = modifier
             .clip(pill)
             .background(tint, pill)
-            .clickable(
+            .selectable(
+                selected = selected,
                 interactionSource = interaction,
                 indication = null,
                 role = Role.Tab,
-                onClickLabel = label,
-            ) { onClick() }
-            .semantics { this.selected = selected },
+                onClick = onClick,
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

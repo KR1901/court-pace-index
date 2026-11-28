@@ -56,7 +56,7 @@ data class ChartSeries(
 )
 
 /** A concise spoken equivalent of the plotted values for non-visual chart users. */
-private fun lineChartDescription(
+internal fun lineChartDescription(
     series: List<ChartSeries>,
     xLabel: (Float) -> String,
     yLabel: (Float) -> String,
