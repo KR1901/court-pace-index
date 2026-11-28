@@ -214,10 +214,13 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     onSeason = { vm.selectSeason(it) },
                                     onMetric = { vm.selectMetric(it) },
                                     onSurface = { vm.toggleSurface(it) },
-                                    onOpen = { tournament, selectedSeason ->
-                                        // Compare owns its own year selector; details must open
-                                        // the exact edition the user tapped, not the Pace tab's year.
-                                        push(Route.Detail(tournament.id, selectedSeason))
+                                    onOpen = { tournament ->
+                                        val detailSeason = if (data.isLive(tournament.id)) {
+                                            vm.season
+                                        } else {
+                                            data.detailSeason(tournament.id, vm.season)
+                                        }
+                                        push(Route.Detail(tournament.id, detailSeason))
                                     },
                                     refreshing = vm.refreshState is RefreshState.Running,
                                     onRefresh = { vm.refresh() },
