@@ -235,13 +235,10 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     season = vm.season,
                                     selected = vm.compareIds,
                                     onToggle = { vm.toggleCompare(it) },
-                                    onOpen = { tournament ->
-                                        val detailSeason = if (data.isLive(tournament.id)) {
-                                            vm.season
-                                        } else {
-                                            data.detailSeason(tournament.id, vm.season)
-                                        }
-                                        push(Route.Detail(tournament.id, detailSeason))
+                                    onOpen = { tournament, selectedSeason ->
+                                        // Compare owns its own year selector; details must open
+                                        // the exact edition the user tapped, not the Pace tab's year.
+                                        push(Route.Detail(tournament.id, selectedSeason))
                                     },
                                 )
 
