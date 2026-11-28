@@ -1,11 +1,20 @@
 package ink.courtpace.index.data
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [35])
 class DatasetUpdaterTest {
 
     @Test
@@ -30,6 +39,23 @@ class DatasetUpdaterTest {
         } catch (expected: IOException) {
             assertTrue(expected.message.orEmpty().contains("size limit"))
         }
+    }
+
+
+    @Test
+    fun cachedRestoresBackupAfterAnInterruptedAtomicWrite() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val cache = File(context.filesDir, "dataset_cache.json")
+        val backup = File(context.filesDir, "dataset_cache.json.bak")
+        cache.delete()
+        backup.writeText(
+            """{"fetchedAt":123,"dataset":{"meta":{"generated":"2026-11-28T00:00:00Z","season":2026},"tournaments":[],"readings":[]}}""",
+        )
+
+        val restored = DatasetUpdater(context).cached()
+
+        assertEquals(123L, restored?.fetchedAt)
+        assertTrue(cache.exists())
     }
 
     @Test

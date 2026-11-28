@@ -43,7 +43,8 @@ class DatasetUpdater(private val context: Context) {
 
     /** A previously downloaded dataset, if one is stored. */
     suspend fun cached(): CachedDataset? = withContext(Dispatchers.IO) {
-        if (!cacheFile.baseFile.exists()) return@withContext null
+        // openRead() also restores AtomicFile's backup if the process died between writes.
+        // Do not check baseFile first: a recoverable .bak may be the only valid cache.
         runCatching {
             cacheFile.openRead().bufferedReader(Charsets.UTF_8).use { reader ->
                 json.decodeFromString<CachedDataset>(reader.readText())
