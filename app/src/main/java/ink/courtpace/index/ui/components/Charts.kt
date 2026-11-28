@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -53,6 +55,34 @@ data class ChartSeries(
     val points: List<ChartPoint>,
 )
 
+/** A concise spoken equivalent of the plotted values for non-visual chart users. */
+private fun lineChartDescription(
+    series: List<ChartSeries>,
+    xLabel: (Float) -> String,
+    yLabel: (Float) -> String,
+    referenceLabel: String?,
+): String {
+    val summaries = series.map { line ->
+        val points = line.points
+            .filter { it.x.isFinite() && it.y.isFinite() }
+            .sortedBy { it.x }
+        if (points.isEmpty()) {
+            "${line.label}: no readings"
+        } else {
+            val first = points.first()
+            val last = points.last()
+            val low = points.minBy { it.y }
+            val high = points.maxBy { it.y }
+            "${line.label}: ${points.size} readings, from ${xLabel(first.x)} at ${yLabel(first.y)} " +
+                "to ${xLabel(last.x)} at ${yLabel(last.y)}; low ${yLabel(low.y)} in ${xLabel(low.x)}, " +
+                "high ${yLabel(high.y)} in ${xLabel(high.x)}"
+        }
+    }
+    return (summaries + listOfNotNull(referenceLabel?.let { "Reference: $it" }))
+        .joinToString(". ")
+        .ifBlank { "Line chart with no readings" }
+}
+
 /**
  * Line chart with a fixed y-axis on the left and season labels underneath. Missing seasons
  * are drawn as gaps rather than joined up, because a straight line across a COVID year
@@ -74,6 +104,7 @@ fun LineChart(
     val colors = PaceTheme.colors
     val axisWidth = 38.dp
     val ticks = niceTicks(yRange, yTicks)
+    val chartDescription = lineChartDescription(series, xLabel, yLabel, referenceLabel)
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
             Column(
@@ -95,7 +126,8 @@ fun LineChart(
             Canvas(
                 Modifier
                     .weight(1f)
-                    .height(chartHeight),
+                    .height(chartHeight)
+                    .semantics { contentDescription = chartDescription },
             ) {
                 val w = size.width
                 val h = size.height
@@ -130,7 +162,9 @@ fun LineChart(
                 }
 
                 series.forEach { line ->
-                    val sorted = line.points.sortedBy { it.x }
+                    val sorted = line.points
+                        .filter { it.x.isFinite() && it.y.isFinite() }
+                        .sortedBy { it.x }
                     sorted.zipWithNext { a, b ->
                         // Only join consecutive seasons; a gap stays a gap.
                         if (b.x - a.x <= 1.01f) {

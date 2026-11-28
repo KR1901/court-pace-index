@@ -31,6 +31,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ink.courtpace.index.core.h2h.H2HAnalytics
@@ -704,6 +705,7 @@ private fun RecordSection(
                     text = option.label,
                     selected = surface == option,
                     onClick = { onSurface(option) },
+                    selectionRole = Role.RadioButton,
                 )
             }
         }

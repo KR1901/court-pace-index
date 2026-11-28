@@ -28,8 +28,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -53,9 +56,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -253,7 +256,6 @@ fun GlassButton(
         animationSpec = spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessHigh),
         label = "press",
     )
-    val haptics = LocalHapticFeedback.current
     val background = if (prominent) {
         Brush.linearGradient(
             listOf(
@@ -300,7 +302,6 @@ fun GlassButton(
                 enabled = enabled,
                 role = Role.Button,
             ) {
-                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onClick()
             }
             .padding(horizontal = 24.dp, vertical = 15.dp),
@@ -329,8 +330,9 @@ fun GlassChip(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
-    labelFontSize: androidx.compose.ui.unit.TextUnit = 10.sp,
+    labelFontSize: androidx.compose.ui.unit.TextUnit = 13.sp,
     modifier: Modifier = Modifier,
+    selectionRole: Role = Role.Checkbox,
 ) {
     val colors = PaceTheme.colors
     val interaction = remember { MutableInteractionSource() }
@@ -354,22 +356,43 @@ fun GlassChip(
         animationSpec = tween(260),
         label = "chipBorder",
     )
+    val selectionModifier = when (selectionRole) {
+        Role.Checkbox -> Modifier.toggleable(
+            value = selected,
+            interactionSource = interaction,
+            indication = null,
+            role = Role.Checkbox,
+            onValueChange = { onClick() },
+        )
+        Role.RadioButton -> Modifier.selectable(
+            selected = selected,
+            interactionSource = interaction,
+            indication = null,
+            role = Role.RadioButton,
+            onClick = onClick,
+        )
+        else -> Modifier.clickable(
+            interactionSource = interaction,
+            indication = null,
+            role = selectionRole,
+            onClick = onClick,
+        )
+    }
     Row(
         modifier = modifier
+            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(CircleShape)
             .background(fill, CircleShape)
             .border(1.dp, borderColor, CircleShape)
-            .clickable(interactionSource = interaction, indication = null, role = Role.RadioButton) {
-                onClick()
-            }
+            .then(selectionModifier)
             .padding(horizontal = 15.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = text,
             style = TextStyle(
-                fontSize = 13.sp,
+                fontSize = labelFontSize,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 letterSpacing = 0.1.sp,
             ),
@@ -689,7 +712,8 @@ private fun TabItem(
                 indication = null,
                 role = Role.Tab,
                 onClickLabel = label,
-            ) { onClick() },
+            ) { onClick() }
+            .semantics { this.selected = selected },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

@@ -9,6 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -73,9 +76,14 @@ fun MetricToggle(
                 ),
                 color = if (selected) colors.text else colors.textDim,
                 modifier = Modifier
+                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                     .clip(CircleShape)
                     .background(fill, CircleShape)
-                    .clickable { onChange(option) }
+                    .selectable(
+                        selected = selected,
+                        role = Role.RadioButton,
+                        onClick = { onChange(option) },
+                    )
                     .padding(horizontal = 16.dp, vertical = 8.dp),
             )
         }
@@ -98,6 +106,7 @@ fun SeasonStepper(
             text = "YEAR · " + selected,
             selected = true,
             onClick = { yearMenu = true },
+            selectionRole = Role.Button,
         )
         DropdownMenu(
             expanded = yearMenu,
