@@ -153,6 +153,16 @@ class OfficialEventPeriodRegistryTests(unittest.TestCase):
         self.assertFalse(strict_davis["dateCoverageComplete"])
         self.assertEqual(["dc"], strict_davis["missingSourceEventIds"])
 
+    def test_2026_davis_cup_final8_italy_czech_tie_has_official_period(self):
+        registry = load_event_periods()
+        period = registry["by_source_id"][(2026, "2026-M-DC-2026-FLS-M-ITA-CZE-01")]
+        self.assertEqual("daviscupfinal8", period["tournamentId"])
+        self.assertEqual("2026-11-23", period["startDate"])
+        self.assertEqual("2026-11-29", period["endDate"])
+        self.assertEqual("Europe/Rome", period["timeZone"])
+        self.assertEqual("results_archive", period["sourceKind"])
+        self.assertEqual("actual", period["dateStatus"])
+
     def test_official_supporting_source_is_preserved_and_host_checked(self):
         supporting_url = (
             "https://www.itftennis.com/en/tournament/world-team-cup/ger/1999/"

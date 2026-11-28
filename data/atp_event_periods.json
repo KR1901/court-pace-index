@@ -39827,6 +39827,21 @@
       "sourceKind": "results_archive",
       "dateStatus": "actual",
       "verifiedAt": "2026-11-27"
+    },
+    {
+      "season": 2026,
+      "eventId": "atp-2026-2026-M-DC-2026-FLS-M-ITA-CZE-01",
+      "tournamentId": "daviscupfinal8",
+      "sourceEventIds": [
+        "2026-M-DC-2026-FLS-M-ITA-CZE-01"
+      ],
+      "startDate": "2026-11-23",
+      "endDate": "2026-11-29",
+      "timeZone": "Europe/Rome",
+      "sourceUrl": "https://www.atptour.com/en/scores/results-archive?year=2026",
+      "sourceKind": "results_archive",
+      "dateStatus": "actual",
+      "verifiedAt": "2026-11-28"
     }
   ]
 }
