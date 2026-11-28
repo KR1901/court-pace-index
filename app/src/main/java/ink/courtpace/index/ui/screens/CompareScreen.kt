@@ -1,10 +1,13 @@
 package ink.courtpace.index.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -316,14 +319,11 @@ fun CompareScreen(
                 } else {
                     "No earlier like-for-like reading"
                 }
-                GlassSurface(
+                CompareContentSurface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 9.dp)
                         .clickable { onOpen(tournament) },
-                    shape = RoundedCornerShape(22.dp),
-                    intensity = 0.78f,
-                    elevation = 8.dp,
                     contentPadding = PaddingValues(15.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -421,11 +421,8 @@ fun CompareScreen(
         if (historySeries.isEmpty()) {
             GlassNote("No historical readings are available for the selected events and measure.")
         } else {
-            GlassSurface(
+            CompareContentSurface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(25.dp),
-                intensity = 0.82f,
-                elevation = 10.dp,
                 contentPadding = PaddingValues(16.dp),
             ) {
                 LineChart(
@@ -458,11 +455,8 @@ fun CompareScreen(
             color = colors.textDim,
         )
         Spacer(Modifier.height(10.dp))
-        GlassSurface(
+        CompareContentSurface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(25.dp),
-            intensity = 0.78f,
-            elevation = 8.dp,
             contentPadding = PaddingValues(16.dp),
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -524,6 +518,31 @@ fun CompareScreen(
 
         Spacer(Modifier.height(LocalTabBarInset.current))
     }
+}
+
+
+@Composable
+private fun CompareContentSurface(
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val colors = PaceTheme.colors
+    val shape = RoundedCornerShape(22.dp)
+    val fill = if (colors.isDark) {
+        Color.White.copy(alpha = 0.055f)
+    } else {
+        Color.White.copy(alpha = 0.76f)
+    }
+    val rim = Color.White.copy(alpha = if (colors.isDark) 0.10f else 0.88f)
+    Column(
+        modifier = modifier
+            .clip(shape)
+            .background(fill, shape)
+            .border(1.dp, rim, shape)
+            .padding(contentPadding),
+        content = content,
+    )
 }
 
 @Composable
