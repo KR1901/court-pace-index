@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -20,14 +21,17 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ink.courtpace.index.core.model.Metric
+import ink.courtpace.index.ui.components.ChartLegend
 import ink.courtpace.index.ui.components.MetricToggle
 import ink.courtpace.index.ui.glass.GlassChip
 import ink.courtpace.index.ui.glass.GlassTabBar
 import ink.courtpace.index.ui.glass.Glyph
 import ink.courtpace.index.ui.theme.CourtPaceTheme
 import ink.courtpace.index.ui.theme.DefaultAccent
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.abs
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
@@ -72,6 +76,34 @@ class AccessibilityControlsTest {
         }
 
         compose.onNodeWithText("Speed").assertIsSelected()
+
+        val controlBounds = compose.onNodeWithTag("metric-toggle").fetchSemanticsNode().boundsInRoot
+        val labelBounds = compose.onNodeWithText("Speed").fetchSemanticsNode().boundsInRoot
+        assertTrue(
+            "The selected metric label should be vertically centred in its control.",
+            abs(controlBounds.center.y - labelBounds.center.y) <= 2f,
+        )
+    }
+
+    @Test
+    fun longChartLegendLabelsKeepUsableHorizontalWidth() {
+        val longLabel = "Monte Carlo Masters · CALC"
+        compose.setContent {
+            CourtPaceTheme(dark = true, accent = DefaultAccent) {
+                ChartLegend(
+                    entries = listOf(
+                        "Miami Masters · CALC" to Color(0xFF8B7BFF),
+                        "Cincinnati Masters · CALC" to Color(0xFF4295E8),
+                        longLabel to Color(0xFFE07A48),
+                    ),
+                    modifier = Modifier.width(220.dp),
+                )
+            }
+        }
+
+        compose.onNodeWithText(longLabel)
+            .assertExists()
+            .assertWidthIsAtLeast(160.dp)
     }
 
 
