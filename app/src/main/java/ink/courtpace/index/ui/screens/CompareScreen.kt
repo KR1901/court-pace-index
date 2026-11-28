@@ -102,7 +102,7 @@ fun CompareScreen(
     season: Int,
     selected: List<String>,
     onToggle: (String) -> Unit,
-    onOpen: (Tournament) -> Unit,
+    onOpen: (Tournament, Int) -> Unit,
 ) {
     val colors = PaceTheme.colors
     // Compare keeps an independent year selection; parent Pace navigation must not reset it.
@@ -365,7 +365,7 @@ fun CompareScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 9.dp)
-                        .clickable { onOpen(tournament) },
+                        .clickable { onOpen(tournament, activeSeason) },
                     contentPadding = PaddingValues(15.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -545,7 +545,7 @@ fun CompareScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable { onOpen(tournament) }
+                        .clickable { onOpen(tournament, activeSeason) }
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
