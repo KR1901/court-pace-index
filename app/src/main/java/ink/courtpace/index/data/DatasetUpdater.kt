@@ -1,6 +1,7 @@
 package ink.courtpace.index.data
 
 import android.content.Context
+import android.util.AtomicFile
 import ink.courtpace.index.BuildConfig
 import ink.courtpace.index.core.data.DatasetPolicy
 import ink.courtpace.index.core.data.PaceData
@@ -9,7 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -34,13 +38,18 @@ sealed interface RefreshResult {
  */
 class DatasetUpdater(private val context: Context) {
 
-    private val cacheFile = File(context.filesDir, CACHE_NAME)
+    private val cacheFile = AtomicFile(File(context.filesDir, CACHE_NAME))
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     /** A previously downloaded dataset, if one is stored. */
     suspend fun cached(): CachedDataset? = withContext(Dispatchers.IO) {
-        if (!cacheFile.exists()) return@withContext null
-        runCatching { json.decodeFromString<CachedDataset>(cacheFile.readText()) }.getOrNull()
+        // openRead() also restores AtomicFile's backup if the process died between writes.
+        // Do not check baseFile first: a recoverable .bak may be the only valid cache.
+        runCatching {
+            cacheFile.openRead().bufferedReader(Charsets.UTF_8).use { reader ->
+                json.decodeFromString<CachedDataset>(reader.readText())
+            }
+        }.getOrNull()
     }
 
     suspend fun refresh(): RefreshResult = withContext(Dispatchers.IO) {
@@ -60,10 +69,15 @@ class DatasetUpdater(private val context: Context) {
         }
 
         val now = System.currentTimeMillis()
-        val stored = runCatching {
-            cacheFile.writeText(json.encodeToString(CachedDataset(fetchedAt = now, dataset = dataset)))
+        val output = runCatching { cacheFile.startWrite() }.getOrElse {
+            return@withContext RefreshResult.Failure("Could not store the update on this device.")
         }
-        if (stored.isFailure) {
+        try {
+            val encoded = json.encodeToString(CachedDataset(fetchedAt = now, dataset = dataset))
+            output.write(encoded.toByteArray(Charsets.UTF_8))
+            cacheFile.finishWrite(output)
+        } catch (_: Exception) {
+            runCatching { cacheFile.failWrite(output) }
             return@withContext RefreshResult.Failure("Could not store the update on this device.")
         }
         RefreshResult.Success(dataset, now)
@@ -88,7 +102,12 @@ class DatasetUpdater(private val context: Context) {
         try {
             val code = connection.responseCode
             if (code != HttpURLConnection.HTTP_OK) error("Server returned HTTP $code.")
-            return connection.inputStream.bufferedReader().use { it.readText() }
+            if (connection.contentLengthLong > MAX_DATASET_BYTES.toLong()) {
+                error("The published dataset exceeds the ${MAX_DATASET_BYTES / (1024 * 1024)} MiB safety limit.")
+            }
+            return connection.inputStream.use { input ->
+                readBoundedDatasetText(input, MAX_DATASET_BYTES)
+            }
         } finally {
             connection.disconnect()
         }
@@ -102,11 +121,32 @@ class DatasetUpdater(private val context: Context) {
 
     companion object {
         private const val CACHE_NAME = "dataset_cache.json"
+        internal const val MAX_DATASET_BYTES = 64 * 1024 * 1024
         const val SOURCE_URL =
             "https://raw.githubusercontent.com/KR1901/court-pace-index/main/data/latest.json"
         const val DEBUG_SOURCE_URL =
             "https://raw.githubusercontent.com/KR1901/court-pace-index/analysis/expected-aces-formula-comparison/data/latest.json"
     }
+}
+
+
+/** Reads UTF-8 data without allowing an unexpected response to exhaust app memory. */
+internal fun readBoundedDatasetText(input: InputStream, maxBytes: Int): String {
+    require(maxBytes >= 0) { "maxBytes must not be negative" }
+    val output = ByteArrayOutputStream(minOf(maxBytes, 8 * 1024))
+    val buffer = ByteArray(8 * 1024)
+    var total = 0
+    while (true) {
+        val count = input.read(buffer)
+        if (count < 0) break
+        if (count == 0) break
+        if (count > maxBytes - total) {
+            throw IOException("The published dataset exceeds the configured size limit.")
+        }
+        output.write(buffer, 0, count)
+        total += count
+    }
+    return output.toString(Charsets.UTF_8.name())
 }
 
 /** Bundled dataset reader. */

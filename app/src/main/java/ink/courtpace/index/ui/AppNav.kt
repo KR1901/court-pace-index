@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -135,13 +136,25 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
 
         val context = LocalContext.current
         val reduceMotion = rememberReduceMotion()
-        val touchExploration = remember(context) { context.isTouchExplorationActive() }
 
-        // The bar steps out of the way on the way down and comes back on the way up: the
-        // behaviour both Apple's and Google's current guidance describe for a bar that floats
-        // over scrolling content. It never hides while a screen reader is exploring, because
-        // then it is navigation the user cannot afford to lose.
+        // The bar steps out of the way on the way down and comes back on the way up. Keep
+        // touch-exploration state live: TalkBack can be enabled or disabled without restarting
+        // the Activity, and navigation must become visible immediately when it is enabled.
         var barHidden by remember { mutableStateOf(false) }
+        var touchExploration by remember(context) {
+            mutableStateOf(context.isTouchExplorationActive())
+        }
+        DisposableEffect(context) {
+            val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+            val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled ->
+                touchExploration = enabled
+                if (enabled) barHidden = false
+            }
+            manager?.addTouchExplorationStateChangeListener(listener)
+            onDispose {
+                manager?.removeTouchExplorationStateChangeListener(listener)
+            }
+        }
         val density = LocalDensity.current
         val threshold = with(density) { 12.dp.toPx() }
         val connection = remember(touchExploration, threshold) {
@@ -225,13 +238,10 @@ fun CourtPaceRoot(vm: AppViewModel = viewModel()) {
                                     season = vm.season,
                                     selected = vm.compareIds,
                                     onToggle = { vm.toggleCompare(it) },
-                                    onOpen = { tournament ->
-                                        val detailSeason = if (data.isLive(tournament.id)) {
-                                            vm.season
-                                        } else {
-                                            data.detailSeason(tournament.id, vm.season)
-                                        }
-                                        push(Route.Detail(tournament.id, detailSeason))
+                                    onOpen = { tournament, selectedSeason ->
+                                        // Compare owns its own year selector; details must open
+                                        // the exact edition the user tapped, not the Pace tab's year.
+                                        push(Route.Detail(tournament.id, selectedSeason))
                                     },
                                 )
 

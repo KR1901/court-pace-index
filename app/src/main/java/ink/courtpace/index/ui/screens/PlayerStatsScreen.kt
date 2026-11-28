@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -251,11 +252,13 @@ fun PlayerStatsScreen(
                     text = "Rankings",
                     selected = mode == PlayerStatsMode.RANKINGS,
                     onClick = { mode = PlayerStatsMode.RANKINGS },
+                    selectionRole = Role.RadioButton,
                 )
                 GlassChip(
                     text = "Height groups",
                     selected = mode == PlayerStatsMode.HEIGHT_GROUPS,
                     onClick = { mode = PlayerStatsMode.HEIGHT_GROUPS },
+                    selectionRole = Role.RadioButton,
                 )
             }
         }
@@ -271,6 +274,7 @@ fun PlayerStatsScreen(
                         text = "YEAR · " + year,
                         selected = true,
                         onClick = { yearMenu = true },
+                        selectionRole = Role.Button,
                     )
                     DropdownMenu(expanded = yearMenu, onDismissRequest = { yearMenu = false }) {
                         years.forEach { option ->
@@ -287,6 +291,7 @@ fun PlayerStatsScreen(
                             text = "SAMPLE · " + minimumGames + " GAMES",
                             selected = minimumGames > 0,
                             onClick = { sampleMenu = true },
+                            selectionRole = Role.Button,
                         )
                         DropdownMenu(expanded = sampleMenu, onDismissRequest = { sampleMenu = false }) {
                             listOf(0, 50, 100, 250).forEach { option ->
@@ -328,6 +333,7 @@ fun PlayerStatsScreen(
                                 text = option.label,
                                 selected = heightCohort == option,
                                 onClick = { heightCohort = option },
+                                selectionRole = Role.RadioButton,
                             )
                         }
                     }
@@ -345,6 +351,7 @@ fun PlayerStatsScreen(
                                 text = option.label,
                                 selected = heightMatchScope == option,
                                 onClick = { heightMatchScope = option },
+                                selectionRole = Role.RadioButton,
                             )
                         }
                     }
@@ -372,6 +379,7 @@ fun PlayerStatsScreen(
                         text = option.label,
                         selected = surface == option,
                         onClick = { surface = option },
+                        selectionRole = Role.RadioButton,
                     )
                 }
             }
@@ -389,6 +397,7 @@ fun PlayerStatsScreen(
                             text = option.label,
                             selected = metric == option,
                             onClick = { metric = option },
+                            selectionRole = Role.RadioButton,
                         )
                     }
                 }

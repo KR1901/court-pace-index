@@ -229,7 +229,7 @@ class ScreenshotTest {
                 data = data,
                 season = data.latestSeason,
                 selected = listOf("miami", "cincinnati", "montecarlo"),
-                onToggle = {}, onOpen = {},
+                onToggle = {}, onOpen = { _, _ -> },
             )
         }
     }
